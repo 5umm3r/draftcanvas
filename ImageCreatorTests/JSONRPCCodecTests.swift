@@ -103,7 +103,33 @@ final class JSONRPCCodecTests: XCTestCase {
 
         XCTAssertEqual(status.accountLabel, "user@example.com")
         XCTAssertEqual(status.planLabel, "plus")
-        XCTAssertEqual(status.primaryUsageLabel, "5h 88%")
-        XCTAssertEqual(status.secondaryUsageLabel, "weekly 57%")
+        XCTAssertEqual(status.primaryUsageLabel, "5h 12%")
+        XCTAssertEqual(status.secondaryUsageLabel, "weekly 43%")
+        XCTAssertEqual(try XCTUnwrap(status.primaryUsageRemainingFraction), 0.12, accuracy: 0.001)
+        XCTAssertEqual(try XCTUnwrap(status.secondaryUsageRemainingFraction), 0.43, accuracy: 0.001)
+    }
+
+    func testProcessTerminationClosesHandlesWithoutResettingLaunchedStandardIO() throws {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/bin/sleep")
+        process.arguments = ["10"]
+
+        let stdinPipe = Pipe()
+        let stdoutPipe = Pipe()
+        let stderrPipe = Pipe()
+        process.standardInput = stdinPipe
+        process.standardOutput = stdoutPipe
+        process.standardError = stderrPipe
+        try process.run()
+
+        ProcessTerminationResources.release(
+            process: process,
+            stdinHandle: stdinPipe.fileHandleForWriting,
+            stdoutHandle: stdoutPipe.fileHandleForReading,
+            stderrHandle: stderrPipe.fileHandleForReading
+        )
+
+        process.waitUntilExit()
+        XCTAssertFalse(process.isRunning)
     }
 }

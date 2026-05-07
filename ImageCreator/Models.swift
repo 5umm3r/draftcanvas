@@ -104,12 +104,16 @@ struct CodexAccountUsageStatus: Equatable {
     var planLabel: String
     var primaryUsageLabel: String
     var secondaryUsageLabel: String
+    var primaryUsageRemainingFraction: Double?
+    var secondaryUsageRemainingFraction: Double?
 
     static let unavailable = CodexAccountUsageStatus(
         accountLabel: "アカウント未取得",
         planLabel: "-",
         primaryUsageLabel: "5h -",
-        secondaryUsageLabel: "weekly -"
+        secondaryUsageLabel: "weekly -",
+        primaryUsageRemainingFraction: nil,
+        secondaryUsageRemainingFraction: nil
     )
 
     static func parse(accountResponse: [String: Any], rateLimitsResponse: [String: Any]) -> CodexAccountUsageStatus {
@@ -134,11 +138,15 @@ struct CodexAccountUsageStatus: Equatable {
         }
 
         let rateLimits = preferredRateLimits(from: rateLimitsResponse)
+        let primaryUsage = usageStatus(prefix: "5h", window: rateLimits?["primary"] as? [String: Any])
+        let secondaryUsage = usageStatus(prefix: "weekly", window: rateLimits?["secondary"] as? [String: Any])
         return CodexAccountUsageStatus(
             accountLabel: accountLabel,
             planLabel: planLabel,
-            primaryUsageLabel: usageLabel(prefix: "5h", window: rateLimits?["primary"] as? [String: Any]),
-            secondaryUsageLabel: usageLabel(prefix: "weekly", window: rateLimits?["secondary"] as? [String: Any])
+            primaryUsageLabel: primaryUsage.label,
+            secondaryUsageLabel: secondaryUsage.label,
+            primaryUsageRemainingFraction: primaryUsage.remainingFraction,
+            secondaryUsageRemainingFraction: secondaryUsage.remainingFraction
         )
     }
 
@@ -156,11 +164,12 @@ struct CodexAccountUsageStatus: Equatable {
         preferredRateLimits(from: response)?["planType"] as? String
     }
 
-    private static func usageLabel(prefix: String, window: [String: Any]?) -> String {
+    private static func usageStatus(prefix: String, window: [String: Any]?) -> (label: String, remainingFraction: Double?) {
         guard let usedPercent = numericValue(window?["usedPercent"]) else {
-            return "\(prefix) -"
+            return ("\(prefix) -", nil)
         }
-        return "\(prefix) \(Int(usedPercent.rounded()))%"
+        let remainingPercent = min(100, max(0, 100 - usedPercent))
+        return ("\(prefix) \(Int(remainingPercent.rounded()))%", remainingPercent / 100)
     }
 
     private static func numericValue(_ value: Any?) -> Double? {

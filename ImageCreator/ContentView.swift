@@ -56,8 +56,16 @@ struct ContentView: View {
 
             Spacer(minLength: 16)
 
-            usagePill(systemName: "clock", label: viewModel.accountUsageStatus.primaryUsageLabel)
-            usagePill(systemName: "calendar", label: viewModel.accountUsageStatus.secondaryUsageLabel)
+            usagePill(
+                systemName: "clock",
+                label: viewModel.accountUsageStatus.primaryUsageLabel,
+                remainingFraction: viewModel.accountUsageStatus.primaryUsageRemainingFraction
+            )
+            usagePill(
+                systemName: "calendar",
+                label: viewModel.accountUsageStatus.secondaryUsageLabel,
+                remainingFraction: viewModel.accountUsageStatus.secondaryUsageRemainingFraction
+            )
 
             Button {
                 viewModel.refreshAccountUsage()
@@ -80,7 +88,7 @@ struct ContentView: View {
         .background(.white.opacity(0.86))
     }
 
-    private func usagePill(systemName: String, label: String) -> some View {
+    private func usagePill(systemName: String, label: String, remainingFraction: Double?) -> some View {
         HStack(spacing: 6) {
             Image(systemName: systemName)
                 .font(.system(size: 12, weight: .semibold))
@@ -90,11 +98,30 @@ struct ContentView: View {
                 .font(.caption.weight(.semibold))
                 .lineLimit(1)
                 .monospacedDigit()
+
+            usageProgressBar(value: remainingFraction)
         }
         .padding(.horizontal, 9)
         .padding(.vertical, 5)
         .background(Color.accentColor.opacity(0.10))
         .clipShape(Capsule())
+    }
+
+    private func usageProgressBar(value: Double?) -> some View {
+        let progress = min(1, max(0, value ?? 0))
+
+        return GeometryReader { proxy in
+            ZStack(alignment: .leading) {
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(Color.black.opacity(0.12))
+
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(Color.accentColor.opacity(value == nil ? 0 : 0.82))
+                    .frame(width: proxy.size.width * progress)
+            }
+        }
+        .frame(width: 52, height: 4)
+        .accessibilityHidden(true)
     }
 
     private var canvasArea: some View {

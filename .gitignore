@@ -56,3 +56,6 @@ fastlane/test_output
 # Env
 .env
 .env.local
+
+# build files
+_build/

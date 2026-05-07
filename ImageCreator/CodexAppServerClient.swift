@@ -33,6 +33,8 @@ final class CodexAppServerClient {
     private let codexExecutablePath: String
     private var process: Process?
     private var stdinHandle: FileHandle?
+    private var stdoutHandle: FileHandle?
+    private var stderrHandle: FileHandle?
     private var stdoutParser = JSONLineParser()
     private var nextRequestID = 1
     private var pending: [Int: CheckedContinuation<[String: Any], Error>] = [:]
@@ -98,14 +100,16 @@ final class CodexAppServerClient {
 
     func stop() {
         queue.sync {
-            self.stdinHandle = nil
-            self.process?.standardInput = nil
-            self.process?.standardOutput = nil
-            self.process?.standardError = nil
-            if self.process?.isRunning == true {
-                self.process?.terminate()
-            }
+            ProcessTerminationResources.release(
+                process: self.process,
+                stdinHandle: self.stdinHandle,
+                stdoutHandle: self.stdoutHandle,
+                stderrHandle: self.stderrHandle
+            )
             self.process = nil
+            self.stdinHandle = nil
+            self.stdoutHandle = nil
+            self.stderrHandle = nil
             self.startupTask = nil
             self.pending.values.forEach { $0.resume(throwing: ImageCreatorError.processExited) }
             self.pending.removeAll()
@@ -251,6 +255,8 @@ final class CodexAppServerClient {
         try process.run()
         self.process = process
         self.stdinHandle = stdinPipe.fileHandleForWriting
+        self.stdoutHandle = stdoutPipe.fileHandleForReading
+        self.stderrHandle = stderrPipe.fileHandleForReading
         emitLog("codex app-server を起動しました: \(launchConfiguration.executablePath) \(launchConfiguration.arguments.joined(separator: " "))")
     }
 
@@ -307,6 +313,8 @@ final class CodexAppServerClient {
         turnWaiters.removeAll()
         process = nil
         stdinHandle = nil
+        stdoutHandle = nil
+        stderrHandle = nil
         startupTask = nil
         emitLog("codex app-server が終了しました。")
     }
@@ -328,6 +336,23 @@ final class CodexAppServerClient {
 
     private static func defaultCodexExecutablePath() -> String {
         "/Users/mbp16-max/.nvm/versions/node/v22.16.0/bin/codex"
+    }
+}
+
+struct ProcessTerminationResources {
+    static func release(
+        process: Process?,
+        stdinHandle: FileHandle?,
+        stdoutHandle: FileHandle?,
+        stderrHandle: FileHandle?
+    ) {
+        stdoutHandle?.readabilityHandler = nil
+        stderrHandle?.readabilityHandler = nil
+        try? stdinHandle?.close()
+
+        if process?.isRunning == true {
+            process?.terminate()
+        }
     }
 }
 
