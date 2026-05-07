@@ -36,10 +36,6 @@ Carthage/Build/
 .Trashes
 
 # Screenshots
-*.png
-*.jpg
-*.jpeg
-*.gif
 !Assets.xcassets/**
 
 # Build artifacts

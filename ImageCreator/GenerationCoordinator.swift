@@ -78,7 +78,8 @@ final class CodexGenerationRunner: GenerationRunning {
             let result = try await client.runTurn(
                 threadID: threadID,
                 prompt: prompt,
-                outputMode: request.outputMode
+                outputMode: request.outputMode,
+                referenceImagePath: request.editSource?.isLocalImageInputSupported == true ? request.editSource?.filePath : nil
             )
 
             output.logs.append(contentsOf: result.logs)
@@ -129,10 +130,25 @@ enum PromptFactory {
     }
 
     private static func rasterPrompt(for request: GenerationRequest, jobIndex: Int) -> String {
+        if let editSource = request.editSource {
+            return [
+                "Edit the attached reference image for a local personal image creator app.",
+                "Use the image generation capability and return exactly one edited raster image result.",
+                "Original prompt: \(editSource.originalPrompt)",
+                "User edit request: \(request.prompt)",
+                "Aspect ratio: \(request.aspectRatio.promptDescription).",
+                "Variation number: \(jobIndex + 1).",
+                "Preserve useful parts of the reference image unless the edit request says otherwise.",
+                request.transparentBackground ? "The output must be a PNG with a transparent background and alpha channel." : "A normal opaque image is acceptable.",
+                "Do not write code. Do not ask clarifying questions."
+            ].joined(separator: "\n")
+        }
+
         var lines = [
             "Generate exactly one high-quality raster image for a local personal image creator app.",
             "Use the image generation capability and return the generated image result.",
             "User prompt: \(request.prompt)",
+            "Aspect ratio: \(request.aspectRatio.promptDescription).",
             "Variation number: \(jobIndex + 1).",
             "Do not write code. Do not ask clarifying questions."
         ]
@@ -147,12 +163,33 @@ enum PromptFactory {
     }
 
     private static func svgPrompt(for request: GenerationRequest, jobIndex: Int) -> String {
-        [
+        if let editSource = request.editSource {
+            var lines = [
+                "Create exactly one complete SVG image by editing the previous SVG concept.",
+                "Return only the SVG XML, starting with <svg and ending with </svg>.",
+                "Do not wrap it in Markdown fences.",
+                "Original prompt: \(editSource.originalPrompt)",
+                "User edit request: \(request.prompt)",
+                "Aspect ratio: \(request.aspectRatio.promptDescription).",
+                "Variation number: \(jobIndex + 1)."
+            ]
+
+            if let svgText = editSource.svgText {
+                lines.append("Previous SVG:")
+                lines.append(svgText)
+            }
+
+            lines.append(request.transparentBackground ? "Use a transparent SVG background." : "Use an SVG composition that can render on a light canvas.")
+            return lines.joined(separator: "\n")
+        }
+
+        return [
             "Create exactly one complete SVG image.",
             "Return only the SVG XML, starting with <svg and ending with </svg>.",
             "Do not wrap it in Markdown fences.",
             "Use clean vector shapes suitable for saving directly as an .svg file.",
             "User prompt: \(request.prompt)",
+            "Aspect ratio: \(request.aspectRatio.promptDescription).",
             "Variation number: \(jobIndex + 1).",
             request.transparentBackground ? "Use a transparent SVG background." : "Use an SVG composition that can render on a light canvas."
         ].joined(separator: "\n")

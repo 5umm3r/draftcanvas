@@ -141,7 +141,7 @@ final class CodexAppServerClient {
         return threadID
     }
 
-    func runTurn(threadID: String, prompt: String, outputMode: GenerationOutputMode) async throws -> CodexTurnResult {
+    func runTurn(threadID: String, prompt: String, outputMode: GenerationOutputMode, referenceImagePath: String? = nil) async throws -> CodexTurnResult {
         let waiter = TurnWaiter(threadID: threadID, outputMode: outputMode)
 
         let resultTask = Task<CodexTurnResult, Error> {
@@ -157,13 +157,7 @@ final class CodexAppServerClient {
             method: "turn/start",
             params: [
                 "threadId": threadID,
-                "input": [
-                    [
-                        "type": "text",
-                        "text": prompt,
-                        "text_elements": []
-                    ]
-                ]
+                "input": CodexTurnInputFactory.input(prompt: prompt, referenceImagePath: referenceImagePath)
             ]
         )
 
@@ -336,6 +330,27 @@ final class CodexAppServerClient {
 
     private static func defaultCodexExecutablePath() -> String {
         "/Users/mbp16-max/.nvm/versions/node/v22.16.0/bin/codex"
+    }
+}
+
+enum CodexTurnInputFactory {
+    static func input(prompt: String, referenceImagePath: String? = nil) -> [[String: Any]] {
+        var input: [[String: Any]] = [
+            [
+                "type": "text",
+                "text": prompt,
+                "text_elements": []
+            ]
+        ]
+
+        if let referenceImagePath {
+            input.append([
+                "type": "localImage",
+                "path": referenceImagePath
+            ])
+        }
+
+        return input
     }
 }
 

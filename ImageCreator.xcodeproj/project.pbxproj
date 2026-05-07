@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		10A000402D00000100000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 10A0003F2D00000100000001 /* Assets.xcassets */; };
 		10A0001B2D00000100000001 /* ImageCreatorApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A0000B2D00000100000001 /* ImageCreatorApp.swift */; };
 		10A0001C2D00000100000001 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A0000C2D00000100000001 /* ContentView.swift */; };
 		10A000302D00000100000001 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A0003A2D00000100000001 /* Models.swift */; };
@@ -32,6 +33,7 @@
 		10A000092D00000100000001 /* ImageCreator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ImageCreator.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		10A0000B2D00000100000001 /* ImageCreatorApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCreatorApp.swift; sourceTree = "<group>"; };
 		10A0000C2D00000100000001 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		10A0003F2D00000100000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		10A0003A2D00000100000001 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		10A0003B2D00000100000001 /* JSONRPCCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONRPCCodec.swift; sourceTree = "<group>"; };
 		10A0003C2D00000100000001 /* CodexAppServerClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexAppServerClient.swift; sourceTree = "<group>"; };
@@ -74,6 +76,7 @@
 			children = (
 				10A0000B2D00000100000001 /* ImageCreatorApp.swift */,
 				10A0000C2D00000100000001 /* ContentView.swift */,
+				10A0003F2D00000100000001 /* Assets.xcassets */,
 				10A0003A2D00000100000001 /* Models.swift */,
 				10A0003B2D00000100000001 /* JSONRPCCodec.swift */,
 				10A0003C2D00000100000001 /* CodexAppServerClient.swift */,
@@ -182,6 +185,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				10A000402D00000100000001 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
