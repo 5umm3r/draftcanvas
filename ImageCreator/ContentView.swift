@@ -8,6 +8,7 @@ struct ContentView: View {
     @State private var editingProjectID: UUID?
     @State private var renamingText = ""
     @State private var confirmingDeleteProjectID: UUID?
+    @State private var isAccountPopoverPresented = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -48,72 +49,56 @@ struct ContentView: View {
 
     private var topStatusBar: some View {
         HStack(spacing: 12) {
-            // Action buttons (moved from left rail)
             Button(action: viewModel.chooseSaveFolder) {
                 Label("保存先", systemImage: "folder")
-                    .font(.caption.weight(.semibold))
+                    .font(.subheadline.weight(.semibold))
             }
             .buttonStyle(.borderless)
             .help("保存先フォルダ: \(viewModel.preferredSaveFolderLabel)")
 
             Button(action: toggleLogWindow) {
                 Label("ログ", systemImage: "doc.text.magnifyingglass")
-                    .font(.caption.weight(.semibold))
+                    .font(.subheadline.weight(.semibold))
             }
             .buttonStyle(.borderless)
 
             Button(action: viewModel.stopServer) {
                 Label("停止", systemImage: "stop.circle")
-                    .font(.caption.weight(.semibold))
-            }
-            .buttonStyle(.borderless)
-
-            Divider()
-                .frame(height: 22)
-
-            // Codex account section
-            HStack(spacing: 8) {
-                Image(systemName: "terminal")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(.secondary)
-
-                Text("Codex")
                     .font(.subheadline.weight(.semibold))
             }
-
-            Divider()
-                .frame(height: 22)
-
-            HStack(spacing: 8) {
-                Image(systemName: "person.crop.circle")
-                    .foregroundStyle(.secondary)
-
-                Text(viewModel.accountUsageStatus.accountLabel)
-                    .font(.subheadline)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
-                    .frame(maxWidth: 260, alignment: .leading)
-
-                Text(viewModel.accountUsageStatus.planLabel)
-                    .font(.caption.weight(.semibold))
-                    .padding(.horizontal, 7)
-                    .padding(.vertical, 3)
-                    .background(Color.black.opacity(0.06))
-                    .clipShape(Capsule())
-            }
+            .buttonStyle(.borderless)
 
             Spacer(minLength: 16)
 
             usagePill(
                 systemName: "clock",
                 label: viewModel.accountUsageStatus.primaryUsageLabel,
-                remainingFraction: viewModel.accountUsageStatus.primaryUsageRemainingFraction
+                remainingFraction: viewModel.accountUsageStatus.primaryUsageRemainingFraction,
+                resetText: viewModel.accountUsageStatus.primaryResetText
             )
             usagePill(
                 systemName: "calendar",
                 label: viewModel.accountUsageStatus.secondaryUsageLabel,
-                remainingFraction: viewModel.accountUsageStatus.secondaryUsageRemainingFraction
+                remainingFraction: viewModel.accountUsageStatus.secondaryUsageRemainingFraction,
+                resetText: viewModel.accountUsageStatus.secondaryResetText
             )
+
+            Divider()
+                .frame(height: 22)
+
+            planBadge
+
+            Button {
+                isAccountPopoverPresented.toggle()
+            } label: {
+                Image(systemName: "person.crop.circle")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.borderless)
+            .popover(isPresented: $isAccountPopoverPresented, arrowEdge: .bottom) {
+                AccountPopover(status: viewModel.accountUsageStatus)
+            }
 
             Button {
                 viewModel.refreshAccountUsage()
@@ -124,16 +109,26 @@ struct ContentView: View {
                         .frame(width: 28, height: 28)
                 } else {
                     Image(systemName: "arrow.clockwise")
+                        .font(.subheadline)
                         .frame(width: 28, height: 28)
                 }
             }
             .buttonStyle(.borderless)
-            .help("Codexのアカウントと使用量を更新")
+            .help("アカウントと使用量を更新")
             .disabled(viewModel.isRefreshingAccountUsage)
         }
         .padding(.horizontal, 16)
         .frame(height: 44)
         .background(.white.opacity(0.86))
+    }
+
+    private var planBadge: some View {
+        Text(viewModel.accountUsageStatus.planLabel)
+            .font(.subheadline.weight(.semibold))
+            .padding(.horizontal, 7)
+            .padding(.vertical, 3)
+            .background(Color.black.opacity(0.06))
+            .clipShape(Capsule())
     }
 
     // MARK: - Project Sidebar
@@ -539,14 +534,20 @@ struct ContentView: View {
         "\(aspectRatio.title) \(aspectRatio.value)"
     }
 
-    private func usagePill(systemName: String, label: String, remainingFraction: Double?) -> some View {
-        HStack(spacing: 6) {
+    private func usagePill(
+        systemName: String,
+        label: String,
+        remainingFraction: Double?,
+        resetText: String? = nil
+    ) -> some View {
+        let displayLabel = resetText.map { "\(label) · \($0)" } ?? label
+        return HStack(spacing: 6) {
             Image(systemName: systemName)
-                .font(.system(size: 12, weight: .semibold))
+                .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.secondary)
 
-            Text(label)
-                .font(.caption.weight(.semibold))
+            Text(displayLabel)
+                .font(.subheadline.weight(.semibold))
                 .lineLimit(1)
                 .monospacedDigit()
 
@@ -728,6 +729,27 @@ private struct DetailRow: View {
                 .textSelection(.enabled)
                 .lineLimit(5)
         }
+    }
+}
+
+struct AccountPopover: View {
+    let status: CodexAccountUsageStatus
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("アカウント")
+                .font(.headline)
+
+            DetailRow(label: "種別", value: status.accountKind.japaneseLabel)
+
+            if let email = status.accountEmail {
+                DetailRow(label: "メール", value: email)
+            }
+
+            Spacer()
+        }
+        .padding(18)
+        .frame(width: 280, height: 140)
     }
 }
 
