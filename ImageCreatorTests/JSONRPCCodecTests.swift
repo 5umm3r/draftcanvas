@@ -54,15 +54,6 @@ final class JSONRPCCodecTests: XCTestCase {
         XCTAssertEqual(result.imageID, "img_1")
     }
 
-    func testExtractsSVGFromAssistantText() throws {
-        let text = "Here is the SVG:\n<svg xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"10\" height=\"10\"/></svg>"
-
-        let svg = try XCTUnwrap(SVGExtractor.extract(from: text))
-
-        XCTAssertTrue(svg.hasPrefix("<svg"))
-        XCTAssertTrue(svg.hasSuffix("</svg>"))
-    }
-
     func testCodexLaunchUsesSiblingNodeWhenCodexIsNodeScript() throws {
         let codexPath = "/tmp/node-v/bin/codex"
 

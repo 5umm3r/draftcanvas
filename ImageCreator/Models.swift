@@ -1,21 +1,5 @@
 import Foundation
 
-enum GenerationOutputMode: String, CaseIterable, Identifiable, Codable {
-    case raster
-    case svg
-
-    var id: String { rawValue }
-
-    var title: String {
-        switch self {
-        case .raster:
-            return "Image"
-        case .svg:
-            return "SVG"
-        }
-    }
-}
-
 enum GenerationAspectRatio: String, CaseIterable, Identifiable, Codable {
     case square
     case portrait
@@ -64,8 +48,6 @@ struct GenerationRequest: Equatable {
     var prompt: String
     var count: Int
     var concurrency: Int
-    var transparentBackground: Bool
-    var outputMode: GenerationOutputMode
     var aspectRatio: GenerationAspectRatio = .square
     var editSource: GenerationEditSource? = nil
 
@@ -81,13 +63,7 @@ struct GenerationRequest: Equatable {
 struct GenerationEditSource: Equatable {
     var projectItemID: UUID
     var filePath: String
-    var outputMode: GenerationOutputMode
     var originalPrompt: String
-    var svgText: String?
-
-    var isLocalImageInputSupported: Bool {
-        outputMode == .raster
-    }
 }
 
 enum GenerationJobStatus: String {
@@ -116,7 +92,6 @@ struct GenerationJob: Identifiable, Equatable {
     var prompt: String
     var status: GenerationJobStatus
     var imageData: Data?
-    var svgText: String?
     var revisedPrompt: String?
     var logs: [String]
     var errorMessage: String?
@@ -127,7 +102,6 @@ struct GenerationJob: Identifiable, Equatable {
         prompt: String,
         status: GenerationJobStatus = .queued,
         imageData: Data? = nil,
-        svgText: String? = nil,
         revisedPrompt: String? = nil,
         logs: [String] = [],
         errorMessage: String? = nil
@@ -137,11 +111,20 @@ struct GenerationJob: Identifiable, Equatable {
         self.prompt = prompt
         self.status = status
         self.imageData = imageData
-        self.svgText = svgText
         self.revisedPrompt = revisedPrompt
         self.logs = logs
         self.errorMessage = errorMessage
     }
+}
+
+// MARK: - ProjectInputs
+
+struct ProjectInputs: Equatable {
+    var prompt: String = ""
+    var count: Int = 1
+    var concurrency: Int = 1
+    var aspectRatio: GenerationAspectRatio = .square
+    var editSource: GenerationEditSource? = nil
 }
 
 // MARK: - Project
@@ -168,57 +151,83 @@ struct Project: Identifiable, Codable, Equatable {
     }
 }
 
-struct ProjectItem: Identifiable, Codable, Equatable {
+struct ProjectItem: Identifiable, Equatable {
     let id: UUID
     let projectID: UUID
     let prompt: String
     let revisedPrompt: String?
-    let outputMode: GenerationOutputMode
     let aspectRatio: GenerationAspectRatio
-    let transparentBackground: Bool
     let createdAt: Date
-    let fileExtension: String
     let errorMessage: String?
+
+    fileprivate let legacyOutputModeWasSVG: Bool
 
     init(
         id: UUID = UUID(),
         projectID: UUID,
         prompt: String,
         revisedPrompt: String? = nil,
-        outputMode: GenerationOutputMode,
         aspectRatio: GenerationAspectRatio,
-        transparentBackground: Bool,
         createdAt: Date = Date(),
-        fileExtension: String,
         errorMessage: String? = nil
     ) {
         self.id = id
         self.projectID = projectID
         self.prompt = prompt
         self.revisedPrompt = revisedPrompt
-        self.outputMode = outputMode
         self.aspectRatio = aspectRatio
-        self.transparentBackground = transparentBackground
         self.createdAt = createdAt
-        self.fileExtension = fileExtension
         self.errorMessage = errorMessage
+        self.legacyOutputModeWasSVG = false
     }
 
     func fileURL(in rootDirectory: URL) -> URL {
         rootDirectory
             .appendingPathComponent("items", isDirectory: true)
-            .appendingPathComponent("\(id.uuidString).\(fileExtension)")
+            .appendingPathComponent("\(id.uuidString).png")
+    }
+}
+
+extension ProjectItem: Codable {
+    enum CodingKeys: String, CodingKey {
+        case id, projectID, prompt, revisedPrompt, aspectRatio, createdAt, errorMessage
+        case outputMode, transparentBackground, fileExtension
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(UUID.self, forKey: .id)
+        projectID = try c.decode(UUID.self, forKey: .projectID)
+        prompt = try c.decode(String.self, forKey: .prompt)
+        revisedPrompt = try c.decodeIfPresent(String.self, forKey: .revisedPrompt)
+        aspectRatio = try c.decodeIfPresent(GenerationAspectRatio.self, forKey: .aspectRatio) ?? .square
+        createdAt = try c.decode(Date.self, forKey: .createdAt)
+        errorMessage = try c.decodeIfPresent(String.self, forKey: .errorMessage)
+        let legacyMode = try c.decodeIfPresent(String.self, forKey: .outputMode)
+        legacyOutputModeWasSVG = (legacyMode == "svg")
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(id, forKey: .id)
+        try c.encode(projectID, forKey: .projectID)
+        try c.encode(prompt, forKey: .prompt)
+        try c.encodeIfPresent(revisedPrompt, forKey: .revisedPrompt)
+        try c.encode(aspectRatio, forKey: .aspectRatio)
+        try c.encode(createdAt, forKey: .createdAt)
+        try c.encodeIfPresent(errorMessage, forKey: .errorMessage)
     }
 }
 
 // MARK: - ProjectStore
 
-final class ProjectStore {
+final class ProjectStore: @unchecked Sendable {
     struct Snapshot: Codable {
-        var schemaVersion: Int = 2
+        var schemaVersion: Int = 3
         var projects: [Project] = []
         var items: [ProjectItem] = []
         var selectedProjectID: UUID? = nil
+        var droppedSVGCount: Int = 0
     }
 
     let rootDirectory: URL
@@ -242,7 +251,24 @@ final class ProjectStore {
         else {
             return Snapshot()
         }
-        return (try? JSONDecoder.projectDecoder.decode(Snapshot.self, from: data)) ?? Snapshot()
+        guard var snapshot = try? JSONDecoder.projectDecoder.decode(Snapshot.self, from: data) else {
+            return Snapshot()
+        }
+
+        if snapshot.schemaVersion < 3 {
+            let dropped = snapshot.items.filter { $0.legacyOutputModeWasSVG }
+            for item in dropped {
+                let svgURL = rootDirectory.appendingPathComponent("items")
+                    .appendingPathComponent("\(item.id.uuidString).svg")
+                try? FileManager.default.removeItem(at: svgURL)
+            }
+            snapshot.droppedSVGCount = dropped.count
+            snapshot.items.removeAll(where: { $0.legacyOutputModeWasSVG })
+            snapshot.schemaVersion = 3
+            save(snapshot)
+        }
+
+        return snapshot
     }
 
     func save(_ snapshot: Snapshot) {
@@ -345,7 +371,6 @@ struct CodexImageResult: Equatable {
 
 struct CodexTurnResult: Equatable {
     var imageResult: CodexImageResult?
-    var svgText: String?
     var assistantText: String
     var logs: [String]
 }
@@ -521,7 +546,6 @@ enum ImageCreatorError: LocalizedError {
     case missingThreadID
     case missingGeneratedContent
     case unsupportedImageResult(String)
-    case svgExtractionFailed
 
     var errorDescription: String? {
         switch self {
@@ -541,8 +565,6 @@ enum ImageCreatorError: LocalizedError {
             return "生成結果を取得できませんでした。ログを確認してください。"
         case .unsupportedImageResult(let value):
             return "未対応の画像結果形式です: \(value.prefix(64))"
-        case .svgExtractionFailed:
-            return "Codexの返答からSVGを抽出できませんでした。"
         }
     }
 }

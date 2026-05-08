@@ -28,7 +28,15 @@ struct CodexLaunchConfiguration {
     }
 }
 
-final class CodexAppServerClient {
+private struct JSONResponse: @unchecked Sendable {
+    let value: [String: Any]
+}
+
+private struct SendableParams: @unchecked Sendable {
+    let value: [String: Any]?
+}
+
+final class CodexAppServerClient: @unchecked Sendable {
     private let queue = DispatchQueue(label: "local.imagecreator.codex-app-server")
     private let codexExecutablePath: String
     private var process: Process?
@@ -37,7 +45,7 @@ final class CodexAppServerClient {
     private var stderrHandle: FileHandle?
     private var stdoutParser = JSONLineParser()
     private var nextRequestID = 1
-    private var pending: [Int: CheckedContinuation<[String: Any], Error>] = [:]
+    private var pending: [Int: CheckedContinuation<JSONResponse, Error>] = [:]
     private var turnWaiters: [String: TurnWaiter] = [:]
     private var startupTask: Task<Void, Error>?
     var onLog: (@Sendable (String) -> Void)?
@@ -141,8 +149,8 @@ final class CodexAppServerClient {
         return threadID
     }
 
-    func runTurn(threadID: String, prompt: String, outputMode: GenerationOutputMode, referenceImagePath: String? = nil) async throws -> CodexTurnResult {
-        let waiter = TurnWaiter(threadID: threadID, outputMode: outputMode)
+    func runTurn(threadID: String, prompt: String, referenceImagePath: String? = nil) async throws -> CodexTurnResult {
+        let waiter = TurnWaiter(threadID: threadID)
 
         let resultTask = Task<CodexTurnResult, Error> {
             try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<CodexTurnResult, Error>) in
@@ -184,7 +192,8 @@ final class CodexAppServerClient {
     }
 
     func sendRequest(method: String, params: [String: Any]? = nil) async throws -> [String: Any] {
-        try await withCheckedThrowingContinuation { continuation in
+        let sendableParams = SendableParams(value: params)
+        let response = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<JSONResponse, Error>) in
             queue.async {
                 guard let stdinHandle = self.stdinHandle, self.process?.isRunning == true else {
                     continuation.resume(throwing: ImageCreatorError.processNotRunning)
@@ -196,7 +205,7 @@ final class CodexAppServerClient {
                 self.pending[id] = continuation
 
                 do {
-                    let request = JSONRPCRequest(id: id, method: method, params: params)
+                    let request = JSONRPCRequest(id: id, method: method, params: sendableParams.value)
                     let line = try JSONRPCCodec.encodeRequestLine(request)
                     self.emitLog("-> \(String(data: line, encoding: .utf8)?.trimmingCharacters(in: .newlines) ?? method)")
                     try stdinHandle.write(contentsOf: line)
@@ -206,6 +215,7 @@ final class CodexAppServerClient {
                 }
             }
         }
+        return response.value
     }
 
     private func launchProcess() throws {
@@ -227,22 +237,25 @@ final class CodexAppServerClient {
         process.standardError = stderrPipe
 
         stdoutPipe.fileHandleForReading.readabilityHandler = { [weak self] handle in
+            guard let self else { return }
             let data = handle.availableData
             guard !data.isEmpty else { return }
-            self?.queue.async {
-                self?.handleStdout(data)
+            self.queue.async {
+                self.handleStdout(data)
             }
         }
 
         stderrPipe.fileHandleForReading.readabilityHandler = { [weak self] handle in
+            guard let self else { return }
             let data = handle.availableData
             guard !data.isEmpty, let text = String(data: data, encoding: .utf8) else { return }
-            self?.emitLog("stderr: \(text.trimmingCharacters(in: .whitespacesAndNewlines))")
+            self.emitLog("stderr: \(text.trimmingCharacters(in: .whitespacesAndNewlines))")
         }
 
         process.terminationHandler = { [weak self] _ in
-            self?.queue.async {
-                self?.handleProcessExit()
+            guard let self else { return }
+            self.queue.async {
+                self.handleProcessExit()
             }
         }
 
@@ -278,9 +291,9 @@ final class CodexAppServerClient {
         }
 
         if let result = message["result"] as? [String: Any] {
-            continuation.resume(returning: result)
+            continuation.resume(returning: JSONResponse(value: result))
         } else {
-            continuation.resume(returning: [:])
+            continuation.resume(returning: JSONResponse(value: [:]))
         }
     }
 
@@ -371,18 +384,16 @@ struct ProcessTerminationResources {
     }
 }
 
-private final class TurnWaiter {
+private final class TurnWaiter: @unchecked Sendable {
     let threadID: String
-    let outputMode: GenerationOutputMode
     var continuation: CheckedContinuation<CodexTurnResult, Error>?
     private var imageResult: CodexImageResult?
     private var assistantText = ""
     private var logs: [String] = []
     private var didFinish = false
 
-    init(threadID: String, outputMode: GenerationOutputMode) {
+    init(threadID: String) {
         self.threadID = threadID
-        self.outputMode = outputMode
     }
 
     func consume(_ message: [String: Any]) {
@@ -404,10 +415,8 @@ private final class TurnWaiter {
         guard !didFinish else { return }
         didFinish = true
 
-        let svgText = SVGExtractor.extract(from: assistantText)
         let result = CodexTurnResult(
             imageResult: imageResult,
-            svgText: svgText,
             assistantText: assistantText,
             logs: logs
         )

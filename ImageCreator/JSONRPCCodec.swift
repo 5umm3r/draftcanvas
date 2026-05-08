@@ -127,32 +127,3 @@ enum CodexEventExtractor {
     }
 }
 
-enum SVGExtractor {
-    static func extract(from text: String) -> String? {
-        guard
-            let startRange = text.range(of: "<svg", options: [.caseInsensitive]),
-            let endRange = text.range(of: "</svg>", options: [.caseInsensitive, .backwards])
-        else {
-            return nil
-        }
-
-        let endIndex = endRange.upperBound
-        guard startRange.lowerBound < endIndex else {
-            return nil
-        }
-
-        return String(text[startRange.lowerBound..<endIndex])
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-}
-
-enum PNGInspector {
-    static func hasAlphaChannel(_ data: Data) -> Bool? {
-        guard data.count > 25 else { return nil }
-        let pngSignature = Data([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])
-        guard data.prefix(8) == pngSignature else { return nil }
-
-        let colorType = data[25]
-        return colorType == 4 || colorType == 6
-    }
-}

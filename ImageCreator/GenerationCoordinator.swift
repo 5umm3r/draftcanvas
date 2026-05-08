@@ -1,10 +1,10 @@
 import Foundation
 
-protocol GenerationRunning: AnyObject {
+protocol GenerationRunning: AnyObject, Sendable {
     func run(job: GenerationJob, request: GenerationRequest) async -> GenerationJob
 }
 
-final class GenerationCoordinator {
+final class GenerationCoordinator: Sendable {
     private let runner: GenerationRunning
 
     init(runner: GenerationRunning) {
@@ -78,34 +78,15 @@ final class CodexGenerationRunner: GenerationRunning {
             let result = try await client.runTurn(
                 threadID: threadID,
                 prompt: prompt,
-                outputMode: request.outputMode,
-                referenceImagePath: request.editSource?.isLocalImageInputSupported == true ? request.editSource?.filePath : nil
+                referenceImagePath: request.editSource?.filePath
             )
 
             output.logs.append(contentsOf: result.logs)
-            switch request.outputMode {
-            case .raster:
-                guard let imageResult = result.imageResult else {
-                    throw ImageCreatorError.missingGeneratedContent
-                }
-                output.imageData = imageResult.data
-                output.revisedPrompt = imageResult.revisedPrompt
-                if request.transparentBackground {
-                    switch PNGInspector.hasAlphaChannel(imageResult.data) {
-                    case .some(true):
-                        output.logs.append("PNGのアルファチャンネルを確認しました。")
-                    case .some(false):
-                        output.logs.append("透過指定ありですが、PNGのアルファチャンネルは確認できませんでした。")
-                    case .none:
-                        output.logs.append("PNG透過情報を判定できませんでした。")
-                    }
-                }
-            case .svg:
-                guard let svgText = result.svgText ?? SVGExtractor.extract(from: result.assistantText) else {
-                    throw ImageCreatorError.svgExtractionFailed
-                }
-                output.svgText = svgText
+            guard let imageResult = result.imageResult else {
+                throw ImageCreatorError.missingGeneratedContent
             }
+            output.imageData = imageResult.data
+            output.revisedPrompt = imageResult.revisedPrompt
 
             output.status = .succeeded
             output.logs.append("ジョブ \(job.index + 1) が完了しました。")
@@ -121,15 +102,6 @@ final class CodexGenerationRunner: GenerationRunning {
 
 enum PromptFactory {
     static func prompt(for request: GenerationRequest, jobIndex: Int) -> String {
-        switch request.outputMode {
-        case .raster:
-            return rasterPrompt(for: request, jobIndex: jobIndex)
-        case .svg:
-            return svgPrompt(for: request, jobIndex: jobIndex)
-        }
-    }
-
-    private static func rasterPrompt(for request: GenerationRequest, jobIndex: Int) -> String {
         if let editSource = request.editSource {
             return [
                 "Edit the attached reference image for a local personal image creator app.",
@@ -139,59 +111,19 @@ enum PromptFactory {
                 "Aspect ratio: \(request.aspectRatio.promptDescription).",
                 "Variation number: \(jobIndex + 1).",
                 "Preserve useful parts of the reference image unless the edit request says otherwise.",
-                request.transparentBackground ? "The output must be a PNG with a transparent background and alpha channel." : "A normal opaque image is acceptable.",
+                "A normal opaque image is acceptable.",
                 "Do not write code. Do not ask clarifying questions."
             ].joined(separator: "\n")
         }
 
-        var lines = [
+        return [
             "Generate exactly one high-quality raster image for a local personal image creator app.",
             "Use the image generation capability and return the generated image result.",
             "User prompt: \(request.prompt)",
             "Aspect ratio: \(request.aspectRatio.promptDescription).",
             "Variation number: \(jobIndex + 1).",
+            "A normal opaque image is acceptable.",
             "Do not write code. Do not ask clarifying questions."
-        ]
-
-        if request.transparentBackground {
-            lines.append("The image must be a PNG with a transparent background and alpha channel.")
-        } else {
-            lines.append("A normal opaque image is acceptable.")
-        }
-
-        return lines.joined(separator: "\n")
-    }
-
-    private static func svgPrompt(for request: GenerationRequest, jobIndex: Int) -> String {
-        if let editSource = request.editSource {
-            var lines = [
-                "Create exactly one complete SVG image by editing the previous SVG concept.",
-                "Return only the SVG XML, starting with <svg and ending with </svg>.",
-                "Do not wrap it in Markdown fences.",
-                "Original prompt: \(editSource.originalPrompt)",
-                "User edit request: \(request.prompt)",
-                "Aspect ratio: \(request.aspectRatio.promptDescription).",
-                "Variation number: \(jobIndex + 1)."
-            ]
-
-            if let svgText = editSource.svgText {
-                lines.append("Previous SVG:")
-                lines.append(svgText)
-            }
-
-            lines.append(request.transparentBackground ? "Use a transparent SVG background." : "Use an SVG composition that can render on a light canvas.")
-            return lines.joined(separator: "\n")
-        }
-
-        return [
-            "Create exactly one complete SVG image.",
-            "Return only the SVG XML, starting with <svg and ending with </svg>.",
-            "Do not wrap it in Markdown fences.",
-            "Use clean vector shapes suitable for saving directly as an .svg file.",
-            "User prompt: \(request.prompt)",
-            "Aspect ratio: \(request.aspectRatio.promptDescription).",
-            "Variation number: \(jobIndex + 1).",
-            request.transparentBackground ? "Use a transparent SVG background." : "Use an SVG composition that can render on a light canvas."
         ].joined(separator: "\n")
     }
 }

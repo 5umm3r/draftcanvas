@@ -83,23 +83,6 @@ struct ContentView: View {
                 resetText: viewModel.accountUsageStatus.secondaryResetText
             )
 
-            Divider()
-                .frame(height: 22)
-
-            planBadge
-
-            Button {
-                isAccountPopoverPresented.toggle()
-            } label: {
-                Image(systemName: "person.crop.circle")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-            .buttonStyle(.borderless)
-            .popover(isPresented: $isAccountPopoverPresented, arrowEdge: .bottom) {
-                AccountPopover(status: viewModel.accountUsageStatus)
-            }
-
             Button {
                 viewModel.refreshAccountUsage()
             } label: {
@@ -116,6 +99,23 @@ struct ContentView: View {
             .buttonStyle(.borderless)
             .help("アカウントと使用量を更新")
             .disabled(viewModel.isRefreshingAccountUsage)
+
+            Divider()
+                .frame(height: 22)
+
+            Button {
+                isAccountPopoverPresented.toggle()
+            } label: {
+                Image(systemName: "person.crop.circle")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.borderless)
+            .popover(isPresented: $isAccountPopoverPresented, arrowEdge: .bottom) {
+                AccountPopover(status: viewModel.accountUsageStatus)
+            }
+
+            planBadge
         }
         .padding(.horizontal, 16)
         .frame(height: 44)
@@ -159,6 +159,7 @@ struct ContentView: View {
                     ProjectRow(
                         project: project,
                         isEditing: editingProjectID == project.id,
+                        isGenerating: viewModel.generatingProjectIDs.contains(project.id),
                         renamingText: $renamingText,
                         onCommitRename: {
                             viewModel.renameProject(id: project.id, to: renamingText)
@@ -179,12 +180,6 @@ struct ContentView: View {
                             confirmingDeleteProjectID = project.id
                         }
                     }
-                    .simultaneousGesture(
-                        TapGesture(count: 2).onEnded {
-                            renamingText = project.name
-                            editingProjectID = project.id
-                        }
-                    )
                 }
                 .onMove { from, to in
                     viewModel.moveProject(fromOffsets: from, toOffset: to)
@@ -257,7 +252,7 @@ struct ContentView: View {
 
     private var canvasEntries: [CanvasEntry] {
         let persistedItems = viewModel.itemsForSelectedProject.map { CanvasEntry.item($0) }
-        let inProgressJobs = viewModel.isGenerating ? viewModel.jobs.map { CanvasEntry.job($0) } : []
+        let inProgressJobs = viewModel.isGeneratingForSelected ? viewModel.currentJobs.map { CanvasEntry.job($0) } : []
         return persistedItems + inProgressJobs
     }
 
@@ -298,12 +293,12 @@ struct ContentView: View {
                     Text(item.createdAt, style: .time)
                         .font(.caption.weight(.semibold))
                     Spacer()
-                    Text(item.outputMode.title)
+                    Text("#\(String(format: "%02d", viewModel.ordinalForItem(item, in: item.projectID)))")
                         .font(.caption2.weight(.semibold))
                         .padding(.horizontal, 7)
                         .padding(.vertical, 3)
-                        .background(Color.green.opacity(0.14))
-                        .foregroundStyle(Color.green)
+                        .background(Color.blue.opacity(0.10))
+                        .foregroundStyle(Color.blue)
                         .clipShape(Capsule())
                 }
             }
@@ -360,13 +355,11 @@ struct ContentView: View {
     @ViewBuilder
     private func previewForItem(_ item: ProjectItem) -> some View {
         let fileURL = viewModel.fileURL(for: item)
-        if item.outputMode == .raster, let nsImage = NSImage(contentsOf: fileURL) {
+        if let nsImage = NSImage(contentsOf: fileURL) {
             Image(nsImage: nsImage)
                 .resizable()
                 .scaledToFit()
                 .padding(10)
-        } else if let svgText = try? String(contentsOf: fileURL, encoding: .utf8) {
-            svgPreview(svgText)
         } else {
             VStack(spacing: 8) {
                 Image(systemName: "questionmark.square")
@@ -386,8 +379,6 @@ struct ContentView: View {
                 .resizable()
                 .scaledToFit()
                 .padding(10)
-        } else if let svgText = job.svgText {
-            svgPreview(svgText)
         } else if job.status == .failed {
             VStack(spacing: 8) {
                 Image(systemName: "exclamationmark.triangle")
@@ -402,19 +393,6 @@ struct ContentView: View {
         } else {
             ProgressView()
                 .controlSize(.large)
-        }
-    }
-
-    private func svgPreview(_ svgText: String) -> some View {
-        VStack(spacing: 10) {
-            Image(systemName: "curlybraces.square")
-                .font(.system(size: 34))
-            Text(svgText)
-                .font(.system(.caption, design: .monospaced))
-                .lineLimit(5)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 12)
         }
     }
 
@@ -435,7 +413,7 @@ struct ContentView: View {
 
     private var promptPanel: some View {
         VStack(spacing: 0) {
-            if viewModel.isEditingHistoryItem {
+            if viewModel.currentInputs.editSource != nil {
                 HStack(spacing: 8) {
                     Image(systemName: "wand.and.stars")
                         .foregroundStyle(.secondary)
@@ -454,14 +432,14 @@ struct ContentView: View {
                 Divider()
             }
 
-            TextEditor(text: $viewModel.prompt)
+            TextEditor(text: viewModel.binding(for: \.prompt))
                 .font(.system(size: 18))
                 .scrollContentBackground(.hidden)
                 .frame(height: 76)
                 .padding(.horizontal, 16)
                 .padding(.top, 14)
                 .overlay(alignment: .topLeading) {
-                    if viewModel.prompt.isEmpty {
+                    if viewModel.currentInputs.prompt.isEmpty {
                         Text("生成したい画像を説明")
                             .font(.system(size: 18))
                             .foregroundStyle(.secondary)
@@ -473,31 +451,49 @@ struct ContentView: View {
 
             Divider()
 
-            HStack(spacing: 14) {
-                Picker("形式", selection: $viewModel.outputMode) {
-                    ForEach(GenerationOutputMode.allCases) { mode in
-                        Text(promptPanelModeTitle(for: mode)).tag(mode)
+            HStack(spacing: 16) {
+                Menu {
+                    ForEach(GenerationAspectRatio.allCases) { ar in
+                        Button {
+                            viewModel.binding(for: \.aspectRatio).wrappedValue = ar
+                        } label: {
+                            Text("\(ar.title) \(ar.value)")
+                        }
                     }
-                }
-                .pickerStyle(.segmented)
-                .frame(width: 150)
-
-                Picker("比率", selection: $viewModel.aspectRatio) {
-                    ForEach(GenerationAspectRatio.allCases) { aspectRatio in
-                        Text(promptPanelAspectRatioTitle(for: aspectRatio)).tag(aspectRatio)
+                } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: "aspectratio")
+                            .font(.system(size: 13))
+                        Text(viewModel.currentInputs.aspectRatio.value)
+                            .font(.system(size: 13, weight: .medium))
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 9, weight: .semibold))
+                            .foregroundStyle(.secondary)
                     }
+                    .frame(height: 28)
+                    .padding(.horizontal, 8)
+                    .background(Color.black.opacity(0.04))
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
                 }
-                .pickerStyle(.menu)
-                .frame(width: 126)
+                .menuStyle(.borderlessButton)
+                .fixedSize()
+                .help("アスペクト比")
 
-                Toggle("背景を透過", isOn: $viewModel.transparentBackground)
-                    .toggleStyle(.checkbox)
+                CounterControl(
+                    systemImage: "square.stack",
+                    label: "枚数",
+                    value: viewModel.binding(for: \.count),
+                    range: 1...24,
+                    helpText: "枚数"
+                )
 
-                Stepper("枚数 \(viewModel.count)", value: $viewModel.count, in: 1...24)
-                    .frame(width: 115)
-
-                Stepper("並列 \(viewModel.concurrency)", value: $viewModel.concurrency, in: 1...8)
-                    .frame(width: 135)
+                CounterControl(
+                    systemImage: "cpu",
+                    label: "並列",
+                    value: viewModel.binding(for: \.concurrency),
+                    range: 1...8,
+                    helpText: "並列実行数"
+                )
 
                 Spacer()
 
@@ -522,17 +518,6 @@ struct ContentView: View {
     }
 
     // MARK: - Usage Widgets
-
-    private func promptPanelModeTitle(for mode: GenerationOutputMode) -> String {
-        switch mode {
-        case .raster: return "画像"
-        case .svg: return "SVG"
-        }
-    }
-
-    private func promptPanelAspectRatioTitle(for aspectRatio: GenerationAspectRatio) -> String {
-        "\(aspectRatio.title) \(aspectRatio.value)"
-    }
 
     private func usagePill(
         systemName: String,
@@ -614,20 +599,31 @@ private enum CanvasEntry: Identifiable {
 private struct ProjectRow: View {
     let project: Project
     let isEditing: Bool
+    let isGenerating: Bool
     @Binding var renamingText: String
     let onCommitRename: () -> Void
     let onCancelRename: () -> Void
+    @FocusState private var isFocused: Bool
 
     var body: some View {
         if isEditing {
             TextField("プロジェクト名", text: $renamingText, onCommit: onCommitRename)
                 .textFieldStyle(.plain)
+                .focused($isFocused)
                 .onExitCommand { onCancelRename() }
+                .onAppear { isFocused = true }
         } else {
-            Text(project.name)
-                .lineLimit(2)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .contentShape(Rectangle())
+            HStack(spacing: 6) {
+                Text(project.name)
+                    .lineLimit(2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                if isGenerating {
+                    ProgressView()
+                        .controlSize(.small)
+                        .scaleEffect(0.7)
+                }
+            }
+            .contentShape(Rectangle())
         }
     }
 }
@@ -644,7 +640,6 @@ struct GenerationDetailPopover: View {
                 .font(.headline)
 
             DetailRow(label: "Status", value: job.status.title)
-            DetailRow(label: "Mode", value: job.svgText == nil ? "PNG" : "SVG")
             DetailRow(label: "Prompt", value: job.prompt)
 
             if let revisedPrompt = job.revisedPrompt {
@@ -657,9 +652,9 @@ struct GenerationDetailPopover: View {
             Divider()
 
             Button {
-                viewModel.saveSelected()
+                viewModel.exportSelected()
             } label: {
-                Label("保存", systemImage: "square.and.arrow.down")
+                Label("エクスポート", systemImage: "square.and.arrow.down")
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .disabled(job.status != .succeeded)
@@ -680,7 +675,6 @@ struct ItemDetailPopover: View {
             Text("詳細")
                 .font(.headline)
 
-            DetailRow(label: "Mode", value: item.outputMode.title)
             DetailRow(label: "Prompt", value: item.prompt)
             DetailRow(label: "Created", value: item.createdAt.formatted(date: .abbreviated, time: .shortened))
 
@@ -702,9 +696,9 @@ struct ItemDetailPopover: View {
             }
 
             Button {
-                viewModel.saveItem(item)
+                viewModel.exportItem(item)
             } label: {
-                Label("保存", systemImage: "square.and.arrow.down")
+                Label("エクスポート", systemImage: "square.and.arrow.down")
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
 
@@ -802,6 +796,55 @@ struct LogWindow: View {
             .background(Color.black.opacity(0.04))
             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         }
+    }
+}
+
+// MARK: - Counter Control
+
+private struct CounterControl: View {
+    let systemImage: String
+    let label: String
+    @Binding var value: Int
+    let range: ClosedRange<Int>
+    let helpText: String
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: systemImage)
+                .font(.system(size: 13))
+                .foregroundStyle(.secondary)
+
+            Text("\(label) \(value)")
+                .font(.system(size: 13, weight: .medium))
+                .monospacedDigit()
+
+            Button {
+                if value > range.lowerBound { value -= 1 }
+            } label: {
+                Image(systemName: "minus")
+                    .font(.system(size: 11, weight: .semibold))
+                    .frame(width: 22, height: 22)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .disabled(value <= range.lowerBound)
+
+            Button {
+                if value < range.upperBound { value += 1 }
+            } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 11, weight: .semibold))
+                    .frame(width: 22, height: 22)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .disabled(value >= range.upperBound)
+        }
+        .padding(.horizontal, 8)
+        .frame(height: 28)
+        .background(Color.black.opacity(0.04))
+        .clipShape(RoundedRectangle(cornerRadius: 6))
+        .help(helpText)
     }
 }
 

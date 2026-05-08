@@ -8,9 +8,7 @@ final class GenerationCoordinatorTests: XCTestCase {
         let request = GenerationRequest(
             prompt: "simple icon",
             count: 5,
-            concurrency: 2,
-            transparentBackground: false,
-            outputMode: .raster
+            concurrency: 2
         )
 
         let jobs = await coordinator.run(request: request)
@@ -39,8 +37,6 @@ final class GenerationCoordinatorTests: XCTestCase {
             prompt: "minimal app icon",
             count: 1,
             concurrency: 1,
-            transparentBackground: false,
-            outputMode: .raster,
             aspectRatio: .portrait
         )
 
@@ -48,34 +44,6 @@ final class GenerationCoordinatorTests: XCTestCase {
 
         XCTAssertTrue(prompt.contains("Aspect ratio: 3:4"))
         XCTAssertTrue(prompt.contains("portrait"))
-    }
-
-    func testHistoryStorePersistsGeneratedPNGAndMetadata() throws {
-        let rootDirectory = FileManager.default.temporaryDirectory
-            .appendingPathComponent(UUID().uuidString, isDirectory: true)
-        let store = GenerationHistoryStore(rootDirectory: rootDirectory)
-        let request = GenerationRequest(
-            prompt: "simple icon",
-            count: 1,
-            concurrency: 1,
-            transparentBackground: true,
-            outputMode: .raster,
-            aspectRatio: .wide
-        )
-        var job = GenerationJob(index: 0, prompt: "simple icon", status: .succeeded)
-        job.imageData = Data([0x89, 0x50, 0x4E, 0x47])
-        job.revisedPrompt = "revised simple icon"
-
-        let item = try store.add(job: job, request: request, createdAt: Date(timeIntervalSince1970: 1_000))
-        let loaded = try store.load()
-
-        XCTAssertEqual(loaded, [item])
-        XCTAssertEqual(item.prompt, "simple icon")
-        XCTAssertEqual(item.outputMode, .raster)
-        XCTAssertTrue(item.transparentBackground)
-        XCTAssertEqual(item.aspectRatio, .wide)
-        XCTAssertEqual(item.revisedPrompt, "revised simple icon")
-        XCTAssertEqual(try Data(contentsOf: item.fileURL(in: rootDirectory)), Data([0x89, 0x50, 0x4E, 0x47]))
     }
 
     func testPreferredSaveFolderStorePersistsSelectedFolder() throws {
