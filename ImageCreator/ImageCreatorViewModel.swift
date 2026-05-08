@@ -82,10 +82,13 @@ final class ImageCreatorViewModel: ObservableObject {
     // MARK: - Project CRUD
 
     @discardableResult
-    func createProject(initialName: String? = nil) -> Project {
+    func createProject(initialName: String? = nil, resetInputs: Bool = true) -> Project {
         let name = initialName ?? ProjectNaming.defaultName()
         let project = Project(name: name, isAutoNamed: true)
         projects.append(project)
+        if resetInputs {
+            self.resetInputs()
+        }
         selectedProjectID = project.id  // didSet → saveState
         return project
     }
@@ -136,7 +139,7 @@ final class ImageCreatorViewModel: ObservableObject {
                 saveState()
             }
         } else {
-            let newProject = createProject(initialName: ProjectNaming.summarize(promptText))
+            let newProject = createProject(initialName: ProjectNaming.summarize(promptText), resetInputs: false)
             targetProjectID = newProject.id
         }
 
@@ -288,6 +291,16 @@ final class ImageCreatorViewModel: ObservableObject {
     }
 
     // MARK: - Private
+
+    private func resetInputs() {
+        prompt = ""
+        count = 4
+        concurrency = 2
+        transparentBackground = false
+        outputMode = .raster
+        aspectRatio = .square
+        editSource = nil
+    }
 
     private func saveJob(_ job: GenerationJob) {
         let panel = NSSavePanel()
