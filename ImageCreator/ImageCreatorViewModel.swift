@@ -31,12 +31,14 @@ final class ImageCreatorViewModel: ObservableObject {
     @Published var accountUsageStatus = CodexAccountUsageStatus.unavailable
     @Published var isRefreshingAccountUsage = false
     @Published var preferredSaveFolder: URL?
+    @Published var errorToast: String?
 
     private let client: CodexAppServerClient
     private let coordinator: GenerationCoordinator
     private let projectStore: ProjectStore
     private let preferredSaveFolderStore: PreferredSaveFolderStore
     private var isLoadingProjects = false
+    let imageCache = NSCache<NSURL, NSImage>()
 
     init(
         projectStore: ProjectStore = ProjectStore(),
@@ -279,12 +281,79 @@ final class ImageCreatorViewModel: ObservableObject {
         logs.append("アイテムを再編集対象にしました: \(fileURL.path)")
     }
 
+    func removeBackground(item: ProjectItem) {
+        guard let projectID = selectedProjectID else { return }
+
+        let job = GenerationJob(
+            index: jobsByProject[projectID]?.count ?? 0,
+            prompt: "背景除去: \(item.prompt.prefix(30))"
+        )
+        upsert(job, into: projectID)
+
+        let fileURL = item.fileURL(in: projectStore.rootDirectory)
+        let itemAspectRatio = item.aspectRatio
+        let itemPrompt = item.prompt
+
+        Task {
+            var running = job
+            running.status = .running
+            await MainActor.run { [weak self] in self?.upsert(running, into: projectID) }
+
+            do {
+                let inputData = try Data(contentsOf: fileURL)
+                let outputData = try await BackgroundRemover.process(data: inputData)
+
+                await MainActor.run { [weak self] in
+                    guard let self else { return }
+                    var completed = running
+                    completed.status = .succeeded
+                    completed.imageData = outputData
+                    self.upsert(completed, into: projectID)
+
+                    let newItem = ProjectItem(projectID: projectID, prompt: itemPrompt, aspectRatio: itemAspectRatio)
+                    do {
+                        try self.projectStore.writeItemData(outputData, for: newItem)
+                        self.items.append(newItem)
+                        if let img = NSImage(data: outputData) {
+                            self.imageCache.setObject(img, forKey: self.fileURL(for: newItem) as NSURL)
+                        }
+                        self.saveState()
+                        self.logs.append("背景除去完了: \(newItem.id)")
+                    } catch {
+                        self.errorToast = "背景除去結果の保存に失敗しました"
+                        self.logs.append("背景除去結果の保存に失敗: \(error.localizedDescription)")
+                    }
+                }
+            } catch {
+                await MainActor.run { [weak self] in
+                    guard let self else { return }
+                    var failed = running
+                    failed.status = .failed
+                    failed.errorMessage = error.localizedDescription
+                    self.upsert(failed, into: projectID)
+                    let message = (error as? BackgroundRemovalError)?.localizedDescription
+                        ?? "背景除去に失敗しました"
+                    self.errorToast = message
+                    self.logs.append("背景除去失敗: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+
     func reveal(item: ProjectItem) {
         NSWorkspace.shared.activateFileViewerSelecting([item.fileURL(in: projectStore.rootDirectory)])
     }
 
     func fileURL(for item: ProjectItem) -> URL {
         item.fileURL(in: projectStore.rootDirectory)
+    }
+
+    func cachedImage(for item: ProjectItem) -> NSImage? {
+        let url = fileURL(for: item) as NSURL
+        if let cached = imageCache.object(forKey: url) { return cached }
+        guard let img = NSImage(contentsOf: url as URL) else { return nil }
+        imageCache.setObject(img, forKey: url)
+        return img
     }
 
     func exportItem(_ item: ProjectItem) {
@@ -438,6 +507,9 @@ final class ImageCreatorViewModel: ObservableObject {
                 guard let imageData = job.imageData else { throw ImageCreatorError.missingGeneratedContent }
                 try projectStore.writeItemData(imageData, for: item)
                 items.append(item)
+                if let img = NSImage(data: imageData) {
+                    imageCache.setObject(img, forKey: item.fileURL(in: projectStore.rootDirectory) as NSURL)
+                }
             } catch {
                 logs.append("プロジェクトへの保存に失敗しました: \(error.localizedDescription)")
             }

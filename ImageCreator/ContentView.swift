@@ -24,6 +24,20 @@ struct ContentView: View {
         }
         .background(Color(nsColor: .windowBackgroundColor))
         .frame(minWidth: 1000, minHeight: 760)
+        .overlay(alignment: .bottom) {
+            if let message = viewModel.errorToast {
+                ErrorToastView(message: message)
+                    .padding(.bottom, 20)
+                    .transition(.opacity)
+                    .onAppear {
+                        Task {
+                            try? await Task.sleep(nanoseconds: 3_000_000_000)
+                            await MainActor.run { viewModel.errorToast = nil }
+                        }
+                    }
+            }
+        }
+        .animation(.easeInOut(duration: 0.25), value: viewModel.errorToast)
         .onDisappear {
             viewModel.stopServer()
         }
@@ -354,8 +368,7 @@ struct ContentView: View {
 
     @ViewBuilder
     private func previewForItem(_ item: ProjectItem) -> some View {
-        let fileURL = viewModel.fileURL(for: item)
-        if let nsImage = NSImage(contentsOf: fileURL) {
+        if let nsImage = viewModel.cachedImage(for: item) {
             Image(nsImage: nsImage)
                 .resizable()
                 .scaledToFit()
@@ -669,23 +682,29 @@ struct GenerationDetailPopover: View {
 struct ItemDetailPopover: View {
     let item: ProjectItem
     @ObservedObject var viewModel: ImageCreatorViewModel
+    @State private var isRevisedExpanded = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text("詳細")
-                .font(.headline)
-
+        VStack(alignment: .leading, spacing: 10) {
             DetailRow(label: "Prompt", value: item.prompt)
             DetailRow(label: "Created", value: item.createdAt.formatted(date: .abbreviated, time: .shortened))
 
             if let revisedPrompt = item.revisedPrompt {
-                DetailRow(label: "Revised", value: revisedPrompt)
+                DisclosureGroup(isExpanded: $isRevisedExpanded) {
+                    DetailRow(label: "", value: revisedPrompt)
+                        .padding(.top, 4)
+                } label: {
+                    Text("Revised")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
             }
             if let errorMessage = item.errorMessage {
                 DetailRow(label: "Error", value: errorMessage)
             }
 
             Divider()
+                .padding(.vertical, 2)
 
             Button {
                 viewModel.edit(item: item)
@@ -696,9 +715,10 @@ struct ItemDetailPopover: View {
             }
 
             Button {
-                viewModel.exportItem(item)
+                viewModel.removeBackground(item: item)
+                viewModel.selectedItemID = nil
             } label: {
-                Label("エクスポート", systemImage: "square.and.arrow.down")
+                Label("背景を除去", systemImage: "person.crop.rectangle.badge.minus")
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
 
@@ -710,9 +730,32 @@ struct ItemDetailPopover: View {
             }
 
             Spacer()
+
+            Button {
+                viewModel.exportItem(item)
+            } label: {
+                Label("エクスポート", systemImage: "square.and.arrow.down")
+                    .frame(maxWidth: .infinity)
+                    .font(.body.weight(.semibold))
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
         }
         .padding(18)
-        .frame(width: 320, height: 420)
+        .frame(width: 300, height: 380)
+    }
+}
+
+private struct ErrorToastView: View {
+    let message: String
+
+    var body: some View {
+        Text(message)
+            .font(.subheadline)
+            .foregroundStyle(.white)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .background(Color.black.opacity(0.75), in: RoundedRectangle(cornerRadius: 8))
     }
 }
 
