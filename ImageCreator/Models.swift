@@ -308,6 +308,20 @@ struct CodexTurnResult: Equatable {
     var logs: [String]
 }
 
+enum AccountKind: Equatable {
+    case chatgpt, apiKey, amazonBedrock, unauthenticated, unknown
+
+    var japaneseLabel: String {
+        switch self {
+        case .chatgpt: return "ChatGPT"
+        case .apiKey: return "APIキー"
+        case .amazonBedrock: return "Amazon Bedrock"
+        case .unauthenticated: return "未ログイン"
+        case .unknown: return "不明"
+        }
+    }
+}
+
 struct CodexAccountUsageStatus: Equatable {
     var accountLabel: String
     var planLabel: String
@@ -315,6 +329,10 @@ struct CodexAccountUsageStatus: Equatable {
     var secondaryUsageLabel: String
     var primaryUsageRemainingFraction: Double?
     var secondaryUsageRemainingFraction: Double?
+    var accountEmail: String?
+    var accountKind: AccountKind
+    var primaryResetText: String?
+    var secondaryResetText: String?
 
     static let unavailable = CodexAccountUsageStatus(
         accountLabel: "アカウント未取得",
@@ -322,7 +340,11 @@ struct CodexAccountUsageStatus: Equatable {
         primaryUsageLabel: "5h -",
         secondaryUsageLabel: "weekly -",
         primaryUsageRemainingFraction: nil,
-        secondaryUsageRemainingFraction: nil
+        secondaryUsageRemainingFraction: nil,
+        accountEmail: nil,
+        accountKind: .unauthenticated,
+        primaryResetText: nil,
+        secondaryResetText: nil
     )
 
     static func parse(accountResponse: [String: Any], rateLimitsResponse: [String: Any]) -> CodexAccountUsageStatus {
@@ -332,17 +354,29 @@ struct CodexAccountUsageStatus: Equatable {
             ?? planType(from: rateLimitsResponse)
             ?? "-"
 
+        let accountKind: AccountKind
+        let accountEmail: String?
         let accountLabel: String
         switch accountType {
         case "chatgpt":
-            accountLabel = account?["email"] as? String ?? "ChatGPT"
+            accountKind = .chatgpt
+            accountEmail = account?["email"] as? String
+            accountLabel = accountEmail ?? "ChatGPT"
         case "apiKey":
+            accountKind = .apiKey
+            accountEmail = nil
             accountLabel = "API Key"
         case "amazonBedrock":
+            accountKind = .amazonBedrock
+            accountEmail = nil
             accountLabel = "Amazon Bedrock"
         case .some(let value):
+            accountKind = .unknown
+            accountEmail = nil
             accountLabel = value
         case .none:
+            accountKind = .unauthenticated
+            accountEmail = nil
             accountLabel = "未ログイン"
         }
 
@@ -355,7 +389,11 @@ struct CodexAccountUsageStatus: Equatable {
             primaryUsageLabel: primaryUsage.label,
             secondaryUsageLabel: secondaryUsage.label,
             primaryUsageRemainingFraction: primaryUsage.remainingFraction,
-            secondaryUsageRemainingFraction: secondaryUsage.remainingFraction
+            secondaryUsageRemainingFraction: secondaryUsage.remainingFraction,
+            accountEmail: accountEmail,
+            accountKind: accountKind,
+            primaryResetText: primaryUsage.resetText,
+            secondaryResetText: secondaryUsage.resetText
         )
     }
 
@@ -373,24 +411,59 @@ struct CodexAccountUsageStatus: Equatable {
         preferredRateLimits(from: response)?["planType"] as? String
     }
 
-    private static func usageStatus(prefix: String, window: [String: Any]?) -> (label: String, remainingFraction: Double?) {
+    private static func usageStatus(
+        prefix: String,
+        window: [String: Any]?
+    ) -> (label: String, remainingFraction: Double?, resetText: String?) {
+        let resetText = window.flatMap { parseResetDate(from: $0) }.flatMap { formatRelativeReset(to: $0) }
         guard let usedPercent = numericValue(window?["usedPercent"]) else {
-            return ("\(prefix) -", nil)
+            return ("\(prefix) -", nil, resetText)
         }
         let remainingPercent = min(100, max(0, 100 - usedPercent))
-        return ("\(prefix) \(Int(remainingPercent.rounded()))%", remainingPercent / 100)
+        return ("\(prefix) \(Int(remainingPercent.rounded()))%", remainingPercent / 100, resetText)
+    }
+
+    private static func parseResetDate(from window: [String: Any]) -> Date? {
+        let keys = ["resetsAt", "resetAt", "nextResetAt", "resetsAtUTC", "resetTime"]
+        for key in keys {
+            guard let value = window[key] else { continue }
+            if let str = value as? String {
+                for options: ISO8601DateFormatter.Options in [
+                    [.withInternetDateTime, .withFractionalSeconds],
+                    [.withInternetDateTime]
+                ] {
+                    let f = ISO8601DateFormatter()
+                    f.formatOptions = options
+                    if let date = f.date(from: str) { return date }
+                }
+            }
+            if let num = numericValue(value) {
+                // > 1e12 ならミリ秒判定、それ以外はUNIX秒
+                let ts = num > 1e12 ? num / 1000 : num
+                return Date(timeIntervalSince1970: ts)
+            }
+        }
+        return nil
+    }
+
+    private static func formatRelativeReset(to target: Date) -> String? {
+        // UTC差分秒で計算。タイムゾーン変換不要
+        let diff = target.timeIntervalSince(Date())
+        if diff <= 60 { return "もうすぐ" }
+        let totalMin = Int(diff / 60)
+        let hours = totalMin / 60
+        let mins = totalMin % 60
+        if hours < 1 { return "あと \(totalMin)m" }
+        if hours < 24 { return mins > 0 ? "あと \(hours)h\(mins)m" : "あと \(hours)h" }
+        let days = hours / 24
+        let hrs = hours % 24
+        return hrs > 0 ? "あと \(days)d \(hrs)h" : "あと \(days)d"
     }
 
     private static func numericValue(_ value: Any?) -> Double? {
-        if let value = value as? Double {
-            return value
-        }
-        if let value = value as? Int {
-            return Double(value)
-        }
-        if let value = value as? NSNumber {
-            return value.doubleValue
-        }
+        if let value = value as? Double { return value }
+        if let value = value as? Int { return Double(value) }
+        if let value = value as? NSNumber { return value.doubleValue }
         return nil
     }
 }
