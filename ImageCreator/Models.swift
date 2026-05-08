@@ -79,7 +79,7 @@ struct GenerationRequest: Equatable {
 }
 
 struct GenerationEditSource: Equatable {
-    var historyItemID: UUID
+    var projectItemID: UUID
     var filePath: String
     var outputMode: GenerationOutputMode
     var originalPrompt: String
@@ -144,116 +144,156 @@ struct GenerationJob: Identifiable, Equatable {
     }
 }
 
-struct GenerationHistoryItem: Identifiable, Codable, Equatable {
+// MARK: - Project
+
+struct Project: Identifiable, Codable, Equatable {
     let id: UUID
-    var createdAt: Date
-    var prompt: String
-    var outputMode: GenerationOutputMode
-    var transparentBackground: Bool
-    var aspectRatio: GenerationAspectRatio?
-    var resultFilename: String
-    var revisedPrompt: String?
-    var errorMessage: String?
+    var name: String
+    var isAutoNamed: Bool
+    let createdAt: Date
+    var updatedAt: Date
 
-    var displayTitle: String {
-        prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "無題の生成物" : prompt
+    init(
+        id: UUID = UUID(),
+        name: String,
+        isAutoNamed: Bool = true,
+        createdAt: Date = Date(),
+        updatedAt: Date = Date()
+    ) {
+        self.id = id
+        self.name = name
+        self.isAutoNamed = isAutoNamed
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
     }
+}
 
-    var fileExtension: String {
-        switch outputMode {
-        case .raster:
-            return "png"
-        case .svg:
-            return "svg"
-        }
+struct ProjectItem: Identifiable, Codable, Equatable {
+    let id: UUID
+    let projectID: UUID
+    let prompt: String
+    let revisedPrompt: String?
+    let outputMode: GenerationOutputMode
+    let aspectRatio: GenerationAspectRatio
+    let transparentBackground: Bool
+    let createdAt: Date
+    let fileExtension: String
+    let errorMessage: String?
+
+    init(
+        id: UUID = UUID(),
+        projectID: UUID,
+        prompt: String,
+        revisedPrompt: String? = nil,
+        outputMode: GenerationOutputMode,
+        aspectRatio: GenerationAspectRatio,
+        transparentBackground: Bool,
+        createdAt: Date = Date(),
+        fileExtension: String,
+        errorMessage: String? = nil
+    ) {
+        self.id = id
+        self.projectID = projectID
+        self.prompt = prompt
+        self.revisedPrompt = revisedPrompt
+        self.outputMode = outputMode
+        self.aspectRatio = aspectRatio
+        self.transparentBackground = transparentBackground
+        self.createdAt = createdAt
+        self.fileExtension = fileExtension
+        self.errorMessage = errorMessage
     }
 
     func fileURL(in rootDirectory: URL) -> URL {
         rootDirectory
             .appendingPathComponent("items", isDirectory: true)
-            .appendingPathComponent(resultFilename)
+            .appendingPathComponent("\(id.uuidString).\(fileExtension)")
     }
 }
 
-struct GenerationHistoryStore {
+// MARK: - ProjectStore
+
+final class ProjectStore {
+    struct Snapshot: Codable {
+        var schemaVersion: Int = 2
+        var projects: [Project] = []
+        var items: [ProjectItem] = []
+        var selectedProjectID: UUID? = nil
+    }
+
     let rootDirectory: URL
 
     private var metadataURL: URL {
-        rootDirectory.appendingPathComponent("history.json")
+        rootDirectory.appendingPathComponent("projects.json")
     }
 
-    init(rootDirectory: URL = GenerationHistoryStore.defaultRootDirectory()) {
-        self.rootDirectory = rootDirectory
-    }
-
-    func load() throws -> [GenerationHistoryItem] {
-        guard FileManager.default.fileExists(atPath: metadataURL.path) else {
-            return []
-        }
-
-        let data = try Data(contentsOf: metadataURL)
-        return try JSONDecoder.historyDecoder.decode([GenerationHistoryItem].self, from: data)
-    }
-
-    @discardableResult
-    func add(job: GenerationJob, request: GenerationRequest, createdAt: Date = Date()) throws -> GenerationHistoryItem {
-        try FileManager.default.createDirectory(at: itemsDirectory, withIntermediateDirectories: true)
-
-        let id = UUID()
-        let filename = "\(id.uuidString).\(request.outputMode.historyFileExtension)"
-        let item = GenerationHistoryItem(
-            id: id,
-            createdAt: createdAt,
-            prompt: job.prompt,
-            outputMode: request.outputMode,
-            transparentBackground: request.transparentBackground,
-            aspectRatio: request.aspectRatio,
-            resultFilename: filename,
-            revisedPrompt: job.revisedPrompt,
-            errorMessage: job.errorMessage
-        )
-
-        try writeContent(for: job, outputMode: request.outputMode, to: item.fileURL(in: rootDirectory))
-
-        var items = try load()
-        items.insert(item, at: 0)
-        try save(items)
-        return item
-    }
-
-    func save(_ items: [GenerationHistoryItem]) throws {
-        try FileManager.default.createDirectory(at: rootDirectory, withIntermediateDirectories: true)
-        let data = try JSONEncoder.historyEncoder.encode(items)
-        try data.write(to: metadataURL, options: .atomic)
-    }
-
-    private var itemsDirectory: URL {
+    var itemsDirectory: URL {
         rootDirectory.appendingPathComponent("items", isDirectory: true)
     }
 
-    private func writeContent(for job: GenerationJob, outputMode: GenerationOutputMode, to url: URL) throws {
-        switch outputMode {
-        case .raster:
-            guard let imageData = job.imageData else {
-                throw ImageCreatorError.missingGeneratedContent
-            }
-            try imageData.write(to: url, options: .atomic)
-        case .svg:
-            guard let svgText = job.svgText, let data = svgText.data(using: .utf8) else {
-                throw ImageCreatorError.svgExtractionFailed
-            }
-            try data.write(to: url, options: .atomic)
+    init(rootDirectory: URL = ProjectStore.defaultRootDirectory()) {
+        self.rootDirectory = rootDirectory
+    }
+
+    func load() -> Snapshot {
+        guard
+            FileManager.default.fileExists(atPath: metadataURL.path),
+            let data = try? Data(contentsOf: metadataURL)
+        else {
+            return Snapshot()
         }
+        return (try? JSONDecoder.projectDecoder.decode(Snapshot.self, from: data)) ?? Snapshot()
+    }
+
+    func save(_ snapshot: Snapshot) {
+        try? FileManager.default.createDirectory(at: rootDirectory, withIntermediateDirectories: true)
+        if let data = try? JSONEncoder.projectEncoder.encode(snapshot) {
+            try? data.write(to: metadataURL, options: .atomic)
+        }
+    }
+
+    @discardableResult
+    func writeItemData(_ data: Data, for item: ProjectItem) throws -> URL {
+        try FileManager.default.createDirectory(at: itemsDirectory, withIntermediateDirectories: true)
+        let url = item.fileURL(in: rootDirectory)
+        try data.write(to: url, options: .atomic)
+        return url
+    }
+
+    func deleteItemFile(_ item: ProjectItem) {
+        try? FileManager.default.removeItem(at: item.fileURL(in: rootDirectory))
     }
 
     static func defaultRootDirectory() -> URL {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Application Support", isDirectory: true)
-        return base
-            .appendingPathComponent("Image Creator", isDirectory: true)
-            .appendingPathComponent("History", isDirectory: true)
+        return base.appendingPathComponent("Image Creator", isDirectory: true)
     }
 }
+
+// MARK: - ProjectNaming
+
+enum ProjectNaming {
+    static let maxCharacters = 20
+
+    static func summarize(_ prompt: String) -> String {
+        let normalized = prompt
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "\n", with: " ")
+            .replacingOccurrences(of: "\r", with: " ")
+        guard !normalized.isEmpty else { return defaultName() }
+        if normalized.count <= maxCharacters { return normalized }
+        return String(normalized.prefix(maxCharacters)) + "…"
+    }
+
+    static func defaultName() -> String {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd HH:mm"
+        return "新規プロジェクト " + f.string(from: Date())
+    }
+}
+
+// MARK: - Persistence helpers
 
 struct PreferredSaveFolderStore {
     private let userDefaults: UserDefaults
@@ -294,6 +334,8 @@ struct PreferredSaveFolderStore {
         }
     }
 }
+
+// MARK: - Codex types
 
 struct CodexImageResult: Equatable {
     let imageID: String
@@ -382,18 +424,14 @@ struct CodexAccountUsageStatus: Equatable {
     }
 
     private static func numericValue(_ value: Any?) -> Double? {
-        if let value = value as? Double {
-            return value
-        }
-        if let value = value as? Int {
-            return Double(value)
-        }
-        if let value = value as? NSNumber {
-            return value.doubleValue
-        }
+        if let value = value as? Double { return value }
+        if let value = value as? Int { return Double(value) }
+        if let value = value as? NSNumber { return value.doubleValue }
         return nil
     }
 }
+
+// MARK: - Errors
 
 enum ImageCreatorError: LocalizedError {
     case invalidJSONLine(String)
@@ -430,19 +468,10 @@ enum ImageCreatorError: LocalizedError {
     }
 }
 
-private extension GenerationOutputMode {
-    var historyFileExtension: String {
-        switch self {
-        case .raster:
-            return "png"
-        case .svg:
-            return "svg"
-        }
-    }
-}
+// MARK: - JSON helpers
 
 private extension JSONDecoder {
-    static var historyDecoder: JSONDecoder {
+    static var projectDecoder: JSONDecoder {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         return decoder
@@ -450,7 +479,7 @@ private extension JSONDecoder {
 }
 
 private extension JSONEncoder {
-    static var historyEncoder: JSONEncoder {
+    static var projectEncoder: JSONEncoder {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]

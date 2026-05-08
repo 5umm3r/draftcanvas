@@ -173,7 +173,6 @@ struct ContentView: View {
                             editingProjectID = nil
                         }
                     )
-                    .contentShape(Rectangle())
                     .tag(project.id as UUID?)
                     .contextMenu {
                         Button("名前を変更") {
@@ -184,12 +183,10 @@ struct ContentView: View {
                             confirmingDeleteProjectID = project.id
                         }
                     }
-                    .simultaneousGesture(
-                        TapGesture(count: 2).onEnded {
-                            renamingText = project.name
-                            editingProjectID = project.id
-                        }
-                    )
+                    .onTapGesture(count: 2) {
+                        renamingText = project.name
+                        editingProjectID = project.id
+                    }
                 }
                 .onMove { from, to in
                     viewModel.moveProject(fromOffsets: from, toOffset: to)
@@ -618,8 +615,6 @@ private struct ProjectRow: View {
         } else {
             Text(project.name)
                 .lineLimit(2)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .contentShape(Rectangle())
         }
     }
 }
