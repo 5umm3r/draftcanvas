@@ -540,18 +540,25 @@ struct ContentView: View {
         remainingFraction: Double?,
         resetText: String? = nil
     ) -> some View {
-        let displayLabel = resetText.map { "\(label) · \($0)" } ?? label
         return HStack(spacing: 6) {
             Image(systemName: systemName)
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.secondary)
 
-            Text(displayLabel)
+            Text(label)
                 .font(.subheadline.weight(.semibold))
                 .lineLimit(1)
                 .monospacedDigit()
 
             usageProgressBar(value: remainingFraction)
+
+            if let resetText {
+                Text(resetText)
+                    .font(.subheadline.weight(.semibold))
+                    .lineLimit(1)
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
+            }
         }
         .padding(.horizontal, 9)
         .padding(.vertical, 5)
