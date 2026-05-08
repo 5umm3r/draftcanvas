@@ -126,7 +126,7 @@ final class CodexAppServerClient: @unchecked Sendable {
         }
     }
 
-    func startThread() async throws -> String {
+    func startThread(model: String, reasoningEffort: String) async throws -> String {
         let response = try await sendRequest(
             method: "thread/start",
             params: [
@@ -136,7 +136,11 @@ final class CodexAppServerClient: @unchecked Sendable {
                 "ephemeral": true,
                 "experimentalRawEvents": true,
                 "persistExtendedHistory": false,
-                "serviceName": "Image Creator"
+                "serviceName": "Image Creator",
+                "model": model,
+                "config": [
+                    "model_reasoning_effort": reasoningEffort
+                ]
             ]
         )
 
@@ -147,6 +151,32 @@ final class CodexAppServerClient: @unchecked Sendable {
             throw ImageCreatorError.missingThreadID
         }
         return threadID
+    }
+
+    func listModels(includeHidden: Bool = false) async throws -> [CodexModel] {
+        try await start()
+        let response = try await sendRequest(
+            method: "model/list",
+            params: ["includeHidden": includeHidden]
+        )
+        guard let data = response["data"] as? [[String: Any]] else { return [] }
+        return data.compactMap { dict -> CodexModel? in
+            guard
+                let id = dict["id"] as? String,
+                let displayName = dict["displayName"] as? String
+            else { return nil }
+            let efforts = (dict["supportedReasoningEfforts"] as? [[String: Any]])?
+                .compactMap { $0["reasoningEffort"] as? String } ?? []
+            let defaultEffort = dict["defaultReasoningEffort"] as? String ?? "medium"
+            let isDefault = dict["isDefault"] as? Bool ?? false
+            return CodexModel(
+                id: id,
+                displayName: displayName,
+                supportedReasoningEfforts: efforts,
+                defaultReasoningEffort: defaultEffort,
+                isDefault: isDefault
+            )
+        }
     }
 
     func runTurn(threadID: String, prompt: String, referenceImagePath: String? = nil) async throws -> CodexTurnResult {

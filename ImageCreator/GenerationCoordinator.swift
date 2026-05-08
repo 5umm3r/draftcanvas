@@ -18,7 +18,7 @@ final class GenerationCoordinator: Sendable {
         let count = request.normalizedCount
         let concurrency = request.normalizedConcurrency
         var jobs = (0..<count).map { index in
-            GenerationJob(index: index, prompt: request.prompt)
+            GenerationJob(index: index, prompt: request.prompt, aspectRatio: request.aspectRatio)
         }
 
         await withTaskGroup(of: GenerationJob.self) { group in
@@ -71,7 +71,7 @@ final class CodexGenerationRunner: GenerationRunning {
 
         do {
             try await client.start()
-            let threadID = try await client.startThread()
+            let threadID = try await client.startThread(model: request.model, reasoningEffort: request.reasoningEffort)
             output.logs.append("Codex thread: \(threadID)")
 
             let prompt = PromptFactory.prompt(for: request, jobIndex: job.index)

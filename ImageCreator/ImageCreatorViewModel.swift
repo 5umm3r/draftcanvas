@@ -12,6 +12,8 @@ final class ImageCreatorViewModel: ObservableObject {
     @Published var draftInputs: ProjectInputs = ProjectInputs()
 
     // MARK: - Global state
+    @AppStorage("appAppearance") var appAppearanceRaw: String = "light"
+    @AppStorage("totalGeneratedImages") var totalGeneratedImages: Int = 0
     @Published var projects: [Project] = []
     @Published var items: [ProjectItem] = []
     @Published var selectedProjectID: UUID? {
@@ -32,6 +34,8 @@ final class ImageCreatorViewModel: ObservableObject {
     @Published var isRefreshingAccountUsage = false
     @Published var preferredSaveFolder: URL?
     @Published var errorToast: String?
+    @Published var accountUsagePrewarmFailed = false
+    @Published private(set) var availableModels: [CodexModel] = []
 
     private let client: CodexAppServerClient
     private let coordinator: GenerationCoordinator
@@ -56,7 +60,7 @@ final class ImageCreatorViewModel: ObservableObject {
         }
         loadProjects()
         preferredSaveFolder = preferredSaveFolderStore.load()
-        refreshAccountUsage()
+        prewarmAndRefresh()
     }
 
     // MARK: - Computed (current project)
@@ -84,11 +88,20 @@ final class ImageCreatorViewModel: ObservableObject {
                     var inputs = self.inputsByProject[id] ?? ProjectInputs()
                     inputs[keyPath: keyPath] = newValue
                     self.inputsByProject[id] = inputs
+                    self.syncProjectModelEffort(for: id, inputs: inputs)
                 } else {
                     self.draftInputs[keyPath: keyPath] = newValue
                 }
             }
         )
+    }
+
+    private func syncProjectModelEffort(for projectID: UUID, inputs: ProjectInputs) {
+        guard let idx = projects.firstIndex(where: { $0.id == projectID }) else { return }
+        guard projects[idx].model != inputs.model || projects[idx].reasoningEffort != inputs.reasoningEffort else { return }
+        projects[idx].model = inputs.model
+        projects[idx].reasoningEffort = inputs.reasoningEffort
+        saveState()
     }
 
     var selectedJob: GenerationJob? {
@@ -114,6 +127,15 @@ final class ImageCreatorViewModel: ObservableObject {
     var canGenerate: Bool {
         !currentInputs.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             && !isGeneratingForSelected
+    }
+
+    var preferredColorScheme: ColorScheme {
+        (AppAppearance(rawValue: appAppearanceRaw) ?? .light).colorScheme
+    }
+
+    func cycleAppearance() {
+        let current = AppAppearance(rawValue: appAppearanceRaw) ?? .light
+        appAppearanceRaw = current.next.rawValue
     }
 
     // MARK: - Project CRUD
@@ -158,6 +180,10 @@ final class ImageCreatorViewModel: ObservableObject {
         }
     }
 
+    var sortedProjects: [Project] {
+        projects.sorted { $0.updatedAt > $1.updatedAt }
+    }
+
     func moveProject(fromOffsets: IndexSet, toOffset: Int) {
         projects.move(fromOffsets: fromOffsets, toOffset: toOffset)
         saveState()
@@ -167,6 +193,14 @@ final class ImageCreatorViewModel: ObservableObject {
 
     func generate() {
         guard canGenerate else { return }
+        // availableModels 未取得または model 未設定なら isDefault モデルで埋める
+        if currentInputs.model.isEmpty, let fallback = availableModels.first(where: \.isDefault)?.id ?? availableModels.first?.id {
+            if let id = selectedProjectID {
+                inputsByProject[id]?.model = fallback
+            } else {
+                draftInputs.model = fallback
+            }
+        }
 
         let inputs = currentInputs
         let promptText = inputs.prompt.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -192,7 +226,9 @@ final class ImageCreatorViewModel: ObservableObject {
             count: inputs.count,
             concurrency: inputs.concurrency,
             aspectRatio: inputs.aspectRatio,
-            editSource: inputs.editSource
+            editSource: inputs.editSource,
+            model: inputs.model,
+            reasoningEffort: inputs.reasoningEffort
         )
 
         jobsByProject[targetProjectID] = []
@@ -232,11 +268,12 @@ final class ImageCreatorViewModel: ObservableObject {
         guard !isRefreshingAccountUsage else { return }
 
         isRefreshingAccountUsage = true
+        accountUsagePrewarmFailed = false
         logs.append("Codexアカウントと使用量を取得します。")
 
         Task {
             do {
-                let status = try await client.readAccountUsageStatus()
+                let status = try await self.client.readAccountUsageStatus()
                 await MainActor.run {
                     self.accountUsageStatus = status
                     self.isRefreshingAccountUsage = false
@@ -246,10 +283,57 @@ final class ImageCreatorViewModel: ObservableObject {
                 await MainActor.run {
                     self.accountUsageStatus = .unavailable
                     self.isRefreshingAccountUsage = false
+                    self.accountUsagePrewarmFailed = true
                     self.logs.append("Codexアカウントと使用量の取得に失敗しました: \(error.localizedDescription)")
                 }
             }
         }
+    }
+
+    private func prewarmAndRefresh() {
+        accountUsagePrewarmFailed = false
+        Task {
+            await refreshAvailableModels()
+        }
+        refreshAccountUsage()
+    }
+
+    func refreshAvailableModels() async {
+        do {
+            let models = try await client.listModels(includeHidden: false)
+            self.availableModels = models
+            normalizeProjectModelSelection()
+        } catch {
+            logs.append("モデル一覧取得失敗: \(error.localizedDescription)")
+        }
+    }
+
+    private func normalizeProjectModelSelection() {
+        let validIDs = Set(availableModels.map(\.id))
+        guard let fallbackID = availableModels.first(where: \.isDefault)?.id
+                ?? availableModels.first?.id else { return }
+
+        for index in projects.indices {
+            if projects[index].model.isEmpty || !validIDs.contains(projects[index].model) {
+                projects[index].model = fallbackID
+            }
+            if let model = availableModels.first(where: { $0.id == projects[index].model }),
+               !model.supportedReasoningEfforts.contains(projects[index].reasoningEffort) {
+                projects[index].reasoningEffort = model.defaultReasoningEffort
+            }
+        }
+        // draftInputs も同期
+        if draftInputs.model.isEmpty || !validIDs.contains(draftInputs.model) {
+            draftInputs.model = fallbackID
+        }
+        // inputsByProject も同期
+        for (key, var inputs) in inputsByProject {
+            if inputs.model.isEmpty || !validIDs.contains(inputs.model) {
+                inputs.model = fallbackID
+                inputsByProject[key] = inputs
+            }
+        }
+        saveState()
     }
 
     func stopServer() {
@@ -278,6 +362,9 @@ final class ImageCreatorViewModel: ObservableObject {
             originalPrompt: item.prompt
         )
         inputsByProject[id] = inputs
+        if let idx = projects.firstIndex(where: { $0.id == id }) {
+            projects[idx].updatedAt = Date()
+        }
         logs.append("アイテムを再編集対象にしました: \(fileURL.path)")
     }
 
@@ -286,7 +373,8 @@ final class ImageCreatorViewModel: ObservableObject {
 
         let job = GenerationJob(
             index: jobsByProject[projectID]?.count ?? 0,
-            prompt: "背景除去: \(item.prompt.prefix(30))"
+            prompt: "背景除去: \(item.prompt.prefix(30))",
+            aspectRatio: item.aspectRatio
         )
         upsert(job, into: projectID)
 
@@ -317,6 +405,9 @@ final class ImageCreatorViewModel: ObservableObject {
                         if let img = NSImage(data: outputData) {
                             self.imageCache.setObject(img, forKey: self.fileURL(for: newItem) as NSURL)
                         }
+                        if let idx = self.projects.firstIndex(where: { $0.id == projectID }) {
+                            self.projects[idx].updatedAt = Date()
+                        }
                         self.saveState()
                         self.logs.append("背景除去完了: \(newItem.id)")
                     } catch {
@@ -338,6 +429,16 @@ final class ImageCreatorViewModel: ObservableObject {
                 }
             }
         }
+    }
+
+    func deleteItem(_ item: ProjectItem) {
+        projectStore.deleteItemFile(item)
+        items.removeAll { $0.id == item.id }
+        if selectedItemID == item.id { selectedItemID = nil }
+        if let idx = projects.firstIndex(where: { $0.id == item.projectID }) {
+            projects[idx].updatedAt = Date()
+        }
+        saveState()
     }
 
     func reveal(item: ProjectItem) {
@@ -414,9 +515,6 @@ final class ImageCreatorViewModel: ObservableObject {
             jobs.append(job)
         }
         jobsByProject[projectID] = jobs
-        if selectedProjectID == projectID && selectedJobID == nil {
-            selectedJobID = job.id
-        }
     }
 
     private func runExportPanel(
@@ -474,7 +572,10 @@ final class ImageCreatorViewModel: ObservableObject {
         items = snapshot.items
         selectedProjectID = snapshot.selectedProjectID
         for project in projects {
-            inputsByProject[project.id] = ProjectInputs()
+            var inputs = ProjectInputs()
+            inputs.model = project.model
+            inputs.reasoningEffort = project.reasoningEffort
+            inputsByProject[project.id] = inputs
         }
         if snapshot.droppedSVGCount > 0 {
             logs.append("既存SVGアイテム \(snapshot.droppedSVGCount)件を削除しました（SVG生成は廃止されました）")
@@ -494,6 +595,15 @@ final class ImageCreatorViewModel: ObservableObject {
     }
 
     private func persistSucceededJobs(_ jobs: [GenerationJob], request: GenerationRequest, projectID: UUID) {
+        let succeededCount = jobs.filter { $0.status == .succeeded }.count
+        if succeededCount > 0 {
+            totalGeneratedImages += succeededCount
+        }
+
+        if succeededCount > 0, let idx = projects.firstIndex(where: { $0.id == projectID }) {
+            projects[idx].updatedAt = Date()
+        }
+
         for job in jobs where job.status == .succeeded {
             let item = ProjectItem(
                 projectID: projectID,

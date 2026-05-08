@@ -7,6 +7,7 @@ struct ImageCreatorApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView(viewModel: viewModel)
+                .preferredColorScheme(viewModel.preferredColorScheme)
         }
         .windowStyle(.titleBar)
 

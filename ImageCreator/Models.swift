@@ -1,4 +1,33 @@
 import Foundation
+import SwiftUI
+
+// MARK: - App Appearance
+
+enum AppAppearance: String {
+    case light, dark
+
+    var next: AppAppearance {
+        self == .light ? .dark : .light
+    }
+
+    var systemImage: String {
+        self == .light ? "sun.max" : "moon"
+    }
+
+    var colorScheme: ColorScheme {
+        self == .light ? .light : .dark
+    }
+}
+
+// MARK: - Codex Model
+
+struct CodexModel: Identifiable, Equatable {
+    let id: String
+    let displayName: String
+    let supportedReasoningEfforts: [String]
+    let defaultReasoningEffort: String
+    let isDefault: Bool
+}
 
 enum GenerationAspectRatio: String, CaseIterable, Identifiable, Codable {
     case square
@@ -42,6 +71,16 @@ enum GenerationAspectRatio: String, CaseIterable, Identifiable, Codable {
     var promptDescription: String {
         "\(value) \(rawValue)"
     }
+
+    var widthOverHeight: CGFloat {
+        switch self {
+        case .square:    return 1.0
+        case .portrait:  return 3.0 / 4.0
+        case .story:     return 9.0 / 16.0
+        case .landscape: return 4.0 / 3.0
+        case .wide:      return 16.0 / 9.0
+        }
+    }
 }
 
 struct GenerationRequest: Equatable {
@@ -50,6 +89,8 @@ struct GenerationRequest: Equatable {
     var concurrency: Int
     var aspectRatio: GenerationAspectRatio = .square
     var editSource: GenerationEditSource? = nil
+    var model: String = ""
+    var reasoningEffort: String = "medium"
 
     var normalizedCount: Int {
         min(max(count, 1), 24)
@@ -90,6 +131,7 @@ struct GenerationJob: Identifiable, Equatable {
     let id: UUID
     let index: Int
     var prompt: String
+    var aspectRatio: GenerationAspectRatio
     var status: GenerationJobStatus
     var imageData: Data?
     var revisedPrompt: String?
@@ -100,6 +142,7 @@ struct GenerationJob: Identifiable, Equatable {
         id: UUID = UUID(),
         index: Int,
         prompt: String,
+        aspectRatio: GenerationAspectRatio,
         status: GenerationJobStatus = .queued,
         imageData: Data? = nil,
         revisedPrompt: String? = nil,
@@ -109,6 +152,7 @@ struct GenerationJob: Identifiable, Equatable {
         self.id = id
         self.index = index
         self.prompt = prompt
+        self.aspectRatio = aspectRatio
         self.status = status
         self.imageData = imageData
         self.revisedPrompt = revisedPrompt
@@ -125,29 +169,54 @@ struct ProjectInputs: Equatable {
     var concurrency: Int = 1
     var aspectRatio: GenerationAspectRatio = .square
     var editSource: GenerationEditSource? = nil
+    var model: String = ""
+    var reasoningEffort: String = "medium"
 }
 
 // MARK: - Project
 
-struct Project: Identifiable, Codable, Equatable {
+struct Project: Identifiable, Equatable {
     let id: UUID
     var name: String
     var isAutoNamed: Bool
     let createdAt: Date
     var updatedAt: Date
+    var model: String
+    var reasoningEffort: String
 
     init(
         id: UUID = UUID(),
         name: String,
         isAutoNamed: Bool = true,
         createdAt: Date = Date(),
-        updatedAt: Date = Date()
+        updatedAt: Date = Date(),
+        model: String = "",
+        reasoningEffort: String = "medium"
     ) {
         self.id = id
         self.name = name
         self.isAutoNamed = isAutoNamed
         self.createdAt = createdAt
         self.updatedAt = updatedAt
+        self.model = model
+        self.reasoningEffort = reasoningEffort
+    }
+}
+
+extension Project: Codable {
+    enum CodingKeys: String, CodingKey {
+        case id, name, isAutoNamed, createdAt, updatedAt, model, reasoningEffort
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(UUID.self, forKey: .id)
+        name = try c.decode(String.self, forKey: .name)
+        isAutoNamed = try c.decode(Bool.self, forKey: .isAutoNamed)
+        createdAt = try c.decode(Date.self, forKey: .createdAt)
+        updatedAt = try c.decode(Date.self, forKey: .updatedAt)
+        model = try c.decodeIfPresent(String.self, forKey: .model) ?? ""
+        reasoningEffort = try c.decodeIfPresent(String.self, forKey: .reasoningEffort) ?? "medium"
     }
 }
 

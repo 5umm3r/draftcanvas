@@ -4,6 +4,7 @@ struct ContentView: View {
     @ObservedObject var viewModel: ImageCreatorViewModel
     @Environment(\.openWindow) private var openWindow
     @Environment(\.dismissWindow) private var dismissWindow
+    @Environment(\.colorScheme) private var colorScheme
     @State private var isLogWindowVisible = false
     @State private var editingProjectID: UUID?
     @State private var renamingText = ""
@@ -80,6 +81,16 @@ struct ContentView: View {
 
             Spacer(minLength: 16)
 
+            HStack(spacing: 4) {
+                Image(systemName: "photo.stack")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                Text("\(viewModel.totalGeneratedImages)")
+                    .font(.subheadline.weight(.semibold))
+                    .monospacedDigit()
+            }
+            .help("全プロジェクト累計生成枚数")
+
             usagePill(
                 systemName: "clock",
                 label: viewModel.accountUsageStatus.primaryUsageLabel,
@@ -122,14 +133,33 @@ struct ContentView: View {
             }
             .buttonStyle(.borderless)
             .popover(isPresented: $isAccountPopoverPresented, arrowEdge: .bottom) {
-                AccountPopover(status: viewModel.accountUsageStatus)
+                AccountPopover(
+                    status: viewModel.accountUsageStatus,
+                    isLoading: viewModel.isRefreshingAccountUsage,
+                    hasFailed: viewModel.accountUsagePrewarmFailed,
+                    onRetry: viewModel.refreshAccountUsage
+                )
             }
 
             planBadge
+
+            Divider()
+                .frame(height: 20)
+
+            Button {
+                viewModel.cycleAppearance()
+            } label: {
+                Image(systemName: AppAppearance(rawValue: viewModel.appAppearanceRaw)?.systemImage ?? "sun.max")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .frame(width: 28, height: 28)
+            }
+            .buttonStyle(.borderless)
+            .help("テーマ切替")
         }
         .padding(.horizontal, 16)
         .frame(height: 44)
-        .background(.white.opacity(0.86))
+        .background(.regularMaterial)
     }
 
     private var planBadge: some View {
@@ -137,7 +167,7 @@ struct ContentView: View {
             .font(.subheadline.weight(.semibold))
             .padding(.horizontal, 7)
             .padding(.vertical, 3)
-            .background(Color.black.opacity(0.06))
+            .background(Color.primary.opacity(0.06))
             .clipShape(Capsule())
     }
 
@@ -165,7 +195,7 @@ struct ContentView: View {
             Divider()
 
             List(selection: $viewModel.selectedProjectID) {
-                ForEach(viewModel.projects) { project in
+                ForEach(viewModel.sortedProjects) { project in
                     ProjectRow(
                         project: project,
                         isEditing: editingProjectID == project.id,
@@ -192,22 +222,39 @@ struct ContentView: View {
                         }
                     }
                 }
-                .onMove { from, to in
-                    viewModel.moveProject(fromOffsets: from, toOffset: to)
-                }
             }
             .listStyle(.sidebar)
         }
         .frame(width: 200)
-        .background(.white.opacity(0.86))
+        .background(.regularMaterial)
         .overlay(alignment: .trailing) {
             Rectangle()
-                .fill(Color.black.opacity(0.06))
+                .fill(Color.primary.opacity(0.06))
                 .frame(width: 1)
         }
     }
 
     // MARK: - Canvas
+
+    private enum CanvasCardLayout {
+        static let baseSquareSide: CGFloat = 220
+        static let maxWidthMultiplier: CGFloat = 4.0 / 3.0  // sqrt(16/9)
+        static func size(for ratio: CGFloat, zoom: CGFloat) -> CGSize {
+            let r = max(ratio, 0.01)
+            let s = sqrt(r)
+            return CGSize(width: baseSquareSide * s * zoom, height: baseSquareSide / s * zoom)
+        }
+    }
+
+    private func cardSize(forItem item: ProjectItem) -> CGSize {
+        let ratio = viewModel.cachedImage(for: item)?.pixelAspectRatio
+            ?? item.aspectRatio.widthOverHeight
+        return CanvasCardLayout.size(for: ratio, zoom: canvasZoom)
+    }
+
+    private func cardSize(forJob job: GenerationJob) -> CGSize {
+        CanvasCardLayout.size(for: job.aspectRatio.widthOverHeight, zoom: canvasZoom)
+    }
 
     private var canvasArea: some View {
         ZStack(alignment: .bottom) {
@@ -221,7 +268,7 @@ struct ContentView: View {
 
     private var canvas: some View {
         ZStack {
-            Color(red: 0.90, green: 0.90, blue: 0.92)
+            Color(nsColor: .windowBackgroundColor)
 
             if viewModel.projects.isEmpty {
                 VStack(spacing: 10) {
@@ -246,7 +293,10 @@ struct ContentView: View {
             } else {
                 ScrollView(.vertical) {
                     LazyVGrid(
-                        columns: [GridItem(.adaptive(minimum: 220 * canvasZoom), spacing: 28)],
+                        columns: [GridItem(
+                            .adaptive(minimum: CanvasCardLayout.baseSquareSide * canvasZoom),
+                            spacing: 28
+                        )],
                         spacing: 28
                     ) {
                         ForEach(canvasEntries) { entry in
@@ -287,7 +337,8 @@ struct ContentView: View {
     }
 
     private func itemCard(_ item: ProjectItem) -> some View {
-        Button {
+        let size = cardSize(forItem: item)
+        return Button {
             viewModel.selectedItemID = (viewModel.selectedItemID == item.id) ? nil : item.id
             viewModel.selectedJobID = nil
         } label: {
@@ -296,45 +347,49 @@ struct ContentView: View {
                     checkerboard
                     previewForItem(item)
                 }
-                .frame(width: 220 * canvasZoom, height: 220 * canvasZoom)
-                .background(.white)
+                .frame(width: size.width, height: size.height)
+                .background(Color(nsColor: .controlBackgroundColor))
                 .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                 .overlay(alignment: .bottomTrailing) {
                     if let sourceID = item.editedFromItemID,
                        let sourceItem = viewModel.items.first(where: { $0.id == sourceID }),
                        let sourceImage = viewModel.cachedImage(for: sourceItem) {
+                        let thumbSize = 36 * max(0.7, min(canvasZoom, 1.6))
                         Image(nsImage: sourceImage)
                             .resizable()
                             .scaledToFill()
-                            .frame(width: 36, height: 36)
-                            .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
+                            .frame(width: thumbSize, height: thumbSize)
+                            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                             .overlay {
-                                RoundedRectangle(cornerRadius: 5, style: .continuous)
-                                    .stroke(Color.white.opacity(0.8), lineWidth: 1.5)
+                                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                    .stroke(Color(nsColor: .controlBackgroundColor), lineWidth: 2)
+                            }
+                            .overlay(alignment: .topLeading) {
+                                Image(systemName: "arrow.uturn.backward")
+                                    .font(.system(size: thumbSize * 0.32, weight: .bold))
+                                    .foregroundStyle(.white)
+                                    .frame(width: thumbSize * 0.5, height: thumbSize * 0.5)
+                                    .background(Circle().fill(Color.accentColor))
+                                    .overlay(Circle().stroke(.white, lineWidth: 1.5))
+                                    .offset(x: -thumbSize * 0.15, y: -thumbSize * 0.15)
                             }
                             .shadow(color: .black.opacity(0.25), radius: 3, x: 0, y: 1)
-                            .padding(6)
+                            .padding(.trailing, -thumbSize / 3)
+                            .padding(.bottom, -thumbSize / 3)
+                    }
+                }
+                .overlay {
+                    if viewModel.currentInputs.editSource?.projectItemID == item.id {
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .stroke(Color.accentColor, style: StrokeStyle(lineWidth: 3, dash: [4, 3]))
                     }
                 }
                 .overlay {
                     RoundedRectangle(cornerRadius: 6, style: .continuous)
                         .stroke(
-                            viewModel.selectedItemID == item.id ? Color.accentColor : Color.black.opacity(0.10),
+                            viewModel.selectedItemID == item.id ? Color.accentColor : Color.primary.opacity(0.10),
                             lineWidth: viewModel.selectedItemID == item.id ? 3 : 1
                         )
-                }
-
-                HStack {
-                    Text(item.createdAt, style: .time)
-                        .font(.caption.weight(.semibold))
-                    Spacer()
-                    Text("#\(String(format: "%02d", viewModel.ordinalForItem(item, in: item.projectID)))")
-                        .font(.caption2.weight(.semibold))
-                        .padding(.horizontal, 7)
-                        .padding(.vertical, 3)
-                        .background(Color.blue.opacity(0.10))
-                        .foregroundStyle(Color.blue)
-                        .clipShape(Capsule())
                 }
             }
         }
@@ -348,7 +403,8 @@ struct ContentView: View {
     }
 
     private func generationCard(_ job: GenerationJob) -> some View {
-        Button {
+        let size = cardSize(forJob: job)
+        return Button {
             viewModel.selectedJobID = (viewModel.selectedJobID == job.id) ? nil : job.id
             viewModel.selectedItemID = nil
         } label: {
@@ -357,22 +413,15 @@ struct ContentView: View {
                     checkerboard
                     preview(for: job)
                 }
-                .frame(width: 220 * canvasZoom, height: 220 * canvasZoom)
-                .background(.white)
+                .frame(width: size.width, height: size.height)
+                .background(Color(nsColor: .controlBackgroundColor))
                 .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                 .overlay {
                     RoundedRectangle(cornerRadius: 6, style: .continuous)
                         .stroke(
-                            viewModel.selectedJobID == job.id ? Color.accentColor : Color.black.opacity(0.10),
+                            viewModel.selectedJobID == job.id ? Color.accentColor : Color.primary.opacity(0.10),
                             lineWidth: viewModel.selectedJobID == job.id ? 3 : 1
                         )
-                }
-
-                HStack {
-                    Text("#\(job.index + 1)")
-                        .font(.caption.weight(.semibold))
-                    Spacer()
-                    StatusBadge(status: job.status)
                 }
             }
         }
@@ -428,13 +477,15 @@ struct ContentView: View {
     }
 
     private var checkerboard: some View {
-        Canvas { context, size in
+        let lightColor: Color = colorScheme == .dark ? Color.white.opacity(0.18) : Color.white
+        let darkColor: Color = colorScheme == .dark ? Color.white.opacity(0.06) : Color.black.opacity(0.045)
+        return Canvas { context, size in
             let side: CGFloat = 18
             for x in stride(from: CGFloat(0), to: size.width, by: side) {
                 for y in stride(from: CGFloat(0), to: size.height, by: side) {
                     let isDark = (Int(x / side) + Int(y / side)).isMultiple(of: 2)
                     let rect = CGRect(x: x, y: y, width: side, height: side)
-                    context.fill(Path(rect), with: .color(isDark ? Color.white : Color.black.opacity(0.045)))
+                    context.fill(Path(rect), with: .color(isDark ? lightColor : darkColor))
                 }
             }
         }
@@ -463,7 +514,7 @@ struct ContentView: View {
                 Divider()
             }
 
-            PromptTextView(text: viewModel.binding(for: \.prompt), isFocused: $promptIsFocused)
+            PromptTextView(text: viewModel.binding(for: \.prompt), isFocused: $promptIsFocused, onSubmit: viewModel.generate)
                 .frame(height: 76)
                 .padding(.horizontal, 16)
                 .padding(.top, 14)
@@ -482,11 +533,70 @@ struct ContentView: View {
 
             HStack(spacing: 16) {
                 Menu {
+                    ForEach(viewModel.availableModels) { model in
+                        Button {
+                            viewModel.binding(for: \.model).wrappedValue = model.id
+                        } label: {
+                            Label(model.displayName, systemImage: viewModel.currentInputs.model == model.id ? "checkmark" : "")
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: "cpu")
+                            .font(.system(size: 13))
+                        Text(modelShortName)
+                            .font(.system(size: 13, weight: .medium))
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 9, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(height: 28)
+                    .padding(.horizontal, 8)
+                    .background(Color.primary.opacity(0.04))
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                }
+                .menuStyle(.borderlessButton)
+                .fixedSize()
+                .disabled(viewModel.availableModels.isEmpty)
+                .help("モデル選択")
+
+                Menu {
+                    let efforts = viewModel.availableModels
+                        .first(where: { $0.id == viewModel.currentInputs.model })?
+                        .supportedReasoningEfforts ?? ["low", "medium", "high"]
+                    ForEach(efforts, id: \.self) { effort in
+                        Button {
+                            viewModel.binding(for: \.reasoningEffort).wrappedValue = effort
+                        } label: {
+                            Label(reasoningLabel(effort), systemImage: viewModel.currentInputs.reasoningEffort == effort ? "checkmark" : "")
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: "brain")
+                            .font(.system(size: 13))
+                        Text(reasoningShortName)
+                            .font(.system(size: 13, weight: .medium))
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 9, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(height: 28)
+                    .padding(.horizontal, 8)
+                    .background(Color.primary.opacity(0.04))
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                }
+                .menuStyle(.borderlessButton)
+                .fixedSize()
+                .help("思考力")
+
+                Menu {
                     ForEach(GenerationAspectRatio.allCases) { ar in
+                        let selected = viewModel.currentInputs.aspectRatio == ar
                         Button {
                             viewModel.binding(for: \.aspectRatio).wrappedValue = ar
                         } label: {
-                            Text("\(ar.title) \(ar.value)")
+                            Label("\(ar.title) \(ar.value)", systemImage: selected ? "checkmark" : "")
                         }
                     }
                 } label: {
@@ -501,28 +611,63 @@ struct ContentView: View {
                     }
                     .frame(height: 28)
                     .padding(.horizontal, 8)
-                    .background(Color.black.opacity(0.04))
+                    .background(Color.primary.opacity(0.04))
                     .clipShape(RoundedRectangle(cornerRadius: 6))
                 }
                 .menuStyle(.borderlessButton)
                 .fixedSize()
                 .help("アスペクト比")
 
-                CounterControl(
-                    systemImage: "square.stack",
-                    label: "枚数",
-                    value: viewModel.binding(for: \.count),
-                    range: 1...24,
-                    helpText: "枚数"
-                )
+                Menu {
+                    ForEach(1...4, id: \.self) { n in
+                        Button {
+                            viewModel.binding(for: \.count).wrappedValue = n
+                            if viewModel.currentInputs.concurrency > n {
+                                viewModel.binding(for: \.concurrency).wrappedValue = n
+                            }
+                        } label: { Label("\(n)枚", systemImage: viewModel.currentInputs.count == n ? "checkmark" : "") }
+                    }
+                } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: "square.stack")
+                            .font(.system(size: 13))
+                        Text("\(viewModel.currentInputs.count)枚")
+                            .font(.system(size: 13, weight: .medium))
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 9, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(height: 28)
+                    .padding(.horizontal, 8)
+                    .background(Color.primary.opacity(0.04))
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                }
+                .menuStyle(.borderlessButton)
+                .fixedSize()
+                .help("枚数")
 
-                CounterControl(
-                    systemImage: "square.split.2x1",
-                    label: "並列",
-                    value: viewModel.binding(for: \.concurrency),
-                    range: 1...8,
-                    helpText: "並列実行数"
-                )
+                Menu {
+                    ForEach(1...viewModel.currentInputs.count, id: \.self) { n in
+                        Button { viewModel.binding(for: \.concurrency).wrappedValue = n } label: { Label("\(n)並列", systemImage: viewModel.currentInputs.concurrency == n ? "checkmark" : "") }
+                    }
+                } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: "square.split.2x1")
+                            .font(.system(size: 13))
+                        Text("\(viewModel.currentInputs.concurrency)並列")
+                            .font(.system(size: 13, weight: .medium))
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 9, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(height: 28)
+                    .padding(.horizontal, 8)
+                    .background(Color.primary.opacity(0.04))
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                }
+                .menuStyle(.borderlessButton)
+                .fixedSize()
+                .help("並列実行数")
 
                 Spacer()
 
@@ -544,6 +689,27 @@ struct ContentView: View {
         .background(.regularMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         .shadow(color: .black.opacity(0.16), radius: 24, x: 0, y: 12)
+    }
+
+    private var modelShortName: String {
+        if let m = viewModel.availableModels.first(where: { $0.id == viewModel.currentInputs.model }) {
+            return m.displayName
+        }
+        return viewModel.currentInputs.model.isEmpty ? "—" : viewModel.currentInputs.model
+    }
+
+    private var reasoningShortName: String {
+        reasoningLabel(viewModel.currentInputs.reasoningEffort)
+    }
+
+    private func reasoningLabel(_ effort: String) -> String {
+        switch effort {
+        case "low": return "低"
+        case "medium": return "中"
+        case "high": return "高"
+        case "xhigh": return "最高"
+        default: return effort
+        }
     }
 
     // MARK: - Usage Widgets
@@ -586,7 +752,7 @@ struct ContentView: View {
         return GeometryReader { proxy in
             ZStack(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 2)
-                    .fill(Color.black.opacity(0.12))
+                    .fill(Color.primary.opacity(0.12))
 
                 RoundedRectangle(cornerRadius: 2)
                     .fill(Color.accentColor.opacity(value == nil ? 0 : 0.82))
@@ -693,11 +859,8 @@ struct GenerationDetailPopover: View {
 
             Divider()
 
-            Button {
+            PopoverButton(systemImage: "square.and.arrow.down", title: "エクスポート") {
                 viewModel.exportSelected()
-            } label: {
-                Label("エクスポート", systemImage: "square.and.arrow.down")
-                    .frame(maxWidth: .infinity, alignment: .leading)
             }
             .disabled(job.status != .succeeded)
 
@@ -712,6 +875,7 @@ struct ItemDetailPopover: View {
     let item: ProjectItem
     @ObservedObject var viewModel: ImageCreatorViewModel
     @State private var isRevisedExpanded = false
+    @State private var isConfirmingDelete = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -735,28 +899,24 @@ struct ItemDetailPopover: View {
             Divider()
                 .padding(.vertical, 2)
 
-            Button {
+            PopoverButton(systemImage: "wand.and.stars", title: "再編集") {
                 viewModel.edit(item: item)
                 viewModel.selectedItemID = nil
-            } label: {
-                Label("再編集", systemImage: "wand.and.stars")
-                    .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            Button {
+            PopoverButton(systemImage: "scissors", title: "背景を除去") {
                 viewModel.removeBackground(item: item)
                 viewModel.selectedItemID = nil
-            } label: {
-                Label("背景を除去", systemImage: "scissors")
-                    .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            Button {
+            PopoverButton(systemImage: "folder", title: "Finderで表示") {
                 viewModel.reveal(item: item)
-            } label: {
-                Label("Finderで表示", systemImage: "folder")
-                    .frame(maxWidth: .infinity, alignment: .leading)
             }
+
+            PopoverButton(systemImage: "trash", title: "削除") {
+                isConfirmingDelete = true
+            }
+            .foregroundStyle(.red)
 
             Spacer()
 
@@ -771,7 +931,15 @@ struct ItemDetailPopover: View {
             .controlSize(.large)
         }
         .padding(18)
-        .frame(width: 300, height: 380)
+        .frame(width: 300, height: 410)
+        .alert("画像を削除しますか？", isPresented: $isConfirmingDelete) {
+            Button("削除", role: .destructive) {
+                viewModel.deleteItem(item)
+            }
+            Button("キャンセル", role: .cancel) {}
+        } message: {
+            Text("この操作は取り消せません。")
+        }
     }
 }
 
@@ -807,16 +975,32 @@ private struct DetailRow: View {
 
 struct AccountPopover: View {
     let status: CodexAccountUsageStatus
+    let isLoading: Bool
+    let hasFailed: Bool
+    let onRetry: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text("アカウント")
                 .font(.headline)
 
-            DetailRow(label: "種別", value: status.accountKind.japaneseLabel)
-
-            if let email = status.accountEmail {
-                DetailRow(label: "メール", value: email)
+            if isLoading {
+                HStack {
+                    Spacer()
+                    ProgressView("読み込み中...")
+                        .padding(.vertical, 8)
+                    Spacer()
+                }
+            } else if hasFailed {
+                Text("取得に失敗しました")
+                    .foregroundStyle(.secondary)
+                    .font(.subheadline)
+                Button("再試行", action: onRetry)
+            } else {
+                DetailRow(label: "種別", value: status.accountKind.japaneseLabel)
+                if let email = status.accountEmail {
+                    DetailRow(label: "メール", value: email)
+                }
             }
 
             Spacer()
@@ -849,23 +1033,22 @@ struct LogWindow: View {
                 .font(.headline)
 
             ScrollView {
-                LazyVStack(alignment: .leading, spacing: 6) {
+                Group {
                     if lines.isEmpty {
                         Text("ログはまだありません。")
                             .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     } else {
-                        ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
-                            Text(line)
-                                .font(.system(.caption, design: .monospaced))
-                                .foregroundStyle(.secondary)
-                                .textSelection(.enabled)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
+                        Text(lines.joined(separator: "\n"))
+                            .font(.system(.caption, design: .monospaced))
+                            .foregroundStyle(.secondary)
+                            .textSelection(.enabled)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
                 .padding(12)
             }
-            .background(Color.black.opacity(0.04))
+            .background(Color.primary.opacity(0.04))
             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         }
     }
@@ -914,7 +1097,7 @@ private struct CounterControl: View {
         }
         .padding(.horizontal, 8)
         .frame(height: 28)
-        .background(Color.black.opacity(0.04))
+        .background(Color.primary.opacity(0.04))
         .clipShape(RoundedRectangle(cornerRadius: 6))
         .help(helpText)
     }
@@ -949,6 +1132,7 @@ private struct GenerationProgressView: View {
 
 private final class FocusableTextView: NSTextView {
     var onFocusChange: ((Bool) -> Void)?
+    var onSubmit: (() -> Void)?
 
     override func becomeFirstResponder() -> Bool {
         let result = super.becomeFirstResponder()
@@ -961,11 +1145,22 @@ private final class FocusableTextView: NSTextView {
         if result { onFocusChange?(false) }
         return result
     }
+
+    override func keyDown(with event: NSEvent) {
+        let isReturn = event.keyCode == 36
+        let isShiftHeld = event.modifierFlags.contains(.shift)
+        if isReturn && !isShiftHeld && !hasMarkedText() {
+            onSubmit?()
+            return
+        }
+        super.keyDown(with: event)
+    }
 }
 
 private struct PromptTextView: NSViewRepresentable {
     @Binding var text: String
     @Binding var isFocused: Bool
+    var onSubmit: (() -> Void)?
 
     func makeNSView(context: Context) -> NSScrollView {
         let textView = FocusableTextView()
@@ -982,6 +1177,9 @@ private struct PromptTextView: NSViewRepresentable {
         textView.onFocusChange = { focused in
             context.coordinator.isFocused = focused
         }
+        textView.onSubmit = { [weak coordinator = context.coordinator] in
+            coordinator?.onSubmit?()
+        }
 
         let scrollView = NSScrollView()
         scrollView.documentView = textView
@@ -997,19 +1195,22 @@ private struct PromptTextView: NSViewRepresentable {
         if textView.string != text {
             textView.string = text
         }
+        context.coordinator.onSubmit = onSubmit
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(text: $text, isFocused: $isFocused)
+        Coordinator(text: $text, isFocused: $isFocused, onSubmit: onSubmit)
     }
 
     final class Coordinator: NSObject, NSTextViewDelegate {
         @Binding var text: String
         @Binding var isFocused: Bool
+        var onSubmit: (() -> Void)?
 
-        init(text: Binding<String>, isFocused: Binding<Bool>) {
+        init(text: Binding<String>, isFocused: Binding<Bool>, onSubmit: (() -> Void)?) {
             _text = text
             _isFocused = isFocused
+            self.onSubmit = onSubmit
         }
 
         func textDidChange(_ notification: Notification) {
@@ -1086,8 +1287,40 @@ private struct CanvasZoomControl: View {
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
         }
         .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
+    }
+}
+
+// MARK: - Helpers
+
+private extension NSImage {
+    var pixelAspectRatio: CGFloat? {
+        guard let rep = representations.first(where: { $0 is NSBitmapImageRep })
+                    ?? representations.first else { return nil }
+        let w = CGFloat(rep.pixelsWide), h = CGFloat(rep.pixelsHigh)
+        guard w > 0, h > 0 else { return nil }
+        return w / h
+    }
+}
+
+// MARK: - Popover Button
+
+struct PopoverButton: View {
+    let systemImage: String
+    let title: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 14))
+                    .frame(width: 16, alignment: .center)
+                Text(title)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
     }
 }
