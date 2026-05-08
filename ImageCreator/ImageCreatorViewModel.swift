@@ -500,7 +500,8 @@ final class ImageCreatorViewModel: ObservableObject {
                 prompt: job.prompt,
                 revisedPrompt: job.revisedPrompt,
                 aspectRatio: request.aspectRatio,
-                errorMessage: job.errorMessage
+                errorMessage: job.errorMessage,
+                editedFromItemID: request.editSource?.projectItemID
             )
 
             do {

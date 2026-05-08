@@ -159,6 +159,7 @@ struct ProjectItem: Identifiable, Equatable {
     let aspectRatio: GenerationAspectRatio
     let createdAt: Date
     let errorMessage: String?
+    let editedFromItemID: UUID?
 
     fileprivate let legacyOutputModeWasSVG: Bool
 
@@ -169,7 +170,8 @@ struct ProjectItem: Identifiable, Equatable {
         revisedPrompt: String? = nil,
         aspectRatio: GenerationAspectRatio,
         createdAt: Date = Date(),
-        errorMessage: String? = nil
+        errorMessage: String? = nil,
+        editedFromItemID: UUID? = nil
     ) {
         self.id = id
         self.projectID = projectID
@@ -178,6 +180,7 @@ struct ProjectItem: Identifiable, Equatable {
         self.aspectRatio = aspectRatio
         self.createdAt = createdAt
         self.errorMessage = errorMessage
+        self.editedFromItemID = editedFromItemID
         self.legacyOutputModeWasSVG = false
     }
 
@@ -190,7 +193,7 @@ struct ProjectItem: Identifiable, Equatable {
 
 extension ProjectItem: Codable {
     enum CodingKeys: String, CodingKey {
-        case id, projectID, prompt, revisedPrompt, aspectRatio, createdAt, errorMessage
+        case id, projectID, prompt, revisedPrompt, aspectRatio, createdAt, errorMessage, editedFromItemID
         case outputMode, transparentBackground, fileExtension
     }
 
@@ -203,6 +206,7 @@ extension ProjectItem: Codable {
         aspectRatio = try c.decodeIfPresent(GenerationAspectRatio.self, forKey: .aspectRatio) ?? .square
         createdAt = try c.decode(Date.self, forKey: .createdAt)
         errorMessage = try c.decodeIfPresent(String.self, forKey: .errorMessage)
+        editedFromItemID = try c.decodeIfPresent(UUID.self, forKey: .editedFromItemID)
         let legacyMode = try c.decodeIfPresent(String.self, forKey: .outputMode)
         legacyOutputModeWasSVG = (legacyMode == "svg")
     }
@@ -216,6 +220,7 @@ extension ProjectItem: Codable {
         try c.encode(aspectRatio, forKey: .aspectRatio)
         try c.encode(createdAt, forKey: .createdAt)
         try c.encodeIfPresent(errorMessage, forKey: .errorMessage)
+        try c.encodeIfPresent(editedFromItemID, forKey: .editedFromItemID)
     }
 }
 

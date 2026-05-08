@@ -9,6 +9,7 @@ struct ContentView: View {
     @State private var renamingText = ""
     @State private var confirmingDeleteProjectID: UUID?
     @State private var isAccountPopoverPresented = false
+    @State private var promptIsFocused = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -72,12 +73,6 @@ struct ContentView: View {
 
             Button(action: toggleLogWindow) {
                 Label("ログ", systemImage: "doc.text.magnifyingglass")
-                    .font(.subheadline.weight(.semibold))
-            }
-            .buttonStyle(.borderless)
-
-            Button(action: viewModel.stopServer) {
-                Label("停止", systemImage: "stop.circle")
                     .font(.subheadline.weight(.semibold))
             }
             .buttonStyle(.borderless)
@@ -181,7 +176,8 @@ struct ContentView: View {
                         },
                         onCancelRename: {
                             editingProjectID = nil
-                        }
+                        },
+                        onStop: viewModel.stopServer
                     )
                     .contentShape(Rectangle())
                     .tag(project.id as UUID?)
@@ -295,6 +291,23 @@ struct ContentView: View {
                 .frame(width: 220, height: 220)
                 .background(.white)
                 .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .overlay(alignment: .bottomTrailing) {
+                    if let sourceID = item.editedFromItemID,
+                       let sourceItem = viewModel.items.first(where: { $0.id == sourceID }),
+                       let sourceImage = viewModel.cachedImage(for: sourceItem) {
+                        Image(nsImage: sourceImage)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 36, height: 36)
+                            .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 5, style: .continuous)
+                                    .stroke(Color.white.opacity(0.8), lineWidth: 1.5)
+                            }
+                            .shadow(color: .black.opacity(0.25), radius: 3, x: 0, y: 1)
+                            .padding(6)
+                    }
+                }
                 .overlay {
                     RoundedRectangle(cornerRadius: 6, style: .continuous)
                         .stroke(
@@ -372,7 +385,6 @@ struct ContentView: View {
             Image(nsImage: nsImage)
                 .resizable()
                 .scaledToFit()
-                .padding(10)
         } else {
             VStack(spacing: 8) {
                 Image(systemName: "questionmark.square")
@@ -391,7 +403,6 @@ struct ContentView: View {
             Image(nsImage: nsImage)
                 .resizable()
                 .scaledToFit()
-                .padding(10)
         } else if job.status == .failed {
             VStack(spacing: 8) {
                 Image(systemName: "exclamationmark.triangle")
@@ -404,8 +415,7 @@ struct ContentView: View {
                     .padding(.horizontal, 12)
             }
         } else {
-            ProgressView()
-                .controlSize(.large)
+            GenerationProgressView(onStop: viewModel.stopServer)
         }
     }
 
@@ -445,19 +455,17 @@ struct ContentView: View {
                 Divider()
             }
 
-            TextEditor(text: viewModel.binding(for: \.prompt))
-                .font(.system(size: 18))
-                .scrollContentBackground(.hidden)
+            PromptTextView(text: viewModel.binding(for: \.prompt), isFocused: $promptIsFocused)
                 .frame(height: 76)
                 .padding(.horizontal, 16)
                 .padding(.top, 14)
                 .overlay(alignment: .topLeading) {
-                    if viewModel.currentInputs.prompt.isEmpty {
+                    if viewModel.currentInputs.prompt.isEmpty && !promptIsFocused {
                         Text("生成したい画像を説明")
                             .font(.system(size: 18))
                             .foregroundStyle(.secondary)
-                            .padding(.leading, 21)
-                            .padding(.top, 22)
+                            .padding(.leading, 16)
+                            .padding(.top, 14)
                             .allowsHitTesting(false)
                     }
                 }
@@ -501,7 +509,7 @@ struct ContentView: View {
                 )
 
                 CounterControl(
-                    systemImage: "cpu",
+                    systemImage: "square.split.2x1",
                     label: "並列",
                     value: viewModel.binding(for: \.concurrency),
                     range: 1...8,
@@ -616,7 +624,9 @@ private struct ProjectRow: View {
     @Binding var renamingText: String
     let onCommitRename: () -> Void
     let onCancelRename: () -> Void
+    let onStop: () -> Void
     @FocusState private var isFocused: Bool
+    @State private var isHovering = false
 
     var body: some View {
         if isEditing {
@@ -631,12 +641,23 @@ private struct ProjectRow: View {
                     .lineLimit(2)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 if isGenerating {
-                    ProgressView()
-                        .controlSize(.small)
-                        .scaleEffect(0.7)
+                    if isHovering {
+                        Button(action: onStop) {
+                            Image(systemName: "stop.circle.fill")
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundStyle(.red)
+                        }
+                        .buttonStyle(.plain)
+                    } else {
+                        ProgressView()
+                            .controlSize(.small)
+                            .scaleEffect(0.7)
+                    }
                 }
             }
             .contentShape(Rectangle())
+            .onHover { isHovering = $0 }
+            .animation(.easeInOut(duration: 0.12), value: isHovering)
         }
     }
 }
@@ -718,7 +739,7 @@ struct ItemDetailPopover: View {
                 viewModel.removeBackground(item: item)
                 viewModel.selectedItemID = nil
             } label: {
-                Label("背景を除去", systemImage: "person.crop.rectangle.badge.minus")
+                Label("背景を除去", systemImage: "scissors")
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
 
@@ -888,6 +909,105 @@ private struct CounterControl: View {
         .background(Color.black.opacity(0.04))
         .clipShape(RoundedRectangle(cornerRadius: 6))
         .help(helpText)
+    }
+}
+
+// MARK: - Generating Indicator
+
+private struct GenerationProgressView: View {
+    let onStop: () -> Void
+    @State private var isHovering = false
+
+    var body: some View {
+        ZStack {
+            if isHovering {
+                Button(action: onStop) {
+                    Image(systemName: "stop.circle.fill")
+                        .font(.system(size: 28))
+                        .foregroundStyle(.red)
+                }
+                .buttonStyle(.plain)
+            } else {
+                ProgressView()
+                    .controlSize(.large)
+            }
+        }
+        .animation(.easeInOut(duration: 0.15), value: isHovering)
+        .onHover { isHovering = $0 }
+    }
+}
+
+// MARK: - Prompt Text View
+
+private final class FocusableTextView: NSTextView {
+    var onFocusChange: ((Bool) -> Void)?
+
+    override func becomeFirstResponder() -> Bool {
+        let result = super.becomeFirstResponder()
+        if result { onFocusChange?(true) }
+        return result
+    }
+
+    override func resignFirstResponder() -> Bool {
+        let result = super.resignFirstResponder()
+        if result { onFocusChange?(false) }
+        return result
+    }
+}
+
+private struct PromptTextView: NSViewRepresentable {
+    @Binding var text: String
+    @Binding var isFocused: Bool
+
+    func makeNSView(context: Context) -> NSScrollView {
+        let textView = FocusableTextView()
+        textView.font = NSFont.systemFont(ofSize: 18)
+        textView.textContainerInset = .zero
+        textView.textContainer?.lineFragmentPadding = 0
+        textView.drawsBackground = false
+        textView.isRichText = false
+        textView.isEditable = true
+        textView.isSelectable = true
+        textView.autoresizingMask = [.width]
+        textView.textContainer?.widthTracksTextView = true
+        textView.delegate = context.coordinator
+        textView.onFocusChange = { focused in
+            context.coordinator.isFocused = focused
+        }
+
+        let scrollView = NSScrollView()
+        scrollView.documentView = textView
+        scrollView.hasVerticalScroller = false
+        scrollView.hasHorizontalScroller = false
+        scrollView.drawsBackground = false
+        scrollView.autoresizingMask = [.width, .height]
+        return scrollView
+    }
+
+    func updateNSView(_ scrollView: NSScrollView, context: Context) {
+        guard let textView = scrollView.documentView as? NSTextView else { return }
+        if textView.string != text {
+            textView.string = text
+        }
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(text: $text, isFocused: $isFocused)
+    }
+
+    final class Coordinator: NSObject, NSTextViewDelegate {
+        @Binding var text: String
+        @Binding var isFocused: Bool
+
+        init(text: Binding<String>, isFocused: Binding<Bool>) {
+            _text = text
+            _isFocused = isFocused
+        }
+
+        func textDidChange(_ notification: Notification) {
+            guard let textView = notification.object as? NSTextView else { return }
+            text = textView.string
+        }
     }
 }
 
