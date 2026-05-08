@@ -126,4 +126,15 @@
 - タスクの分割はメインスレッドで処理すること
 
 ## ビルド
-- ビルドした成果物は _build/ ディレクトリに格納
+
+ビルドコマンド（必ずこれを使う）:
+```bash
+xcodebuild -scheme ImageCreator -destination 'platform=macOS' SYMROOT=_build OBJROOT=_build/obj build
+```
+
+成果物: `_build/Debug/ImageCreator.app`
+
+ルール:
+- SYMROOT は常に `_build`、OBJROOT は常に `_build/obj` 固定
+- `-derivedDataPath` は使わない
+- 上記以外の場所にビルド成果物を作った場合は即削除する
