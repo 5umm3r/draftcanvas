@@ -10,6 +10,7 @@ struct ContentView: View {
     @State private var confirmingDeleteProjectID: UUID?
     @State private var isAccountPopoverPresented = false
     @State private var promptIsFocused = false
+    @State private var canvasZoom: CGFloat = 1.0
 
     var body: some View {
         VStack(spacing: 0) {
@@ -243,9 +244,9 @@ struct ContentView: View {
                 }
                 .padding(.bottom, 120)
             } else {
-                ScrollView([.vertical, .horizontal]) {
+                ScrollView(.vertical) {
                     LazyVGrid(
-                        columns: Array(repeating: GridItem(.fixed(220), spacing: 28), count: 3),
+                        columns: [GridItem(.adaptive(minimum: 220 * canvasZoom), spacing: 28)],
                         spacing: 28
                     ) {
                         ForEach(canvasEntries) { entry in
@@ -256,6 +257,13 @@ struct ContentView: View {
                     .padding(.horizontal, 90)
                     .padding(.bottom, 220)
                 }
+            }
+        }
+        .overlay(alignment: .topTrailing) {
+            if !viewModel.projects.isEmpty && !canvasEntries.isEmpty {
+                CanvasZoomControl(zoom: $canvasZoom)
+                    .padding(.top, 16)
+                    .padding(.trailing, 16)
             }
         }
     }
@@ -288,7 +296,7 @@ struct ContentView: View {
                     checkerboard
                     previewForItem(item)
                 }
-                .frame(width: 220, height: 220)
+                .frame(width: 220 * canvasZoom, height: 220 * canvasZoom)
                 .background(.white)
                 .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                 .overlay(alignment: .bottomTrailing) {
@@ -349,7 +357,7 @@ struct ContentView: View {
                     checkerboard
                     preview(for: job)
                 }
-                .frame(width: 220, height: 220)
+                .frame(width: 220 * canvasZoom, height: 220 * canvasZoom)
                 .background(.white)
                 .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                 .overlay {
@@ -1033,5 +1041,53 @@ private struct StatusBadge: View {
         case .succeeded: return .green
         case .failed: return .orange
         }
+    }
+}
+
+// MARK: - Canvas Zoom Control
+
+private struct CanvasZoomControl: View {
+    @Binding var zoom: CGFloat
+    private let minZoom: CGFloat = 0.25
+    private let maxZoom: CGFloat = 4.0
+    private let step: CGFloat = 0.1
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Button {
+                zoom = max(minZoom, zoom - step)
+            } label: {
+                Image(systemName: "minus")
+                    .frame(width: 18, height: 18)
+            }
+            .buttonStyle(.plain)
+            .disabled(zoom <= minZoom)
+
+            Slider(value: $zoom, in: minZoom...maxZoom)
+                .frame(width: 140)
+
+            Button {
+                zoom = min(maxZoom, zoom + step)
+            } label: {
+                Image(systemName: "plus")
+                    .frame(width: 18, height: 18)
+            }
+            .buttonStyle(.plain)
+            .disabled(zoom >= maxZoom)
+
+            Text("\(Int((zoom * 100).rounded()))%")
+                .font(.caption.weight(.semibold).monospacedDigit())
+                .frame(width: 44, alignment: .trailing)
+                .contentShape(Rectangle())
+                .onTapGesture { zoom = 1.0 }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .stroke(Color.black.opacity(0.08), lineWidth: 1)
+        }
+        .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
     }
 }
