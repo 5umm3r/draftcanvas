@@ -55,3 +55,6 @@ fastlane/test_output
 
 # build files
 _build/
+
+# Claude Code local settings
+.claude/settings.local.json
