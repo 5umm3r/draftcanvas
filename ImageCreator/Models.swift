@@ -105,6 +105,9 @@ struct GenerationEditSource: Equatable {
     var projectItemID: UUID
     var filePath: String
     var originalPrompt: String
+    var maskFilePath: String?
+    var compositeFilePath: String?
+    var isInpainting: Bool { maskFilePath != nil }
 }
 
 enum GenerationJobStatus: String {
@@ -229,6 +232,8 @@ struct ProjectItem: Identifiable, Equatable {
     let createdAt: Date
     let errorMessage: String?
     let editedFromItemID: UUID?
+    let hasSVG: Bool
+    let isBackgroundRemoved: Bool
 
     fileprivate let legacyOutputModeWasSVG: Bool
 
@@ -240,7 +245,9 @@ struct ProjectItem: Identifiable, Equatable {
         aspectRatio: GenerationAspectRatio,
         createdAt: Date = Date(),
         errorMessage: String? = nil,
-        editedFromItemID: UUID? = nil
+        editedFromItemID: UUID? = nil,
+        hasSVG: Bool = false,
+        isBackgroundRemoved: Bool = false
     ) {
         self.id = id
         self.projectID = projectID
@@ -250,6 +257,8 @@ struct ProjectItem: Identifiable, Equatable {
         self.createdAt = createdAt
         self.errorMessage = errorMessage
         self.editedFromItemID = editedFromItemID
+        self.hasSVG = hasSVG
+        self.isBackgroundRemoved = isBackgroundRemoved
         self.legacyOutputModeWasSVG = false
     }
 
@@ -258,11 +267,19 @@ struct ProjectItem: Identifiable, Equatable {
             .appendingPathComponent("items", isDirectory: true)
             .appendingPathComponent("\(id.uuidString).png")
     }
+
+    func svgFileURL(in rootDirectory: URL) -> URL {
+        rootDirectory
+            .appendingPathComponent("items", isDirectory: true)
+            .appendingPathComponent("\(id.uuidString).svg")
+    }
 }
 
 extension ProjectItem: Codable {
     enum CodingKeys: String, CodingKey {
         case id, projectID, prompt, revisedPrompt, aspectRatio, createdAt, errorMessage, editedFromItemID
+        case hasSVG
+        case isBackgroundRemoved
         case outputMode, transparentBackground, fileExtension
     }
 
@@ -276,6 +293,8 @@ extension ProjectItem: Codable {
         createdAt = try c.decode(Date.self, forKey: .createdAt)
         errorMessage = try c.decodeIfPresent(String.self, forKey: .errorMessage)
         editedFromItemID = try c.decodeIfPresent(UUID.self, forKey: .editedFromItemID)
+        hasSVG = try c.decodeIfPresent(Bool.self, forKey: .hasSVG) ?? false
+        isBackgroundRemoved = try c.decodeIfPresent(Bool.self, forKey: .isBackgroundRemoved) ?? false
         let legacyMode = try c.decodeIfPresent(String.self, forKey: .outputMode)
         legacyOutputModeWasSVG = (legacyMode == "svg")
     }
@@ -290,6 +309,8 @@ extension ProjectItem: Codable {
         try c.encode(createdAt, forKey: .createdAt)
         try c.encodeIfPresent(errorMessage, forKey: .errorMessage)
         try c.encodeIfPresent(editedFromItemID, forKey: .editedFromItemID)
+        if hasSVG { try c.encode(hasSVG, forKey: .hasSVG) }
+        if isBackgroundRemoved { try c.encode(isBackgroundRemoved, forKey: .isBackgroundRemoved) }
     }
 }
 
@@ -312,6 +333,31 @@ final class ProjectStore: @unchecked Sendable {
 
     var itemsDirectory: URL {
         rootDirectory.appendingPathComponent("items", isDirectory: true)
+    }
+
+    var masksDirectory: URL {
+        rootDirectory.appendingPathComponent("masks", isDirectory: true)
+    }
+
+    @discardableResult
+    func writeMaskData(_ data: Data, id: UUID) throws -> URL {
+        try FileManager.default.createDirectory(at: masksDirectory, withIntermediateDirectories: true)
+        let url = masksDirectory.appendingPathComponent("\(id.uuidString)_mask.png")
+        try data.write(to: url, options: .atomic)
+        return url
+    }
+
+    @discardableResult
+    func writeCompositeData(_ data: Data, id: UUID) throws -> URL {
+        try FileManager.default.createDirectory(at: masksDirectory, withIntermediateDirectories: true)
+        let url = masksDirectory.appendingPathComponent("\(id.uuidString)_composite.png")
+        try data.write(to: url, options: .atomic)
+        return url
+    }
+
+    func cleanupMaskFiles(id: UUID) {
+        try? FileManager.default.removeItem(at: masksDirectory.appendingPathComponent("\(id.uuidString)_mask.png"))
+        try? FileManager.default.removeItem(at: masksDirectory.appendingPathComponent("\(id.uuidString)_composite.png"))
     }
 
     init(rootDirectory: URL = ProjectStore.defaultRootDirectory()) {
@@ -360,8 +406,19 @@ final class ProjectStore: @unchecked Sendable {
         return url
     }
 
+    @discardableResult
+    func writeSVGData(_ data: Data, for item: ProjectItem) throws -> URL {
+        try FileManager.default.createDirectory(at: itemsDirectory, withIntermediateDirectories: true)
+        let url = item.svgFileURL(in: rootDirectory)
+        try data.write(to: url, options: .atomic)
+        return url
+    }
+
     func deleteItemFile(_ item: ProjectItem) {
         try? FileManager.default.removeItem(at: item.fileURL(in: rootDirectory))
+        if item.hasSVG {
+            try? FileManager.default.removeItem(at: item.svgFileURL(in: rootDirectory))
+        }
     }
 
     static func defaultRootDirectory() -> URL {
@@ -459,6 +516,16 @@ enum AccountKind: Equatable {
         case .amazonBedrock: return "Amazon Bedrock"
         case .unauthenticated: return "未ログイン"
         case .unknown: return "不明"
+        }
+    }
+
+    var systemImageName: String {
+        switch self {
+        case .chatgpt:          return "person.crop.circle.fill"
+        case .apiKey:           return "key.fill"
+        case .amazonBedrock:    return "cloud.fill"
+        case .unauthenticated:  return "person.crop.circle.badge.questionmark"
+        case .unknown:          return "questionmark.circle"
         }
     }
 }
@@ -659,5 +726,32 @@ private extension JSONEncoder {
         encoder.dateEncodingStrategy = .iso8601
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         return encoder
+    }
+}
+
+// MARK: - CompletionSoundOption
+
+enum CompletionSoundOption: String, CaseIterable {
+    case off = "off"
+    case basso = "Basso"
+    case blow = "Blow"
+    case bottle = "Bottle"
+    case frog = "Frog"
+    case funk = "Funk"
+    case glass = "Glass"
+    case hero = "Hero"
+    case morse = "Morse"
+    case ping = "Ping"
+    case pop = "Pop"
+    case purr = "Purr"
+    case sosumi = "Sosumi"
+    case submarine = "Submarine"
+    case tink = "Tink"
+
+    var displayName: String {
+        switch self {
+        case .off: return "オフ"
+        default: return rawValue
+        }
     }
 }

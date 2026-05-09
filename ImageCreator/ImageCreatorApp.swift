@@ -8,6 +8,9 @@ struct ImageCreatorApp: App {
         WindowGroup {
             ContentView(viewModel: viewModel)
                 .preferredColorScheme(viewModel.preferredColorScheme)
+                .onAppear {
+                    viewModel.requestNotificationPermission()
+                }
         }
         .windowStyle(.titleBar)
 

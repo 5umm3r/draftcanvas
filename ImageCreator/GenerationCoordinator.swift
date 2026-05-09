@@ -75,10 +75,13 @@ final class CodexGenerationRunner: GenerationRunning {
             output.logs.append("Codex thread: \(threadID)")
 
             let prompt = PromptFactory.prompt(for: request, jobIndex: job.index)
+            let referenceImagePath = request.editSource.map { src in
+                src.compositeFilePath ?? src.filePath
+            }
             let result = try await client.runTurn(
                 threadID: threadID,
                 prompt: prompt,
-                referenceImagePath: request.editSource?.filePath
+                referenceImagePath: referenceImagePath
             )
 
             output.logs.append(contentsOf: result.logs)
@@ -103,6 +106,22 @@ final class CodexGenerationRunner: GenerationRunning {
 enum PromptFactory {
     static func prompt(for request: GenerationRequest, jobIndex: Int) -> String {
         if let editSource = request.editSource {
+            if editSource.isInpainting {
+                return [
+                    "Edit the attached reference image for a local personal image creator app.",
+                    "The reference image has transparent (alpha=0) regions indicating areas to be regenerated.",
+                    "Use the image generation capability and return exactly one edited raster image result.",
+                    "Fill in the transparent regions according to the following user instruction:",
+                    "User edit request: \(request.prompt)",
+                    "Original image description: \(editSource.originalPrompt)",
+                    "Aspect ratio: \(request.aspectRatio.promptDescription).",
+                    "Variation number: \(jobIndex + 1).",
+                    "Preserve all non-transparent parts of the image exactly as they are.",
+                    "Only modify the transparent regions to match the user edit request.",
+                    "Return a fully opaque image with no transparency.",
+                    "Do not write code. Do not ask clarifying questions."
+                ].joined(separator: "\n")
+            }
             return [
                 "Edit the attached reference image for a local personal image creator app.",
                 "Use the image generation capability and return exactly one edited raster image result.",

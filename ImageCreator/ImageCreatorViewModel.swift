@@ -2,6 +2,7 @@ import AppKit
 import Foundation
 import SwiftUI
 import UniformTypeIdentifiers
+import UserNotifications
 
 @MainActor
 final class ImageCreatorViewModel: ObservableObject {
@@ -14,6 +15,7 @@ final class ImageCreatorViewModel: ObservableObject {
     // MARK: - Global state
     @AppStorage("appAppearance") var appAppearanceRaw: String = "light"
     @AppStorage("totalGeneratedImages") var totalGeneratedImages: Int = 0
+    @AppStorage("completionSound") var completionSound: String = CompletionSoundOption.glass.rawValue
     @Published var projects: [Project] = []
     @Published var items: [ProjectItem] = []
     @Published var selectedProjectID: UUID? {
@@ -35,13 +37,18 @@ final class ImageCreatorViewModel: ObservableObject {
     @Published var preferredSaveFolder: URL?
     @Published var errorToast: String?
     @Published var accountUsagePrewarmFailed = false
+    @Published var isLoggingOut = false
     @Published private(set) var availableModels: [CodexModel] = []
+
+    @Published var vectorizingItemIDs: Set<UUID> = []
+    @Published var inpaintingTarget: ProjectItem? = nil
 
     private let client: CodexAppServerClient
     private let coordinator: GenerationCoordinator
     private let projectStore: ProjectStore
     private let preferredSaveFolderStore: PreferredSaveFolderStore
     private var isLoadingProjects = false
+    private var vectorizationTasks: [UUID: Task<Void, Never>] = [:]
     let imageCache = NSCache<NSURL, NSImage>()
 
     init(
@@ -254,7 +261,13 @@ final class ImageCreatorViewModel: ObservableObject {
                 }
                 self.persistSucceededJobs(results, request: request, projectID: targetProjectID)
                 self.generatingProjectIDs.remove(targetProjectID)
+                if self.generatingProjectIDs.isEmpty {
+                    self.onAllJobsCompleted(results: results)
+                }
                 if var inputs = self.inputsByProject[targetProjectID] {
+                    if let editSource = inputs.editSource, editSource.isInpainting {
+                        self.projectStore.cleanupMaskFiles(id: editSource.projectItemID)
+                    }
                     inputs.editSource = nil
                     self.inputsByProject[targetProjectID] = inputs
                 }
@@ -285,6 +298,28 @@ final class ImageCreatorViewModel: ObservableObject {
                     self.isRefreshingAccountUsage = false
                     self.accountUsagePrewarmFailed = true
                     self.logs.append("Codexアカウントと使用量の取得に失敗しました: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+
+    func logout() {
+        guard !isLoggingOut else { return }
+        isLoggingOut = true
+        Task {
+            do {
+                _ = try await client.sendRequest(method: "account/logout")
+                await MainActor.run {
+                    self.accountUsageStatus = .unavailable
+                    self.isLoggingOut = false
+                    self.logs.append("ログアウトしました。")
+                }
+                refreshAccountUsage()
+            } catch {
+                await MainActor.run {
+                    self.isLoggingOut = false
+                    self.errorToast = "ログアウトに失敗しました"
+                    self.logs.append("ログアウト失敗: \(error.localizedDescription)")
                 }
             }
         }
@@ -344,6 +379,9 @@ final class ImageCreatorViewModel: ObservableObject {
     func cancelEditingHistoryItem() {
         guard let id = selectedProjectID else { return }
         var inputs = inputsByProject[id] ?? ProjectInputs()
+        if let editSource = inputs.editSource, editSource.isInpainting {
+            projectStore.cleanupMaskFiles(id: editSource.projectItemID)
+        }
         inputs.editSource = nil
         inputsByProject[id] = inputs
     }
@@ -366,6 +404,66 @@ final class ImageCreatorViewModel: ObservableObject {
             projects[idx].updatedAt = Date()
         }
         logs.append("アイテムを再編集対象にしました: \(fileURL.path)")
+    }
+
+    func inpaint(item: ProjectItem) {
+        inpaintingTarget = item
+    }
+
+    func applyInpaintingMask(item: ProjectItem, strokes: [MaskStroke]) {
+        guard let id = selectedProjectID else { return }
+
+        let fileURL = item.fileURL(in: projectStore.rootDirectory)
+
+        Task.detached(priority: .userInitiated) {
+            do {
+                let originalData = try Data(contentsOf: fileURL)
+                let imgSource = CGImageSourceCreateWithData(originalData as CFData, nil)
+                let imgProps = imgSource.flatMap { CGImageSourceCopyPropertiesAtIndex($0, 0, nil) as? [CFString: Any] }
+                let pw = imgProps?[kCGImagePropertyPixelWidth] as? CGFloat
+                    ?? (imgProps?[kCGImagePropertyPixelWidth] as? Int).map(CGFloat.init)
+                    ?? 1024
+                let ph = imgProps?[kCGImagePropertyPixelHeight] as? CGFloat
+                    ?? (imgProps?[kCGImagePropertyPixelHeight] as? Int).map(CGFloat.init)
+                    ?? 1024
+                let canvasSize = CGSize(width: pw, height: ph)
+
+                guard let maskData = InpaintingMaskCompositor.renderMask(from: strokes, canvasSize: canvasSize) else {
+                    await MainActor.run { self.errorToast = "マスク画像の生成に失敗しました。" }
+                    return
+                }
+
+                let compositeData = try InpaintingMaskCompositor.composite(
+                    originalImageData: originalData,
+                    maskData: maskData
+                )
+
+                let store = await MainActor.run { self.projectStore }
+                let maskURL = try store.writeMaskData(maskData, id: item.id)
+                let compositeURL = try store.writeCompositeData(compositeData, id: item.id)
+
+                await MainActor.run {
+                    var inputs = self.inputsByProject[id] ?? ProjectInputs()
+                    inputs.prompt = item.prompt
+                    inputs.aspectRatio = item.aspectRatio
+                    inputs.editSource = GenerationEditSource(
+                        projectItemID: item.id,
+                        filePath: fileURL.path,
+                        originalPrompt: item.prompt,
+                        maskFilePath: maskURL.path,
+                        compositeFilePath: compositeURL.path
+                    )
+                    self.inputsByProject[id] = inputs
+                    self.inpaintingTarget = nil
+                    self.logs.append("マスク編集を設定しました: \(item.id)")
+                }
+            } catch {
+                await MainActor.run {
+                    self.errorToast = "マスクの処理に失敗しました: \(error.localizedDescription)"
+                    self.logs.append("マスク編集処理エラー: \(error.localizedDescription)")
+                }
+            }
+        }
     }
 
     func removeBackground(item: ProjectItem) {
@@ -398,7 +496,7 @@ final class ImageCreatorViewModel: ObservableObject {
                     completed.imageData = outputData
                     self.upsert(completed, into: projectID)
 
-                    let newItem = ProjectItem(projectID: projectID, prompt: itemPrompt, aspectRatio: itemAspectRatio)
+                    let newItem = ProjectItem(projectID: projectID, prompt: itemPrompt, aspectRatio: itemAspectRatio, isBackgroundRemoved: true)
                     do {
                         try self.projectStore.writeItemData(outputData, for: newItem)
                         self.items.append(newItem)
@@ -464,8 +562,73 @@ final class ImageCreatorViewModel: ObservableObject {
         runExportPanel(baseFilename: base) { [weak self] dest, format in
             guard let self else { return }
             let pngData = try Data(contentsOf: item.fileURL(in: self.projectStore.rootDirectory))
-            try self.writeExport(pngData: pngData, to: dest, format: format)
+            try self.writeExport(pngData: pngData, to: dest, format: format, item: item)
         }
+    }
+
+    func vectorize(item: ProjectItem) {
+        guard let projectID = selectedProjectID else { return }
+
+        vectorizingItemIDs.insert(item.id)
+
+        let fileURL = item.fileURL(in: projectStore.rootDirectory)
+        let itemAspectRatio = item.aspectRatio
+        let itemPrompt = item.prompt
+        let itemID = item.id
+
+        let task = Task {
+            do {
+                let inputData = try Data(contentsOf: fileURL)
+                let result = try await ImageVectorizer.process(data: inputData)
+
+                await MainActor.run { [weak self] in
+                    guard let self else { return }
+                    self.vectorizingItemIDs.remove(itemID)
+                    self.vectorizationTasks.removeValue(forKey: itemID)
+
+                    let newItem = ProjectItem(
+                        projectID: projectID,
+                        prompt: itemPrompt,
+                        aspectRatio: itemAspectRatio,
+                        hasSVG: true
+                    )
+                    do {
+                        try self.projectStore.writeItemData(result.previewPNGData, for: newItem)
+                        try self.projectStore.writeSVGData(result.svgData, for: newItem)
+                        self.items.append(newItem)
+                        if let img = NSImage(data: result.previewPNGData) {
+                            self.imageCache.setObject(img, forKey: self.fileURL(for: newItem) as NSURL)
+                        }
+                        if let idx = self.projects.firstIndex(where: { $0.id == projectID }) {
+                            self.projects[idx].updatedAt = Date()
+                        }
+                        self.saveState()
+                        self.logs.append("ベクター化完了: \(newItem.id)")
+                    } catch {
+                        self.errorToast = "ベクター化結果の保存に失敗しました"
+                        self.logs.append("ベクター化結果の保存に失敗: \(error.localizedDescription)")
+                    }
+                }
+            } catch {
+                await MainActor.run { [weak self] in
+                    guard let self else { return }
+                    self.vectorizingItemIDs.remove(itemID)
+                    self.vectorizationTasks.removeValue(forKey: itemID)
+                    guard !(error is CancellationError) else { return }
+                    let message = (error as? ImageVectorizationError)?.localizedDescription
+                        ?? "ベクター化に失敗しました"
+                    self.errorToast = message
+                    self.logs.append("ベクター化失敗: \(error.localizedDescription)")
+                }
+            }
+        }
+        vectorizationTasks[item.id] = task
+    }
+
+    func cancelVectorization(for item: ProjectItem) {
+        vectorizationTasks[item.id]?.cancel()
+        vectorizationTasks.removeValue(forKey: item.id)
+        vectorizingItemIDs.remove(item.id)
     }
 
     func exportSelected() {
@@ -538,7 +701,7 @@ final class ImageCreatorViewModel: ObservableObject {
         _ = controller
     }
 
-    private func writeExport(pngData: Data, to url: URL, format: ExportFormat) throws {
+    private func writeExport(pngData: Data, to url: URL, format: ExportFormat, item: ProjectItem? = nil) throws {
         let data: Data
         switch format {
         case .png:
@@ -546,7 +709,12 @@ final class ImageCreatorViewModel: ObservableObject {
         case .jpeg:
             data = try ImageEncoder.jpegData(fromPNG: pngData)
         case .svg:
-            data = try ImageEncoder.svgWrapping(pngData: pngData)
+            if let item, item.hasSVG,
+               let svgData = try? Data(contentsOf: item.svgFileURL(in: projectStore.rootDirectory)) {
+                data = svgData
+            } else {
+                data = try ImageEncoder.svgWrapping(pngData: pngData)
+            }
         }
         try data.write(to: url, options: .atomic)
     }
@@ -594,6 +762,33 @@ final class ImageCreatorViewModel: ObservableObject {
         projectStore.save(makeSnapshot())
     }
 
+    func requestNotificationPermission() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
+    }
+
+    private func onAllJobsCompleted(results: [GenerationJob]) {
+        if completionSound != CompletionSoundOption.off.rawValue {
+            NSSound(named: NSSound.Name(completionSound))?.play()
+        }
+        let succeeded = results.filter { $0.status == .succeeded }.count
+        let failed = results.filter { $0.status == .failed }.count
+        sendCompletionNotification(succeeded: succeeded, failed: failed)
+    }
+
+    private func sendCompletionNotification(succeeded: Int, failed: Int) {
+        let content = UNMutableNotificationContent()
+        content.title = "画像生成完了"
+        content.body = failed > 0
+            ? "\(succeeded)枚成功、\(failed)枚失敗"
+            : "\(succeeded)枚の画像を生成しました"
+        let request = UNNotificationRequest(
+            identifier: UUID().uuidString,
+            content: content,
+            trigger: nil
+        )
+        UNUserNotificationCenter.current().add(request)
+    }
+
     private func persistSucceededJobs(_ jobs: [GenerationJob], request: GenerationRequest, projectID: UUID) {
         let succeededCount = jobs.filter { $0.status == .succeeded }.count
         if succeededCount > 0 {
@@ -639,7 +834,7 @@ enum ExportFormat: Int, CaseIterable {
         switch self {
         case .png: return "PNG"
         case .jpeg: return "JPEG"
-        case .svg: return "SVG (PNG埋め込み)"
+        case .svg: return "SVG"
         }
     }
 

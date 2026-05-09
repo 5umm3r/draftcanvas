@@ -11,6 +11,7 @@ struct ContentView: View {
     @State private var confirmingDeleteProjectID: UUID?
     @State private var isAccountPopoverPresented = false
     @State private var promptIsFocused = false
+    @State private var promptTextHeight: CGFloat = 76
     @State private var canvasZoom: CGFloat = 1.0
 
     var body: some View {
@@ -67,15 +68,23 @@ struct ContentView: View {
     private var topStatusBar: some View {
         HStack(spacing: 12) {
             Button(action: viewModel.chooseSaveFolder) {
-                Label("保存先", systemImage: "folder")
-                    .font(.subheadline.weight(.semibold))
+                HStack(spacing: 4) {
+                    Image(systemName: "folder")
+                        .font(.body.weight(.semibold))
+                    Text("保存先")
+                        .font(.subheadline.weight(.semibold))
+                }
             }
             .buttonStyle(.borderless)
             .help("保存先フォルダ: \(viewModel.preferredSaveFolderLabel)")
 
             Button(action: toggleLogWindow) {
-                Label("ログ", systemImage: "doc.text.magnifyingglass")
-                    .font(.subheadline.weight(.semibold))
+                HStack(spacing: 4) {
+                    Image(systemName: "doc.text.magnifyingglass")
+                        .font(.body.weight(.semibold))
+                    Text("ログ")
+                        .font(.subheadline.weight(.semibold))
+                }
             }
             .buttonStyle(.borderless)
 
@@ -83,7 +92,7 @@ struct ContentView: View {
 
             HStack(spacing: 4) {
                 Image(systemName: "photo.stack")
-                    .font(.subheadline.weight(.semibold))
+                    .font(.body.weight(.semibold))
                     .foregroundStyle(.secondary)
                 Text("\(viewModel.totalGeneratedImages)")
                     .font(.subheadline.weight(.semibold))
@@ -113,7 +122,7 @@ struct ContentView: View {
                         .frame(width: 28, height: 28)
                 } else {
                     Image(systemName: "arrow.clockwise")
-                        .font(.subheadline)
+                        .font(.body)
                         .frame(width: 28, height: 28)
                 }
             }
@@ -128,7 +137,7 @@ struct ContentView: View {
                 isAccountPopoverPresented.toggle()
             } label: {
                 Image(systemName: "person.crop.circle")
-                    .font(.subheadline)
+                    .font(.body)
                     .foregroundStyle(.secondary)
             }
             .buttonStyle(.borderless)
@@ -137,7 +146,9 @@ struct ContentView: View {
                     status: viewModel.accountUsageStatus,
                     isLoading: viewModel.isRefreshingAccountUsage,
                     hasFailed: viewModel.accountUsagePrewarmFailed,
-                    onRetry: viewModel.refreshAccountUsage
+                    isLoggingOut: viewModel.isLoggingOut,
+                    onRetry: viewModel.refreshAccountUsage,
+                    onLogout: viewModel.logout
                 )
             }
 
@@ -146,11 +157,50 @@ struct ContentView: View {
             Divider()
                 .frame(height: 20)
 
+            Menu {
+                Button {
+                    viewModel.completionSound = CompletionSoundOption.off.rawValue
+                } label: {
+                    HStack {
+                        Text(CompletionSoundOption.off.displayName)
+                        if viewModel.completionSound == CompletionSoundOption.off.rawValue {
+                            Image(systemName: "checkmark")
+                        }
+                    }
+                }
+                Divider()
+                ForEach(CompletionSoundOption.allCases.filter { $0 != .off }, id: \.self) { option in
+                    Button {
+                        viewModel.completionSound = option.rawValue
+                        NSSound(named: NSSound.Name(option.rawValue))?.play()
+                    } label: {
+                        HStack {
+                            Text(option.displayName)
+                            if viewModel.completionSound == option.rawValue {
+                                Image(systemName: "checkmark")
+                            }
+                        }
+                    }
+                }
+            } label: {
+                Image(systemName: viewModel.completionSound == CompletionSoundOption.off.rawValue
+                    ? "speaker.slash"
+                    : "speaker.wave.2")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .frame(width: 28, height: 28)
+            }
+            .menuStyle(.borderlessButton)
+            .help("完了通知サウンド: \(CompletionSoundOption(rawValue: viewModel.completionSound)?.displayName ?? viewModel.completionSound)")
+
+            Divider()
+                .frame(height: 20)
+
             Button {
                 viewModel.cycleAppearance()
             } label: {
                 Image(systemName: AppAppearance(rawValue: viewModel.appAppearanceRaw)?.systemImage ?? "sun.max")
-                    .font(.subheadline)
+                    .font(.body)
                     .foregroundStyle(.secondary)
                     .frame(width: 28, height: 28)
             }
@@ -257,12 +307,35 @@ struct ContentView: View {
     }
 
     private var canvasArea: some View {
-        ZStack(alignment: .bottom) {
-            canvas
+        GeometryReader { geometry in
+            ZStack(alignment: .bottom) {
+                canvas
 
-            promptPanel
-                .padding(.horizontal, 24)
-                .padding(.bottom, 18)
+                promptPanel(maxPromptHeight: geometry.size.height / 2)
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 18)
+            }
+            .sheet(item: $viewModel.inpaintingTarget) { item in
+                inpaintingEditorSheet(for: item)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func inpaintingEditorSheet(for item: ProjectItem) -> some View {
+        if let nsImage = viewModel.cachedImage(for: item) {
+            InpaintingMaskEditorSheet(
+                originalImage: nsImage,
+                onComplete: { strokes in
+                    viewModel.applyInpaintingMask(item: item, strokes: strokes)
+                },
+                onCancel: {
+                    viewModel.inpaintingTarget = nil
+                }
+            )
+        } else {
+            Text("画像を読み込めませんでした")
+                .padding(40)
         }
     }
 
@@ -391,6 +464,13 @@ struct ContentView: View {
                             lineWidth: viewModel.selectedItemID == item.id ? 3 : 1
                         )
                 }
+                .overlay {
+                    if viewModel.vectorizingItemIDs.contains(item.id) {
+                        VectorizingOverlay {
+                            viewModel.cancelVectorization(for: item)
+                        }
+                    }
+                }
             }
         }
         .buttonStyle(.plain)
@@ -493,13 +573,13 @@ struct ContentView: View {
 
     // MARK: - Prompt Panel
 
-    private var promptPanel: some View {
+    private func promptPanel(maxPromptHeight: CGFloat) -> some View {
         VStack(spacing: 0) {
-            if viewModel.currentInputs.editSource != nil {
+            if let editSource = viewModel.currentInputs.editSource {
                 HStack(spacing: 8) {
-                    Image(systemName: "wand.and.stars")
+                    Image(systemName: editSource.isInpainting ? "paintbrush.pointed" : "wand.and.stars")
                         .foregroundStyle(.secondary)
-                    Text("再編集モード")
+                    Text(editSource.isInpainting ? "マスクして編集モード" : "再編集モード")
                         .font(.caption.weight(.semibold))
                     Spacer()
                     Button("解除") {
@@ -509,15 +589,25 @@ struct ContentView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .background(Color.accentColor.opacity(0.10))
+                .background((editSource.isInpainting ? Color.orange : Color.accentColor).opacity(0.10))
 
                 Divider()
             }
 
-            PromptTextView(text: viewModel.binding(for: \.prompt), isFocused: $promptIsFocused, onSubmit: viewModel.generate)
-                .frame(height: 76)
-                .padding(.horizontal, 16)
-                .padding(.top, 14)
+            let minH: CGFloat = 76
+            let maxH = max(minH, maxPromptHeight)
+            let clampedHeight = min(max(promptTextHeight, minH), maxH)
+            PromptTextView(
+                text: viewModel.binding(for: \.prompt),
+                isFocused: $promptIsFocused,
+                dynamicHeight: $promptTextHeight,
+                maxHeight: maxH,
+                onSubmit: viewModel.generate
+            )
+            .frame(height: clampedHeight)
+            .animation(.easeOut(duration: 0.12), value: clampedHeight)
+            .padding(.horizontal, 16)
+            .padding(.top, 14)
                 .overlay(alignment: .topLeading) {
                     if viewModel.currentInputs.prompt.isEmpty && !promptIsFocused {
                         Text("生成したい画像を説明")
@@ -722,7 +812,7 @@ struct ContentView: View {
     ) -> some View {
         return HStack(spacing: 6) {
             Image(systemName: systemName)
-                .font(.subheadline.weight(.semibold))
+                .font(.body.weight(.semibold))
                 .foregroundStyle(.secondary)
 
             Text(label)
@@ -904,10 +994,32 @@ struct ItemDetailPopover: View {
                 viewModel.selectedItemID = nil
             }
 
-            PopoverButton(systemImage: "scissors", title: "背景を除去") {
-                viewModel.removeBackground(item: item)
+            PopoverButton(systemImage: "paintbrush.pointed", title: "マスクして編集") {
+                viewModel.inpaint(item: item)
                 viewModel.selectedItemID = nil
             }
+
+            PopoverButton(
+                systemImage: "scissors",
+                title: "背景を除去",
+                action: {
+                    viewModel.removeBackground(item: item)
+                    viewModel.selectedItemID = nil
+                },
+                isDisabled: item.isBackgroundRemoved,
+                disabledReason: item.isBackgroundRemoved ? "背景除去済み" : nil
+            )
+
+            PopoverButton(
+                systemImage: "pencil.and.outline",
+                title: "ベクター化",
+                action: {
+                    viewModel.vectorize(item: item)
+                    viewModel.selectedItemID = nil
+                },
+                isDisabled: item.hasSVG,
+                disabledReason: item.hasSVG ? "ベクター化済み" : nil
+            )
 
             PopoverButton(systemImage: "folder", title: "Finderで表示") {
                 viewModel.reveal(item: item)
@@ -931,7 +1043,7 @@ struct ItemDetailPopover: View {
             .controlSize(.large)
         }
         .padding(18)
-        .frame(width: 300, height: 410)
+        .frame(width: 300, height: 490)
         .alert("画像を削除しますか？", isPresented: $isConfirmingDelete) {
             Button("削除", role: .destructive) {
                 viewModel.deleteItem(item)
@@ -977,36 +1089,74 @@ struct AccountPopover: View {
     let status: CodexAccountUsageStatus
     let isLoading: Bool
     let hasFailed: Bool
+    let isLoggingOut: Bool
     let onRetry: () -> Void
+    let onLogout: () -> Void
+
+    private var canLogout: Bool {
+        status.accountKind == .chatgpt
+    }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text("アカウント")
-                .font(.headline)
-
+        VStack(alignment: .leading, spacing: 0) {
             if isLoading {
                 HStack {
                     Spacer()
                     ProgressView("読み込み中...")
-                        .padding(.vertical, 8)
+                        .padding(.vertical, 16)
                     Spacer()
                 }
             } else if hasFailed {
-                Text("取得に失敗しました")
-                    .foregroundStyle(.secondary)
-                    .font(.subheadline)
-                Button("再試行", action: onRetry)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("取得に失敗しました")
+                        .foregroundStyle(.secondary)
+                        .font(.subheadline)
+                    Button("再試行", action: onRetry)
+                }
             } else {
-                DetailRow(label: "種別", value: status.accountKind.japaneseLabel)
-                if let email = status.accountEmail {
-                    DetailRow(label: "メール", value: email)
+                // ヘッダー
+                HStack(spacing: 10) {
+                    Image(systemName: status.accountKind.systemImageName)
+                        .font(.system(size: 28))
+                        .foregroundStyle(Color.accentColor)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(status.accountLabel)
+                            .font(.headline)
+                            .lineLimit(1)
+                        if status.planLabel != "-" {
+                            Text(status.planLabel)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.secondary.opacity(0.15), in: RoundedRectangle(cornerRadius: 4))
+                        }
+                    }
+                    Spacer()
+                }
+
+                // ログアウト
+                if canLogout {
+                    Divider().padding(.vertical, 10)
+                    Button(action: onLogout) {
+                        HStack(spacing: 6) {
+                            if isLoggingOut {
+                                ProgressView().controlSize(.small)
+                            } else {
+                                Image(systemName: "rectangle.portrait.and.arrow.right")
+                            }
+                            Text("ログアウト")
+                        }
+                        .foregroundStyle(.red)
+                        .font(.subheadline)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(isLoggingOut)
                 }
             }
-
-            Spacer()
         }
-        .padding(18)
-        .frame(width: 280, height: 140)
+        .padding(14)
+        .frame(width: 300)
     }
 }
 
@@ -1128,11 +1278,59 @@ private struct GenerationProgressView: View {
     }
 }
 
+private struct VectorizingOverlay: View {
+    let onCancel: () -> Void
+    @State private var isHovering = false
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .fill(Color.black.opacity(isHovering ? 0.55 : 0.35))
+
+            if isHovering {
+                Button(action: onCancel) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 28))
+                        .foregroundStyle(.white)
+                }
+                .buttonStyle(.plain)
+            } else {
+                VStack(spacing: 6) {
+                    ProgressView()
+                        .controlSize(.large)
+                        .colorScheme(.dark)
+                    Text("ベクター化中")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.white)
+                }
+            }
+        }
+        .animation(.easeInOut(duration: 0.15), value: isHovering)
+        .onHover { isHovering = $0 }
+    }
+}
+
 // MARK: - Prompt Text View
 
 private final class FocusableTextView: NSTextView {
     var onFocusChange: ((Bool) -> Void)?
     var onSubmit: (() -> Void)?
+    var onFrameChange: (() -> Void)?
+
+    override func viewDidMoveToSuperview() {
+        super.viewDidMoveToSuperview()
+        postsFrameChangedNotifications = true
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleFrameChange),
+            name: NSView.frameDidChangeNotification,
+            object: self
+        )
+    }
+
+    @objc private func handleFrameChange() {
+        onFrameChange?()
+    }
 
     override func becomeFirstResponder() -> Bool {
         let result = super.becomeFirstResponder()
@@ -1160,6 +1358,8 @@ private final class FocusableTextView: NSTextView {
 private struct PromptTextView: NSViewRepresentable {
     @Binding var text: String
     @Binding var isFocused: Bool
+    @Binding var dynamicHeight: CGFloat
+    var maxHeight: CGFloat
     var onSubmit: (() -> Void)?
 
     func makeNSView(context: Context) -> NSScrollView {
@@ -1171,8 +1371,10 @@ private struct PromptTextView: NSViewRepresentable {
         textView.isRichText = false
         textView.isEditable = true
         textView.isSelectable = true
+        textView.isVerticallyResizable = true
         textView.autoresizingMask = [.width]
         textView.textContainer?.widthTracksTextView = true
+        textView.textContainer?.containerSize = NSSize(width: 0, height: CGFloat.greatestFiniteMagnitude)
         textView.delegate = context.coordinator
         textView.onFocusChange = { focused in
             context.coordinator.isFocused = focused
@@ -1180,13 +1382,23 @@ private struct PromptTextView: NSViewRepresentable {
         textView.onSubmit = { [weak coordinator = context.coordinator] in
             coordinator?.onSubmit?()
         }
+        textView.onFrameChange = { [weak textView, weak coordinator = context.coordinator] in
+            guard let textView else { return }
+            coordinator?.recalculateHeight(for: textView)
+        }
 
         let scrollView = NSScrollView()
         scrollView.documentView = textView
         scrollView.hasVerticalScroller = false
         scrollView.hasHorizontalScroller = false
+        scrollView.scrollerStyle = .overlay
         scrollView.drawsBackground = false
         scrollView.autoresizingMask = [.width, .height]
+
+        DispatchQueue.main.async {
+            context.coordinator.recalculateHeight(for: textView)
+        }
+
         return scrollView
     }
 
@@ -1194,28 +1406,47 @@ private struct PromptTextView: NSViewRepresentable {
         guard let textView = scrollView.documentView as? NSTextView else { return }
         if textView.string != text {
             textView.string = text
+            context.coordinator.recalculateHeight(for: textView)
         }
         context.coordinator.onSubmit = onSubmit
+        context.coordinator.maxHeight = maxHeight
+        scrollView.hasVerticalScroller = dynamicHeight >= maxHeight
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(text: $text, isFocused: $isFocused, onSubmit: onSubmit)
+        Coordinator(text: $text, isFocused: $isFocused, dynamicHeight: $dynamicHeight, maxHeight: maxHeight, onSubmit: onSubmit)
     }
 
+    @MainActor
     final class Coordinator: NSObject, NSTextViewDelegate {
         @Binding var text: String
         @Binding var isFocused: Bool
+        @Binding var dynamicHeight: CGFloat
+        var maxHeight: CGFloat
         var onSubmit: (() -> Void)?
 
-        init(text: Binding<String>, isFocused: Binding<Bool>, onSubmit: (() -> Void)?) {
+        init(text: Binding<String>, isFocused: Binding<Bool>, dynamicHeight: Binding<CGFloat>, maxHeight: CGFloat, onSubmit: (() -> Void)?) {
             _text = text
             _isFocused = isFocused
+            _dynamicHeight = dynamicHeight
+            self.maxHeight = maxHeight
             self.onSubmit = onSubmit
         }
 
         func textDidChange(_ notification: Notification) {
             guard let textView = notification.object as? NSTextView else { return }
             text = textView.string
+            recalculateHeight(for: textView)
+        }
+
+        func recalculateHeight(for textView: NSTextView) {
+            guard let layoutManager = textView.layoutManager,
+                  let textContainer = textView.textContainer else { return }
+            layoutManager.ensureLayout(for: textContainer)
+            let usedRect = layoutManager.usedRect(for: textContainer)
+            let newHeight = ceil(usedRect.height + textView.textContainerInset.height * 2)
+            guard abs(newHeight - dynamicHeight) > 0.5 else { return }
+            dynamicHeight = newHeight
         }
     }
 }
@@ -1311,6 +1542,8 @@ struct PopoverButton: View {
     let systemImage: String
     let title: String
     let action: () -> Void
+    var isDisabled: Bool = false
+    var disabledReason: String? = nil
 
     var body: some View {
         Button(action: action) {
@@ -1322,5 +1555,7 @@ struct PopoverButton: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
+        .disabled(isDisabled)
+        .help(disabledReason ?? "")
     }
 }
