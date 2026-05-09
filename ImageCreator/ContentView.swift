@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct ContentView: View {
     @ObservedObject var viewModel: ImageCreatorViewModel
@@ -13,6 +14,9 @@ struct ContentView: View {
     @State private var promptIsFocused = false
     @State private var promptTextHeight: CGFloat = 76
     @State private var canvasZoom: CGFloat = 1.0
+    @State private var enhanceRotation: Double = 0
+    @State private var isPromptDropTargeted = false
+    @State private var isCanvasDropTargeted = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -88,6 +92,45 @@ struct ContentView: View {
             }
             .buttonStyle(.borderless)
 
+            Menu {
+                Button {
+                    viewModel.completionSound = CompletionSoundOption.off.rawValue
+                } label: {
+                    HStack {
+                        Text(CompletionSoundOption.off.displayName)
+                        if viewModel.completionSound == CompletionSoundOption.off.rawValue {
+                            Image(systemName: "checkmark")
+                        }
+                    }
+                }
+                Divider()
+                ForEach(CompletionSoundOption.allCases.filter { $0 != .off }, id: \.self) { option in
+                    Button {
+                        viewModel.completionSound = option.rawValue
+                        NSSound(named: NSSound.Name(option.rawValue))?.play()
+                    } label: {
+                        HStack {
+                            Text(option.displayName)
+                            if viewModel.completionSound == option.rawValue {
+                                Image(systemName: "checkmark")
+                            }
+                        }
+                    }
+                }
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: viewModel.completionSound == CompletionSoundOption.off.rawValue
+                        ? "speaker.slash"
+                        : "speaker.wave.2")
+                        .font(.body.weight(.semibold))
+                    Text("完了音")
+                        .font(.subheadline.weight(.semibold))
+                }
+                .foregroundStyle(.secondary)
+            }
+            .menuStyle(.borderlessButton)
+            .help("完了通知サウンド: \(CompletionSoundOption(rawValue: viewModel.completionSound)?.displayName ?? viewModel.completionSound)")
+
             Spacer(minLength: 16)
 
             HStack(spacing: 4) {
@@ -153,45 +196,6 @@ struct ContentView: View {
             }
 
             planBadge
-
-            Divider()
-                .frame(height: 20)
-
-            Menu {
-                Button {
-                    viewModel.completionSound = CompletionSoundOption.off.rawValue
-                } label: {
-                    HStack {
-                        Text(CompletionSoundOption.off.displayName)
-                        if viewModel.completionSound == CompletionSoundOption.off.rawValue {
-                            Image(systemName: "checkmark")
-                        }
-                    }
-                }
-                Divider()
-                ForEach(CompletionSoundOption.allCases.filter { $0 != .off }, id: \.self) { option in
-                    Button {
-                        viewModel.completionSound = option.rawValue
-                        NSSound(named: NSSound.Name(option.rawValue))?.play()
-                    } label: {
-                        HStack {
-                            Text(option.displayName)
-                            if viewModel.completionSound == option.rawValue {
-                                Image(systemName: "checkmark")
-                            }
-                        }
-                    }
-                }
-            } label: {
-                Image(systemName: viewModel.completionSound == CompletionSoundOption.off.rawValue
-                    ? "speaker.slash"
-                    : "speaker.wave.2")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-                    .frame(width: 28, height: 28)
-            }
-            .menuStyle(.borderlessButton)
-            .help("完了通知サウンド: \(CompletionSoundOption(rawValue: viewModel.completionSound)?.displayName ?? viewModel.completionSound)")
 
             Divider()
                 .frame(height: 20)
@@ -380,14 +384,40 @@ struct ContentView: View {
                     .padding(.horizontal, 90)
                     .padding(.bottom, 220)
                 }
+                .onDrop(of: [.image, .fileURL], isTargeted: $isCanvasDropTargeted) { providers in
+                    handleCanvasDrop(providers)
+                }
             }
         }
         .overlay(alignment: .topTrailing) {
-            if !viewModel.projects.isEmpty && !canvasEntries.isEmpty {
-                CanvasZoomControl(zoom: $canvasZoom)
-                    .padding(.top, 16)
-                    .padding(.trailing, 16)
+            HStack(spacing: 8) {
+                if viewModel.projects.isEmpty == false {
+                    Button {
+                        viewModel.importImageToCanvas()
+                    } label: {
+                        Image(systemName: "square.and.arrow.down.on.square")
+                            .font(.system(size: 14, weight: .medium))
+                            .frame(width: 32, height: 32)
+                            .background(.regularMaterial)
+                            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    }
+                    .buttonStyle(.borderless)
+                    .help("画像をインポート")
+                }
+                if !viewModel.projects.isEmpty && !canvasEntries.isEmpty {
+                    CanvasZoomControl(zoom: $canvasZoom)
+                }
             }
+            .padding(.top, 16)
+            .padding(.trailing, 16)
+        }
+        .overlay(
+            RoundedRectangle(cornerRadius: 0)
+                .stroke(Color.accentColor.opacity(0.5), lineWidth: isCanvasDropTargeted ? 3 : 0)
+                .allowsHitTesting(false)
+        )
+        .onDrop(of: [.image, .fileURL], isTargeted: $isCanvasDropTargeted) { providers in
+            handleCanvasDrop(providers)
         }
     }
 
@@ -594,34 +624,89 @@ struct ContentView: View {
                 Divider()
             }
 
+            if let attachedImage = viewModel.currentInputs.attachedImage {
+                HStack {
+                    AttachedImageThumbnail(
+                        filePath: attachedImage.filePath,
+                        onRemove: { viewModel.removeAttachedImage() }
+                    )
+                    Spacer()
+                }
+                .padding(.leading, 16)
+                .padding(.trailing, 16)
+                .padding(.vertical, 8)
+            }
+
             let minH: CGFloat = 76
             let maxH = max(minH, maxPromptHeight)
             let clampedHeight = min(max(promptTextHeight, minH), maxH)
-            PromptTextView(
-                text: viewModel.binding(for: \.prompt),
-                isFocused: $promptIsFocused,
-                dynamicHeight: $promptTextHeight,
-                maxHeight: maxH,
-                onSubmit: viewModel.generate
-            )
-            .frame(height: clampedHeight)
-            .animation(.easeOut(duration: 0.12), value: clampedHeight)
-            .padding(.horizontal, 16)
-            .padding(.top, 14)
+            ZStack(alignment: .bottomTrailing) {
+                PromptTextView(
+                    text: viewModel.binding(for: \.prompt),
+                    isFocused: $promptIsFocused,
+                    dynamicHeight: $promptTextHeight,
+                    maxHeight: maxH,
+                    onSubmit: viewModel.generate,
+                    onSetupReplacer: { replacer in
+                        viewModel.onReplacePromptText = replacer
+                    },
+                    onPasteImage: {
+                        viewModel.pasteImageFromClipboard()
+                    }
+                )
+                .frame(height: clampedHeight)
+                .animation(.easeOut(duration: 0.12), value: clampedHeight)
                 .overlay(alignment: .topLeading) {
                     if viewModel.currentInputs.prompt.isEmpty && !promptIsFocused {
                         Text("生成したい画像を説明")
                             .font(.system(size: 18))
                             .foregroundStyle(.secondary)
-                            .padding(.leading, 16)
-                            .padding(.top, 14)
                             .allowsHitTesting(false)
                     }
                 }
 
+                let promptEmpty = viewModel.currentInputs.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                let enhanceDisabled = promptEmpty || viewModel.isEnhancingPrompt
+                Button {
+                    viewModel.enhancePrompt()
+                } label: {
+                    Group {
+                        if viewModel.isEnhancingPrompt {
+                            Image(systemName: "sparkle")
+                                .rotationEffect(.degrees(enhanceRotation))
+                                .onAppear {
+                                    withAnimation(.linear(duration: 1.5).repeatForever(autoreverses: false)) {
+                                        enhanceRotation = 360
+                                    }
+                                }
+                                .onDisappear { enhanceRotation = 0 }
+                        } else {
+                            Image(systemName: "sparkles")
+                        }
+                    }
+                    .font(.system(size: 14, weight: .medium))
+                    .frame(width: 28, height: 28)
+                    .background(
+                        viewModel.isEnhancingPrompt
+                            ? Color.accentColor.opacity(0.15)
+                            : Color.primary.opacity(0.06)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                }
+                .buttonStyle(.plain)
+                .disabled(enhanceDisabled)
+                .opacity(enhanceDisabled && !viewModel.isEnhancingPrompt ? 0.3 : 1.0)
+                .help("プロンプトをエンハンス (詳細化)")
+                .padding(.trailing, 8)
+                .padding(.bottom, 6)
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 14)
+
             Divider()
 
             HStack(spacing: 16) {
+
                 Menu {
                     ForEach(viewModel.availableModels) { model in
                         Button {
@@ -762,6 +847,26 @@ struct ContentView: View {
                 Spacer()
 
                 Button {
+                    viewModel.pickAttachmentImage()
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "paperclip")
+                            .font(.system(size: 15, weight: .medium))
+                        if viewModel.currentInputs.attachedImage != nil {
+                            Circle()
+                                .fill(Color.accentColor)
+                                .frame(width: 6, height: 6)
+                        }
+                    }
+                    .frame(width: 42, height: 42)
+                    .background(viewModel.currentInputs.attachedImage != nil ? Color.accentColor.opacity(0.12) : Color.primary.opacity(0.04))
+                    .clipShape(Circle())
+                }
+                .buttonStyle(.borderless)
+                .disabled(viewModel.currentInputs.editSource != nil)
+                .help(viewModel.currentInputs.attachedImage != nil ? "参照画像添付中" : "参照画像を添付")
+
+                Button {
                     viewModel.generate()
                 } label: {
                     Image(systemName: "arrow.up")
@@ -779,6 +884,70 @@ struct ContentView: View {
         .background(.regularMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         .shadow(color: .black.opacity(0.16), radius: 24, x: 0, y: 12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .stroke(Color.accentColor, lineWidth: isPromptDropTargeted ? 2 : 0)
+        )
+        .onDrop(of: [.image, .fileURL], isTargeted: $isPromptDropTargeted) { providers in
+            handlePromptDrop(providers)
+        }
+    }
+
+    // MARK: - Drop Handlers
+
+    private func handlePromptDrop(_ providers: [NSItemProvider]) -> Bool {
+        guard let provider = providers.first else { return false }
+        if provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
+            provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier) { item, _ in
+                let fileURL: URL?
+                if let u = item as? URL { fileURL = u }
+                else if let u = item as? NSURL { fileURL = u as URL }
+                else if let data = item as? Data { fileURL = URL(dataRepresentation: data, relativeTo: nil) }
+                else { fileURL = nil }
+                guard let fileURL else { return }
+                Task { @MainActor in self.viewModel.attachImage(from: fileURL) }
+            }
+            return true
+        }
+        if provider.canLoadObject(ofClass: NSImage.self) {
+            provider.loadObject(ofClass: NSImage.self) { obj, _ in
+                guard let image = obj as? NSImage else { return }
+                Task { @MainActor in self.viewModel.attachImageFromPasteboard(image) }
+            }
+            return true
+        }
+        return false
+    }
+
+    private func handleCanvasDrop(_ providers: [NSItemProvider]) -> Bool {
+        var handled = false
+        for provider in providers {
+            if provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
+                provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier) { item, _ in
+                    let fileURL: URL?
+                    if let u = item as? URL { fileURL = u }
+                    else if let u = item as? NSURL { fileURL = u as URL }
+                    else if let data = item as? Data { fileURL = URL(dataRepresentation: data, relativeTo: nil) }
+                    else { fileURL = nil }
+                    guard let fileURL else { return }
+                    Task { @MainActor in
+                        let projectID = self.viewModel.selectedProjectID ?? self.viewModel.createProject().id
+                        self.viewModel.importImageAsProjectItem(url: fileURL, projectID: projectID)
+                    }
+                }
+                handled = true
+            } else if provider.canLoadObject(ofClass: NSImage.self) {
+                provider.loadObject(ofClass: NSImage.self) { obj, _ in
+                    guard let image = obj as? NSImage else { return }
+                    Task { @MainActor in
+                        let projectID = self.viewModel.selectedProjectID ?? self.viewModel.createProject().id
+                        self.viewModel.importImageAsProjectItem(image: image, projectID: projectID)
+                    }
+                }
+                handled = true
+            }
+        }
+        return handled
     }
 
     private var modelShortName: String {
@@ -1316,6 +1485,7 @@ private final class FocusableTextView: NSTextView {
     var onFocusChange: ((Bool) -> Void)?
     var onSubmit: (() -> Void)?
     var onFrameChange: (() -> Void)?
+    var onPasteImage: (() -> Void)?
 
     override func viewDidMoveToSuperview() {
         super.viewDidMoveToSuperview()
@@ -1351,6 +1521,17 @@ private final class FocusableTextView: NSTextView {
             onSubmit?()
             return
         }
+        // Cmd+V: クリップボードに画像のみある場合は画像添付
+        let isCommandV = event.keyCode == 9 && event.modifierFlags.contains(.command)
+        if isCommandV {
+            let pb = NSPasteboard.general
+            let hasText = pb.string(forType: .string) != nil
+            let hasImage = pb.canReadObject(forClasses: [NSImage.self], options: nil)
+            if hasImage && !hasText {
+                onPasteImage?()
+                return
+            }
+        }
         super.keyDown(with: event)
     }
 }
@@ -1361,6 +1542,8 @@ private struct PromptTextView: NSViewRepresentable {
     @Binding var dynamicHeight: CGFloat
     var maxHeight: CGFloat
     var onSubmit: (() -> Void)?
+    var onSetupReplacer: ((@escaping (String) -> Void) -> Void)?
+    var onPasteImage: (() -> Void)?
 
     func makeNSView(context: Context) -> NSScrollView {
         let textView = FocusableTextView()
@@ -1386,6 +1569,14 @@ private struct PromptTextView: NSViewRepresentable {
             guard let textView else { return }
             coordinator?.recalculateHeight(for: textView)
         }
+        textView.onPasteImage = { [weak coordinator = context.coordinator] in
+            coordinator?.onPasteImage?()
+        }
+
+        context.coordinator.textViewRef = textView
+        onSetupReplacer?({ [weak coordinator = context.coordinator] newText in
+            coordinator?.replaceTextUndoably(newText)
+        })
 
         let scrollView = NSScrollView()
         scrollView.documentView = textView
@@ -1409,12 +1600,13 @@ private struct PromptTextView: NSViewRepresentable {
             context.coordinator.recalculateHeight(for: textView)
         }
         context.coordinator.onSubmit = onSubmit
+        context.coordinator.onPasteImage = onPasteImage
         context.coordinator.maxHeight = maxHeight
         scrollView.hasVerticalScroller = dynamicHeight >= maxHeight
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(text: $text, isFocused: $isFocused, dynamicHeight: $dynamicHeight, maxHeight: maxHeight, onSubmit: onSubmit)
+        Coordinator(text: $text, isFocused: $isFocused, dynamicHeight: $dynamicHeight, maxHeight: maxHeight, onSubmit: onSubmit, onPasteImage: onPasteImage)
     }
 
     @MainActor
@@ -1424,13 +1616,22 @@ private struct PromptTextView: NSViewRepresentable {
         @Binding var dynamicHeight: CGFloat
         var maxHeight: CGFloat
         var onSubmit: (() -> Void)?
+        var onPasteImage: (() -> Void)?
+        weak var textViewRef: FocusableTextView?
 
-        init(text: Binding<String>, isFocused: Binding<Bool>, dynamicHeight: Binding<CGFloat>, maxHeight: CGFloat, onSubmit: (() -> Void)?) {
+        init(text: Binding<String>, isFocused: Binding<Bool>, dynamicHeight: Binding<CGFloat>, maxHeight: CGFloat, onSubmit: (() -> Void)?, onPasteImage: (() -> Void)?) {
             _text = text
             _isFocused = isFocused
             _dynamicHeight = dynamicHeight
             self.maxHeight = maxHeight
             self.onSubmit = onSubmit
+            self.onPasteImage = onPasteImage
+        }
+
+        func replaceTextUndoably(_ newText: String) {
+            guard let tv = textViewRef else { return }
+            tv.selectAll(nil)
+            tv.insertText(newText, replacementRange: tv.selectedRange())
         }
 
         func textDidChange(_ notification: Notification) {
@@ -1533,6 +1734,48 @@ private extension NSImage {
         let w = CGFloat(rep.pixelsWide), h = CGFloat(rep.pixelsHigh)
         guard w > 0, h > 0 else { return nil }
         return w / h
+    }
+}
+
+// MARK: - Attached Image Thumbnail
+
+private struct AttachedImageThumbnail: View {
+    let filePath: String
+    let onRemove: () -> Void
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 4) {
+            ZStack(alignment: .topTrailing) {
+                if let image = NSImage(contentsOfFile: filePath) {
+                    Image(nsImage: image)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxWidth: 80, maxHeight: 60)
+                        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .stroke(Color.primary.opacity(0.10), lineWidth: 1)
+                        }
+                } else {
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .fill(Color.primary.opacity(0.06))
+                        .frame(width: 60, height: 60)
+                        .overlay {
+                            Image(systemName: "photo")
+                                .foregroundStyle(.secondary)
+                        }
+                }
+
+                Button(action: onRemove) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 14))
+                        .foregroundStyle(.secondary)
+                        .background(Color(nsColor: .windowBackgroundColor).clipShape(Circle()))
+                }
+                .buttonStyle(.plain)
+                .offset(x: 6, y: -6)
+            }
+        }
     }
 }
 

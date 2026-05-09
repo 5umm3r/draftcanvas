@@ -75,8 +75,11 @@ final class CodexGenerationRunner: GenerationRunning {
             output.logs.append("Codex thread: \(threadID)")
 
             let prompt = PromptFactory.prompt(for: request, jobIndex: job.index)
-            let referenceImagePath = request.editSource.map { src in
-                src.compositeFilePath ?? src.filePath
+            let referenceImagePath: String?
+            if let editSource = request.editSource {
+                referenceImagePath = editSource.compositeFilePath ?? editSource.filePath
+            } else {
+                referenceImagePath = request.attachedImagePath
             }
             let result = try await client.runTurn(
                 threadID: threadID,
@@ -135,6 +138,19 @@ enum PromptFactory {
             ].joined(separator: "\n")
         }
 
+        if request.attachedImagePath != nil {
+            return [
+                "Generate exactly one high-quality raster image for a local personal image creator app.",
+                "Use the attached reference image as visual guidance.",
+                "Use the image generation capability and return the generated image result.",
+                "User prompt: \(request.prompt)",
+                "Aspect ratio: \(request.aspectRatio.promptDescription).",
+                "Variation number: \(jobIndex + 1).",
+                "A normal opaque image is acceptable.",
+                "Do not write code. Do not ask clarifying questions."
+            ].joined(separator: "\n")
+        }
+
         return [
             "Generate exactly one high-quality raster image for a local personal image creator app.",
             "Use the image generation capability and return the generated image result.",
@@ -143,6 +159,28 @@ enum PromptFactory {
             "Variation number: \(jobIndex + 1).",
             "A normal opaque image is acceptable.",
             "Do not write code. Do not ask clarifying questions."
+        ].joined(separator: "\n")
+    }
+}
+
+enum PromptEnhancer {
+    static func buildPrompt(userPrompt: String) -> String {
+        [
+            "You are an expert prompt engineer for AI image generation.",
+            "Enhance the user's prompt to produce higher quality image results.",
+            "",
+            "Rules:",
+            "- Maintain the same language as the input (Japanese stays Japanese, English stays English)",
+            "- Add vivid details: composition, color palette, lighting, atmosphere, texture, perspective, artistic style",
+            "- Keep the original intent and subject matter intact",
+            "- Output ONLY the enhanced prompt text, nothing else",
+            "- No explanations, labels, prefixes, markdown formatting, or surrounding quotes",
+            "- Aim for 2-4 sentences",
+            "- Do not generate any images",
+            "- Do not write any code",
+            "",
+            "User's prompt:",
+            userPrompt,
         ].joined(separator: "\n")
     }
 }

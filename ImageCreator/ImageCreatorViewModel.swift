@@ -42,6 +42,7 @@ final class ImageCreatorViewModel: ObservableObject {
 
     @Published var vectorizingItemIDs: Set<UUID> = []
     @Published var inpaintingTarget: ProjectItem? = nil
+    @Published var isEnhancingPrompt = false
 
     private let client: CodexAppServerClient
     private let coordinator: GenerationCoordinator
@@ -49,6 +50,8 @@ final class ImageCreatorViewModel: ObservableObject {
     private let preferredSaveFolderStore: PreferredSaveFolderStore
     private var isLoadingProjects = false
     private var vectorizationTasks: [UUID: Task<Void, Never>] = [:]
+    private var enhanceTask: Task<Void, Never>?
+    var onReplacePromptText: ((String) -> Void)?
     let imageCache = NSCache<NSURL, NSImage>()
 
     init(
@@ -65,6 +68,7 @@ final class ImageCreatorViewModel: ObservableObject {
                 self?.logs.append(message)
             }
         }
+        projectStore.cleanupAllAttachments()
         loadProjects()
         preferredSaveFolder = preferredSaveFolderStore.load()
         prewarmAndRefresh()
@@ -234,6 +238,7 @@ final class ImageCreatorViewModel: ObservableObject {
             concurrency: inputs.concurrency,
             aspectRatio: inputs.aspectRatio,
             editSource: inputs.editSource,
+            attachedImagePath: inputs.attachedImage?.filePath,
             model: inputs.model,
             reasoningEffort: inputs.reasoningEffort
         )
@@ -269,6 +274,10 @@ final class ImageCreatorViewModel: ObservableObject {
                         self.projectStore.cleanupMaskFiles(id: editSource.projectItemID)
                     }
                     inputs.editSource = nil
+                    if let attached = inputs.attachedImage {
+                        self.projectStore.cleanupAttachment(id: attached.id)
+                    }
+                    inputs.attachedImage = nil
                     self.inputsByProject[targetProjectID] = inputs
                 }
                 self.logs.append("全ジョブが終了しました。")
@@ -392,6 +401,10 @@ final class ImageCreatorViewModel: ObservableObject {
         guard let id = selectedProjectID else { return }
         let fileURL = item.fileURL(in: projectStore.rootDirectory)
         var inputs = inputsByProject[id] ?? ProjectInputs()
+        if let attached = inputs.attachedImage {
+            projectStore.cleanupAttachment(id: attached.id)
+        }
+        inputs.attachedImage = nil
         inputs.prompt = item.prompt
         inputs.aspectRatio = item.aspectRatio
         inputs.editSource = GenerationEditSource(
@@ -444,6 +457,10 @@ final class ImageCreatorViewModel: ObservableObject {
 
                 await MainActor.run {
                     var inputs = self.inputsByProject[id] ?? ProjectInputs()
+                    if let attached = inputs.attachedImage {
+                        self.projectStore.cleanupAttachment(id: attached.id)
+                    }
+                    inputs.attachedImage = nil
                     inputs.prompt = item.prompt
                     inputs.aspectRatio = item.aspectRatio
                     inputs.editSource = GenerationEditSource(
@@ -527,6 +544,97 @@ final class ImageCreatorViewModel: ObservableObject {
                 }
             }
         }
+    }
+
+    func enhancePrompt() {
+        let promptText = currentInputs.prompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !promptText.isEmpty, !isEnhancingPrompt else { return }
+        guard !availableModels.isEmpty else {
+            errorToast = "利用可能なモデルがありません"
+            return
+        }
+
+        isEnhancingPrompt = true
+        logs.append("プロンプトエンハンス開始")
+
+        enhanceTask = Task {
+            do {
+                try await client.start()
+
+                let model = Self.selectEnhanceModel(from: availableModels)
+                let threadID = try await client.startThread(model: model.id, reasoningEffort: "low")
+                let turnPrompt = PromptEnhancer.buildPrompt(userPrompt: promptText)
+
+                let result = try await withThrowingTaskGroup(of: CodexTurnResult.self) { group in
+                    group.addTask {
+                        try await self.client.runTurn(threadID: threadID, prompt: turnPrompt)
+                    }
+                    group.addTask {
+                        try await Task.sleep(nanoseconds: 30 * 1_000_000_000)
+                        throw ImageCreatorError.rpcError("プロンプトエンハンスがタイムアウトしました")
+                    }
+                    guard let r = try await group.next() else {
+                        throw ImageCreatorError.rpcError("エンハンス結果を取得できませんでした")
+                    }
+                    group.cancelAll()
+                    return r
+                }
+
+                var enhanced = result.assistantText
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                // クォート・バッククォートのサニタイズ
+                let quoteChars = CharacterSet(charactersIn: "\"'`")
+                while enhanced.hasPrefix("\"") || enhanced.hasPrefix("'") || enhanced.hasPrefix("`") {
+                    enhanced = String(enhanced.dropFirst()).trimmingCharacters(in: .whitespaces)
+                }
+                while enhanced.hasSuffix("\"") || enhanced.hasSuffix("'") || enhanced.hasSuffix("`") {
+                    enhanced = String(enhanced.dropLast()).trimmingCharacters(in: .whitespaces)
+                }
+                _ = quoteChars
+
+                guard !enhanced.isEmpty else {
+                    throw ImageCreatorError.rpcError("エンハンス結果が空でした")
+                }
+
+                await MainActor.run { [weak self] in
+                    guard let self else { return }
+                    if let replacer = self.onReplacePromptText {
+                        replacer(enhanced)
+                    } else {
+                        if let id = self.selectedProjectID {
+                            self.inputsByProject[id]?.prompt = enhanced
+                        } else {
+                            self.draftInputs.prompt = enhanced
+                        }
+                    }
+                    self.isEnhancingPrompt = false
+                    self.logs.append("プロンプトエンハンス完了")
+                }
+            } catch {
+                await MainActor.run { [weak self] in
+                    guard let self else { return }
+                    self.isEnhancingPrompt = false
+                    guard !(error is CancellationError) else {
+                        self.logs.append("プロンプトエンハンス キャンセル")
+                        return
+                    }
+                    self.errorToast = "プロンプトエンハンスに失敗しました"
+                    self.logs.append("プロンプトエンハンス失敗: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+
+    private static func selectEnhanceModel(from models: [CodexModel]) -> CodexModel {
+        let lightweightKeywords = ["mini", "haiku", "flash", "instant"]
+        if let light = models.first(where: { model in
+            let lower = model.displayName.lowercased()
+            return lightweightKeywords.contains(where: { lower.contains($0) })
+        }) {
+            return light
+        }
+        if let def = models.first(where: \.isDefault) { return def }
+        return models[0]
     }
 
     func deleteItem(_ item: ProjectItem) {
@@ -645,6 +753,197 @@ final class ImageCreatorViewModel: ObservableObject {
             .filter { $0.projectID == projectID }
             .sorted { $0.createdAt < $1.createdAt }
         return (sorted.firstIndex(of: item) ?? 0) + 1
+    }
+
+    // MARK: - Image Attachment
+
+    private static let supportedImageTypes: [UTType] = [.png, .jpeg, .heic, .webP, .tiff, .bmp, .gif]
+
+    func pickAttachmentImage() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        panel.allowsMultipleSelection = false
+        panel.allowedContentTypes = Self.supportedImageTypes
+        panel.prompt = "添付"
+        panel.message = "生成時の参照画像を選択してください。"
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        attachImage(from: url)
+    }
+
+    func attachImage(from url: URL) {
+        do {
+            let pngData = try loadAndNormalizeImage(from: url)
+            let id = UUID()
+            let savedURL = try projectStore.writeAttachmentData(pngData, id: id)
+            let attachedImage = AttachedImage(id: id, filePath: savedURL.path, originalFileName: url.lastPathComponent)
+            setAttachedImage(attachedImage)
+            logs.append("参照画像を添付しました: \(url.lastPathComponent)")
+        } catch {
+            errorToast = "画像の読み込みに失敗しました"
+            logs.append("画像添付エラー: \(error.localizedDescription)")
+        }
+    }
+
+    func attachImageFromPasteboard(_ image: NSImage) {
+        guard let tiff = image.tiffRepresentation,
+              let rep = NSBitmapImageRep(data: tiff),
+              let pngData = rep.representation(using: .png, properties: [:]) else {
+            errorToast = "クリップボードの画像を処理できませんでした"
+            return
+        }
+        do {
+            let id = UUID()
+            let url = try projectStore.writeAttachmentData(pngData, id: id)
+            let attachedImage = AttachedImage(id: id, filePath: url.path, originalFileName: "clipboard")
+            setAttachedImage(attachedImage)
+            logs.append("クリップボードから画像を添付しました")
+        } catch {
+            errorToast = "画像の保存に失敗しました"
+            logs.append("クリップボード画像保存エラー: \(error.localizedDescription)")
+        }
+    }
+
+    func pasteImageFromClipboard() {
+        let pb = NSPasteboard.general
+        guard let images = pb.readObjects(forClasses: [NSImage.self], options: nil) as? [NSImage],
+              let image = images.first else { return }
+        attachImageFromPasteboard(image)
+    }
+
+    func removeAttachedImage() {
+        if let id = selectedProjectID {
+            var inputs = inputsByProject[id] ?? ProjectInputs()
+            if let attached = inputs.attachedImage {
+                projectStore.cleanupAttachment(id: attached.id)
+            }
+            inputs.attachedImage = nil
+            inputsByProject[id] = inputs
+        } else {
+            if let attached = draftInputs.attachedImage {
+                projectStore.cleanupAttachment(id: attached.id)
+            }
+            draftInputs.attachedImage = nil
+        }
+    }
+
+    // MARK: - Canvas Import
+
+    func importImageToCanvas() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        panel.allowsMultipleSelection = true
+        panel.allowedContentTypes = Self.supportedImageTypes
+        panel.prompt = "インポート"
+        panel.message = "キャンバスにインポートする画像を選択してください。"
+        guard panel.runModal() == .OK, !panel.urls.isEmpty else { return }
+        let projectID = selectedProjectID ?? createProject().id
+        for url in panel.urls {
+            importImageAsProjectItem(url: url, projectID: projectID)
+        }
+    }
+
+    func importImageAsProjectItem(url: URL, projectID: UUID) {
+        do {
+            let pngData = try loadAndNormalizeImage(from: url)
+            let aspectRatio = aspectRatioFromImageData(pngData)
+            let name = url.deletingPathExtension().lastPathComponent
+            let newItem = ProjectItem(
+                projectID: projectID,
+                prompt: name,
+                aspectRatio: aspectRatio,
+                isImported: true
+            )
+            try projectStore.writeItemData(pngData, for: newItem)
+            items.append(newItem)
+            if let img = NSImage(data: pngData) {
+                imageCache.setObject(img, forKey: newItem.fileURL(in: projectStore.rootDirectory) as NSURL)
+            }
+            if let idx = projects.firstIndex(where: { $0.id == projectID }) {
+                projects[idx].updatedAt = Date()
+            }
+            saveState()
+            logs.append("画像をインポートしました: \(url.lastPathComponent)")
+        } catch {
+            errorToast = "画像のインポートに失敗しました"
+            logs.append("インポートエラー: \(error.localizedDescription)")
+        }
+    }
+
+    private func setAttachedImage(_ attached: AttachedImage) {
+        if let id = selectedProjectID {
+            var inputs = inputsByProject[id] ?? ProjectInputs()
+            if let editSource = inputs.editSource, editSource.isInpainting {
+                projectStore.cleanupMaskFiles(id: editSource.projectItemID)
+            }
+            inputs.editSource = nil
+            inputs.attachedImage = attached
+            inputsByProject[id] = inputs
+        } else {
+            if let editSource = draftInputs.editSource, editSource.isInpainting {
+                projectStore.cleanupMaskFiles(id: editSource.projectItemID)
+            }
+            draftInputs.editSource = nil
+            draftInputs.attachedImage = attached
+        }
+    }
+
+    func importImageAsProjectItem(image: NSImage, projectID: UUID) {
+        guard let tiff = image.tiffRepresentation,
+              let rep = NSBitmapImageRep(data: tiff),
+              let pngData = rep.representation(using: .png, properties: [:]) else {
+            errorToast = "画像の変換に失敗しました"
+            return
+        }
+        let aspectRatio = aspectRatioFromImageData(pngData)
+        let newItem = ProjectItem(
+            projectID: projectID,
+            prompt: "Imported Image",
+            aspectRatio: aspectRatio,
+            isImported: true
+        )
+        do {
+            try projectStore.writeItemData(pngData, for: newItem)
+            items.append(newItem)
+            if let img = NSImage(data: pngData) {
+                imageCache.setObject(img, forKey: newItem.fileURL(in: projectStore.rootDirectory) as NSURL)
+            }
+            if let idx = projects.firstIndex(where: { $0.id == projectID }) {
+                projects[idx].updatedAt = Date()
+            }
+            saveState()
+            logs.append("画像をインポートしました (ドラッグ&ドロップ)")
+        } catch {
+            errorToast = "画像のインポートに失敗しました"
+            logs.append("インポートエラー: \(error.localizedDescription)")
+        }
+    }
+
+    private func loadAndNormalizeImage(from url: URL) throws -> Data {
+        guard let image = NSImage(contentsOf: url) else {
+            throw ImageCreatorError.invalidRequest("画像を読み込めませんでした: \(url.lastPathComponent)")
+        }
+        guard let tiff = image.tiffRepresentation,
+              let rep = NSBitmapImageRep(data: tiff),
+              let pngData = rep.representation(using: .png, properties: [:]) else {
+            throw ImageCreatorError.invalidRequest("画像をPNGに変換できませんでした")
+        }
+        return pngData
+    }
+
+    private func aspectRatioFromImageData(_ data: Data) -> GenerationAspectRatio {
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil),
+              let props = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any] else {
+            return .square
+        }
+        let w = (props[kCGImagePropertyPixelWidth] as? CGFloat)
+            ?? (props[kCGImagePropertyPixelWidth] as? Int).map(CGFloat.init) ?? 0
+        let h = (props[kCGImagePropertyPixelHeight] as? CGFloat)
+            ?? (props[kCGImagePropertyPixelHeight] as? Int).map(CGFloat.init) ?? 0
+        guard w > 0, h > 0 else { return .square }
+        let ratio = w / h
+        return GenerationAspectRatio.allCases.min(by: { abs($0.widthOverHeight - ratio) < abs($1.widthOverHeight - ratio) }) ?? .square
     }
 
     func chooseSaveFolder() {

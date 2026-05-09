@@ -89,6 +89,7 @@ struct GenerationRequest: Equatable {
     var concurrency: Int
     var aspectRatio: GenerationAspectRatio = .square
     var editSource: GenerationEditSource? = nil
+    var attachedImagePath: String? = nil
     var model: String = ""
     var reasoningEffort: String = "medium"
 
@@ -164,6 +165,20 @@ struct GenerationJob: Identifiable, Equatable {
     }
 }
 
+// MARK: - AttachedImage
+
+struct AttachedImage: Equatable {
+    let id: UUID
+    let filePath: String
+    let originalFileName: String?
+
+    init(id: UUID = UUID(), filePath: String, originalFileName: String? = nil) {
+        self.id = id
+        self.filePath = filePath
+        self.originalFileName = originalFileName
+    }
+}
+
 // MARK: - ProjectInputs
 
 struct ProjectInputs: Equatable {
@@ -172,6 +187,7 @@ struct ProjectInputs: Equatable {
     var concurrency: Int = 1
     var aspectRatio: GenerationAspectRatio = .square
     var editSource: GenerationEditSource? = nil
+    var attachedImage: AttachedImage? = nil
     var model: String = ""
     var reasoningEffort: String = "medium"
 }
@@ -234,6 +250,7 @@ struct ProjectItem: Identifiable, Equatable {
     let editedFromItemID: UUID?
     let hasSVG: Bool
     let isBackgroundRemoved: Bool
+    let isImported: Bool
 
     fileprivate let legacyOutputModeWasSVG: Bool
 
@@ -247,7 +264,8 @@ struct ProjectItem: Identifiable, Equatable {
         errorMessage: String? = nil,
         editedFromItemID: UUID? = nil,
         hasSVG: Bool = false,
-        isBackgroundRemoved: Bool = false
+        isBackgroundRemoved: Bool = false,
+        isImported: Bool = false
     ) {
         self.id = id
         self.projectID = projectID
@@ -259,6 +277,7 @@ struct ProjectItem: Identifiable, Equatable {
         self.editedFromItemID = editedFromItemID
         self.hasSVG = hasSVG
         self.isBackgroundRemoved = isBackgroundRemoved
+        self.isImported = isImported
         self.legacyOutputModeWasSVG = false
     }
 
@@ -280,6 +299,7 @@ extension ProjectItem: Codable {
         case id, projectID, prompt, revisedPrompt, aspectRatio, createdAt, errorMessage, editedFromItemID
         case hasSVG
         case isBackgroundRemoved
+        case isImported
         case outputMode, transparentBackground, fileExtension
     }
 
@@ -295,6 +315,7 @@ extension ProjectItem: Codable {
         editedFromItemID = try c.decodeIfPresent(UUID.self, forKey: .editedFromItemID)
         hasSVG = try c.decodeIfPresent(Bool.self, forKey: .hasSVG) ?? false
         isBackgroundRemoved = try c.decodeIfPresent(Bool.self, forKey: .isBackgroundRemoved) ?? false
+        isImported = try c.decodeIfPresent(Bool.self, forKey: .isImported) ?? false
         let legacyMode = try c.decodeIfPresent(String.self, forKey: .outputMode)
         legacyOutputModeWasSVG = (legacyMode == "svg")
     }
@@ -311,6 +332,7 @@ extension ProjectItem: Codable {
         try c.encodeIfPresent(editedFromItemID, forKey: .editedFromItemID)
         if hasSVG { try c.encode(hasSVG, forKey: .hasSVG) }
         if isBackgroundRemoved { try c.encode(isBackgroundRemoved, forKey: .isBackgroundRemoved) }
+        if isImported { try c.encode(isImported, forKey: .isImported) }
     }
 }
 
@@ -337,6 +359,29 @@ final class ProjectStore: @unchecked Sendable {
 
     var masksDirectory: URL {
         rootDirectory.appendingPathComponent("masks", isDirectory: true)
+    }
+
+    var attachmentsDirectory: URL {
+        rootDirectory.appendingPathComponent("attachments", isDirectory: true)
+    }
+
+    @discardableResult
+    func writeAttachmentData(_ data: Data, id: UUID, fileExtension: String = "png") throws -> URL {
+        try FileManager.default.createDirectory(at: attachmentsDirectory, withIntermediateDirectories: true)
+        let url = attachmentsDirectory.appendingPathComponent("\(id.uuidString).\(fileExtension)")
+        try data.write(to: url, options: .atomic)
+        return url
+    }
+
+    func cleanupAttachment(id: UUID) {
+        guard let contents = try? FileManager.default.contentsOfDirectory(at: attachmentsDirectory, includingPropertiesForKeys: nil) else { return }
+        for url in contents where url.lastPathComponent.hasPrefix(id.uuidString) {
+            try? FileManager.default.removeItem(at: url)
+        }
+    }
+
+    func cleanupAllAttachments() {
+        try? FileManager.default.removeItem(at: attachmentsDirectory)
     }
 
     @discardableResult
