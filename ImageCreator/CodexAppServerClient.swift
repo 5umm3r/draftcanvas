@@ -71,7 +71,12 @@ final class CodexAppServerClient: @unchecked Sendable {
             return task
         }
 
-        try await task.value
+        do {
+            try await task.value
+        } catch {
+            queue.sync { self.startupTask = nil }
+            throw error
+        }
     }
 
     private func performStart() async throws {
@@ -372,7 +377,66 @@ final class CodexAppServerClient: @unchecked Sendable {
     }
 
     private static func defaultCodexExecutablePath() -> String {
-        "/Users/mbp16-max/.nvm/versions/node/v22.16.0/bin/codex"
+        if let found = Self.findExecutable("codex") {
+            return found
+        }
+        return "codex"
+    }
+
+    private static func findExecutable(_ name: String) -> String? {
+        if let path = findViaLoginShell(name) {
+            return path
+        }
+        return searchCommonPaths(for: name)
+    }
+
+    private static func findViaLoginShell(_ name: String) -> String? {
+        let shell = ProcessInfo.processInfo.environment["SHELL"] ?? "/bin/zsh"
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: shell)
+        process.arguments = ["-l", "-i", "-c", "which \(name)"]
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = FileHandle.nullDevice
+        process.standardInput = FileHandle.nullDevice
+        do {
+            try process.run()
+            process.waitUntilExit()
+            guard process.terminationStatus == 0 else { return nil }
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            guard let output = String(data: data, encoding: .utf8) else { return nil }
+            let lines = output.components(separatedBy: .newlines)
+                .map { $0.trimmingCharacters(in: .whitespaces) }
+                .filter { !$0.isEmpty && $0.hasPrefix("/") }
+            return lines.last
+        } catch {
+            return nil
+        }
+    }
+
+    private static func searchCommonPaths(for name: String) -> String? {
+        let home = FileManager.default.homeDirectoryForCurrentUser.path
+        let fm = FileManager.default
+
+        let nvmDir = ProcessInfo.processInfo.environment["NVM_DIR"] ?? "\(home)/.nvm"
+        let nvmVersionsDir = "\(nvmDir)/versions/node"
+        if let versions = try? fm.contentsOfDirectory(atPath: nvmVersionsDir) {
+            for version in versions.sorted().reversed() {
+                let path = "\(nvmVersionsDir)/\(version)/bin/\(name)"
+                if fm.isExecutableFile(atPath: path) {
+                    return path
+                }
+            }
+        }
+
+        for dir in ["/opt/homebrew/bin", "/usr/local/bin", "\(home)/.volta/bin"] {
+            let path = "\(dir)/\(name)"
+            if fm.isExecutableFile(atPath: path) {
+                return path
+            }
+        }
+
+        return nil
     }
 }
 
