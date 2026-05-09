@@ -445,12 +445,17 @@ struct ContentView: View {
                         viewModel.importImageToCanvas()
                     } label: {
                         Image(systemName: "square.and.arrow.down.on.square")
-                            .font(.system(size: 14, weight: .medium))
-                            .frame(width: 32, height: 32)
-                            .background(.regularMaterial)
-                            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                            .font(.system(size: 13, weight: .medium))
+                            .frame(width: 18, height: 18)
                     }
-                    .buttonStyle(.borderless)
+                    .buttonStyle(.plain)
+                    .padding(8)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+                    }
+                    .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
                     .help("画像をインポート")
                 }
                 if !viewModel.projects.isEmpty && !canvasEntries.isEmpty {
@@ -1287,7 +1292,8 @@ struct ItemDetailPopover: View {
             }
             .foregroundStyle(.red)
 
-            Spacer()
+            Divider()
+                .padding(.vertical, 4)
 
             Button {
                 viewModel.exportItem(item)
