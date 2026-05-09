@@ -87,17 +87,15 @@ enum CodexEventExtractor {
             let params = message["params"] as? [String: Any],
             let item = params["item"] as? [String: Any],
             item["type"] as? String == "message",
+            item["role"] as? String != "user",
             let content = item["content"] as? [[String: Any]]
         else {
             return nil
         }
 
         let chunks = content.compactMap { part -> String? in
-            let type = part["type"] as? String
-            if type == "output_text" || type == "input_text" {
-                return part["text"] as? String
-            }
-            return nil
+            guard part["type"] as? String == "output_text" else { return nil }
+            return part["text"] as? String
         }
         return chunks.isEmpty ? nil : chunks.joined(separator: "\n")
     }

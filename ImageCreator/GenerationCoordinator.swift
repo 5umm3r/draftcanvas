@@ -164,23 +164,22 @@ enum PromptFactory {
 }
 
 enum PromptEnhancer {
+    static let systemInstruction: String = [
+        "You are an expert prompt engineer for AI image generation.",
+        "Enhance the user's prompt to produce higher quality image results.",
+        "",
+        "Rules:",
+        "- Maintain the same language as the input (Japanese stays Japanese, English stays English)",
+        "- Add vivid details: composition, color palette, lighting, atmosphere, texture, perspective, artistic style",
+        "- Keep the original intent and subject matter intact",
+        "- Output ONLY the enhanced prompt text, nothing else",
+        "- No explanations, labels, prefixes, markdown formatting, or surrounding quotes",
+        "- Aim for 2-4 sentences",
+        "- Do not generate any images",
+        "- Do not write any code",
+    ].joined(separator: "\n")
+
     static func buildPrompt(userPrompt: String) -> String {
-        [
-            "You are an expert prompt engineer for AI image generation.",
-            "Enhance the user's prompt to produce higher quality image results.",
-            "",
-            "Rules:",
-            "- Maintain the same language as the input (Japanese stays Japanese, English stays English)",
-            "- Add vivid details: composition, color palette, lighting, atmosphere, texture, perspective, artistic style",
-            "- Keep the original intent and subject matter intact",
-            "- Output ONLY the enhanced prompt text, nothing else",
-            "- No explanations, labels, prefixes, markdown formatting, or surrounding quotes",
-            "- Aim for 2-4 sentences",
-            "- Do not generate any images",
-            "- Do not write any code",
-            "",
-            "User's prompt:",
-            userPrompt,
-        ].joined(separator: "\n")
+        [systemInstruction, "", "User's prompt:", userPrompt].joined(separator: "\n")
     }
 }

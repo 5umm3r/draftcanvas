@@ -241,13 +241,13 @@ extension Project: Codable {
 
 struct ProjectItem: Identifiable, Equatable {
     let id: UUID
-    let projectID: UUID
+    var projectID: UUID
     let prompt: String
     let revisedPrompt: String?
     let aspectRatio: GenerationAspectRatio
     let createdAt: Date
     let errorMessage: String?
-    let editedFromItemID: UUID?
+    var editedFromItemID: UUID?
     let hasSVG: Bool
     let isBackgroundRemoved: Bool
     let isImported: Bool

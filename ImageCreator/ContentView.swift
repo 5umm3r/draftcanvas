@@ -17,6 +17,9 @@ struct ContentView: View {
     @State private var enhanceRotation: Double = 0
     @State private var isPromptDropTargeted = false
     @State private var isCanvasDropTargeted = false
+    @State private var dragDropTargetProjectID: UUID?
+    @State private var dragDropItemID: UUID?
+    @State private var isDroppingOnProject: [UUID: Bool] = [:]
 
     var body: some View {
         VStack(spacing: 0) {
@@ -64,6 +67,42 @@ struct ContentView: View {
             }
         } message: {
             Text("プロジェクトと含まれる全画像を削除します。この操作は取り消せません。")
+        }
+        .confirmationDialog(
+            "アイテムを別プロジェクトへ",
+            isPresented: .init(
+                get: { dragDropItemID != nil && dragDropTargetProjectID != nil },
+                set: { if !$0 { dragDropItemID = nil; dragDropTargetProjectID = nil } }
+            ),
+            titleVisibility: .visible
+        ) {
+            Button("移動") {
+                if let itemID = dragDropItemID,
+                   let targetID = dragDropTargetProjectID,
+                   let item = viewModel.items.first(where: { $0.id == itemID }) {
+                    viewModel.moveItemToProject(item, targetProjectID: targetID)
+                }
+                dragDropItemID = nil
+                dragDropTargetProjectID = nil
+            }
+            Button("コピー") {
+                if let itemID = dragDropItemID,
+                   let targetID = dragDropTargetProjectID,
+                   let item = viewModel.items.first(where: { $0.id == itemID }) {
+                    viewModel.copyItemToProject(item, targetProjectID: targetID)
+                }
+                dragDropItemID = nil
+                dragDropTargetProjectID = nil
+            }
+            Button("キャンセル", role: .cancel) {
+                dragDropItemID = nil
+                dragDropTargetProjectID = nil
+            }
+        } message: {
+            if let targetID = dragDropTargetProjectID,
+               let project = viewModel.projects.first(where: { $0.id == targetID }) {
+                Text("「\(project.name)」へ移動またはコピーしますか？")
+            }
         }
     }
 
@@ -275,6 +314,16 @@ struct ContentView: View {
                             confirmingDeleteProjectID = project.id
                         }
                     }
+                    .onDrop(of: [.plainText], isTargeted: Binding(
+                        get: { isDroppingOnProject[project.id] ?? false },
+                        set: { isDroppingOnProject[project.id] = $0 }
+                    )) { providers in
+                        handleProjectDrop(providers, targetProjectID: project.id)
+                    }
+                    .background(
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Color.accentColor.opacity((isDroppingOnProject[project.id] ?? false) ? 0.15 : 0))
+                    )
                 }
             }
             .listStyle(.sidebar)
@@ -510,6 +559,22 @@ struct ContentView: View {
         )) {
             ItemDetailPopover(item: item, viewModel: viewModel)
         }
+        .onDrag {
+            NSItemProvider(object: item.id.uuidString as NSString)
+        } preview: {
+            Group {
+                if let nsImage = viewModel.cachedImage(for: item) {
+                    Image(nsImage: nsImage)
+                        .resizable()
+                        .scaledToFit()
+                } else {
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(Color.secondary.opacity(0.3))
+                }
+            }
+            .frame(width: 80, height: 80)
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        }
     }
 
     private func generationCard(_ job: GenerationJob) -> some View {
@@ -664,6 +729,8 @@ struct ContentView: View {
                             .allowsHitTesting(false)
                     }
                 }
+                // ボタン(28pt) + 右padding(8pt) + gap(8pt) = 44pt 確保
+                .padding(.trailing, 44)
 
                 let promptEmpty = viewModel.currentInputs.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                 let enhanceDisabled = promptEmpty || viewModel.isEnhancingPrompt
@@ -950,6 +1017,22 @@ struct ContentView: View {
         return handled
     }
 
+    private func handleProjectDrop(_ providers: [NSItemProvider], targetProjectID: UUID) -> Bool {
+        guard let provider = providers.first,
+              provider.canLoadObject(ofClass: NSString.self) else { return false }
+        provider.loadObject(ofClass: NSString.self) { obj, _ in
+            guard let uuidString = obj as? String,
+                  let itemID = UUID(uuidString: uuidString) else { return }
+            Task { @MainActor in
+                guard let item = self.viewModel.items.first(where: { $0.id == itemID }),
+                      item.projectID != targetProjectID else { return }
+                self.dragDropItemID = itemID
+                self.dragDropTargetProjectID = targetProjectID
+            }
+        }
+        return true
+    }
+
     private var modelShortName: String {
         if let m = viewModel.availableModels.first(where: { $0.id == viewModel.currentInputs.model }) {
             return m.displayName
@@ -1190,6 +1273,11 @@ struct ItemDetailPopover: View {
                 disabledReason: item.hasSVG ? "ベクター化済み" : nil
             )
 
+            PopoverButton(systemImage: "doc.on.doc", title: "複製") {
+                viewModel.duplicateItem(item)
+                viewModel.selectedItemID = nil
+            }
+
             PopoverButton(systemImage: "folder", title: "Finderで表示") {
                 viewModel.reveal(item: item)
             }
@@ -1212,7 +1300,7 @@ struct ItemDetailPopover: View {
             .controlSize(.large)
         }
         .padding(18)
-        .frame(width: 300, height: 490)
+        .frame(width: 300, height: 525)
         .alert("画像を削除しますか？", isPresented: $isConfirmingDelete) {
             Button("削除", role: .destructive) {
                 viewModel.deleteItem(item)

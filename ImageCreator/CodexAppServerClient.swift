@@ -131,23 +131,33 @@ final class CodexAppServerClient: @unchecked Sendable {
         }
     }
 
-    func startThread(model: String, reasoningEffort: String) async throws -> String {
-        let response = try await sendRequest(
-            method: "thread/start",
-            params: [
-                "cwd": FileManager.default.homeDirectoryForCurrentUser.path,
-                "approvalPolicy": "never",
-                "sandbox": "read-only",
-                "ephemeral": true,
-                "experimentalRawEvents": true,
-                "persistExtendedHistory": false,
-                "serviceName": "Image Creator",
-                "model": model,
-                "config": [
-                    "model_reasoning_effort": reasoningEffort
-                ]
+    func startThread(
+        model: String,
+        reasoningEffort: String,
+        instructions: String? = nil,
+        disableResponseStorage: Bool = false
+    ) async throws -> String {
+        var params: [String: Any] = [
+            "cwd": FileManager.default.homeDirectoryForCurrentUser.path,
+            "approvalPolicy": "never",
+            "sandbox": "read-only",
+            "ephemeral": true,
+            "experimentalRawEvents": true,
+            "persistExtendedHistory": false,
+            "serviceName": "Image Creator",
+            "model": model,
+            "config": [
+                "model_reasoning_effort": reasoningEffort,
+                "max_output_tokens": 800
             ]
-        )
+        ]
+        if let instructions {
+            params["instructions"] = instructions
+        }
+        if disableResponseStorage {
+            params["disableResponseStorage"] = true
+        }
+        let response = try await sendRequest(method: "thread/start", params: params)
 
         guard
             let thread = response["thread"] as? [String: Any],

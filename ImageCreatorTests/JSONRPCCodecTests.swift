@@ -100,6 +100,55 @@ final class JSONRPCCodecTests: XCTestCase {
         XCTAssertEqual(try XCTUnwrap(status.secondaryUsageRemainingFraction), 0.43, accuracy: 0.001)
     }
 
+    func testExtractAssistantTextIgnoresInputText() {
+        let notification: [String: Any] = [
+            "method": "rawResponseItem/completed",
+            "params": [
+                "item": [
+                    "type": "message",
+                    "role": "user",
+                    "content": [
+                        ["type": "input_text", "text": "System instructions and user prompt echo..."]
+                    ]
+                ]
+            ]
+        ]
+        XCTAssertNil(CodexEventExtractor.extractAssistantText(from: notification))
+    }
+
+    func testExtractAssistantTextCapturesOutputText() {
+        let notification: [String: Any] = [
+            "method": "rawResponseItem/completed",
+            "params": [
+                "item": [
+                    "type": "message",
+                    "role": "assistant",
+                    "content": [
+                        ["type": "output_text", "text": "Enhanced prompt text here."]
+                    ]
+                ]
+            ]
+        ]
+        XCTAssertEqual(CodexEventExtractor.extractAssistantText(from: notification), "Enhanced prompt text here.")
+    }
+
+    func testExtractAssistantTextFiltersInputTextFromMixedContent() {
+        let notification: [String: Any] = [
+            "method": "rawResponseItem/completed",
+            "params": [
+                "item": [
+                    "type": "message",
+                    "role": "assistant",
+                    "content": [
+                        ["type": "input_text", "text": "should be ignored"],
+                        ["type": "output_text", "text": "actual enhanced output"]
+                    ]
+                ]
+            ]
+        ]
+        XCTAssertEqual(CodexEventExtractor.extractAssistantText(from: notification), "actual enhanced output")
+    }
+
     func testProcessTerminationClosesHandlesWithoutResettingLaunchedStandardIO() throws {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/bin/sleep")

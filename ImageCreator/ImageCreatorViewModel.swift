@@ -562,6 +562,7 @@ final class ImageCreatorViewModel: ObservableObject {
                 try await client.start()
 
                 let model = Self.selectEnhanceModel(from: availableModels)
+                logs.append("エンハンスモデル: \(model.displayName) (\(model.id))")
                 let threadID = try await client.startThread(model: model.id, reasoningEffort: "low")
                 let turnPrompt = PromptEnhancer.buildPrompt(userPrompt: promptText)
 
@@ -570,7 +571,7 @@ final class ImageCreatorViewModel: ObservableObject {
                         try await self.client.runTurn(threadID: threadID, prompt: turnPrompt)
                     }
                     group.addTask {
-                        try await Task.sleep(nanoseconds: 30 * 1_000_000_000)
+                        try await Task.sleep(nanoseconds: 15 * 1_000_000_000)
                         throw ImageCreatorError.rpcError("プロンプトエンハンスがタイムアウトしました")
                     }
                     guard let r = try await group.next() else {
@@ -626,9 +627,14 @@ final class ImageCreatorViewModel: ObservableObject {
     }
 
     private static func selectEnhanceModel(from models: [CodexModel]) -> CodexModel {
-        let lightweightKeywords = ["mini", "haiku", "flash", "instant"]
+        // ID末尾が "-mini" のモデルを最優先（例: gpt-5.4-mini）
+        if let miniByID = models.first(where: { $0.id.hasSuffix("-mini") }) {
+            return miniByID
+        }
+        // displayName/ID に軽量キーワードが含まれるモデルを次優先
+        let lightweightKeywords = ["mini", "haiku", "flash", "instant", "lite", "nano"]
         if let light = models.first(where: { model in
-            let lower = model.displayName.lowercased()
+            let lower = model.displayName.lowercased() + " " + model.id.lowercased()
             return lightweightKeywords.contains(where: { lower.contains($0) })
         }) {
             return light
@@ -643,6 +649,101 @@ final class ImageCreatorViewModel: ObservableObject {
         if selectedItemID == item.id { selectedItemID = nil }
         if let idx = projects.firstIndex(where: { $0.id == item.projectID }) {
             projects[idx].updatedAt = Date()
+        }
+        saveState()
+    }
+
+    func duplicateItem(_ item: ProjectItem) {
+        let newItem = ProjectItem(
+            id: UUID(),
+            projectID: item.projectID,
+            prompt: item.prompt,
+            revisedPrompt: item.revisedPrompt,
+            aspectRatio: item.aspectRatio,
+            createdAt: item.createdAt,
+            errorMessage: item.errorMessage,
+            editedFromItemID: nil,
+            hasSVG: item.hasSVG,
+            isBackgroundRemoved: item.isBackgroundRemoved,
+            isImported: item.isImported
+        )
+        do {
+            try FileManager.default.createDirectory(at: projectStore.itemsDirectory, withIntermediateDirectories: true)
+            try FileManager.default.copyItem(
+                at: item.fileURL(in: projectStore.rootDirectory),
+                to: newItem.fileURL(in: projectStore.rootDirectory)
+            )
+            if item.hasSVG {
+                try FileManager.default.copyItem(
+                    at: item.svgFileURL(in: projectStore.rootDirectory),
+                    to: newItem.svgFileURL(in: projectStore.rootDirectory)
+                )
+            }
+            if let img = cachedImage(for: item) {
+                imageCache.setObject(img, forKey: newItem.fileURL(in: projectStore.rootDirectory) as NSURL)
+            }
+            items.append(newItem)
+            if let idx = projects.firstIndex(where: { $0.id == item.projectID }) {
+                projects[idx].updatedAt = Date()
+            }
+            saveState()
+        } catch {
+            errorToast = "アイテムの複製に失敗しました"
+            logs.append("複製エラー: \(error.localizedDescription)")
+        }
+    }
+
+    func copyItemToProject(_ item: ProjectItem, targetProjectID: UUID) {
+        let newItem = ProjectItem(
+            id: UUID(),
+            projectID: targetProjectID,
+            prompt: item.prompt,
+            revisedPrompt: item.revisedPrompt,
+            aspectRatio: item.aspectRatio,
+            createdAt: item.createdAt,
+            errorMessage: item.errorMessage,
+            editedFromItemID: nil,
+            hasSVG: item.hasSVG,
+            isBackgroundRemoved: item.isBackgroundRemoved,
+            isImported: item.isImported
+        )
+        do {
+            try FileManager.default.createDirectory(at: projectStore.itemsDirectory, withIntermediateDirectories: true)
+            try FileManager.default.copyItem(
+                at: item.fileURL(in: projectStore.rootDirectory),
+                to: newItem.fileURL(in: projectStore.rootDirectory)
+            )
+            if item.hasSVG {
+                try FileManager.default.copyItem(
+                    at: item.svgFileURL(in: projectStore.rootDirectory),
+                    to: newItem.svgFileURL(in: projectStore.rootDirectory)
+                )
+            }
+            if let img = cachedImage(for: item) {
+                imageCache.setObject(img, forKey: newItem.fileURL(in: projectStore.rootDirectory) as NSURL)
+            }
+            items.append(newItem)
+            if let idx = projects.firstIndex(where: { $0.id == targetProjectID }) {
+                projects[idx].updatedAt = Date()
+            }
+            saveState()
+        } catch {
+            errorToast = "アイテムのコピーに失敗しました"
+            logs.append("コピーエラー: \(error.localizedDescription)")
+        }
+    }
+
+    func moveItemToProject(_ item: ProjectItem, targetProjectID: UUID) {
+        guard let idx = items.firstIndex(where: { $0.id == item.id }) else { return }
+        let sourceProjectID = items[idx].projectID
+        items[idx].projectID = targetProjectID
+        items[idx].editedFromItemID = nil
+        if selectedItemID == item.id { selectedItemID = nil }
+        if let srcIdx = projects.firstIndex(where: { $0.id == sourceProjectID }) {
+            projects[srcIdx].updatedAt = Date()
+        }
+        if let dstIdx = projects.firstIndex(where: { $0.id == targetProjectID }) {
+            projects[dstIdx].updatedAt = Date()
         }
         saveState()
     }
