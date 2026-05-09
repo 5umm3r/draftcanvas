@@ -109,6 +109,19 @@ final class CodexGenerationRunner: GenerationRunning {
 enum PromptFactory {
     static func prompt(for request: GenerationRequest, jobIndex: Int) -> String {
         if let editSource = request.editSource {
+            if editSource.isInpainting && editSource.inpaintPurpose == .remove {
+                return [
+                    "Edit the attached reference image for a local personal image creator app.",
+                    "The reference image has transparent (alpha=0) regions indicating areas to be removed.",
+                    "Use the image generation capability and return exactly one edited raster image result.",
+                    "Remove the object in the transparent area, naturally fill with surrounding background.",
+                    "Original image description: \(editSource.originalPrompt)",
+                    "Aspect ratio: \(request.aspectRatio.promptDescription).",
+                    "Preserve all non-transparent parts of the image exactly as they are.",
+                    "Return a fully opaque image with no transparency.",
+                    "Do not write code. Do not ask clarifying questions."
+                ].joined(separator: "\n")
+            }
             if editSource.isInpainting {
                 return [
                     "Edit the attached reference image for a local personal image creator app.",

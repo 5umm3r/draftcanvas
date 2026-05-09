@@ -377,10 +377,16 @@ struct ContentView: View {
     @ViewBuilder
     private func inpaintingEditorSheet(for item: ProjectItem) -> some View {
         if let nsImage = viewModel.cachedImage(for: item) {
+            let mode = viewModel.inpaintMode
             InpaintingMaskEditorSheet(
                 originalImage: nsImage,
+                mode: mode,
                 onComplete: { strokes in
-                    viewModel.applyInpaintingMask(item: item, strokes: strokes)
+                    if mode == .remove {
+                        viewModel.applyMaskRemoval(item: item, strokes: strokes)
+                    } else {
+                        viewModel.applyInpaintingMask(item: item, strokes: strokes)
+                    }
                 },
                 onCancel: {
                     viewModel.inpaintingTarget = nil
@@ -1256,6 +1262,11 @@ struct ItemDetailPopover: View {
                 viewModel.selectedItemID = nil
             }
 
+            PopoverButton(systemImage: "eraser", title: "マスクして除去") {
+                viewModel.maskRemove(item: item)
+                viewModel.selectedItemID = nil
+            }
+
             PopoverButton(
                 systemImage: "scissors",
                 title: "背景を除去",
@@ -1305,7 +1316,9 @@ struct ItemDetailPopover: View {
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
         }
-        .padding(18)
+        .padding(.horizontal, 18)
+        .padding(.top, 18)
+        .padding(.bottom, 8)
         .frame(width: 300, height: 525)
         .alert("画像を削除しますか？", isPresented: $isConfirmingDelete) {
             Button("削除", role: .destructive) {

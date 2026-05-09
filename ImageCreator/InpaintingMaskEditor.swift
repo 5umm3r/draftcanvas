@@ -1,10 +1,18 @@
 import SwiftUI
 import AppKit
 
+// MARK: - Mode
+
+enum InpaintMode {
+    case edit
+    case remove
+}
+
 // MARK: - Sheet
 
 struct InpaintingMaskEditorSheet: View {
     let originalImage: NSImage
+    let mode: InpaintMode
     let onComplete: ([MaskStroke]) -> Void
     let onCancel: () -> Void
 
@@ -93,7 +101,7 @@ struct InpaintingMaskEditorSheet: View {
             Button("キャンセル", role: .cancel) { onCancel() }
                 .keyboardShortcut(.escape, modifiers: [])
 
-            Button("完了") { onComplete(strokes) }
+            Button(mode == .remove ? "除去" : "完了") { onComplete(strokes) }
                 .buttonStyle(.borderedProminent)
                 .disabled(strokes.isEmpty)
                 .keyboardShortcut(.return, modifiers: .command)

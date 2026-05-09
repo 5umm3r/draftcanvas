@@ -102,13 +102,44 @@ struct GenerationRequest: Equatable {
     }
 }
 
+enum InpaintPurpose {
+    case edit
+    case remove
+}
+
 struct GenerationEditSource: Equatable {
     var projectItemID: UUID
     var filePath: String
     var originalPrompt: String
     var maskFilePath: String?
     var compositeFilePath: String?
+    var inpaintPurpose: InpaintPurpose
+
     var isInpainting: Bool { maskFilePath != nil }
+
+    init(
+        projectItemID: UUID,
+        filePath: String,
+        originalPrompt: String,
+        maskFilePath: String? = nil,
+        compositeFilePath: String? = nil,
+        inpaintPurpose: InpaintPurpose = .edit
+    ) {
+        self.projectItemID = projectItemID
+        self.filePath = filePath
+        self.originalPrompt = originalPrompt
+        self.maskFilePath = maskFilePath
+        self.compositeFilePath = compositeFilePath
+        self.inpaintPurpose = inpaintPurpose
+    }
+
+    static func == (lhs: GenerationEditSource, rhs: GenerationEditSource) -> Bool {
+        lhs.projectItemID == rhs.projectItemID &&
+        lhs.filePath == rhs.filePath &&
+        lhs.originalPrompt == rhs.originalPrompt &&
+        lhs.maskFilePath == rhs.maskFilePath &&
+        lhs.compositeFilePath == rhs.compositeFilePath
+    }
 }
 
 enum GenerationJobStatus: String {
