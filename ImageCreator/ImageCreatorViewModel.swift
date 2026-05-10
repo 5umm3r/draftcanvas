@@ -324,14 +324,18 @@ final class ImageCreatorViewModel: ObservableObject {
     private func syncSessionWindows(from status: CodexAccountUsageStatus) {
         if let d = status.primaryResetDate {
             let epoch = d.timeIntervalSince1970
-            if abs(epoch - session5hResetEpoch) > 1.0 {
+            if session5hResetEpoch == 0 {
+                session5hResetEpoch = epoch
+            } else if abs(epoch - session5hResetEpoch) > 1.0 {
                 session5hCount = 0
                 session5hResetEpoch = epoch
             }
         }
         if let d = status.secondaryResetDate {
             let epoch = d.timeIntervalSince1970
-            if abs(epoch - sessionWeeklyResetEpoch) > 1.0 {
+            if sessionWeeklyResetEpoch == 0 {
+                sessionWeeklyResetEpoch = epoch
+            } else if abs(epoch - sessionWeeklyResetEpoch) > 1.0 {
                 sessionWeeklyCount = 0
                 sessionWeeklyResetEpoch = epoch
             }
