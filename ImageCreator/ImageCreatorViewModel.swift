@@ -38,6 +38,7 @@ final class ImageCreatorViewModel: ObservableObject {
     @Published var errorToast: String?
     @Published var accountUsagePrewarmFailed = false
     @Published var isLoggingOut = false
+    @Published var codexVersion: String = "--"
     @Published private(set) var availableModels: [CodexModel] = []
 
     @Published var vectorizingItemIDs: Set<UUID> = []
@@ -339,6 +340,12 @@ final class ImageCreatorViewModel: ObservableObject {
         accountUsagePrewarmFailed = false
         Task {
             await refreshAvailableModels()
+        }
+        Task {
+            let version = await CodexAppServerClient.fetchVersion(
+                executablePath: client.codexExecutablePath
+            )
+            self.codexVersion = version ?? "--"
         }
         refreshAccountUsage()
     }

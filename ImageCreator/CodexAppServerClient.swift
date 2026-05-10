@@ -38,7 +38,7 @@ private struct SendableParams: @unchecked Sendable {
 
 final class CodexAppServerClient: @unchecked Sendable {
     private let queue = DispatchQueue(label: "local.imagecreator.codex-app-server")
-    private let codexExecutablePath: String
+    let codexExecutablePath: String
     private var process: Process?
     private var stdinHandle: FileHandle?
     private var stdoutHandle: FileHandle?
