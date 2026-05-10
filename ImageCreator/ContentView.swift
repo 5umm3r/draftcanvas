@@ -229,12 +229,11 @@ struct ContentView: View {
                     isLoading: viewModel.isRefreshingAccountUsage,
                     hasFailed: viewModel.accountUsagePrewarmFailed,
                     isLoggingOut: viewModel.isLoggingOut,
+                    codexVersion: viewModel.codexVersion,
                     onRetry: viewModel.refreshAccountUsage,
                     onLogout: viewModel.logout
                 )
             }
-
-            planBadge
 
             Divider()
                 .frame(height: 20)
@@ -1366,6 +1365,7 @@ struct AccountPopover: View {
     let isLoading: Bool
     let hasFailed: Bool
     let isLoggingOut: Bool
+    let codexVersion: String
     let onRetry: () -> Void
     let onLogout: () -> Void
 
@@ -1410,6 +1410,12 @@ struct AccountPopover: View {
                     }
                     Spacer()
                 }
+
+                // Codex CLIバージョン
+                Text("Codex \(codexVersion)")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+                    .padding(.top, 4)
 
                 // ログアウト
                 if canLogout {
