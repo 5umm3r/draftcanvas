@@ -341,11 +341,10 @@ final class ImageCreatorViewModel: ObservableObject {
         Task {
             await refreshAvailableModels()
         }
-        Task {
-            let version = await CodexAppServerClient.fetchVersion(
-                executablePath: client.codexExecutablePath
-            )
-            self.codexVersion = version ?? "--"
+        Task.detached(priority: .background) { [weak self] in
+            let path = await MainActor.run { self?.client.codexExecutablePath ?? "" }
+            let version = await CodexAppServerClient.fetchVersion(executablePath: path)
+            await MainActor.run { self?.codexVersion = version ?? "--" }
         }
         refreshAccountUsage()
     }
