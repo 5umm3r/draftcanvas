@@ -15,6 +15,10 @@ final class ImageCreatorViewModel: ObservableObject {
     // MARK: - Global state
     @AppStorage("appAppearance") var appAppearanceRaw: String = "light"
     @AppStorage("totalGeneratedImages") var totalGeneratedImages: Int = 0
+    @AppStorage("session5hCount") var session5hCount: Int = 0
+    @AppStorage("sessionWeeklyCount") var sessionWeeklyCount: Int = 0
+    @AppStorage("session5hResetEpoch") var session5hResetEpoch: Double = 0
+    @AppStorage("sessionWeeklyResetEpoch") var sessionWeeklyResetEpoch: Double = 0
     @AppStorage("completionSound") var completionSound: String = CompletionSoundOption.glass.rawValue
     @Published var projects: [Project] = []
     @Published var items: [ProjectItem] = []
@@ -45,6 +49,8 @@ final class ImageCreatorViewModel: ObservableObject {
     @Published var inpaintingTarget: ProjectItem? = nil
     @Published var inpaintMode: InpaintMode = .edit
     @Published var isEnhancingPrompt = false
+    @Published var exportRequest: ExportRequest? = nil
+    @Published var exportingProjectID: UUID? = nil
 
     private let client: CodexAppServerClient
     private let coordinator: GenerationCoordinator
@@ -300,6 +306,7 @@ final class ImageCreatorViewModel: ObservableObject {
                 let status = try await self.client.readAccountUsageStatus()
                 await MainActor.run {
                     self.accountUsageStatus = status
+                    self.syncSessionWindows(from: status)
                     self.isRefreshingAccountUsage = false
                     self.logs.append("Codexアカウントと使用量を更新しました。")
                 }
@@ -312,6 +319,29 @@ final class ImageCreatorViewModel: ObservableObject {
                 }
             }
         }
+    }
+
+    private func syncSessionWindows(from status: CodexAccountUsageStatus) {
+        if let d = status.primaryResetDate {
+            let epoch = d.timeIntervalSince1970
+            if abs(epoch - session5hResetEpoch) > 1.0 {
+                session5hCount = 0
+                session5hResetEpoch = epoch
+            }
+        }
+        if let d = status.secondaryResetDate {
+            let epoch = d.timeIntervalSince1970
+            if abs(epoch - sessionWeeklyResetEpoch) > 1.0 {
+                sessionWeeklyCount = 0
+                sessionWeeklyResetEpoch = epoch
+            }
+        }
+    }
+
+    func resetAllCounters() {
+        session5hCount = 0
+        sessionWeeklyCount = 0
+        totalGeneratedImages = 0
     }
 
     func logout() {
@@ -868,11 +898,25 @@ final class ImageCreatorViewModel: ObservableObject {
         guard let project = projects.first(where: { $0.id == item.projectID }) else { return }
         let ordinal = ordinalForItem(item, in: item.projectID)
         let base = ExportNaming.baseFilename(forProjectName: project.name, ordinal: ordinal)
-        runExportPanel(baseFilename: base) { [weak self] dest, format in
-            guard let self else { return }
-            let pngData = try Data(contentsOf: item.fileURL(in: self.projectStore.rootDirectory))
-            try self.writeExport(pngData: pngData, to: dest, format: format, item: item)
+        let fileURL = item.fileURL(in: projectStore.rootDirectory)
+        var originalSize = CGSize(width: 1024, height: 1024)
+        if let data = try? Data(contentsOf: fileURL),
+           let src = CGImageSourceCreateWithData(data as CFData, nil),
+           let props = CGImageSourceCopyPropertiesAtIndex(src, 0, nil) as? [CFString: Any] {
+            let w = (props[kCGImagePropertyPixelWidth] as? CGFloat)
+                ?? (props[kCGImagePropertyPixelWidth] as? Int).map(CGFloat.init) ?? 1024
+            let h = (props[kCGImagePropertyPixelHeight] as? CGFloat)
+                ?? (props[kCGImagePropertyPixelHeight] as? Int).map(CGFloat.init) ?? 1024
+            originalSize = CGSize(width: w, height: h)
         }
+        let svgURL = item.svgFileURL(in: projectStore.rootDirectory)
+        let hasVectorSVG = item.hasSVG && FileManager.default.fileExists(atPath: svgURL.path)
+        exportRequest = ExportRequest(
+            source: .singleItem(item),
+            originalSize: originalSize,
+            hasVectorSVG: hasVectorSVG,
+            baseFilename: base
+        )
     }
 
     func vectorize(item: ProjectItem) {
@@ -944,8 +988,60 @@ final class ImageCreatorViewModel: ObservableObject {
         guard let job = selectedJob, let pngData = job.imageData else { return }
         let projectName = projects.first(where: { $0.id == selectedProjectID })?.name ?? "Untitled"
         let base = ExportNaming.baseFilename(forProjectName: projectName, ordinal: job.index + 1)
-        runExportPanel(baseFilename: base) { [weak self] dest, format in
-            try self?.writeExport(pngData: pngData, to: dest, format: format)
+        var originalSize = CGSize(width: 1024, height: 1024)
+        if let src = CGImageSourceCreateWithData(pngData as CFData, nil),
+           let props = CGImageSourceCopyPropertiesAtIndex(src, 0, nil) as? [CFString: Any] {
+            let w = (props[kCGImagePropertyPixelWidth] as? CGFloat)
+                ?? (props[kCGImagePropertyPixelWidth] as? Int).map(CGFloat.init) ?? 1024
+            let h = (props[kCGImagePropertyPixelHeight] as? CGFloat)
+                ?? (props[kCGImagePropertyPixelHeight] as? Int).map(CGFloat.init) ?? 1024
+            originalSize = CGSize(width: w, height: h)
+        }
+        exportRequest = ExportRequest(
+            source: .currentJob(pngData: pngData, baseFilename: base),
+            originalSize: originalSize,
+            hasVectorSVG: false,
+            baseFilename: base
+        )
+    }
+
+    func performExport(request: ExportRequest, settings: ExportSettings) {
+        guard let saveFolder = preferredSaveFolder else {
+            chooseSaveFolder()
+            return
+        }
+        exportRequest = nil
+        switch request.source {
+        case .singleItem(let item): exportingProjectID = item.projectID
+        case .currentJob: exportingProjectID = selectedProjectID
+        }
+
+        let base = request.baseFilename
+        let stem = (base as NSString).pathExtension.isEmpty
+            ? base
+            : (base as NSString).deletingPathExtension
+        let destination = ensureUniqueURL(
+            saveFolder.appendingPathComponent("\(stem).\(settings.format.fileExtension)")
+        )
+
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            defer { self.exportingProjectID = nil }
+            do {
+                try await ExportPipeline.run(
+                    request: request,
+                    settings: settings,
+                    destination: destination,
+                    projectStore: self.projectStore
+                ) { [weak self] msg in
+                    Task { @MainActor [weak self] in self?.logs.append(msg) }
+                }
+                self.logs.append("エクスポートしました: \(destination.lastPathComponent)")
+                NSWorkspace.shared.activateFileViewerSelecting([destination])
+            } catch {
+                self.logs.append("エクスポートに失敗しました: \(error.localizedDescription)")
+                self.errorToast = "エクスポートに失敗しました"
+            }
         }
     }
 
@@ -1180,45 +1276,6 @@ final class ImageCreatorViewModel: ObservableObject {
         jobsByProject[projectID] = jobs
     }
 
-    private func runExportPanel(
-        baseFilename: String,
-        handler: @escaping (URL, ExportFormat) throws -> Void
-    ) {
-        let panel = NSSavePanel()
-        panel.canCreateDirectories = true
-        panel.directoryURL = preferredSaveFolder
-        let controller = ExportPanelController(panel: panel, baseFilename: baseFilename)
-
-        guard panel.runModal() == .OK, let url = panel.url else { return }
-
-        do {
-            let resolved = ensureUniqueURL(url)
-            try handler(resolved, controller.selectedFormat)
-            logs.append("エクスポートしました: \(resolved.path)")
-        } catch {
-            logs.append("エクスポートに失敗しました: \(error.localizedDescription)")
-        }
-        _ = controller
-    }
-
-    private func writeExport(pngData: Data, to url: URL, format: ExportFormat, item: ProjectItem? = nil) throws {
-        let data: Data
-        switch format {
-        case .png:
-            data = pngData
-        case .jpeg:
-            data = try ImageEncoder.jpegData(fromPNG: pngData)
-        case .svg:
-            if let item, item.hasSVG,
-               let svgData = try? Data(contentsOf: item.svgFileURL(in: projectStore.rootDirectory)) {
-                data = svgData
-            } else {
-                data = try ImageEncoder.svgWrapping(pngData: pngData)
-            }
-        }
-        try data.write(to: url, options: .atomic)
-    }
-
     private func ensureUniqueURL(_ url: URL) -> URL {
         let fm = FileManager.default
         if !fm.fileExists(atPath: url.path) { return url }
@@ -1226,7 +1283,7 @@ final class ImageCreatorViewModel: ObservableObject {
         let stem = url.deletingPathExtension().lastPathComponent
         let ext = url.pathExtension
         for n in 1...999 {
-            let candidate = dir.appendingPathComponent(String(format: "%@-%d.%@", stem, n, ext))
+            let candidate = dir.appendingPathComponent("\(stem) (\(n)).\(ext)")
             if !fm.fileExists(atPath: candidate.path) { return candidate }
         }
         return url
@@ -1293,6 +1350,8 @@ final class ImageCreatorViewModel: ObservableObject {
         let succeededCount = jobs.filter { $0.status == .succeeded }.count
         if succeededCount > 0 {
             totalGeneratedImages += succeededCount
+            session5hCount += succeededCount
+            sessionWeeklyCount += succeededCount
         }
 
         if succeededCount > 0, let idx = projects.firstIndex(where: { $0.id == projectID }) {
@@ -1325,130 +1384,6 @@ final class ImageCreatorViewModel: ObservableObject {
     }
 }
 
-// MARK: - Export types
-
-enum ExportFormat: Int, CaseIterable {
-    case png = 0, jpeg = 1, svg = 2
-
-    var displayName: String {
-        switch self {
-        case .png: return "PNG"
-        case .jpeg: return "JPEG"
-        case .svg: return "SVG"
-        }
-    }
-
-    var fileExtension: String {
-        switch self {
-        case .png: return "png"
-        case .jpeg: return "jpg"
-        case .svg: return "svg"
-        }
-    }
-
-    var contentType: UTType {
-        switch self {
-        case .png: return .png
-        case .jpeg: return .jpeg
-        case .svg: return .svg
-        }
-    }
-}
-
-@MainActor
-final class ExportPanelController: NSObject {
-    let panel: NSSavePanel
-    let baseFilename: String
-    private(set) var selectedFormat: ExportFormat = .png
-    private let popUp: NSPopUpButton
-
-    init(panel: NSSavePanel, baseFilename: String) {
-        self.panel = panel
-        self.baseFilename = baseFilename
-        self.popUp = NSPopUpButton(frame: NSRect(x: 0, y: 0, width: 200, height: 26), pullsDown: false)
-        super.init()
-
-        for fmt in ExportFormat.allCases {
-            popUp.addItem(withTitle: fmt.displayName)
-            popUp.lastItem?.tag = fmt.rawValue
-        }
-        popUp.selectItem(withTag: ExportFormat.png.rawValue)
-        popUp.target = self
-        popUp.action = #selector(onChange(_:))
-
-        let label = NSTextField(labelWithString: "形式:")
-        label.font = NSFont.systemFont(ofSize: 13)
-        let stack = NSStackView(views: [label, popUp])
-        stack.orientation = .horizontal
-        stack.spacing = 8
-        stack.edgeInsets = NSEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
-        stack.translatesAutoresizingMaskIntoConstraints = true
-        stack.frame = NSRect(x: 0, y: 0, width: 300, height: 42)
-
-        panel.accessoryView = stack
-        applyFormat(.png)
-    }
-
-    @objc private func onChange(_ sender: NSPopUpButton) {
-        guard let fmt = ExportFormat(rawValue: sender.selectedTag()) else { return }
-        selectedFormat = fmt
-        applyFormat(fmt)
-    }
-
-    private func applyFormat(_ fmt: ExportFormat) {
-        panel.allowedContentTypes = [fmt.contentType]
-        let ext = fmt.fileExtension
-        let stem = (baseFilename as NSString).pathExtension.isEmpty
-            ? baseFilename
-            : (baseFilename as NSString).deletingPathExtension
-        panel.nameFieldStringValue = "\(stem).\(ext)"
-    }
-}
-
-enum ImageEncoder {
-    static func jpegData(fromPNG png: Data, quality: CGFloat = 0.92) throws -> Data {
-        guard let source = NSImage(data: png) else { throw ExportError.encodeFailed }
-        let size = source.size
-        let composed = NSImage(size: size)
-        composed.lockFocus()
-        NSColor.white.setFill()
-        NSRect(origin: .zero, size: size).fill()
-        source.draw(in: NSRect(origin: .zero, size: size),
-                    from: .zero,
-                    operation: .sourceOver,
-                    fraction: 1.0)
-        composed.unlockFocus()
-        guard
-            let tiff = composed.tiffRepresentation,
-            let rep = NSBitmapImageRep(data: tiff),
-            let jpeg = rep.representation(using: .jpeg, properties: [.compressionFactor: quality])
-        else { throw ExportError.encodeFailed }
-        return jpeg
-    }
-
-    static func svgWrapping(pngData: Data) throws -> Data {
-        guard
-            let img = NSImage(data: pngData),
-            let rep = img.representations.first
-        else { throw ExportError.encodeFailed }
-        let w = rep.pixelsWide
-        let h = rep.pixelsHigh
-        let base64 = pngData.base64EncodedString()
-        let xml = """
-        <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-        <svg xmlns="http://www.w3.org/2000/svg" width="\(w)" height="\(h)" viewBox="0 0 \(w) \(h)">
-          <image href="data:image/png;base64,\(base64)" width="\(w)" height="\(h)"/>
-        </svg>
-        """
-        guard let data = xml.data(using: .utf8) else { throw ExportError.encodeFailed }
-        return data
-    }
-}
-
-private enum ExportError: LocalizedError {
-    case encodeFailed
-    var errorDescription: String? { "エクスポートのエンコードに失敗しました。" }
-}
 
 enum ExportNaming {
     private static let invalidChars = CharacterSet(charactersIn: "/\\:?*\"<>|")

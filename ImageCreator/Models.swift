@@ -617,6 +617,8 @@ struct CodexAccountUsageStatus: Equatable {
     var accountKind: AccountKind
     var primaryResetText: String?
     var secondaryResetText: String?
+    var primaryResetDate: Date?
+    var secondaryResetDate: Date?
 
     static let unavailable = CodexAccountUsageStatus(
         accountLabel: "アカウント未取得",
@@ -628,7 +630,9 @@ struct CodexAccountUsageStatus: Equatable {
         accountEmail: nil,
         accountKind: .unauthenticated,
         primaryResetText: nil,
-        secondaryResetText: nil
+        secondaryResetText: nil,
+        primaryResetDate: nil,
+        secondaryResetDate: nil
     )
 
     static func parse(accountResponse: [String: Any], rateLimitsResponse: [String: Any]) -> CodexAccountUsageStatus {
@@ -677,7 +681,9 @@ struct CodexAccountUsageStatus: Equatable {
             accountEmail: accountEmail,
             accountKind: accountKind,
             primaryResetText: primaryUsage.resetText,
-            secondaryResetText: secondaryUsage.resetText
+            secondaryResetText: secondaryUsage.resetText,
+            primaryResetDate: primaryUsage.resetDate,
+            secondaryResetDate: secondaryUsage.resetDate
         )
     }
 
@@ -698,13 +704,14 @@ struct CodexAccountUsageStatus: Equatable {
     private static func usageStatus(
         prefix: String,
         window: [String: Any]?
-    ) -> (label: String, remainingFraction: Double?, resetText: String?) {
-        let resetText = window.flatMap { parseResetDate(from: $0) }.flatMap { formatRelativeReset(to: $0) }
+    ) -> (label: String, remainingFraction: Double?, resetText: String?, resetDate: Date?) {
+        let resetDate = window.flatMap { parseResetDate(from: $0) }
+        let resetText = resetDate.flatMap { formatRelativeReset(to: $0) }
         guard let usedPercent = numericValue(window?["usedPercent"]) else {
-            return ("\(prefix) -", nil, resetText)
+            return ("\(prefix) -", nil, resetText, resetDate)
         }
         let remainingPercent = min(100, max(0, 100 - usedPercent))
-        return ("\(prefix) \(Int(remainingPercent.rounded()))%", remainingPercent / 100, resetText)
+        return ("\(prefix) \(Int(remainingPercent.rounded()))%", remainingPercent / 100, resetText, resetDate)
     }
 
     private static func parseResetDate(from window: [String: Any]) -> Date? {

@@ -11,6 +11,7 @@ struct ContentView: View {
     @State private var renamingText = ""
     @State private var confirmingDeleteProjectID: UUID?
     @State private var isAccountPopoverPresented = false
+    @State private var showCountPopover = false
     @State private var promptIsFocused = false
     @State private var promptTextHeight: CGFloat = 76
     @State private var canvasZoom: CGFloat = 1.0
@@ -104,6 +105,14 @@ struct ContentView: View {
                 Text("「\(project.name)」へ移動またはコピーしますか？")
             }
         }
+        .sheet(item: $viewModel.exportRequest) { request in
+            ExportOptionsSheet(
+                request: request,
+                saveFolderName: viewModel.preferredSaveFolder?.lastPathComponent,
+                onExport: { settings in viewModel.performExport(request: request, settings: settings) },
+                onCancel: { viewModel.exportRequest = nil }
+            )
+        }
     }
 
     // MARK: - Top Bar
@@ -172,15 +181,24 @@ struct ContentView: View {
 
             Spacer(minLength: 16)
 
-            HStack(spacing: 4) {
-                Image(systemName: "photo.stack")
-                    .font(.body.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                Text("\(viewModel.totalGeneratedImages)")
-                    .font(.subheadline.weight(.semibold))
-                    .monospacedDigit()
+            Button {
+                showCountPopover.toggle()
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "photo.stack")
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                    Text("\(viewModel.totalGeneratedImages)")
+                        .font(.subheadline.weight(.semibold))
+                        .monospacedDigit()
+                        .foregroundStyle(.secondary)
+                }
             }
-            .help("全プロジェクト累計生成枚数")
+            .buttonStyle(.plain)
+            .help("生成枚数の詳細")
+            .popover(isPresented: $showCountPopover, arrowEdge: .bottom) {
+                GenerationCountPopover(viewModel: viewModel)
+            }
 
             usagePill(
                 systemName: "clock",
@@ -291,7 +309,7 @@ struct ContentView: View {
                     ProjectRow(
                         project: project,
                         isEditing: editingProjectID == project.id,
-                        isGenerating: viewModel.generatingProjectIDs.contains(project.id),
+                        isGenerating: viewModel.generatingProjectIDs.contains(project.id) || viewModel.exportingProjectID == project.id,
                         renamingText: $renamingText,
                         onCommitRename: {
                             viewModel.renameProject(id: project.id, to: renamingText)
@@ -1913,5 +1931,63 @@ struct PopoverButton: View {
         }
         .disabled(isDisabled)
         .help(disabledReason ?? "")
+    }
+}
+
+private struct GenerationCountPopover: View {
+    @ObservedObject var viewModel: ImageCreatorViewModel
+    @State private var showResetConfirm = false
+
+    var body: some View {
+        VStack(spacing: 0) {
+            countRow(icon: "clock", title: "5h", count: viewModel.session5hCount)
+            Divider().padding(.horizontal, 12)
+            countRow(icon: "calendar", title: "週次", count: viewModel.sessionWeeklyCount)
+            Divider().padding(.horizontal, 12)
+            countRow(icon: "photo.stack", title: "累計", count: viewModel.totalGeneratedImages)
+            Divider()
+            Button(role: .destructive) {
+                showResetConfirm = true
+            } label: {
+                Text("リセット")
+                    .font(.subheadline)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.red)
+        }
+        .frame(minWidth: 160)
+        .confirmationDialog(
+            "すべてのカウンタをリセットしますか？",
+            isPresented: $showResetConfirm,
+            titleVisibility: .visible
+        ) {
+            Button("リセット", role: .destructive) { viewModel.resetAllCounters() }
+            Button("キャンセル", role: .cancel) {}
+        } message: {
+            Text("5h・週次・累計すべて 0 になります。元に戻せません。")
+        }
+    }
+
+    @ViewBuilder
+    private func countRow(icon: String, title: String, count: Int) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .frame(width: 16)
+                .foregroundStyle(.secondary)
+            Text(title)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            Spacer()
+            Text("\(count)")
+                .monospacedDigit()
+                .font(.subheadline.weight(.semibold))
+            Text("枚")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 9)
     }
 }

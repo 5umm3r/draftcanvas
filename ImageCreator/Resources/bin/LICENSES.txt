@@ -1,0 +1,5 @@
+oxipng v9.1.5 - MIT License
+https://github.com/shssoichiro/oxipng
+
+pngquant - GPL v3 (binary only, subprocess invocation — no linking)
+https://pngquant.org/
