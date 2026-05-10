@@ -111,6 +111,40 @@ final class CodexAppServerClient: @unchecked Sendable {
         )
     }
 
+    static func fetchVersion(executablePath: String) async -> String? {
+        await withCheckedContinuation { continuation in
+            let config = CodexLaunchConfiguration.resolve(codexExecutablePath: executablePath)
+            let versionArgs: [String]
+            if let first = config.arguments.first {
+                versionArgs = [first, "--version"]
+            } else {
+                versionArgs = ["--version"]
+            }
+
+            let process = Process()
+            let pipe = Pipe()
+
+            process.executableURL = URL(fileURLWithPath: config.executablePath)
+            process.arguments = versionArgs
+            process.standardOutput = pipe
+            process.standardError = Pipe()
+
+            do {
+                try process.run()
+                process.waitUntilExit()
+                let data = pipe.fileHandleForReading.readDataToEndOfFile()
+                let raw = String(data: data, encoding: .utf8) ?? ""
+                let trimmed = raw
+                    .components(separatedBy: .newlines)
+                    .first?
+                    .trimmingCharacters(in: .whitespaces)
+                continuation.resume(returning: trimmed?.isEmpty == false ? trimmed : nil)
+            } catch {
+                continuation.resume(returning: nil)
+            }
+        }
+    }
+
     func stop() {
         queue.sync {
             ProcessTerminationResources.release(

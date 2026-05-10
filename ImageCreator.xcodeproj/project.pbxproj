@@ -23,6 +23,7 @@
 		10A001002D00000100000001 /* ImageVectorizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A000FF2D00000100000001 /* ImageVectorizerTests.swift */; };
 		10A001022D00000100000001 /* InpaintingMaskCompositor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A001012D00000100000001 /* InpaintingMaskCompositor.swift */; };
 		10A001042D00000100000001 /* InpaintingMaskEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A001032D00000100000001 /* InpaintingMaskEditor.swift */; };
+		10A001062D00000100000001 /* CodexVersionFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A001052D00000100000001 /* CodexVersionFetcherTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,6 +55,7 @@
 		10A000FF2D00000100000001 /* ImageVectorizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageVectorizerTests.swift; sourceTree = "<group>"; };
 		10A001012D00000100000001 /* InpaintingMaskCompositor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InpaintingMaskCompositor.swift; sourceTree = "<group>"; };
 		10A001032D00000100000001 /* InpaintingMaskEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InpaintingMaskEditor.swift; sourceTree = "<group>"; };
+		10A001052D00000100000001 /* CodexVersionFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexVersionFetcherTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -118,6 +120,7 @@
 				10A0002C2D00000100000001 /* GenerationCoordinatorTests.swift */,
 				10A000FB2D00000100000001 /* BackgroundRemoverTests.swift */,
 				10A000FF2D00000100000001 /* ImageVectorizerTests.swift */,
+				10A001052D00000100000001 /* CodexVersionFetcherTests.swift */,
 			);
 			path = ImageCreatorTests;
 			sourceTree = "<group>";
@@ -243,6 +246,7 @@
 				10A0002D2D00000100000001 /* GenerationCoordinatorTests.swift in Sources */,
 				10A000FC2D00000100000001 /* BackgroundRemoverTests.swift in Sources */,
 				10A001002D00000100000001 /* ImageVectorizerTests.swift in Sources */,
+				10A001062D00000100000001 /* CodexVersionFetcherTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
