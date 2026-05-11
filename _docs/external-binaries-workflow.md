@@ -1,7 +1,7 @@
 # 外部バイナリ管理ワークフロー
 
 対象: `pngquant`・`oxipng`（PNG最適化ツール）
-配置先: `ImageCreator/Resources/bin/`
+配置先: `DraftCanvas/Resources/bin/`
 
 ---
 
@@ -13,7 +13,7 @@
 ```bash
 # 初回のみ（ビルド済みユニバーサルバイナリが既にリポジトリに含まれる）
 git clone ...
-xcodebuild -scheme ImageCreator -destination 'platform=macOS' SYMROOT=_build OBJROOT=_build/obj build
+xcodebuild -scheme DraftCanvas -destination 'platform=macOS' SYMROOT=_build OBJROOT=_build/obj build
 ```
 
 **バイナリ更新時:**
@@ -25,7 +25,7 @@ rustup target add x86_64-apple-darwin
 cargo install oxipng --root /tmp/oxipng-arm64 --target aarch64-apple-darwin
 cargo install oxipng --root /tmp/oxipng-x86  --target x86_64-apple-darwin
 lipo -create /tmp/oxipng-arm64/bin/oxipng /tmp/oxipng-x86/bin/oxipng \
-     -output ImageCreator/Resources/bin/oxipng
+     -output DraftCanvas/Resources/bin/oxipng
 
 # pngquant ビルド
 git clone --depth 1 https://github.com/kornelski/pngquant.git /tmp/pngquant
@@ -34,9 +34,9 @@ cargo build --release --target aarch64-apple-darwin
 cargo build --release --target x86_64-apple-darwin
 lipo -create target/aarch64-apple-darwin/release/pngquant \
              target/x86_64-apple-darwin/release/pngquant \
-     -output /path/to/repo/ImageCreator/Resources/bin/pngquant
+     -output /path/to/repo/DraftCanvas/Resources/bin/pngquant
 
-chmod +x ImageCreator/Resources/bin/oxipng ImageCreator/Resources/bin/pngquant
+chmod +x DraftCanvas/Resources/bin/oxipng DraftCanvas/Resources/bin/pngquant
 ```
 
 **依存関係:** `/usr/lib/` のみ（libz, libiconv, libSystem）→ 追加インストール不要
@@ -48,7 +48,7 @@ chmod +x ImageCreator/Resources/bin/oxipng ImageCreator/Resources/bin/pngquant
 GitHub Releases + CI/CDに移行。
 
 **移行手順:**
-1. `ImageCreator/Resources/bin/pngquant` と `oxipng` を `.gitignore` に追加
+1. `DraftCanvas/Resources/bin/pngquant` と `oxipng` を `.gitignore` に追加
 2. バイナリをGitHub Releaseアセットにアップロード
 3. `scripts/fetch-tools.sh` 作成
 4. GitHub Actions設定（ビルド→署名→Notarize→DMG）
@@ -58,7 +58,7 @@ GitHub Releases + CI/CDに移行。
 #!/bin/bash
 set -e
 VERSION="v1.0.0"  # リリースタグ
-BIN_DIR="ImageCreator/Resources/bin"
+BIN_DIR="DraftCanvas/Resources/bin"
 
 gh release download "$VERSION" --pattern "pngquant" --dir "$BIN_DIR"
 gh release download "$VERSION" --pattern "oxipng"   --dir "$BIN_DIR"

@@ -1,8 +1,8 @@
-# AGENTS.md - Image Creator Development Workflow
+# AGENTS.md - DraftCanvas Development Workflow
 
 ## Project Overview
 
-**Project**: Image Creator
+**Project**: DraftCanvas
 
 ---
 

@@ -129,10 +129,10 @@
 
 ビルドコマンド（必ずこれを使う）:
 ```bash
-xcodebuild -scheme ImageCreator -destination 'platform=macOS' SYMROOT=_build OBJROOT=_build/obj build
+xcodebuild -scheme DraftCanvas -destination 'platform=macOS' SYMROOT=_build OBJROOT=_build/obj build
 ```
 
-成果物: `_build/Debug/ImageCreator.app`
+成果物: `_build/Debug/DraftCanvas.app`
 
 ルール:
 - SYMROOT は常に `_build`、OBJROOT は常に `_build/obj` 固定

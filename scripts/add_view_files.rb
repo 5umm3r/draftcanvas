@@ -1,9 +1,9 @@
 require 'xcodeproj'
 
-project_path = File.join(__dir__, '..', 'ImageCreator.xcodeproj')
+project_path = File.join(__dir__, '..', 'DraftCanvas.xcodeproj')
 project = Xcodeproj::Project.open(project_path)
-target = project.targets.find { |t| t.name == 'ImageCreator' }
-main_group = project.main_group['ImageCreator']
+target = project.targets.find { |t| t.name == 'DraftCanvas' }
+main_group = project.main_group['DraftCanvas']
 
 view_group = main_group.find_subpath('Views', true)
 view_group.set_source_tree('<group>')

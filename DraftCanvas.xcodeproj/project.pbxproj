@@ -1,0 +1,711 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		04766A478DD74934AA94F185 /* ImageResizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33A4DD507E0443E093B8B328 /* ImageResizer.swift */; };
+		0CEE8A5F3C8EEE502B378859 /* ContentView+TopBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FF7C5825340C2B5EBFBDCD7 /* ContentView+TopBar.swift */; };
+		10A0001B2D00000100000001 /* DraftCanvasApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A0000B2D00000100000001 /* DraftCanvasApp.swift */; };
+		10A0001C2D00000100000001 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A0000C2D00000100000001 /* ContentView.swift */; };
+		10A0002B2D00000100000001 /* JSONRPCCodecTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A0002A2D00000100000001 /* JSONRPCCodecTests.swift */; };
+		10A0002D2D00000100000001 /* GenerationCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A0002C2D00000100000001 /* GenerationCoordinatorTests.swift */; };
+		10A000302D00000100000001 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A0003A2D00000100000001 /* Models.swift */; };
+		10A000312D00000100000001 /* JSONRPCCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A0003B2D00000100000001 /* JSONRPCCodec.swift */; };
+		10A000322D00000100000001 /* CodexAppServerClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A0003C2D00000100000001 /* CodexAppServerClient.swift */; };
+		10A000332D00000100000001 /* GenerationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A0003D2D00000100000001 /* GenerationCoordinator.swift */; };
+		10A000342D00000100000001 /* DraftCanvasViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A0003E2D00000100000001 /* DraftCanvasViewModel.swift */; };
+		10A000402D00000100000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 10A0003F2D00000100000001 /* Assets.xcassets */; };
+		10A000FA2D00000100000001 /* BackgroundRemover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A000F92D00000100000001 /* BackgroundRemover.swift */; };
+		10A000FC2D00000100000001 /* BackgroundRemoverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A000FB2D00000100000001 /* BackgroundRemoverTests.swift */; };
+		10A000FE2D00000100000001 /* ImageVectorizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A000FD2D00000100000001 /* ImageVectorizer.swift */; };
+		10A001002D00000100000001 /* ImageVectorizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A000FF2D00000100000001 /* ImageVectorizerTests.swift */; };
+		10A001022D00000100000001 /* InpaintingMaskCompositor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A001012D00000100000001 /* InpaintingMaskCompositor.swift */; };
+		10A001042D00000100000001 /* InpaintingMaskEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A001032D00000100000001 /* InpaintingMaskEditor.swift */; };
+		10A001062D00000100000001 /* CodexVersionFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A001052D00000100000001 /* CodexVersionFetcherTests.swift */; };
+		11E0B45D4D0F324989FCCD93 /* AttachedImageThumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 882F372486E669E60EAD25D8 /* AttachedImageThumbnail.swift */; };
+		1A4DA35B6990671B2B04CE17 /* GenerationProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDE4F73BDF7FFF820CD906D9 /* GenerationProgressView.swift */; };
+		1B8FE23372C461DA5914694F /* DraftCanvasViewModel+Generation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645A49DEAC9C0E39B2762518 /* DraftCanvasViewModel+Generation.swift */; };
+		1DC3F317248BEEA3EF9EC03D /* PromptTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 592BD998B97EAC58E1514194 /* PromptTextView.swift */; };
+		22DC46FE87112CB30AC876F0 /* DetailRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 053F5A416ED0C9A5453822CD /* DetailRow.swift */; };
+		42BC49111A89D529A5ECD10A /* ContentView+Sidebar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C868E502BA17EA0D9D53C12 /* ContentView+Sidebar.swift */; };
+		44FDA0EF31DFAEFEFDAC52E0 /* DraftCanvasViewModel+PromptEnhance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4394CD7957B6D4CF7275602C /* DraftCanvasViewModel+PromptEnhance.swift */; };
+		4653D2A22708134F7A690ED0 /* CanvasZoomControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C4D7B04757247BD5489EBC7 /* CanvasZoomControl.swift */; };
+		5E9444221134D8C65757F8C3 /* DraftCanvasViewModel+Vectorize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 091A3F916EF893CE97206E83 /* DraftCanvasViewModel+Vectorize.swift */; };
+		6159A61814EB3A5C13BFDB5E /* DraftCanvasViewModel+Items.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE02EE4CC52B71578EA2CEAA /* DraftCanvasViewModel+Items.swift */; };
+		623D869631EA48939954B532 /* ExportSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AFF0EA5BB9D45A9854847ED /* ExportSettings.swift */; };
+		6E8724CB3BE74D2F8546DADB /* ExportOptionsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F24932CE5F0543658FB9BBC0 /* ExportOptionsViewModel.swift */; };
+		6E955589E8B6F4A5A1DD7CB6 /* GenerationDetailPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2DA3047FC4CE3B239B0FA74 /* GenerationDetailPopover.swift */; };
+		73206F51B692E4A7597E70B7 /* StatusBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA755653AF12594D863F311F /* StatusBadge.swift */; };
+		74E51C345A4B59211EC0CBF4 /* AccountPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = B268164EA0D2A09163FB3A63 /* AccountPopover.swift */; };
+		792AEA440F9CE6B09D6DA653 /* DraftCanvasViewModel+Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F699822142103ADBE227AC1 /* DraftCanvasViewModel+Account.swift */; };
+		7AA25878CCC1E7EF5305FA7E /* ExportNaming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117AE1F8D5A65A54ADEDE469 /* ExportNaming.swift */; };
+		810EF0171FB44986BA128E23 /* bin in Resources */ = {isa = PBXBuildFile; fileRef = 7119B2C4A2654E4E835B0B4D /* bin */; };
+		8454C6ADF1B737489686A10D /* GenerationCountPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD72E76B8321BE3FC8DC9891 /* GenerationCountPopover.swift */; };
+		8DA0713CF211C4B39E9CAB75 /* ErrorToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 253503CE40171955E27036E3 /* ErrorToastView.swift */; };
+		9882CC1FE59BF70AAF7B2BD4 /* DraftCanvasViewModel+Attachments.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20BE642DC19692EDFE75D0AA /* DraftCanvasViewModel+Attachments.swift */; };
+		9C2F227923CA43959A7F3EA6 /* ExportRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73538C1E5F7C459699BDD022 /* ExportRequest.swift */; };
+		A13017642482452211C4E9A0 /* LogWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFC23E9DED99669C4518E0C5 /* LogWindow.swift */; };
+		A3DAEFEB78674462BD2D8682 /* ExportPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ADD5B15238E48BDAEF7A6B3 /* ExportPipeline.swift */; };
+		A48B5042A588CAFF7434D440 /* ContentView+Canvas.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82890750F849D5B99F15A383 /* ContentView+Canvas.swift */; };
+		AD4934E858494D91AE6A39DA /* ImageEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 463F16CE063D41F7BE7DEBD8 /* ImageEncoder.swift */; };
+		B27426D2BB989AB418B9CE0A /* VectorizingOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A210B096C95BC73D72354E1 /* VectorizingOverlay.swift */; };
+		B2D5DA32E3484C4696DB4A27 /* BinaryRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F69E3FAEA4A4B2AB9EFF224 /* BinaryRunner.swift */; };
+		B8D9D407FB64ED096398E71A /* PopoverButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5EB180980BB2AAFC5E98E4A /* PopoverButton.swift */; };
+		C1F60926268CA8767E51619D /* DraftCanvasViewModel+CanvasImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A03337AB6A2A6AB4F968292 /* DraftCanvasViewModel+CanvasImport.swift */; };
+		C6F35265165A4602839E3964 /* ZipExportPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F0CA0CC3D334660A5FF5C5A /* ZipExportPipeline.swift */; };
+		CC5756457ADFECF7A3D2FE4A /* DraftCanvasViewModel+Projects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6C2EE6CD1FA3D9302FB26F /* DraftCanvasViewModel+Projects.swift */; };
+		CF28FC7F2E556AA483D91D5E /* DraftCanvasViewModel+Export.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE038D36DC08113ECCE4458E /* DraftCanvasViewModel+Export.swift */; };
+		D5ABAF85CFD1445EA725C71B /* DraftCanvasViewModel+Computed.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC8ED8A8EABE4DC5A4C0E309 /* DraftCanvasViewModel+Computed.swift */; };
+		E4918AF5DB014E73B4B35CA3 /* ExportOptionsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1464508B7D214B28B26A132A /* ExportOptionsSheet.swift */; };
+		F21946B70FE9D2F0BFA137A8 /* ContentView+PromptPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 203007036E5BBA27A915D7B5 /* ContentView+PromptPanel.swift */; };
+		F63D81346A0A345BF4D95B39 /* ItemDetailPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBBB7479702C367B6BF48DFA /* ItemDetailPopover.swift */; };
+		FD3EB434ED014DD8E37582F4 /* ProjectRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4029B2D187F5C59722CE9C73 /* ProjectRow.swift */; };
+		FF35673306EE992D552A6CC7 /* DraftCanvasViewModel+ItemActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BD94C40880F1B413D1381BA /* DraftCanvasViewModel+ItemActions.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		10A000242D00000100000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 10A000012D00000100000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 10A000082D00000100000001;
+			remoteInfo = DraftCanvas;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		053F5A416ED0C9A5453822CD /* DetailRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DetailRow.swift; path = Views/DetailRow.swift; sourceTree = "<group>"; };
+		091A3F916EF893CE97206E83 /* DraftCanvasViewModel+Vectorize.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Vectorize.swift"; path = "ViewModel/DraftCanvasViewModel+Vectorize.swift"; sourceTree = "<group>"; };
+		10A000092D00000100000001 /* DraftCanvas.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DraftCanvas.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		10A0000B2D00000100000001 /* DraftCanvasApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftCanvasApp.swift; sourceTree = "<group>"; };
+		10A0000C2D00000100000001 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		10A000222D00000100000001 /* DraftCanvasTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DraftCanvasTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		10A0002A2D00000100000001 /* JSONRPCCodecTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONRPCCodecTests.swift; sourceTree = "<group>"; };
+		10A0002C2D00000100000001 /* GenerationCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerationCoordinatorTests.swift; sourceTree = "<group>"; };
+		10A0003A2D00000100000001 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		10A0003B2D00000100000001 /* JSONRPCCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONRPCCodec.swift; sourceTree = "<group>"; };
+		10A0003C2D00000100000001 /* CodexAppServerClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexAppServerClient.swift; sourceTree = "<group>"; };
+		10A0003D2D00000100000001 /* GenerationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerationCoordinator.swift; sourceTree = "<group>"; };
+		10A0003E2D00000100000001 /* DraftCanvasViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftCanvasViewModel.swift; sourceTree = "<group>"; };
+		10A0003F2D00000100000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		10A000F92D00000100000001 /* BackgroundRemover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundRemover.swift; sourceTree = "<group>"; };
+		10A000FB2D00000100000001 /* BackgroundRemoverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundRemoverTests.swift; sourceTree = "<group>"; };
+		10A000FD2D00000100000001 /* ImageVectorizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageVectorizer.swift; sourceTree = "<group>"; };
+		10A000FF2D00000100000001 /* ImageVectorizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageVectorizerTests.swift; sourceTree = "<group>"; };
+		10A001012D00000100000001 /* InpaintingMaskCompositor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InpaintingMaskCompositor.swift; sourceTree = "<group>"; };
+		10A001032D00000100000001 /* InpaintingMaskEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InpaintingMaskEditor.swift; sourceTree = "<group>"; };
+		10A001052D00000100000001 /* CodexVersionFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexVersionFetcherTests.swift; sourceTree = "<group>"; };
+		117AE1F8D5A65A54ADEDE469 /* ExportNaming.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ExportNaming.swift; sourceTree = "<group>"; };
+		1464508B7D214B28B26A132A /* ExportOptionsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportOptionsSheet.swift; sourceTree = "<group>"; };
+		1C868E502BA17EA0D9D53C12 /* ContentView+Sidebar.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "ContentView+Sidebar.swift"; path = "Views/ContentView+Sidebar.swift"; sourceTree = "<group>"; };
+		203007036E5BBA27A915D7B5 /* ContentView+PromptPanel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "ContentView+PromptPanel.swift"; path = "Views/ContentView+PromptPanel.swift"; sourceTree = "<group>"; };
+		20BE642DC19692EDFE75D0AA /* DraftCanvasViewModel+Attachments.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Attachments.swift"; path = "ViewModel/DraftCanvasViewModel+Attachments.swift"; sourceTree = "<group>"; };
+		253503CE40171955E27036E3 /* ErrorToastView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ErrorToastView.swift; path = Views/ErrorToastView.swift; sourceTree = "<group>"; };
+		33A4DD507E0443E093B8B328 /* ImageResizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageResizer.swift; sourceTree = "<group>"; };
+		3A03337AB6A2A6AB4F968292 /* DraftCanvasViewModel+CanvasImport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+CanvasImport.swift"; path = "ViewModel/DraftCanvasViewModel+CanvasImport.swift"; sourceTree = "<group>"; };
+		3ADD5B15238E48BDAEF7A6B3 /* ExportPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportPipeline.swift; sourceTree = "<group>"; };
+		3C4D7B04757247BD5489EBC7 /* CanvasZoomControl.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CanvasZoomControl.swift; path = Views/CanvasZoomControl.swift; sourceTree = "<group>"; };
+		4029B2D187F5C59722CE9C73 /* ProjectRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ProjectRow.swift; path = Views/ProjectRow.swift; sourceTree = "<group>"; };
+		4394CD7957B6D4CF7275602C /* DraftCanvasViewModel+PromptEnhance.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+PromptEnhance.swift"; path = "ViewModel/DraftCanvasViewModel+PromptEnhance.swift"; sourceTree = "<group>"; };
+		463F16CE063D41F7BE7DEBD8 /* ImageEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageEncoder.swift; sourceTree = "<group>"; };
+		592BD998B97EAC58E1514194 /* PromptTextView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptTextView.swift; path = Views/PromptTextView.swift; sourceTree = "<group>"; };
+		645A49DEAC9C0E39B2762518 /* DraftCanvasViewModel+Generation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Generation.swift"; path = "ViewModel/DraftCanvasViewModel+Generation.swift"; sourceTree = "<group>"; };
+		7119B2C4A2654E4E835B0B4D /* bin */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Resources/bin; sourceTree = "<group>"; };
+		73538C1E5F7C459699BDD022 /* ExportRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportRequest.swift; sourceTree = "<group>"; };
+		7F0CA0CC3D334660A5FF5C5A /* ZipExportPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZipExportPipeline.swift; sourceTree = "<group>"; };
+		7F69E3FAEA4A4B2AB9EFF224 /* BinaryRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BinaryRunner.swift; sourceTree = "<group>"; };
+		82890750F849D5B99F15A383 /* ContentView+Canvas.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "ContentView+Canvas.swift"; path = "Views/ContentView+Canvas.swift"; sourceTree = "<group>"; };
+		882F372486E669E60EAD25D8 /* AttachedImageThumbnail.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AttachedImageThumbnail.swift; path = Views/AttachedImageThumbnail.swift; sourceTree = "<group>"; };
+		8AFF0EA5BB9D45A9854847ED /* ExportSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportSettings.swift; sourceTree = "<group>"; };
+		8BD94C40880F1B413D1381BA /* DraftCanvasViewModel+ItemActions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+ItemActions.swift"; path = "ViewModel/DraftCanvasViewModel+ItemActions.swift"; sourceTree = "<group>"; };
+		8D6C2EE6CD1FA3D9302FB26F /* DraftCanvasViewModel+Projects.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Projects.swift"; path = "ViewModel/DraftCanvasViewModel+Projects.swift"; sourceTree = "<group>"; };
+		9A210B096C95BC73D72354E1 /* VectorizingOverlay.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = VectorizingOverlay.swift; path = Views/VectorizingOverlay.swift; sourceTree = "<group>"; };
+		9F699822142103ADBE227AC1 /* DraftCanvasViewModel+Account.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Account.swift"; path = "ViewModel/DraftCanvasViewModel+Account.swift"; sourceTree = "<group>"; };
+		9FF7C5825340C2B5EBFBDCD7 /* ContentView+TopBar.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "ContentView+TopBar.swift"; path = "Views/ContentView+TopBar.swift"; sourceTree = "<group>"; };
+		B268164EA0D2A09163FB3A63 /* AccountPopover.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AccountPopover.swift; path = Views/AccountPopover.swift; sourceTree = "<group>"; };
+		BC8ED8A8EABE4DC5A4C0E309 /* DraftCanvasViewModel+Computed.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Computed.swift"; path = "ViewModel/DraftCanvasViewModel+Computed.swift"; sourceTree = "<group>"; };
+		BFC23E9DED99669C4518E0C5 /* LogWindow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LogWindow.swift; path = Views/LogWindow.swift; sourceTree = "<group>"; };
+		C2DA3047FC4CE3B239B0FA74 /* GenerationDetailPopover.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GenerationDetailPopover.swift; path = Views/GenerationDetailPopover.swift; sourceTree = "<group>"; };
+		CD72E76B8321BE3FC8DC9891 /* GenerationCountPopover.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GenerationCountPopover.swift; path = Views/GenerationCountPopover.swift; sourceTree = "<group>"; };
+		CDE4F73BDF7FFF820CD906D9 /* GenerationProgressView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GenerationProgressView.swift; path = Views/GenerationProgressView.swift; sourceTree = "<group>"; };
+		DA755653AF12594D863F311F /* StatusBadge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = StatusBadge.swift; path = Views/StatusBadge.swift; sourceTree = "<group>"; };
+		DBBB7479702C367B6BF48DFA /* ItemDetailPopover.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ItemDetailPopover.swift; path = Views/ItemDetailPopover.swift; sourceTree = "<group>"; };
+		DE038D36DC08113ECCE4458E /* DraftCanvasViewModel+Export.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Export.swift"; path = "ViewModel/DraftCanvasViewModel+Export.swift"; sourceTree = "<group>"; };
+		E5EB180980BB2AAFC5E98E4A /* PopoverButton.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PopoverButton.swift; path = Views/PopoverButton.swift; sourceTree = "<group>"; };
+		EE02EE4CC52B71578EA2CEAA /* DraftCanvasViewModel+Items.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Items.swift"; path = "ViewModel/DraftCanvasViewModel+Items.swift"; sourceTree = "<group>"; };
+		F24932CE5F0543658FB9BBC0 /* ExportOptionsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportOptionsViewModel.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		10A000062D00000100000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		10A0001F2D00000100000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		10A000002D00000100000001 = {
+			isa = PBXGroup;
+			children = (
+				10A0000A2D00000100000001 /* DraftCanvas */,
+				10A000292D00000100000001 /* DraftCanvasTests */,
+				10A0000D2D00000100000001 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		10A0000A2D00000100000001 /* DraftCanvas */ = {
+			isa = PBXGroup;
+			children = (
+				10A0000B2D00000100000001 /* DraftCanvasApp.swift */,
+				10A0000C2D00000100000001 /* ContentView.swift */,
+				10A0003F2D00000100000001 /* Assets.xcassets */,
+				10A0003A2D00000100000001 /* Models.swift */,
+				10A0003B2D00000100000001 /* JSONRPCCodec.swift */,
+				10A0003C2D00000100000001 /* CodexAppServerClient.swift */,
+				10A0003D2D00000100000001 /* GenerationCoordinator.swift */,
+				10A0003E2D00000100000001 /* DraftCanvasViewModel.swift */,
+				10A000F92D00000100000001 /* BackgroundRemover.swift */,
+				10A000FD2D00000100000001 /* ImageVectorizer.swift */,
+				10A001012D00000100000001 /* InpaintingMaskCompositor.swift */,
+				10A001032D00000100000001 /* InpaintingMaskEditor.swift */,
+				DA1427245F8D423E91B73BB8 /* Export */,
+				7119B2C4A2654E4E835B0B4D /* bin */,
+				F67AEB01174F85EC294F17E2 /* ViewModel */,
+				117AE1F8D5A65A54ADEDE469 /* ExportNaming.swift */,
+				501EDB9B442663ADFD8D33AE /* Views */,
+			);
+			path = DraftCanvas;
+			sourceTree = "<group>";
+		};
+		10A0000D2D00000100000001 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				10A000092D00000100000001 /* DraftCanvas.app */,
+				10A000222D00000100000001 /* DraftCanvasTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		10A000292D00000100000001 /* DraftCanvasTests */ = {
+			isa = PBXGroup;
+			children = (
+				10A0002A2D00000100000001 /* JSONRPCCodecTests.swift */,
+				10A0002C2D00000100000001 /* GenerationCoordinatorTests.swift */,
+				10A000FB2D00000100000001 /* BackgroundRemoverTests.swift */,
+				10A000FF2D00000100000001 /* ImageVectorizerTests.swift */,
+				10A001052D00000100000001 /* CodexVersionFetcherTests.swift */,
+			);
+			path = DraftCanvasTests;
+			sourceTree = "<group>";
+		};
+		501EDB9B442663ADFD8D33AE /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				4029B2D187F5C59722CE9C73 /* ProjectRow.swift */,
+				C2DA3047FC4CE3B239B0FA74 /* GenerationDetailPopover.swift */,
+				DBBB7479702C367B6BF48DFA /* ItemDetailPopover.swift */,
+				253503CE40171955E27036E3 /* ErrorToastView.swift */,
+				053F5A416ED0C9A5453822CD /* DetailRow.swift */,
+				B268164EA0D2A09163FB3A63 /* AccountPopover.swift */,
+				BFC23E9DED99669C4518E0C5 /* LogWindow.swift */,
+				CDE4F73BDF7FFF820CD906D9 /* GenerationProgressView.swift */,
+				9A210B096C95BC73D72354E1 /* VectorizingOverlay.swift */,
+				592BD998B97EAC58E1514194 /* PromptTextView.swift */,
+				DA755653AF12594D863F311F /* StatusBadge.swift */,
+				3C4D7B04757247BD5489EBC7 /* CanvasZoomControl.swift */,
+				882F372486E669E60EAD25D8 /* AttachedImageThumbnail.swift */,
+				E5EB180980BB2AAFC5E98E4A /* PopoverButton.swift */,
+				CD72E76B8321BE3FC8DC9891 /* GenerationCountPopover.swift */,
+				9FF7C5825340C2B5EBFBDCD7 /* ContentView+TopBar.swift */,
+				1C868E502BA17EA0D9D53C12 /* ContentView+Sidebar.swift */,
+				82890750F849D5B99F15A383 /* ContentView+Canvas.swift */,
+				203007036E5BBA27A915D7B5 /* ContentView+PromptPanel.swift */,
+			);
+			name = Views;
+			sourceTree = "<group>";
+		};
+		DA1427245F8D423E91B73BB8 /* Export */ = {
+			isa = PBXGroup;
+			children = (
+				8AFF0EA5BB9D45A9854847ED /* ExportSettings.swift */,
+				73538C1E5F7C459699BDD022 /* ExportRequest.swift */,
+				463F16CE063D41F7BE7DEBD8 /* ImageEncoder.swift */,
+				33A4DD507E0443E093B8B328 /* ImageResizer.swift */,
+				7F69E3FAEA4A4B2AB9EFF224 /* BinaryRunner.swift */,
+				3ADD5B15238E48BDAEF7A6B3 /* ExportPipeline.swift */,
+				F24932CE5F0543658FB9BBC0 /* ExportOptionsViewModel.swift */,
+				1464508B7D214B28B26A132A /* ExportOptionsSheet.swift */,
+				7F0CA0CC3D334660A5FF5C5A /* ZipExportPipeline.swift */,
+			);
+			path = Export;
+			sourceTree = "<group>";
+		};
+		F67AEB01174F85EC294F17E2 /* ViewModel */ = {
+			isa = PBXGroup;
+			children = (
+				BC8ED8A8EABE4DC5A4C0E309 /* DraftCanvasViewModel+Computed.swift */,
+				8D6C2EE6CD1FA3D9302FB26F /* DraftCanvasViewModel+Projects.swift */,
+				645A49DEAC9C0E39B2762518 /* DraftCanvasViewModel+Generation.swift */,
+				9F699822142103ADBE227AC1 /* DraftCanvasViewModel+Account.swift */,
+				8BD94C40880F1B413D1381BA /* DraftCanvasViewModel+ItemActions.swift */,
+				4394CD7957B6D4CF7275602C /* DraftCanvasViewModel+PromptEnhance.swift */,
+				EE02EE4CC52B71578EA2CEAA /* DraftCanvasViewModel+Items.swift */,
+				DE038D36DC08113ECCE4458E /* DraftCanvasViewModel+Export.swift */,
+				091A3F916EF893CE97206E83 /* DraftCanvasViewModel+Vectorize.swift */,
+				20BE642DC19692EDFE75D0AA /* DraftCanvasViewModel+Attachments.swift */,
+				3A03337AB6A2A6AB4F968292 /* DraftCanvasViewModel+CanvasImport.swift */,
+			);
+			name = ViewModel;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		10A000082D00000100000001 /* DraftCanvas */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 10A000182D00000100000001 /* Build configuration list for PBXNativeTarget "DraftCanvas" */;
+			buildPhases = (
+				10A000052D00000100000001 /* Sources */,
+				10A000062D00000100000001 /* Frameworks */,
+				10A000072D00000100000001 /* Resources */,
+				90262C0AAD12470BB5035325 /* Sign Embedded Binaries */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DraftCanvas;
+			productName = DraftCanvas;
+			productReference = 10A000092D00000100000001 /* DraftCanvas.app */;
+			productType = "com.apple.product-type.application";
+		};
+		10A000212D00000100000001 /* DraftCanvasTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 10A000252D00000100000001 /* Build configuration list for PBXNativeTarget "DraftCanvasTests" */;
+			buildPhases = (
+				10A0001E2D00000100000001 /* Sources */,
+				10A0001F2D00000100000001 /* Frameworks */,
+				10A000202D00000100000001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				10A000252D00000100000002 /* PBXTargetDependency */,
+			);
+			name = DraftCanvasTests;
+			productName = DraftCanvasTests;
+			productReference = 10A000222D00000100000001 /* DraftCanvasTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		10A000012D00000100000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2640;
+				LastUpgradeCheck = 2640;
+				TargetAttributes = {
+					10A000082D00000100000001 = {
+						CreatedOnToolsVersion = 26.4.1;
+					};
+					10A000212D00000100000001 = {
+						CreatedOnToolsVersion = 26.4.1;
+						TestTargetID = 10A000082D00000100000001;
+					};
+				};
+			};
+			buildConfigurationList = 10A000042D00000100000001 /* Build configuration list for PBXProject "DraftCanvas" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 10A000002D00000100000001;
+			productRefGroup = 10A0000D2D00000100000001 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				10A000082D00000100000001 /* DraftCanvas */,
+				10A000212D00000100000001 /* DraftCanvasTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		10A000072D00000100000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				10A000402D00000100000001 /* Assets.xcassets in Resources */,
+				810EF0171FB44986BA128E23 /* bin in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		10A000202D00000100000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		90262C0AAD12470BB5035325 /* Sign Embedded Binaries */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Sign Embedded Binaries";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "set -e\nBIN_DIR=\"${CODESIGNING_FOLDER_PATH}/Contents/Resources/bin\"\n[ -d \"$BIN_DIR\" ] || exit 0\nfor f in \"$BIN_DIR\"/*; do\n  [ -f \"$f\" ] && [ -x \"$f\" ] || continue\n  /usr/bin/codesign --force --options runtime --timestamp=none \\\n    --sign \"${EXPANDED_CODE_SIGN_IDENTITY:-${CODE_SIGN_IDENTITY:--}}\" \"$f\"\ndone\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		10A000052D00000100000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				10A0001B2D00000100000001 /* DraftCanvasApp.swift in Sources */,
+				10A0001C2D00000100000001 /* ContentView.swift in Sources */,
+				10A000302D00000100000001 /* Models.swift in Sources */,
+				10A000312D00000100000001 /* JSONRPCCodec.swift in Sources */,
+				10A000322D00000100000001 /* CodexAppServerClient.swift in Sources */,
+				10A000332D00000100000001 /* GenerationCoordinator.swift in Sources */,
+				10A000342D00000100000001 /* DraftCanvasViewModel.swift in Sources */,
+				10A000FA2D00000100000001 /* BackgroundRemover.swift in Sources */,
+				10A000FE2D00000100000001 /* ImageVectorizer.swift in Sources */,
+				10A001022D00000100000001 /* InpaintingMaskCompositor.swift in Sources */,
+				10A001042D00000100000001 /* InpaintingMaskEditor.swift in Sources */,
+				623D869631EA48939954B532 /* ExportSettings.swift in Sources */,
+				9C2F227923CA43959A7F3EA6 /* ExportRequest.swift in Sources */,
+				AD4934E858494D91AE6A39DA /* ImageEncoder.swift in Sources */,
+				04766A478DD74934AA94F185 /* ImageResizer.swift in Sources */,
+				B2D5DA32E3484C4696DB4A27 /* BinaryRunner.swift in Sources */,
+				A3DAEFEB78674462BD2D8682 /* ExportPipeline.swift in Sources */,
+				6E8724CB3BE74D2F8546DADB /* ExportOptionsViewModel.swift in Sources */,
+				E4918AF5DB014E73B4B35CA3 /* ExportOptionsSheet.swift in Sources */,
+				C6F35265165A4602839E3964 /* ZipExportPipeline.swift in Sources */,
+				D5ABAF85CFD1445EA725C71B /* DraftCanvasViewModel+Computed.swift in Sources */,
+				CC5756457ADFECF7A3D2FE4A /* DraftCanvasViewModel+Projects.swift in Sources */,
+				1B8FE23372C461DA5914694F /* DraftCanvasViewModel+Generation.swift in Sources */,
+				792AEA440F9CE6B09D6DA653 /* DraftCanvasViewModel+Account.swift in Sources */,
+				FF35673306EE992D552A6CC7 /* DraftCanvasViewModel+ItemActions.swift in Sources */,
+				44FDA0EF31DFAEFEFDAC52E0 /* DraftCanvasViewModel+PromptEnhance.swift in Sources */,
+				6159A61814EB3A5C13BFDB5E /* DraftCanvasViewModel+Items.swift in Sources */,
+				CF28FC7F2E556AA483D91D5E /* DraftCanvasViewModel+Export.swift in Sources */,
+				5E9444221134D8C65757F8C3 /* DraftCanvasViewModel+Vectorize.swift in Sources */,
+				9882CC1FE59BF70AAF7B2BD4 /* DraftCanvasViewModel+Attachments.swift in Sources */,
+				C1F60926268CA8767E51619D /* DraftCanvasViewModel+CanvasImport.swift in Sources */,
+				7AA25878CCC1E7EF5305FA7E /* ExportNaming.swift in Sources */,
+				FD3EB434ED014DD8E37582F4 /* ProjectRow.swift in Sources */,
+				6E955589E8B6F4A5A1DD7CB6 /* GenerationDetailPopover.swift in Sources */,
+				F63D81346A0A345BF4D95B39 /* ItemDetailPopover.swift in Sources */,
+				8DA0713CF211C4B39E9CAB75 /* ErrorToastView.swift in Sources */,
+				22DC46FE87112CB30AC876F0 /* DetailRow.swift in Sources */,
+				74E51C345A4B59211EC0CBF4 /* AccountPopover.swift in Sources */,
+				A13017642482452211C4E9A0 /* LogWindow.swift in Sources */,
+				1A4DA35B6990671B2B04CE17 /* GenerationProgressView.swift in Sources */,
+				B27426D2BB989AB418B9CE0A /* VectorizingOverlay.swift in Sources */,
+				1DC3F317248BEEA3EF9EC03D /* PromptTextView.swift in Sources */,
+				73206F51B692E4A7597E70B7 /* StatusBadge.swift in Sources */,
+				4653D2A22708134F7A690ED0 /* CanvasZoomControl.swift in Sources */,
+				11E0B45D4D0F324989FCCD93 /* AttachedImageThumbnail.swift in Sources */,
+				B8D9D407FB64ED096398E71A /* PopoverButton.swift in Sources */,
+				8454C6ADF1B737489686A10D /* GenerationCountPopover.swift in Sources */,
+				0CEE8A5F3C8EEE502B378859 /* ContentView+TopBar.swift in Sources */,
+				42BC49111A89D529A5ECD10A /* ContentView+Sidebar.swift in Sources */,
+				A48B5042A588CAFF7434D440 /* ContentView+Canvas.swift in Sources */,
+				F21946B70FE9D2F0BFA137A8 /* ContentView+PromptPanel.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		10A0001E2D00000100000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				10A0002B2D00000100000001 /* JSONRPCCodecTests.swift in Sources */,
+				10A0002D2D00000100000001 /* GenerationCoordinatorTests.swift in Sources */,
+				10A000FC2D00000100000001 /* BackgroundRemoverTests.swift in Sources */,
+				10A001002D00000100000001 /* ImageVectorizerTests.swift in Sources */,
+				10A001062D00000100000001 /* CodexVersionFetcherTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		10A000252D00000100000002 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 10A000082D00000100000001 /* DraftCanvas */;
+			targetProxy = 10A000242D00000100000001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		10A000102D00000100000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		10A000112D00000100000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		10A000162D00000100000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Draft Canvas";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = local.draftcanvas.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		10A000172D00000100000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Draft Canvas";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = local.draftcanvas.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		10A000272D00000100000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = local.draftcanvas.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DraftCanvas.app/Contents/MacOS/DraftCanvas";
+			};
+			name = Debug;
+		};
+		10A000282D00000100000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = local.draftcanvas.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DraftCanvas.app/Contents/MacOS/DraftCanvas";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		10A000042D00000100000001 /* Build configuration list for PBXProject "DraftCanvas" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				10A000102D00000100000001 /* Debug */,
+				10A000112D00000100000001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		10A000182D00000100000001 /* Build configuration list for PBXNativeTarget "DraftCanvas" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				10A000162D00000100000001 /* Debug */,
+				10A000172D00000100000001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		10A000252D00000100000001 /* Build configuration list for PBXNativeTarget "DraftCanvasTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				10A000272D00000100000001 /* Debug */,
+				10A000282D00000100000001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 10A000012D00000100000001 /* Project object */;
+}

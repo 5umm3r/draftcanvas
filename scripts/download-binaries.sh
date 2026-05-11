@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-BIN_DIR="$ROOT/ImageCreator/Resources/bin"
+BIN_DIR="$ROOT/DraftCanvas/Resources/bin"
 mkdir -p "$BIN_DIR"
 TMP=$(mktemp -d)
 trap "rm -rf $TMP" EXIT
