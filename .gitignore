@@ -58,7 +58,3 @@ _build/
 
 # Claude Code local settings
 .claude/settings.local.json
-
-# Embedded binaries (run scripts/download-binaries.sh to restore)
-ImageCreator/Resources/bin/oxipng
-ImageCreator/Resources/bin/pngquant
