@@ -109,7 +109,13 @@ struct ContentView: View {
             ExportOptionsSheet(
                 request: request,
                 saveFolderName: viewModel.preferredSaveFolder?.lastPathComponent,
-                onExport: { settings in viewModel.performExport(request: request, settings: settings) },
+                onExport: { settings in
+                    if case .batchItems = request.source {
+                        viewModel.performBatchExport(request: request, settings: settings)
+                    } else {
+                        viewModel.performExport(request: request, settings: settings)
+                    }
+                },
                 onCancel: { viewModel.exportRequest = nil }
             )
         }
@@ -473,6 +479,7 @@ struct ContentView: View {
                     }
                     .buttonStyle(.plain)
                     .padding(8)
+                    .contentShape(Rectangle())
                     .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                     .overlay {
                         RoundedRectangle(cornerRadius: 10, style: .continuous)
@@ -482,6 +489,77 @@ struct ContentView: View {
                     .help("画像をインポート")
                 }
                 if !viewModel.projects.isEmpty && !canvasEntries.isEmpty {
+                    Button {
+                        viewModel.toggleSelectionMode()
+                    } label: {
+                        Image(systemName: viewModel.isSelectionMode ? "checkmark.circle.fill" : "checkmark.circle")
+                            .font(.system(size: 13, weight: .medium))
+                            .frame(width: 18, height: 18)
+                            .foregroundStyle(viewModel.isSelectionMode ? Color.accentColor : Color.primary)
+                    }
+                    .buttonStyle(.plain)
+                    .padding(8)
+                    .contentShape(Rectangle())
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .stroke(viewModel.isSelectionMode ? Color.accentColor.opacity(0.4) : Color.primary.opacity(0.08), lineWidth: 1)
+                    }
+                    .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
+                    .help(viewModel.isSelectionMode ? "選択モード終了" : "選択モード")
+                    if viewModel.isSelectionMode {
+                        if !viewModel.selectedItemIDs.isEmpty {
+                            Text("\(viewModel.selectedItemIDs.count)件選択中")
+                                .font(.caption.weight(.medium))
+                                .foregroundStyle(Color.accentColor)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 6)
+                                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                        .stroke(Color.accentColor.opacity(0.3), lineWidth: 1)
+                                }
+                                .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
+                        }
+                        Button {
+                            viewModel.exportSelectedBatch()
+                        } label: {
+                            Image(systemName: "square.and.arrow.up.on.square")
+                                .font(.system(size: 13, weight: .medium))
+                                .frame(width: 18, height: 18)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(8)
+                        .contentShape(Rectangle())
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+                        }
+                        .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
+                        .disabled(viewModel.selectedItemIDs.isEmpty)
+                        .help("選択画像を一括エクスポート")
+                    }
+                    if !viewModel.projects.isEmpty && !canvasEntries.isEmpty {
+                        Button {
+                            viewModel.canvasSortOrder = viewModel.canvasSortOrder == .createdAtAscending ? .createdAtDescending : .createdAtAscending
+                        } label: {
+                            Image(systemName: "line.3.horizontal.decrease")
+                                .font(.system(size: 13, weight: .medium))
+                                .frame(width: 18, height: 18)
+                                .scaleEffect(y: viewModel.canvasSortOrder == .createdAtDescending ? -1 : 1)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(8)
+                        .contentShape(Rectangle())
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+                        }
+                        .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
+                        .help(viewModel.canvasSortOrder == .createdAtAscending ? "古い順 → 新しい順に切替" : "新しい順 → 古い順に切替")
+                    }
                     CanvasZoomControl(zoom: $canvasZoom)
                 }
             }
@@ -496,12 +574,37 @@ struct ContentView: View {
         .onDrop(of: [.image, .fileURL], isTargeted: $isCanvasDropTargeted) { providers in
             handleCanvasDrop(providers)
         }
+        .overlay(alignment: .bottom) {
+            if let progress = viewModel.batchExportProgress {
+                HStack(spacing: 10) {
+                    ProgressView()
+                        .scaleEffect(0.7)
+                        .frame(width: 16, height: 16)
+                    Text("\(progress.done) / \(progress.total) 枚処理中…")
+                        .font(.subheadline.weight(.medium))
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+                }
+                .shadow(color: .black.opacity(0.12), radius: 8, x: 0, y: 2)
+                .padding(.bottom, 24)
+                .transition(.opacity.combined(with: .move(edge: .bottom)))
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: viewModel.batchExportProgress != nil)
     }
 
     private var canvasEntries: [CanvasEntry] {
         let persistedItems = viewModel.itemsForSelectedProject.map { CanvasEntry.item($0) }
         let inProgressJobs = viewModel.isGeneratingForSelected ? viewModel.currentJobs.map { CanvasEntry.job($0) } : []
-        return persistedItems + inProgressJobs
+        switch viewModel.canvasSortOrder {
+        case .createdAtAscending: return persistedItems + inProgressJobs
+        case .createdAtDescending: return inProgressJobs + persistedItems
+        }
     }
 
     // MARK: - Canvas Cards
@@ -518,9 +621,21 @@ struct ContentView: View {
 
     private func itemCard(_ item: ProjectItem) -> some View {
         let size = cardSize(forItem: item)
+        let isMultiSelected = viewModel.selectedItemIDs.contains(item.id)
+        let isSingleSelected = viewModel.selectedItemID == item.id
+        let isSelected = isMultiSelected || isSingleSelected
         return Button {
-            viewModel.selectedItemID = (viewModel.selectedItemID == item.id) ? nil : item.id
-            viewModel.selectedJobID = nil
+            let flags = NSEvent.modifierFlags
+            if flags.contains(.command) {
+                viewModel.toggleMultiSelection(item)
+            } else if flags.contains(.shift) {
+                viewModel.rangeSelect(to: item, in: viewModel.itemsForSelectedProject)
+            } else if viewModel.isSelectionMode {
+                viewModel.toggleMultiSelection(item)
+            } else {
+                viewModel.selectedItemID = (viewModel.selectedItemID == item.id) ? nil : item.id
+                viewModel.selectedJobID = nil
+            }
         } label: {
             VStack(alignment: .leading, spacing: 8) {
                 ZStack {
@@ -567,9 +682,18 @@ struct ContentView: View {
                 .overlay {
                     RoundedRectangle(cornerRadius: 6, style: .continuous)
                         .stroke(
-                            viewModel.selectedItemID == item.id ? Color.accentColor : Color.primary.opacity(0.10),
-                            lineWidth: viewModel.selectedItemID == item.id ? 3 : 1
+                            isSelected ? Color.accentColor : Color.primary.opacity(0.10),
+                            lineWidth: isSelected ? 3 : 1
                         )
+                }
+                .overlay(alignment: .topLeading) {
+                    if viewModel.isSelectionMode {
+                        Image(systemName: isMultiSelected ? "checkmark.circle.fill" : "circle")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundStyle(isMultiSelected ? Color.accentColor : Color.primary.opacity(0.4))
+                            .background(Circle().fill(.white).padding(2))
+                            .padding(6)
+                    }
                 }
                 .overlay {
                     if viewModel.vectorizingItemIDs.contains(item.id) {
@@ -582,7 +706,7 @@ struct ContentView: View {
         }
         .buttonStyle(.plain)
         .popover(isPresented: .init(
-            get: { viewModel.selectedItemID == item.id },
+            get: { viewModel.selectedItemID == item.id && !viewModel.isSelectionMode && viewModel.selectedItemIDs.isEmpty },
             set: { if !$0 { viewModel.selectedItemID = nil } }
         )) {
             ItemDetailPopover(item: item, viewModel: viewModel)

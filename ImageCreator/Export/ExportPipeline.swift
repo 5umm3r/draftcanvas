@@ -94,6 +94,8 @@ enum ExportPipeline {
             return try Data(contentsOf: item.fileURL(in: projectStore.rootDirectory))
         case .currentJob(let pngData, _):
             return pngData
+        case .batchItems:
+            fatalError("batchItems は ZipExportPipeline で処理してください")
         }
     }
 }

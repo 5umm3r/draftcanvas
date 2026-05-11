@@ -39,8 +39,14 @@ struct ExportOptionsSheet: View {
 
     private var header: some View {
         HStack {
-            Text("エクスポート")
-                .font(.headline)
+            Group {
+                if case .batchItems(let entries) = vm.request.source {
+                    Text("エクスポート (\(entries.count)枚)")
+                } else {
+                    Text("エクスポート")
+                }
+            }
+            .font(.headline)
             Spacer()
             Picker("", selection: $vm.format) {
                 ForEach(ExportFormat.allCases, id: \.self) { fmt in
@@ -194,8 +200,17 @@ struct ExportOptionsSheet: View {
     // MARK: - Footer
 
     private var footer: some View {
-        HStack(spacing: 10) {
-            if let name = saveFolderName {
+        let isBatch = {
+            if case .batchItems = vm.request.source { return true }
+            return false
+        }()
+        return HStack(spacing: 10) {
+            if isBatch {
+                Label("保存先をダイアログで指定", systemImage: "archivebox")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            } else if let name = saveFolderName {
                 Label(name, systemImage: "folder")
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -217,7 +232,7 @@ struct ExportOptionsSheet: View {
             }
             .buttonStyle(.borderedProminent)
             .keyboardShortcut(.defaultAction)
-            .disabled(!vm.isValid || saveFolderName == nil)
+            .disabled(!vm.isValid || (!isBatch && saveFolderName == nil))
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 12)

@@ -50,7 +50,7 @@ final class ExportOptionsViewModel: ObservableObject {
     var heightInt: Int? { Int(heightText) }
 
     var isUpscale: Bool {
-        (widthInt ?? 0) > origW || (heightInt ?? 0) > origH
+        origW > 0 && origH > 0 && ((widthInt ?? 0) > origW || (heightInt ?? 0) > origH)
     }
 
     var isResizeValid: Bool {

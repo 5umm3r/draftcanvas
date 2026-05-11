@@ -20,6 +20,11 @@ final class ImageCreatorViewModel: ObservableObject {
     @AppStorage("session5hResetEpoch") var session5hResetEpoch: Double = 0
     @AppStorage("sessionWeeklyResetEpoch") var sessionWeeklyResetEpoch: Double = 0
     @AppStorage("completionSound") var completionSound: String = CompletionSoundOption.glass.rawValue
+    @AppStorage("canvasSortOrder") var canvasSortOrderRaw: String = CanvasSortOrder.createdAtAscending.rawValue
+    var canvasSortOrder: CanvasSortOrder {
+        get { CanvasSortOrder(rawValue: canvasSortOrderRaw) ?? .createdAtAscending }
+        set { canvasSortOrderRaw = newValue.rawValue }
+    }
     @Published var projects: [Project] = []
     @Published var items: [ProjectItem] = []
     @Published var selectedProjectID: UUID? {
@@ -27,6 +32,8 @@ final class ImageCreatorViewModel: ObservableObject {
             guard selectedProjectID != oldValue, !isLoadingProjects else { return }
             selectedJobID = nil
             selectedItemID = nil
+            selectedItemIDs.removeAll()
+            isSelectionMode = false
             let snapshot = makeSnapshot()
             Task.detached(priority: .background) { [store = projectStore] in
                 store.save(snapshot)
@@ -35,6 +42,8 @@ final class ImageCreatorViewModel: ObservableObject {
     }
     @Published var selectedJobID: UUID?
     @Published var selectedItemID: UUID?
+    @Published var selectedItemIDs: Set<UUID> = []
+    @Published var isSelectionMode: Bool = false
     @Published var logs: [String] = []
     @Published var accountUsageStatus = CodexAccountUsageStatus.unavailable
     @Published var isRefreshingAccountUsage = false
@@ -51,6 +60,7 @@ final class ImageCreatorViewModel: ObservableObject {
     @Published var isEnhancingPrompt = false
     @Published var exportRequest: ExportRequest? = nil
     @Published var exportingProjectID: UUID? = nil
+    @Published var batchExportProgress: (done: Int, total: Int)? = nil
 
     private let client: CodexAppServerClient
     private let coordinator: GenerationCoordinator
@@ -59,6 +69,7 @@ final class ImageCreatorViewModel: ObservableObject {
     private var isLoadingProjects = false
     private var vectorizationTasks: [UUID: Task<Void, Never>] = [:]
     private var enhanceTask: Task<Void, Never>?
+    private var lastClickedItemID: UUID?
     var onReplacePromptText: ((String) -> Void)?
     let imageCache = NSCache<NSURL, NSImage>()
 
@@ -130,9 +141,13 @@ final class ImageCreatorViewModel: ObservableObject {
 
     var itemsForSelectedProject: [ProjectItem] {
         guard let selectedProjectID else { return [] }
-        return items
-            .filter { $0.projectID == selectedProjectID }
-            .sorted { $0.createdAt < $1.createdAt }
+        let filtered = items.filter { $0.projectID == selectedProjectID }
+        switch canvasSortOrder {
+        case .createdAtAscending:
+            return filtered.sorted { $0.createdAt < $1.createdAt }
+        case .createdAtDescending:
+            return filtered.sorted { $0.createdAt > $1.createdAt }
+        }
     }
 
     var preferredSaveFolderLabel: String {
@@ -165,7 +180,11 @@ final class ImageCreatorViewModel: ObservableObject {
         let project = Project(name: name, isAutoNamed: true)
         projects.append(project)
         if resetInputs {
-            inputsByProject[project.id] = ProjectInputs()
+            var inputs = ProjectInputs()
+            if let defaultModel = availableModels.first(where: \.isDefault) ?? availableModels.first {
+                inputs.model = defaultModel.id
+            }
+            inputsByProject[project.id] = inputs
         } else {
             inputsByProject[project.id] = draftInputs
             draftInputs = ProjectInputs()
@@ -1018,6 +1037,7 @@ final class ImageCreatorViewModel: ObservableObject {
         switch request.source {
         case .singleItem(let item): exportingProjectID = item.projectID
         case .currentJob: exportingProjectID = selectedProjectID
+        case .batchItems: exportingProjectID = selectedProjectID
         }
 
         let base = request.baseFilename
@@ -1054,6 +1074,113 @@ final class ImageCreatorViewModel: ObservableObject {
             .filter { $0.projectID == projectID }
             .sorted { $0.createdAt < $1.createdAt }
         return (sorted.firstIndex(of: item) ?? 0) + 1
+    }
+
+    // MARK: - Multi-selection
+
+    func toggleSelectionMode() {
+        isSelectionMode.toggle()
+        if !isSelectionMode {
+            selectedItemIDs.removeAll()
+            lastClickedItemID = nil
+        }
+    }
+
+    func toggleMultiSelection(_ item: ProjectItem) {
+        if selectedItemIDs.contains(item.id) {
+            selectedItemIDs.remove(item.id)
+        } else {
+            selectedItemIDs.insert(item.id)
+        }
+        lastClickedItemID = item.id
+        selectedItemID = nil
+        selectedJobID = nil
+    }
+
+    func rangeSelect(to item: ProjectItem, in orderedItems: [ProjectItem]) {
+        guard let anchor = lastClickedItemID,
+              let anchorIdx = orderedItems.firstIndex(where: { $0.id == anchor }),
+              let targetIdx = orderedItems.firstIndex(where: { $0.id == item.id }) else {
+            toggleMultiSelection(item)
+            return
+        }
+        let range = anchorIdx <= targetIdx
+            ? orderedItems[anchorIdx...targetIdx]
+            : orderedItems[targetIdx...anchorIdx]
+        for i in range { selectedItemIDs.insert(i.id) }
+        selectedItemID = nil
+        selectedJobID = nil
+    }
+
+    func clearMultiSelection() {
+        selectedItemIDs.removeAll()
+        lastClickedItemID = nil
+    }
+
+    func exportSelectedBatch() {
+        guard !selectedItemIDs.isEmpty else { return }
+        guard let project = projects.first(where: { $0.id == selectedProjectID }) else { return }
+        let orderedItems = itemsForSelectedProject.filter { selectedItemIDs.contains($0.id) }
+        let entries = orderedItems.map { item -> BatchExportEntry in
+            let ordinal = ordinalForItem(item, in: item.projectID)
+            return BatchExportEntry(
+                item: item,
+                ordinal: ordinal,
+                baseFilename: ExportNaming.baseFilename(forProjectName: project.name, ordinal: ordinal)
+            )
+        }
+        let allHaveVectorSVG = entries.allSatisfy {
+            $0.item.hasSVG && FileManager.default.fileExists(atPath: $0.item.svgFileURL(in: projectStore.rootDirectory).path)
+        }
+        exportRequest = ExportRequest(
+            source: .batchItems(entries),
+            originalSize: .zero,
+            hasVectorSVG: allHaveVectorSVG,
+            baseFilename: ExportNaming.sanitize(project.name)
+        )
+    }
+
+    func performBatchExport(request: ExportRequest, settings: ExportSettings) {
+        guard case .batchItems(let entries) = request.source, !entries.isEmpty else { return }
+        exportRequest = nil
+
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.zip]
+        let projectName = projects.first(where: { $0.id == selectedProjectID })?.name ?? "Untitled"
+        panel.nameFieldStringValue = "\(ExportNaming.sanitize(projectName))-batch.zip"
+        if let folder = preferredSaveFolder { panel.directoryURL = folder }
+        guard panel.runModal() == .OK, let zipURL = panel.url else { return }
+
+        batchExportProgress = (done: 0, total: entries.count)
+        let store = projectStore
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            do {
+                try await ZipExportPipeline.run(
+                    entries: entries,
+                    settings: settings,
+                    zipDestination: zipURL,
+                    projectStore: store,
+                    progress: { [weak self] done, total in
+                        Task { @MainActor [weak self] in
+                            self?.batchExportProgress = (done: done, total: total)
+                        }
+                    },
+                    logger: { [weak self] msg in
+                        Task { @MainActor [weak self] in self?.logs.append(msg) }
+                    }
+                )
+                self.batchExportProgress = nil
+                self.clearMultiSelection()
+                self.isSelectionMode = false
+                self.logs.append("一括エクスポートしました: \(zipURL.lastPathComponent) (\(entries.count)枚)")
+                NSWorkspace.shared.activateFileViewerSelecting([zipURL])
+            } catch {
+                self.batchExportProgress = nil
+                self.logs.append("一括エクスポートに失敗しました: \(error.localizedDescription)")
+                self.errorToast = "一括エクスポートに失敗しました"
+            }
+        }
     }
 
     // MARK: - Image Attachment
