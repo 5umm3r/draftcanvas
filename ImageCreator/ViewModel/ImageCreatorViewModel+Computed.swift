@@ -78,7 +78,11 @@ extension ImageCreatorViewModel {
         appAppearanceRaw = current.next.rawValue
     }
 
-    var sortedProjects: [Project] {
-        projects.sorted { $0.updatedAt > $1.updatedAt }
+    var favoriteProjects: [Project] {
+        projects.filter { $0.isFavorite }.sorted { $0.updatedAt > $1.updatedAt }
+    }
+
+    var regularProjects: [Project] {
+        projects.filter { !$0.isFavorite }.sorted { $0.updatedAt > $1.updatedAt }
     }
 }

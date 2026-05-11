@@ -29,6 +29,12 @@ extension ImageCreatorViewModel {
         saveState()
     }
 
+    func toggleFavorite(id: UUID) {
+        guard let index = projects.firstIndex(where: { $0.id == id }) else { return }
+        projects[index].isFavorite.toggle()
+        saveState()
+    }
+
     func deleteProject(id: UUID) {
         for item in items where item.projectID == id {
             projectStore.deleteItemFile(item)

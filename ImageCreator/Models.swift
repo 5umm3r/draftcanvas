@@ -270,6 +270,7 @@ struct Project: Identifiable, Equatable {
     var updatedAt: Date
     var model: String
     var reasoningEffort: String
+    var isFavorite: Bool
 
     init(
         id: UUID = UUID(),
@@ -278,7 +279,8 @@ struct Project: Identifiable, Equatable {
         createdAt: Date = Date(),
         updatedAt: Date = Date(),
         model: String = "",
-        reasoningEffort: String = "medium"
+        reasoningEffort: String = "medium",
+        isFavorite: Bool = false
     ) {
         self.id = id
         self.name = name
@@ -287,12 +289,13 @@ struct Project: Identifiable, Equatable {
         self.updatedAt = updatedAt
         self.model = model
         self.reasoningEffort = reasoningEffort
+        self.isFavorite = isFavorite
     }
 }
 
 extension Project: Codable {
     enum CodingKeys: String, CodingKey {
-        case id, name, isAutoNamed, createdAt, updatedAt, model, reasoningEffort
+        case id, name, isAutoNamed, createdAt, updatedAt, model, reasoningEffort, isFavorite
     }
 
     init(from decoder: Decoder) throws {
@@ -304,6 +307,7 @@ extension Project: Codable {
         updatedAt = try c.decode(Date.self, forKey: .updatedAt)
         model = try c.decodeIfPresent(String.self, forKey: .model) ?? ""
         reasoningEffort = try c.decodeIfPresent(String.self, forKey: .reasoningEffort) ?? "medium"
+        isFavorite = try c.decodeIfPresent(Bool.self, forKey: .isFavorite) ?? false
     }
 }
 
