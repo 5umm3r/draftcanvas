@@ -218,12 +218,15 @@ final class CodexAppServerClient: @unchecked Sendable {
                 .compactMap { $0["reasoningEffort"] as? String } ?? []
             let defaultEffort = dict["defaultReasoningEffort"] as? String ?? "medium"
             let isDefault = dict["isDefault"] as? Bool ?? false
+            let rating = ModelRating.lookup(displayName: displayName)
+            print("[ModelRating] id=\(id) displayName=\(displayName) rating=\(String(describing: rating))")
             return CodexModel(
                 id: id,
                 displayName: displayName,
                 supportedReasoningEfforts: efforts,
                 defaultReasoningEffort: defaultEffort,
-                isDefault: isDefault
+                isDefault: isDefault,
+                rating: rating
             )
         }
     }

@@ -931,7 +931,14 @@ struct ContentView: View {
                         Button {
                             viewModel.binding(for: \.model).wrappedValue = model.id
                         } label: {
-                            Label(model.displayName, systemImage: viewModel.currentInputs.model == model.id ? "checkmark" : "")
+                            if let r = model.rating {
+                                Label(
+                                    "\(model.displayName)   コスト:\(r.cost)  賢さ:\(r.smart)  速さ:\(r.speed)",
+                                    systemImage: viewModel.currentInputs.model == model.id ? "checkmark" : ""
+                                )
+                            } else {
+                                Label(model.displayName, systemImage: viewModel.currentInputs.model == model.id ? "checkmark" : "")
+                            }
                         }
                     }
                 } label: {
