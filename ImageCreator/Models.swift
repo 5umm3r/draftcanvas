@@ -320,8 +320,6 @@ struct ProjectItem: Identifiable, Equatable {
     let isBackgroundRemoved: Bool
     let isImported: Bool
 
-    fileprivate let legacyOutputModeWasSVG: Bool
-
     init(
         id: UUID = UUID(),
         projectID: UUID,
@@ -346,7 +344,6 @@ struct ProjectItem: Identifiable, Equatable {
         self.hasSVG = hasSVG
         self.isBackgroundRemoved = isBackgroundRemoved
         self.isImported = isImported
-        self.legacyOutputModeWasSVG = false
     }
 
     func fileURL(in rootDirectory: URL) -> URL {
@@ -368,7 +365,6 @@ extension ProjectItem: Codable {
         case hasSVG
         case isBackgroundRemoved
         case isImported
-        case outputMode, transparentBackground, fileExtension
     }
 
     init(from decoder: Decoder) throws {
@@ -384,8 +380,6 @@ extension ProjectItem: Codable {
         hasSVG = try c.decodeIfPresent(Bool.self, forKey: .hasSVG) ?? false
         isBackgroundRemoved = try c.decodeIfPresent(Bool.self, forKey: .isBackgroundRemoved) ?? false
         isImported = try c.decodeIfPresent(Bool.self, forKey: .isImported) ?? false
-        let legacyMode = try c.decodeIfPresent(String.self, forKey: .outputMode)
-        legacyOutputModeWasSVG = (legacyMode == "svg")
     }
 
     func encode(to encoder: Encoder) throws {
@@ -408,11 +402,9 @@ extension ProjectItem: Codable {
 
 final class ProjectStore: @unchecked Sendable {
     struct Snapshot: Codable {
-        var schemaVersion: Int = 3
         var projects: [Project] = []
         var items: [ProjectItem] = []
         var selectedProjectID: UUID? = nil
-        var droppedSVGCount: Int = 0
     }
 
     let rootDirectory: URL
@@ -484,21 +476,8 @@ final class ProjectStore: @unchecked Sendable {
         else {
             return Snapshot()
         }
-        guard var snapshot = try? JSONDecoder.projectDecoder.decode(Snapshot.self, from: data) else {
+        guard let snapshot = try? JSONDecoder.projectDecoder.decode(Snapshot.self, from: data) else {
             return Snapshot()
-        }
-
-        if snapshot.schemaVersion < 3 {
-            let dropped = snapshot.items.filter { $0.legacyOutputModeWasSVG }
-            for item in dropped {
-                let svgURL = rootDirectory.appendingPathComponent("items")
-                    .appendingPathComponent("\(item.id.uuidString).svg")
-                try? FileManager.default.removeItem(at: svgURL)
-            }
-            snapshot.droppedSVGCount = dropped.count
-            snapshot.items.removeAll(where: { $0.legacyOutputModeWasSVG })
-            snapshot.schemaVersion = 3
-            save(snapshot)
         }
 
         return snapshot

@@ -1,0 +1,468 @@
+import SwiftUI
+
+enum CanvasEntry: Identifiable {
+    case item(ProjectItem)
+    case job(GenerationJob)
+
+    var id: UUID {
+        switch self {
+        case .item(let i): return i.id
+        case .job(let j): return j.id
+        }
+    }
+}
+
+enum CanvasCardLayout {
+    static let baseSquareSide: CGFloat = 220
+    static let maxWidthMultiplier: CGFloat = 4.0 / 3.0
+    static func size(for ratio: CGFloat, zoom: CGFloat) -> CGSize {
+        let r = max(ratio, 0.01)
+        let s = sqrt(r)
+        return CGSize(width: baseSquareSide * s * zoom, height: baseSquareSide / s * zoom)
+    }
+}
+
+extension ContentView {
+    func cardSize(forItem item: ProjectItem) -> CGSize {
+        let ratio = viewModel.cachedImage(for: item)?.pixelAspectRatio
+            ?? item.aspectRatio.widthOverHeight
+        return CanvasCardLayout.size(for: ratio, zoom: canvasZoom)
+    }
+
+    func cardSize(forJob job: GenerationJob) -> CGSize {
+        CanvasCardLayout.size(for: job.aspectRatio.widthOverHeight, zoom: canvasZoom)
+    }
+
+    var canvasArea: some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .bottom) {
+                canvas
+
+                promptPanel(maxPromptHeight: geometry.size.height / 2)
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 18)
+            }
+            .sheet(item: $viewModel.inpaintingTarget) { item in
+                inpaintingEditorSheet(for: item)
+            }
+        }
+    }
+
+    @ViewBuilder
+    func inpaintingEditorSheet(for item: ProjectItem) -> some View {
+        if let nsImage = viewModel.cachedImage(for: item) {
+            let mode = viewModel.inpaintMode
+            InpaintingMaskEditorSheet(
+                originalImage: nsImage,
+                mode: mode,
+                onComplete: { strokes in
+                    if mode == .remove {
+                        viewModel.applyMaskRemoval(item: item, strokes: strokes)
+                    } else {
+                        viewModel.applyInpaintingMask(item: item, strokes: strokes)
+                    }
+                },
+                onCancel: {
+                    viewModel.inpaintingTarget = nil
+                }
+            )
+        } else {
+            Text("画像を読み込めませんでした")
+                .padding(40)
+        }
+    }
+
+    var canvas: some View {
+        ZStack {
+            Color(nsColor: .windowBackgroundColor)
+
+            if viewModel.projects.isEmpty {
+                VStack(spacing: 10) {
+                    Image(systemName: "folder.badge.plus")
+                        .font(.system(size: 36, weight: .medium))
+                    Text("「＋」でプロジェクトを作成するか\nプロンプトを入力して送信してください")
+                        .font(.title3.weight(.semibold))
+                        .multilineTextAlignment(.center)
+                }
+                .padding(.horizontal, 40)
+                .padding(.bottom, 120)
+            } else if canvasEntries.isEmpty {
+                VStack(spacing: 10) {
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 36, weight: .medium))
+                    Text("プロンプトを入力して生成してください")
+                        .font(.title3.weight(.semibold))
+                    Text("生成結果はこのキャンバスに並びます")
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.bottom, 120)
+            } else {
+                ScrollView(.vertical) {
+                    LazyVGrid(
+                        columns: [GridItem(
+                            .adaptive(minimum: CanvasCardLayout.baseSquareSide * canvasZoom),
+                            spacing: 28
+                        )],
+                        spacing: 28
+                    ) {
+                        ForEach(canvasEntries) { entry in
+                            canvasCard(for: entry)
+                        }
+                    }
+                    .padding(.top, 72)
+                    .padding(.horizontal, 90)
+                    .padding(.bottom, 220)
+                }
+                .onDrop(of: [.image, .fileURL], isTargeted: $isCanvasDropTargeted) { providers in
+                    handleCanvasDrop(providers)
+                }
+            }
+        }
+        .overlay(alignment: .topTrailing) {
+            HStack(spacing: 8) {
+                if viewModel.projects.isEmpty == false {
+                    Button {
+                        viewModel.importImageToCanvas()
+                    } label: {
+                        Image(systemName: "photo.badge.plus")
+                            .font(.system(size: 13, weight: .medium))
+                            .frame(width: 18, height: 18)
+                            .padding(8)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+                    }
+                    .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
+                    .help("画像をインポート")
+                }
+                if !viewModel.projects.isEmpty && !canvasEntries.isEmpty {
+                    Button {
+                        viewModel.canvasSortOrder = viewModel.canvasSortOrder == .createdAtAscending ? .createdAtDescending : .createdAtAscending
+                    } label: {
+                        Image(systemName: "line.3.horizontal.decrease")
+                            .font(.system(size: 13, weight: .medium))
+                            .frame(width: 18, height: 18)
+                            .scaleEffect(y: viewModel.canvasSortOrder == .createdAtDescending ? -1 : 1)
+                            .padding(8)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+                    }
+                    .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
+                    .help(viewModel.canvasSortOrder == .createdAtAscending ? "古い順 → 新しい順に切替" : "新しい順 → 古い順に切替")
+                    CanvasZoomControl(zoom: $canvasZoom)
+                }
+            }
+            .padding(.top, 16)
+            .padding(.trailing, 16)
+        }
+        .overlay(alignment: .topLeading) {
+            if !viewModel.projects.isEmpty && !canvasEntries.isEmpty {
+                HStack(spacing: 8) {
+                    Button {
+                        viewModel.toggleSelectionMode()
+                    } label: {
+                        Image(systemName: viewModel.isSelectionMode ? "checkmark.circle.fill" : "checkmark.circle")
+                            .font(.system(size: 13, weight: .medium))
+                            .frame(width: 18, height: 18)
+                            .foregroundStyle(viewModel.isSelectionMode ? Color.accentColor : Color.primary)
+                            .padding(8)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .stroke(viewModel.isSelectionMode ? Color.accentColor.opacity(0.4) : Color.primary.opacity(0.08), lineWidth: 1)
+                    }
+                    .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
+                    .help(viewModel.isSelectionMode ? "選択モード終了" : "選択モード")
+                    if viewModel.isSelectionMode {
+                        if !viewModel.selectedItemIDs.isEmpty {
+                            Text("\(viewModel.selectedItemIDs.count)件選択中")
+                                .font(.caption.weight(.medium))
+                                .foregroundStyle(Color.accentColor)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 6)
+                                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                        .stroke(Color.accentColor.opacity(0.3), lineWidth: 1)
+                                }
+                                .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
+                        }
+                        Button {
+                            viewModel.exportSelectedBatch()
+                        } label: {
+                            Image(systemName: "square.and.arrow.up.on.square")
+                                .font(.system(size: 13, weight: .medium))
+                                .frame(width: 18, height: 18)
+                                .padding(8)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+                        }
+                        .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
+                        .disabled(viewModel.selectedItemIDs.isEmpty)
+                        .help("選択画像を一括エクスポート")
+                    }
+                }
+                .padding(.top, 16)
+                .padding(.leading, 16)
+            }
+        }
+        .overlay(
+            RoundedRectangle(cornerRadius: 0)
+                .stroke(Color.accentColor.opacity(0.5), lineWidth: isCanvasDropTargeted ? 3 : 0)
+                .allowsHitTesting(false)
+        )
+        .onDrop(of: [.image, .fileURL], isTargeted: $isCanvasDropTargeted) { providers in
+            handleCanvasDrop(providers)
+        }
+        .overlay(alignment: .bottom) {
+            if let progress = viewModel.batchExportProgress {
+                HStack(spacing: 10) {
+                    ProgressView()
+                        .scaleEffect(0.7)
+                        .frame(width: 16, height: 16)
+                    Text("\(progress.done) / \(progress.total) 枚処理中…")
+                        .font(.subheadline.weight(.medium))
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+                }
+                .shadow(color: .black.opacity(0.12), radius: 8, x: 0, y: 2)
+                .padding(.bottom, 24)
+                .transition(.opacity.combined(with: .move(edge: .bottom)))
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: viewModel.batchExportProgress != nil)
+    }
+
+    var canvasEntries: [CanvasEntry] {
+        let persistedItems = viewModel.itemsForSelectedProject.map { CanvasEntry.item($0) }
+        let inProgressJobs = viewModel.isGeneratingForSelected ? viewModel.currentJobs.map { CanvasEntry.job($0) } : []
+        switch viewModel.canvasSortOrder {
+        case .createdAtAscending: return persistedItems + inProgressJobs
+        case .createdAtDescending: return inProgressJobs + persistedItems
+        }
+    }
+
+    @ViewBuilder
+    func canvasCard(for entry: CanvasEntry) -> some View {
+        switch entry {
+        case .item(let item):
+            itemCard(item)
+        case .job(let job):
+            generationCard(job)
+        }
+    }
+
+    func itemCard(_ item: ProjectItem) -> some View {
+        let size = cardSize(forItem: item)
+        let isMultiSelected = viewModel.selectedItemIDs.contains(item.id)
+        let isSingleSelected = viewModel.selectedItemID == item.id
+        let isSelected = isMultiSelected || isSingleSelected
+        return Button {
+            if viewModel.isSelectionMode {
+                viewModel.toggleMultiSelection(item)
+            } else {
+                viewModel.selectedItemID = (viewModel.selectedItemID == item.id) ? nil : item.id
+                viewModel.selectedJobID = nil
+            }
+        } label: {
+            VStack(alignment: .leading, spacing: 8) {
+                ZStack {
+                    checkerboard
+                    previewForItem(item)
+                }
+                .frame(width: size.width, height: size.height)
+                .background(Color(nsColor: .controlBackgroundColor))
+                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .overlay(alignment: .bottomTrailing) {
+                    if let sourceID = item.editedFromItemID,
+                       let sourceItem = viewModel.items.first(where: { $0.id == sourceID }),
+                       let sourceImage = viewModel.cachedImage(for: sourceItem) {
+                        let thumbSize = 36 * max(0.7, min(canvasZoom, 1.6))
+                        Image(nsImage: sourceImage)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: thumbSize, height: thumbSize)
+                            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                    .stroke(Color(nsColor: .controlBackgroundColor), lineWidth: 2)
+                            }
+                            .overlay(alignment: .topLeading) {
+                                Image(systemName: "arrow.uturn.backward")
+                                    .font(.system(size: thumbSize * 0.32, weight: .bold))
+                                    .foregroundStyle(.white)
+                                    .frame(width: thumbSize * 0.5, height: thumbSize * 0.5)
+                                    .background(Circle().fill(Color.accentColor))
+                                    .overlay(Circle().stroke(.white, lineWidth: 1.5))
+                                    .offset(x: -thumbSize * 0.15, y: -thumbSize * 0.15)
+                            }
+                            .shadow(color: .black.opacity(0.25), radius: 3, x: 0, y: 1)
+                            .padding(.trailing, -thumbSize / 3)
+                            .padding(.bottom, -thumbSize / 3)
+                    }
+                }
+                .overlay {
+                    if viewModel.currentInputs.editSource?.projectItemID == item.id {
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .stroke(Color.accentColor, style: StrokeStyle(lineWidth: 3, dash: [4, 3]))
+                    }
+                }
+                .overlay {
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .stroke(
+                            isSelected ? Color.accentColor : Color.primary.opacity(0.10),
+                            lineWidth: isSelected ? 3 : 1
+                        )
+                }
+                .overlay(alignment: .topLeading) {
+                    if viewModel.isSelectionMode {
+                        Image(systemName: isMultiSelected ? "checkmark.circle.fill" : "circle")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundStyle(isMultiSelected ? Color.accentColor : Color.primary.opacity(0.4))
+                            .background(Circle().fill(.white).padding(2))
+                            .padding(6)
+                    }
+                }
+                .overlay {
+                    if viewModel.vectorizingItemIDs.contains(item.id) {
+                        VectorizingOverlay {
+                            viewModel.cancelVectorization(for: item)
+                        }
+                    }
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        .popover(isPresented: .init(
+            get: { viewModel.selectedItemID == item.id && !viewModel.isSelectionMode && viewModel.selectedItemIDs.isEmpty },
+            set: { if !$0 { viewModel.selectedItemID = nil } }
+        )) {
+            ItemDetailPopover(item: item, viewModel: viewModel)
+        }
+        .onDrag {
+            NSItemProvider(object: item.id.uuidString as NSString)
+        } preview: {
+            Group {
+                if let nsImage = viewModel.cachedImage(for: item) {
+                    Image(nsImage: nsImage)
+                        .resizable()
+                        .scaledToFit()
+                } else {
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(Color.secondary.opacity(0.3))
+                }
+            }
+            .frame(width: 80, height: 80)
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        }
+    }
+
+    func generationCard(_ job: GenerationJob) -> some View {
+        let size = cardSize(forJob: job)
+        return Button {
+            viewModel.selectedJobID = (viewModel.selectedJobID == job.id) ? nil : job.id
+            viewModel.selectedItemID = nil
+        } label: {
+            VStack(alignment: .leading, spacing: 8) {
+                ZStack {
+                    checkerboard
+                    preview(for: job)
+                }
+                .frame(width: size.width, height: size.height)
+                .background(Color(nsColor: .controlBackgroundColor))
+                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .stroke(
+                            viewModel.selectedJobID == job.id ? Color.accentColor : Color.primary.opacity(0.10),
+                            lineWidth: viewModel.selectedJobID == job.id ? 3 : 1
+                        )
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        .popover(isPresented: .init(
+            get: { viewModel.selectedJobID == job.id },
+            set: { if !$0 { viewModel.selectedJobID = nil } }
+        )) {
+            GenerationDetailPopover(job: job, viewModel: viewModel)
+        }
+    }
+
+    @ViewBuilder
+    func previewForItem(_ item: ProjectItem) -> some View {
+        if let nsImage = viewModel.cachedImage(for: item) {
+            Image(nsImage: nsImage)
+                .resizable()
+                .scaledToFit()
+        } else {
+            VStack(spacing: 8) {
+                Image(systemName: "questionmark.square")
+                    .font(.system(size: 28))
+                    .foregroundStyle(.secondary)
+                Text("プレビューを読み込めません")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    @ViewBuilder
+    func preview(for job: GenerationJob) -> some View {
+        if let imageData = job.imageData, let nsImage = NSImage(data: imageData) {
+            Image(nsImage: nsImage)
+                .resizable()
+                .scaledToFit()
+        } else if job.status == .failed {
+            VStack(spacing: 8) {
+                Image(systemName: "exclamationmark.triangle")
+                    .font(.system(size: 28))
+                    .foregroundStyle(.orange)
+                Text(job.errorMessage ?? "生成に失敗しました")
+                    .font(.caption)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 12)
+            }
+        } else {
+            GenerationProgressView(onStop: viewModel.stopServer)
+        }
+    }
+
+    var checkerboard: some View {
+        let lightColor: Color = colorScheme == .dark ? Color.white.opacity(0.18) : Color.white
+        let darkColor: Color = colorScheme == .dark ? Color.white.opacity(0.06) : Color.black.opacity(0.045)
+        return Canvas { context, size in
+            let side: CGFloat = 18
+            for x in stride(from: CGFloat(0), to: size.width, by: side) {
+                for y in stride(from: CGFloat(0), to: size.height, by: side) {
+                    let isDark = (Int(x / side) + Int(y / side)).isMultiple(of: 2)
+                    let rect = CGRect(x: x, y: y, width: side, height: side)
+                    context.fill(Path(rect), with: .color(isDark ? lightColor : darkColor))
+                }
+            }
+        }
+    }
+}
