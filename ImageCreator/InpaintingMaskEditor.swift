@@ -143,6 +143,7 @@ struct MaskCanvasView: NSViewRepresentable {
 
         init(parent: MaskCanvasView) { self.parent = parent }
 
+        @MainActor
         func commitStroke(_ stroke: MaskStroke) {
             parent.strokes.append(stroke)
             parent.onStrokeCommit()

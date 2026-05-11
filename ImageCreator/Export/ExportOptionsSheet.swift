@@ -206,7 +206,7 @@ struct ExportOptionsSheet: View {
         }()
         return HStack(spacing: 10) {
             if isBatch {
-                Label("保存先をダイアログで指定", systemImage: "archivebox")
+                Text("保存先をダイアログで指定")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)

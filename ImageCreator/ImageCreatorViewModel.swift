@@ -19,6 +19,9 @@ final class ImageCreatorViewModel: ObservableObject {
     @AppStorage("sessionWeeklyCount") var sessionWeeklyCount: Int = 0
     @AppStorage("session5hResetEpoch") var session5hResetEpoch: Double = 0
     @AppStorage("sessionWeeklyResetEpoch") var sessionWeeklyResetEpoch: Double = 0
+    // syncSessionWindows のリセット時に直近生成分を保持するためのカウンタ（永続化不要）
+    private var pendingFiveHDelta = 0
+    private var pendingWeeklyDelta = 0
     @AppStorage("completionSound") var completionSound: String = CompletionSoundOption.glass.rawValue
     @AppStorage("canvasSortOrder") var canvasSortOrderRaw: String = CanvasSortOrder.createdAtAscending.rawValue
     var canvasSortOrder: CanvasSortOrder {
@@ -69,7 +72,6 @@ final class ImageCreatorViewModel: ObservableObject {
     private var isLoadingProjects = false
     private var vectorizationTasks: [UUID: Task<Void, Never>] = [:]
     private var enhanceTask: Task<Void, Never>?
-    private var lastClickedItemID: UUID?
     var onReplacePromptText: ((String) -> Void)?
     let imageCache = NSCache<NSURL, NSImage>()
 
@@ -346,18 +348,22 @@ final class ImageCreatorViewModel: ObservableObject {
             if session5hResetEpoch == 0 {
                 session5hResetEpoch = epoch
             } else if abs(epoch - session5hResetEpoch) > 1.0 {
-                session5hCount = 0
+                // 新ウィンドウ開始 — リセット後に直近生成分だけ引き継ぐ
+                session5hCount = pendingFiveHDelta
                 session5hResetEpoch = epoch
             }
+            pendingFiveHDelta = 0
         }
         if let d = status.secondaryResetDate {
             let epoch = d.timeIntervalSince1970
             if sessionWeeklyResetEpoch == 0 {
                 sessionWeeklyResetEpoch = epoch
             } else if abs(epoch - sessionWeeklyResetEpoch) > 1.0 {
-                sessionWeeklyCount = 0
+                // 新週次ウィンドウ開始 — リセット後に直近生成分だけ引き継ぐ
+                sessionWeeklyCount = pendingWeeklyDelta
                 sessionWeeklyResetEpoch = epoch
             }
+            pendingWeeklyDelta = 0
         }
     }
 
@@ -1082,7 +1088,6 @@ final class ImageCreatorViewModel: ObservableObject {
         isSelectionMode.toggle()
         if !isSelectionMode {
             selectedItemIDs.removeAll()
-            lastClickedItemID = nil
         }
     }
 
@@ -1092,29 +1097,12 @@ final class ImageCreatorViewModel: ObservableObject {
         } else {
             selectedItemIDs.insert(item.id)
         }
-        lastClickedItemID = item.id
-        selectedItemID = nil
-        selectedJobID = nil
-    }
-
-    func rangeSelect(to item: ProjectItem, in orderedItems: [ProjectItem]) {
-        guard let anchor = lastClickedItemID,
-              let anchorIdx = orderedItems.firstIndex(where: { $0.id == anchor }),
-              let targetIdx = orderedItems.firstIndex(where: { $0.id == item.id }) else {
-            toggleMultiSelection(item)
-            return
-        }
-        let range = anchorIdx <= targetIdx
-            ? orderedItems[anchorIdx...targetIdx]
-            : orderedItems[targetIdx...anchorIdx]
-        for i in range { selectedItemIDs.insert(i.id) }
         selectedItemID = nil
         selectedJobID = nil
     }
 
     func clearMultiSelection() {
         selectedItemIDs.removeAll()
-        lastClickedItemID = nil
     }
 
     func exportSelectedBatch() {
@@ -1483,6 +1471,8 @@ final class ImageCreatorViewModel: ObservableObject {
             totalGeneratedImages += succeededCount
             session5hCount += succeededCount
             sessionWeeklyCount += succeededCount
+            pendingFiveHDelta += succeededCount
+            pendingWeeklyDelta += succeededCount
         }
 
         if succeededCount > 0, let idx = projects.firstIndex(where: { $0.id == projectID }) {

@@ -473,13 +473,13 @@ struct ContentView: View {
                     Button {
                         viewModel.importImageToCanvas()
                     } label: {
-                        Image(systemName: "square.and.arrow.down.on.square")
+                        Image(systemName: "photo.badge.plus")
                             .font(.system(size: 13, weight: .medium))
                             .frame(width: 18, height: 18)
+                            .padding(8)
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .padding(8)
-                    .contentShape(Rectangle())
                     .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                     .overlay {
                         RoundedRectangle(cornerRadius: 10, style: .continuous)
@@ -490,16 +490,43 @@ struct ContentView: View {
                 }
                 if !viewModel.projects.isEmpty && !canvasEntries.isEmpty {
                     Button {
+                        viewModel.canvasSortOrder = viewModel.canvasSortOrder == .createdAtAscending ? .createdAtDescending : .createdAtAscending
+                    } label: {
+                        Image(systemName: "line.3.horizontal.decrease")
+                            .font(.system(size: 13, weight: .medium))
+                            .frame(width: 18, height: 18)
+                            .scaleEffect(y: viewModel.canvasSortOrder == .createdAtDescending ? -1 : 1)
+                            .padding(8)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+                    }
+                    .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
+                    .help(viewModel.canvasSortOrder == .createdAtAscending ? "古い順 → 新しい順に切替" : "新しい順 → 古い順に切替")
+                    CanvasZoomControl(zoom: $canvasZoom)
+                }
+            }
+            .padding(.top, 16)
+            .padding(.trailing, 16)
+        }
+        .overlay(alignment: .topLeading) {
+            if !viewModel.projects.isEmpty && !canvasEntries.isEmpty {
+                HStack(spacing: 8) {
+                    Button {
                         viewModel.toggleSelectionMode()
                     } label: {
                         Image(systemName: viewModel.isSelectionMode ? "checkmark.circle.fill" : "checkmark.circle")
                             .font(.system(size: 13, weight: .medium))
                             .frame(width: 18, height: 18)
                             .foregroundStyle(viewModel.isSelectionMode ? Color.accentColor : Color.primary)
+                            .padding(8)
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .padding(8)
-                    .contentShape(Rectangle())
                     .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                     .overlay {
                         RoundedRectangle(cornerRadius: 10, style: .continuous)
@@ -527,10 +554,10 @@ struct ContentView: View {
                             Image(systemName: "square.and.arrow.up.on.square")
                                 .font(.system(size: 13, weight: .medium))
                                 .frame(width: 18, height: 18)
+                                .padding(8)
+                                .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
-                        .padding(8)
-                        .contentShape(Rectangle())
                         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                         .overlay {
                             RoundedRectangle(cornerRadius: 10, style: .continuous)
@@ -540,31 +567,10 @@ struct ContentView: View {
                         .disabled(viewModel.selectedItemIDs.isEmpty)
                         .help("選択画像を一括エクスポート")
                     }
-                    if !viewModel.projects.isEmpty && !canvasEntries.isEmpty {
-                        Button {
-                            viewModel.canvasSortOrder = viewModel.canvasSortOrder == .createdAtAscending ? .createdAtDescending : .createdAtAscending
-                        } label: {
-                            Image(systemName: "line.3.horizontal.decrease")
-                                .font(.system(size: 13, weight: .medium))
-                                .frame(width: 18, height: 18)
-                                .scaleEffect(y: viewModel.canvasSortOrder == .createdAtDescending ? -1 : 1)
-                        }
-                        .buttonStyle(.plain)
-                        .padding(8)
-                        .contentShape(Rectangle())
-                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
-                        }
-                        .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
-                        .help(viewModel.canvasSortOrder == .createdAtAscending ? "古い順 → 新しい順に切替" : "新しい順 → 古い順に切替")
-                    }
-                    CanvasZoomControl(zoom: $canvasZoom)
                 }
+                .padding(.top, 16)
+                .padding(.leading, 16)
             }
-            .padding(.top, 16)
-            .padding(.trailing, 16)
         }
         .overlay(
             RoundedRectangle(cornerRadius: 0)
@@ -625,12 +631,7 @@ struct ContentView: View {
         let isSingleSelected = viewModel.selectedItemID == item.id
         let isSelected = isMultiSelected || isSingleSelected
         return Button {
-            let flags = NSEvent.modifierFlags
-            if flags.contains(.command) {
-                viewModel.toggleMultiSelection(item)
-            } else if flags.contains(.shift) {
-                viewModel.rangeSelect(to: item, in: viewModel.itemsForSelectedProject)
-            } else if viewModel.isSelectionMode {
+            if viewModel.isSelectionMode {
                 viewModel.toggleMultiSelection(item)
             } else {
                 viewModel.selectedItemID = (viewModel.selectedItemID == item.id) ? nil : item.id
@@ -869,6 +870,18 @@ struct ContentView: View {
                     },
                     onPasteImage: {
                         viewModel.pasteImageFromClipboard()
+                    },
+                    onDropFileURL: { url in
+                        viewModel.attachImage(from: url)
+                    },
+                    onDropNSImage: { image in
+                        viewModel.attachImageFromPasteboard(image)
+                    },
+                    onDragEntered: {
+                        isPromptDropTargeted = true
+                    },
+                    onDragExited: {
+                        isPromptDropTargeted = false
                     }
                 )
                 .frame(height: clampedHeight)
@@ -1023,9 +1036,7 @@ struct ContentView: View {
                     ForEach(1...4, id: \.self) { n in
                         Button {
                             viewModel.binding(for: \.count).wrappedValue = n
-                            if viewModel.currentInputs.concurrency > n {
-                                viewModel.binding(for: \.concurrency).wrappedValue = n
-                            }
+                            viewModel.binding(for: \.concurrency).wrappedValue = n
                         } label: { Label("\(n)枚", systemImage: viewModel.currentInputs.count == n ? "checkmark" : "") }
                     }
                 } label: {
@@ -1360,7 +1371,7 @@ struct GenerationDetailPopover: View {
 
             Divider()
 
-            PopoverButton(systemImage: "square.and.arrow.down", title: "エクスポート") {
+            PopoverButton(systemImage: "square.and.arrow.up", title: "エクスポート") {
                 viewModel.exportSelected()
             }
             .disabled(job.status != .succeeded)
@@ -1457,7 +1468,7 @@ struct ItemDetailPopover: View {
             Button {
                 viewModel.exportItem(item)
             } label: {
-                Label("エクスポート", systemImage: "square.and.arrow.down")
+                Label("エクスポート", systemImage: "square.and.arrow.up")
                     .frame(maxWidth: .infinity)
                     .font(.body.weight(.semibold))
             }
@@ -1748,6 +1759,49 @@ private final class FocusableTextView: NSTextView {
     var onSubmit: (() -> Void)?
     var onFrameChange: (() -> Void)?
     var onPasteImage: (() -> Void)?
+    var onDropFileURL: ((URL) -> Void)?
+    var onDropNSImage: ((NSImage) -> Void)?
+    var onDragEntered: (() -> Void)?
+    var onDragExited: (() -> Void)?
+
+    private func acceptsImageDrag(_ pb: NSPasteboard) -> Bool {
+        pb.types?.contains(.fileURL) == true ||
+        pb.canReadObject(forClasses: [NSImage.self], options: nil)
+    }
+
+    override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
+        guard acceptsImageDrag(sender.draggingPasteboard) else {
+            return super.draggingEntered(sender)
+        }
+        onDragEntered?()
+        return .copy
+    }
+
+    override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
+        guard acceptsImageDrag(sender.draggingPasteboard) else {
+            return super.draggingUpdated(sender)
+        }
+        return .copy
+    }
+
+    override func draggingExited(_ sender: NSDraggingInfo?) {
+        onDragExited?()
+        super.draggingExited(sender)
+    }
+
+    override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
+        let pb = sender.draggingPasteboard
+        onDragExited?()
+        if let urlStr = pb.string(forType: .fileURL), let url = URL(string: urlStr) {
+            onDropFileURL?(url)
+            return true
+        }
+        if let image = pb.readObjects(forClasses: [NSImage.self], options: nil)?.first as? NSImage {
+            onDropNSImage?(image)
+            return true
+        }
+        return super.performDragOperation(sender)
+    }
 
     override func viewDidMoveToSuperview() {
         super.viewDidMoveToSuperview()
@@ -1806,6 +1860,10 @@ private struct PromptTextView: NSViewRepresentable {
     var onSubmit: (() -> Void)?
     var onSetupReplacer: ((@escaping (String) -> Void) -> Void)?
     var onPasteImage: (() -> Void)?
+    var onDropFileURL: ((URL) -> Void)?
+    var onDropNSImage: ((NSImage) -> Void)?
+    var onDragEntered: (() -> Void)?
+    var onDragExited: (() -> Void)?
 
     func makeNSView(context: Context) -> NSScrollView {
         let textView = FocusableTextView()
@@ -1833,6 +1891,18 @@ private struct PromptTextView: NSViewRepresentable {
         }
         textView.onPasteImage = { [weak coordinator = context.coordinator] in
             coordinator?.onPasteImage?()
+        }
+        textView.onDropFileURL = { [weak coordinator = context.coordinator] url in
+            coordinator?.onDropFileURL?(url)
+        }
+        textView.onDropNSImage = { [weak coordinator = context.coordinator] image in
+            coordinator?.onDropNSImage?(image)
+        }
+        textView.onDragEntered = { [weak coordinator = context.coordinator] in
+            coordinator?.onDragEntered?()
+        }
+        textView.onDragExited = { [weak coordinator = context.coordinator] in
+            coordinator?.onDragExited?()
         }
 
         context.coordinator.textViewRef = textView
@@ -1863,6 +1933,10 @@ private struct PromptTextView: NSViewRepresentable {
         }
         context.coordinator.onSubmit = onSubmit
         context.coordinator.onPasteImage = onPasteImage
+        context.coordinator.onDropFileURL = onDropFileURL
+        context.coordinator.onDropNSImage = onDropNSImage
+        context.coordinator.onDragEntered = onDragEntered
+        context.coordinator.onDragExited = onDragExited
         context.coordinator.maxHeight = maxHeight
         scrollView.hasVerticalScroller = dynamicHeight >= maxHeight
     }
@@ -1879,6 +1953,10 @@ private struct PromptTextView: NSViewRepresentable {
         var maxHeight: CGFloat
         var onSubmit: (() -> Void)?
         var onPasteImage: (() -> Void)?
+        var onDropFileURL: ((URL) -> Void)?
+        var onDropNSImage: ((NSImage) -> Void)?
+        var onDragEntered: (() -> Void)?
+        var onDragExited: (() -> Void)?
         weak var textViewRef: FocusableTextView?
 
         init(text: Binding<String>, isFocused: Binding<Bool>, dynamicHeight: Binding<CGFloat>, maxHeight: CGFloat, onSubmit: (() -> Void)?, onPasteImage: (() -> Void)?) {
@@ -1948,12 +2026,14 @@ private struct CanvasZoomControl: View {
     private let step: CGFloat = 0.1
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 3) {
             Button {
                 zoom = max(minZoom, zoom - step)
             } label: {
                 Image(systemName: "minus")
                     .frame(width: 18, height: 18)
+                    .padding(5)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .disabled(zoom <= minZoom)
@@ -1966,6 +2046,8 @@ private struct CanvasZoomControl: View {
             } label: {
                 Image(systemName: "plus")
                     .frame(width: 18, height: 18)
+                    .padding(5)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .disabled(zoom >= maxZoom)
