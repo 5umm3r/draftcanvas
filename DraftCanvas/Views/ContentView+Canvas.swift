@@ -120,7 +120,7 @@ extension ContentView {
         }
         .overlay(alignment: .topTrailing) {
             HStack(spacing: 8) {
-                if viewModel.projects.isEmpty == false {
+                if viewModel.projects.isEmpty == false && viewModel.selectedSmartProjectID == nil {
                     Button {
                         viewModel.importImageToCanvas()
                     } label: {
@@ -256,8 +256,9 @@ extension ContentView {
     }
 
     var canvasEntries: [CanvasEntry] {
-        let persistedItems = viewModel.itemsForSelectedProject.map { CanvasEntry.item($0) }
-        let inProgressJobs = viewModel.isGeneratingForSelected ? viewModel.currentJobs.map { CanvasEntry.job($0) } : []
+        let persistedItems = viewModel.displayedItems.map { CanvasEntry.item($0) }
+        let showJobs = viewModel.isGeneratingForSelected && viewModel.selectedSmartProjectID == nil
+        let inProgressJobs = showJobs ? viewModel.currentJobs.map { CanvasEntry.job($0) } : []
         switch viewModel.canvasSortOrder {
         case .createdAtAscending: return persistedItems + inProgressJobs
         case .createdAtDescending: return inProgressJobs + persistedItems

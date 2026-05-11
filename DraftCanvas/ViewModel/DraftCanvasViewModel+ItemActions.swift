@@ -2,8 +2,15 @@ import AppKit
 import Foundation
 
 extension DraftCanvasViewModel {
+    func switchToProjectIfNeeded(for item: ProjectItem) {
+        guard selectedSmartProjectID != nil else { return }
+        selectedSmartProjectID = nil
+        selectedProjectID = item.projectID
+    }
+
     func edit(item: ProjectItem) {
-        guard let id = selectedProjectID else { return }
+        switchToProjectIfNeeded(for: item)
+        let id = selectedProjectID ?? item.projectID
         let fileURL = item.fileURL(in: projectStore.rootDirectory)
         var inputs = inputsByProject[id] ?? ProjectInputs()
         if let attached = inputs.attachedImage {
@@ -25,17 +32,19 @@ extension DraftCanvasViewModel {
     }
 
     func inpaint(item: ProjectItem) {
+        switchToProjectIfNeeded(for: item)
         inpaintMode = .edit
         inpaintingTarget = item
     }
 
     func maskRemove(item: ProjectItem) {
+        switchToProjectIfNeeded(for: item)
         inpaintMode = .remove
         inpaintingTarget = item
     }
 
     func applyInpaintingMask(item: ProjectItem, strokes: [MaskStroke]) {
-        guard let id = selectedProjectID else { return }
+        let id = selectedProjectID ?? item.projectID
 
         let fileURL = item.fileURL(in: projectStore.rootDirectory)
 
@@ -95,7 +104,7 @@ extension DraftCanvasViewModel {
     }
 
     func applyMaskRemoval(item: ProjectItem, strokes: [MaskStroke]) {
-        guard let projectID = selectedProjectID else { return }
+        let projectID = selectedProjectID ?? item.projectID
         let fileURL = item.fileURL(in: projectStore.rootDirectory)
 
         inpaintingTarget = nil
@@ -182,7 +191,8 @@ extension DraftCanvasViewModel {
     }
 
     func removeBackground(item: ProjectItem) {
-        guard let projectID = selectedProjectID else { return }
+        switchToProjectIfNeeded(for: item)
+        let projectID = selectedProjectID ?? item.projectID
 
         let job = GenerationJob(
             index: jobsByProject[projectID]?.count ?? 0,

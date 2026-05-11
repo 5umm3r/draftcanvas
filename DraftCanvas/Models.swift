@@ -293,6 +293,30 @@ struct Project: Identifiable, Equatable {
     }
 }
 
+// MARK: - SmartProject
+
+struct SmartProject: Identifiable, Codable, Equatable {
+    let id: UUID
+    var name: String
+    var tagConditions: [String]
+    let createdAt: Date
+    var updatedAt: Date
+
+    init(
+        id: UUID = UUID(),
+        name: String,
+        tagConditions: [String],
+        createdAt: Date = Date(),
+        updatedAt: Date = Date()
+    ) {
+        self.id = id
+        self.name = name
+        self.tagConditions = tagConditions
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+    }
+}
+
 extension Project: Codable {
     enum CodingKeys: String, CodingKey {
         case id, name, isAutoNamed, createdAt, updatedAt, model, reasoningEffort, isFavorite
@@ -323,6 +347,7 @@ struct ProjectItem: Identifiable, Equatable {
     let hasSVG: Bool
     let isBackgroundRemoved: Bool
     let isImported: Bool
+    var tags: [String]
 
     init(
         id: UUID = UUID(),
@@ -335,7 +360,8 @@ struct ProjectItem: Identifiable, Equatable {
         editedFromItemID: UUID? = nil,
         hasSVG: Bool = false,
         isBackgroundRemoved: Bool = false,
-        isImported: Bool = false
+        isImported: Bool = false,
+        tags: [String] = []
     ) {
         self.id = id
         self.projectID = projectID
@@ -348,6 +374,7 @@ struct ProjectItem: Identifiable, Equatable {
         self.hasSVG = hasSVG
         self.isBackgroundRemoved = isBackgroundRemoved
         self.isImported = isImported
+        self.tags = tags
     }
 
     func fileURL(in rootDirectory: URL) -> URL {
@@ -369,6 +396,7 @@ extension ProjectItem: Codable {
         case hasSVG
         case isBackgroundRemoved
         case isImported
+        case tags
     }
 
     init(from decoder: Decoder) throws {
@@ -384,6 +412,7 @@ extension ProjectItem: Codable {
         hasSVG = try c.decodeIfPresent(Bool.self, forKey: .hasSVG) ?? false
         isBackgroundRemoved = try c.decodeIfPresent(Bool.self, forKey: .isBackgroundRemoved) ?? false
         isImported = try c.decodeIfPresent(Bool.self, forKey: .isImported) ?? false
+        tags = try c.decodeIfPresent([String].self, forKey: .tags) ?? []
     }
 
     func encode(to encoder: Encoder) throws {
@@ -399,6 +428,7 @@ extension ProjectItem: Codable {
         if hasSVG { try c.encode(hasSVG, forKey: .hasSVG) }
         if isBackgroundRemoved { try c.encode(isBackgroundRemoved, forKey: .isBackgroundRemoved) }
         if isImported { try c.encode(isImported, forKey: .isImported) }
+        if !tags.isEmpty { try c.encode(tags, forKey: .tags) }
     }
 }
 
@@ -409,6 +439,29 @@ final class ProjectStore: @unchecked Sendable {
         var projects: [Project] = []
         var items: [ProjectItem] = []
         var selectedProjectID: UUID? = nil
+        var smartProjects: [SmartProject] = []
+        var selectedSmartProjectID: UUID? = nil
+
+        enum CodingKeys: String, CodingKey {
+            case projects, items, selectedProjectID, smartProjects, selectedSmartProjectID
+        }
+
+        init(projects: [Project] = [], items: [ProjectItem] = [], selectedProjectID: UUID? = nil, smartProjects: [SmartProject] = [], selectedSmartProjectID: UUID? = nil) {
+            self.projects = projects
+            self.items = items
+            self.selectedProjectID = selectedProjectID
+            self.smartProjects = smartProjects
+            self.selectedSmartProjectID = selectedSmartProjectID
+        }
+
+        init(from decoder: Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            projects = try c.decodeIfPresent([Project].self, forKey: .projects) ?? []
+            items = try c.decodeIfPresent([ProjectItem].self, forKey: .items) ?? []
+            selectedProjectID = try c.decodeIfPresent(UUID.self, forKey: .selectedProjectID)
+            smartProjects = try c.decodeIfPresent([SmartProject].self, forKey: .smartProjects) ?? []
+            selectedSmartProjectID = try c.decodeIfPresent(UUID.self, forKey: .selectedSmartProjectID)
+        }
     }
 
     let rootDirectory: URL

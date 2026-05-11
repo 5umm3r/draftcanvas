@@ -1,5 +1,15 @@
 import SwiftUI
 
+private struct TopBarButtonStyle: ButtonStyle {
+    @State private var isHovered = false
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .opacity(isHovered || configuration.isPressed ? 1.0 : 0.55)
+            .onHover { isHovered = $0 }
+    }
+}
+
 extension ContentView {
     var topStatusBar: some View {
         HStack(spacing: 12) {
@@ -11,7 +21,7 @@ extension ContentView {
                         .font(.subheadline.weight(.semibold))
                 }
             }
-            .buttonStyle(.borderless)
+            .buttonStyle(TopBarButtonStyle())
             .help("保存先フォルダ: \(viewModel.preferredSaveFolderLabel)")
 
             Button(action: toggleLogWindow) {
@@ -22,7 +32,7 @@ extension ContentView {
                         .font(.subheadline.weight(.semibold))
                 }
             }
-            .buttonStyle(.borderless)
+            .buttonStyle(TopBarButtonStyle())
 
             Menu {
                 Button {
@@ -58,9 +68,10 @@ extension ContentView {
                     Text("完了音")
                         .font(.subheadline.weight(.semibold))
                 }
-                .foregroundStyle(.secondary)
             }
             .menuStyle(.borderlessButton)
+            .opacity(isCompletionSoundMenuHovered ? 1.0 : 0.55)
+            .onHover { isCompletionSoundMenuHovered = $0 }
             .help("完了通知サウンド: \(CompletionSoundOption(rawValue: viewModel.completionSound)?.displayName ?? viewModel.completionSound)")
 
             Spacer(minLength: 16)
@@ -71,11 +82,9 @@ extension ContentView {
                 HStack(spacing: 4) {
                     Image(systemName: "photo.stack")
                         .font(.body.weight(.semibold))
-                        .foregroundStyle(.secondary)
                     Text("\(viewModel.totalGeneratedImages)")
                         .font(.subheadline.weight(.semibold))
                         .monospacedDigit()
-                        .foregroundStyle(.secondary)
                 }
             }
             .buttonStyle(.plain)
@@ -110,7 +119,7 @@ extension ContentView {
                         .frame(width: 28, height: 28)
                 }
             }
-            .buttonStyle(.borderless)
+            .buttonStyle(TopBarButtonStyle())
             .help("アカウントと使用量を更新")
             .disabled(viewModel.isRefreshingAccountUsage)
 
@@ -122,9 +131,8 @@ extension ContentView {
             } label: {
                 Image(systemName: "person.crop.circle")
                     .font(.body)
-                    .foregroundStyle(.secondary)
             }
-            .buttonStyle(.borderless)
+            .buttonStyle(TopBarButtonStyle())
             .popover(isPresented: $isAccountPopoverPresented, arrowEdge: .bottom) {
                 AccountPopover(
                     status: viewModel.accountUsageStatus,
@@ -145,10 +153,9 @@ extension ContentView {
             } label: {
                 Image(systemName: AppAppearance(rawValue: viewModel.appAppearanceRaw)?.systemImage ?? "sun.max")
                     .font(.body)
-                    .foregroundStyle(.secondary)
                     .frame(width: 28, height: 28)
             }
-            .buttonStyle(.borderless)
+            .buttonStyle(TopBarButtonStyle())
             .help("テーマ切替")
         }
         .padding(.horizontal, 16)

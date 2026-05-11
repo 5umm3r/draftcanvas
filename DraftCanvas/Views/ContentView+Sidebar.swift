@@ -1,5 +1,62 @@
 import SwiftUI
 
+// MARK: - Smart Project views
+
+struct SmartSectionHeader: View {
+    @ObservedObject var viewModel: DraftCanvasViewModel
+    @State private var showCreation = false
+
+    var body: some View {
+        HStack {
+            Text("スマート")
+            Spacer()
+            Button {
+                showCreation = true
+            } label: {
+                Image(systemName: "plus").font(.system(size: 11, weight: .medium))
+            }
+            .buttonStyle(.borderless)
+            .help("スマートプロジェクトを作成")
+        }
+        .sheet(isPresented: $showCreation) {
+            SmartProjectCreationSheet(viewModel: viewModel)
+        }
+    }
+}
+
+struct SmartProjectRow: View {
+    let smart: SmartProject
+    @ObservedObject var viewModel: DraftCanvasViewModel
+    @State private var showEdit = false
+
+    var body: some View {
+        Button {
+            viewModel.selectSmartProject(id: smart.id)
+        } label: {
+            Label(smart.name, systemImage: "line.3.horizontal.decrease.circle")
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .selectionDisabled(true)
+        .listRowBackground(
+            viewModel.selectedSmartProjectID == smart.id
+                ? RoundedRectangle(cornerRadius: 5).fill(Color.accentColor.opacity(0.18))
+                : nil
+        )
+        .contextMenu {
+            Button("条件を編集") { showEdit = true }
+            Divider()
+            Button("削除", role: .destructive) { viewModel.deleteSmartProject(id: smart.id) }
+        }
+        .sheet(isPresented: $showEdit) {
+            SmartProjectCreationSheet(viewModel: viewModel, existingSmart: smart)
+        }
+    }
+}
+
+// MARK: - Sidebar
+
 extension ContentView {
     var projectSidebar: some View {
         VStack(spacing: 0) {
@@ -22,13 +79,26 @@ extension ContentView {
 
             Divider()
 
-            List(selection: $viewModel.selectedProjectID) {
+            List(selection: Binding(
+                get: { viewModel.selectedProjectID },
+                set: { id in
+                    viewModel.selectedSmartProjectID = nil
+                    viewModel.selectedProjectID = id
+                }
+            )) {
                 if !viewModel.favoriteProjects.isEmpty {
                     Section("お気に入り") {
                         ForEach(viewModel.favoriteProjects) { project in
                             projectRowView(for: project)
                         }
                     }
+                }
+                Section {
+                    ForEach(viewModel.smartProjects) { smart in
+                        SmartProjectRow(smart: smart, viewModel: viewModel)
+                    }
+                } header: {
+                    SmartSectionHeader(viewModel: viewModel)
                 }
                 Section(viewModel.favoriteProjects.isEmpty ? "" : "すべて") {
                     ForEach(viewModel.regularProjects) { project in

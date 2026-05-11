@@ -64,6 +64,8 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var exportRequest: ExportRequest? = nil
     @Published var exportingProjectID: UUID? = nil
     @Published var batchExportProgress: (done: Int, total: Int)? = nil
+    @Published var smartProjects: [SmartProject] = []
+    @Published var selectedSmartProjectID: UUID?
 
     let client: CodexAppServerClient
     let coordinator: GenerationCoordinator
@@ -105,6 +107,8 @@ final class DraftCanvasViewModel: ObservableObject {
         projects = snapshot.projects
         items = snapshot.items
         selectedProjectID = snapshot.selectedProjectID
+        smartProjects = snapshot.smartProjects
+        selectedSmartProjectID = snapshot.selectedSmartProjectID
         for project in projects {
             var inputs = ProjectInputs()
             inputs.model = project.model
@@ -114,11 +118,13 @@ final class DraftCanvasViewModel: ObservableObject {
     }
 
     func makeSnapshot() -> ProjectStore.Snapshot {
-        var snapshot = ProjectStore.Snapshot()
-        snapshot.projects = projects
-        snapshot.items = items
-        snapshot.selectedProjectID = selectedProjectID
-        return snapshot
+        ProjectStore.Snapshot(
+            projects: projects,
+            items: items,
+            selectedProjectID: selectedProjectID,
+            smartProjects: smartProjects,
+            selectedSmartProjectID: selectedSmartProjectID
+        )
     }
 
     func saveState() {

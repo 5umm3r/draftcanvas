@@ -91,14 +91,23 @@ extension DraftCanvasViewModel {
 
     func exportSelectedBatch() {
         guard !selectedItemIDs.isEmpty else { return }
-        guard let project = projects.first(where: { $0.id == selectedProjectID }) else { return }
-        let orderedItems = itemsForSelectedProject.filter { selectedItemIDs.contains($0.id) }
+        let projectName: String
+        let orderedItems: [ProjectItem]
+        if let smartID = selectedSmartProjectID,
+           let smart = smartProjects.first(where: { $0.id == smartID }) {
+            projectName = smart.name
+            orderedItems = displayedItems.filter { selectedItemIDs.contains($0.id) }
+        } else {
+            guard let project = projects.first(where: { $0.id == selectedProjectID }) else { return }
+            projectName = project.name
+            orderedItems = itemsForSelectedProject.filter { selectedItemIDs.contains($0.id) }
+        }
         let entries = orderedItems.map { item -> BatchExportEntry in
             let ordinal = ordinalForItem(item, in: item.projectID)
             return BatchExportEntry(
                 item: item,
                 ordinal: ordinal,
-                baseFilename: ExportNaming.baseFilename(forProjectName: project.name, ordinal: ordinal)
+                baseFilename: ExportNaming.baseFilename(forProjectName: projectName, ordinal: ordinal)
             )
         }
         let allHaveVectorSVG = entries.allSatisfy {
@@ -108,7 +117,7 @@ extension DraftCanvasViewModel {
             source: .batchItems(entries),
             originalSize: .zero,
             hasVectorSVG: allHaveVectorSVG,
-            baseFilename: ExportNaming.sanitize(project.name)
+            baseFilename: ExportNaming.sanitize(projectName)
         )
     }
 

@@ -196,3 +196,4 @@ enum PromptEnhancer {
         [systemInstruction, "", "User's prompt:", userPrompt].joined(separator: "\n")
     }
 }
+

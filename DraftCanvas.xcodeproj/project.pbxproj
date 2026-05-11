@@ -33,6 +33,9 @@
 		22DC46FE87112CB30AC876F0 /* DetailRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 053F5A416ED0C9A5453822CD /* DetailRow.swift */; };
 		42BC49111A89D529A5ECD10A /* ContentView+Sidebar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C868E502BA17EA0D9D53C12 /* ContentView+Sidebar.swift */; };
 		44FDA0EF31DFAEFEFDAC52E0 /* DraftCanvasViewModel+PromptEnhance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4394CD7957B6D4CF7275602C /* DraftCanvasViewModel+PromptEnhance.swift */; };
+		dffa5788acfc4dfdada1510b9c9aee33 /* DraftCanvasViewModel+SmartProjects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 142b1b577a9b4336b315f08d800e5d6a /* DraftCanvasViewModel+SmartProjects.swift */; };
+		f930d5d3164b439c85edb6c7ee4b9d7e /* TagEditorRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5e64e8265c0548dab23dae9cd36602db /* TagEditorRow.swift */; };
+		a2411cdce34e40e9b9c6aea86e09bfab /* SmartProjectCreationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = b79086998a564de490b9a76dbc67c001 /* SmartProjectCreationSheet.swift */; };
 		4653D2A22708134F7A690ED0 /* CanvasZoomControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C4D7B04757247BD5489EBC7 /* CanvasZoomControl.swift */; };
 		5E9444221134D8C65757F8C3 /* DraftCanvasViewModel+Vectorize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 091A3F916EF893CE97206E83 /* DraftCanvasViewModel+Vectorize.swift */; };
 		6159A61814EB3A5C13BFDB5E /* DraftCanvasViewModel+Items.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE02EE4CC52B71578EA2CEAA /* DraftCanvasViewModel+Items.swift */; };
@@ -111,6 +114,9 @@
 		3C4D7B04757247BD5489EBC7 /* CanvasZoomControl.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CanvasZoomControl.swift; path = Views/CanvasZoomControl.swift; sourceTree = "<group>"; };
 		4029B2D187F5C59722CE9C73 /* ProjectRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ProjectRow.swift; path = Views/ProjectRow.swift; sourceTree = "<group>"; };
 		4394CD7957B6D4CF7275602C /* DraftCanvasViewModel+PromptEnhance.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+PromptEnhance.swift"; path = "ViewModel/DraftCanvasViewModel+PromptEnhance.swift"; sourceTree = "<group>"; };
+		142b1b577a9b4336b315f08d800e5d6a /* DraftCanvasViewModel+SmartProjects.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+SmartProjects.swift"; path = "ViewModel/DraftCanvasViewModel+SmartProjects.swift"; sourceTree = "<group>"; };
+		5e64e8265c0548dab23dae9cd36602db /* TagEditorRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TagEditorRow.swift; path = Views/TagEditorRow.swift; sourceTree = "<group>"; };
+		b79086998a564de490b9a76dbc67c001 /* SmartProjectCreationSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SmartProjectCreationSheet.swift; path = Views/SmartProjectCreationSheet.swift; sourceTree = "<group>"; };
 		463F16CE063D41F7BE7DEBD8 /* ImageEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageEncoder.swift; sourceTree = "<group>"; };
 		592BD998B97EAC58E1514194 /* PromptTextView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptTextView.swift; path = Views/PromptTextView.swift; sourceTree = "<group>"; };
 		645A49DEAC9C0E39B2762518 /* DraftCanvasViewModel+Generation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Generation.swift"; path = "ViewModel/DraftCanvasViewModel+Generation.swift"; sourceTree = "<group>"; };
@@ -179,7 +185,7 @@
 				10A0003D2D00000100000001 /* GenerationCoordinator.swift */,
 				10A0003E2D00000100000001 /* DraftCanvasViewModel.swift */,
 				10A000F92D00000100000001 /* BackgroundRemover.swift */,
-				10A000FD2D00000100000001 /* ImageVectorizer.swift */,
+					10A000FD2D00000100000001 /* ImageVectorizer.swift */,
 				10A001012D00000100000001 /* InpaintingMaskCompositor.swift */,
 				10A001032D00000100000001 /* InpaintingMaskEditor.swift */,
 				DA1427245F8D423E91B73BB8 /* Export */,
@@ -218,6 +224,8 @@
 				4029B2D187F5C59722CE9C73 /* ProjectRow.swift */,
 				C2DA3047FC4CE3B239B0FA74 /* GenerationDetailPopover.swift */,
 				DBBB7479702C367B6BF48DFA /* ItemDetailPopover.swift */,
+				5e64e8265c0548dab23dae9cd36602db /* TagEditorRow.swift */,
+				b79086998a564de490b9a76dbc67c001 /* SmartProjectCreationSheet.swift */,
 				253503CE40171955E27036E3 /* ErrorToastView.swift */,
 				053F5A416ED0C9A5453822CD /* DetailRow.swift */,
 				B268164EA0D2A09163FB3A63 /* AccountPopover.swift */,
@@ -263,6 +271,7 @@
 				9F699822142103ADBE227AC1 /* DraftCanvasViewModel+Account.swift */,
 				8BD94C40880F1B413D1381BA /* DraftCanvasViewModel+ItemActions.swift */,
 				4394CD7957B6D4CF7275602C /* DraftCanvasViewModel+PromptEnhance.swift */,
+				142b1b577a9b4336b315f08d800e5d6a /* DraftCanvasViewModel+SmartProjects.swift */,
 				EE02EE4CC52B71578EA2CEAA /* DraftCanvasViewModel+Items.swift */,
 				DE038D36DC08113ECCE4458E /* DraftCanvasViewModel+Export.swift */,
 				091A3F916EF893CE97206E83 /* DraftCanvasViewModel+Vectorize.swift */,
@@ -383,6 +392,7 @@
 			);
 			outputPaths = (
 			);
+			alwaysOutOfDate = 1;
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
 			shellScript = "set -e\nBIN_DIR=\"${CODESIGNING_FOLDER_PATH}/Contents/Resources/bin\"\n[ -d \"$BIN_DIR\" ] || exit 0\nfor f in \"$BIN_DIR\"/*; do\n  [ -f \"$f\" ] && [ -x \"$f\" ] || continue\n  /usr/bin/codesign --force --options runtime --timestamp=none \\\n    --sign \"${EXPANDED_CODE_SIGN_IDENTITY:-${CODE_SIGN_IDENTITY:--}}\" \"$f\"\ndone\n";
@@ -421,6 +431,9 @@
 				FF35673306EE992D552A6CC7 /* DraftCanvasViewModel+ItemActions.swift in Sources */,
 				44FDA0EF31DFAEFEFDAC52E0 /* DraftCanvasViewModel+PromptEnhance.swift in Sources */,
 				6159A61814EB3A5C13BFDB5E /* DraftCanvasViewModel+Items.swift in Sources */,
+				dffa5788acfc4dfdada1510b9c9aee33 /* DraftCanvasViewModel+SmartProjects.swift in Sources */,
+				f930d5d3164b439c85edb6c7ee4b9d7e /* TagEditorRow.swift in Sources */,
+				a2411cdce34e40e9b9c6aea86e09bfab /* SmartProjectCreationSheet.swift in Sources */,
 				CF28FC7F2E556AA483D91D5E /* DraftCanvasViewModel+Export.swift in Sources */,
 				5E9444221134D8C65757F8C3 /* DraftCanvasViewModel+Vectorize.swift in Sources */,
 				9882CC1FE59BF70AAF7B2BD4 /* DraftCanvasViewModel+Attachments.swift in Sources */,

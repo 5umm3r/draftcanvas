@@ -130,6 +130,26 @@ extension DraftCanvasViewModel {
         return (sorted.firstIndex(of: item) ?? 0) + 1
     }
 
+    func addTag(_ tag: String, to itemID: UUID) {
+        let trimmed = tag.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, let idx = items.firstIndex(where: { $0.id == itemID }) else { return }
+        guard !items[idx].tags.contains(trimmed) else { return }
+        items[idx].tags.append(trimmed)
+        saveState()
+    }
+
+    func removeTag(_ tag: String, from itemID: UUID) {
+        guard let idx = items.firstIndex(where: { $0.id == itemID }) else { return }
+        items[idx].tags.removeAll { $0 == tag }
+        saveState()
+    }
+
+    func setTags(_ tags: [String], for itemID: UUID) {
+        guard let idx = items.firstIndex(where: { $0.id == itemID }) else { return }
+        items[idx].tags = tags.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }
+        saveState()
+    }
+
     func toggleSelectionMode() {
         isSelectionMode.toggle()
         if !isSelectionMode {

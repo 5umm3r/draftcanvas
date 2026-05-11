@@ -21,6 +21,7 @@ struct ContentView: View {
     @State var dragDropTargetProjectID: UUID?
     @State var dragDropItemID: UUID?
     @State var isDroppingOnProject: [UUID: Bool] = [:]
+    @State var isCompletionSoundMenuHovered = false
 
     var body: some View {
         VStack(spacing: 0) {

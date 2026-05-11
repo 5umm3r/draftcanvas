@@ -25,6 +25,8 @@ struct ItemDetailPopover: View {
                 DetailRow(label: "Error", value: errorMessage)
             }
 
+            TagEditorRow(itemID: item.id, viewModel: viewModel)
+
             Divider()
                 .padding(.vertical, 2)
 
@@ -95,7 +97,7 @@ struct ItemDetailPopover: View {
         .padding(.horizontal, 18)
         .padding(.top, 18)
         .padding(.bottom, 8)
-        .frame(width: 300, height: 525)
+        .frame(width: 300, height: 650)
         .alert("画像を削除しますか？", isPresented: $isConfirmingDelete) {
             Button("削除", role: .destructive) {
                 viewModel.deleteItem(item)
