@@ -700,7 +700,7 @@ struct MultiDragPreview: View {
                 .padding(.vertical, 2)
                 .background(Capsule().fill(Color.accentColor))
                 .overlay(Capsule().stroke(.white, lineWidth: 1))
-                .offset(x: 6, y: -6)
+                .padding(4)
         }
     }
 }
