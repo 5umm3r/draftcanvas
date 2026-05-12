@@ -42,6 +42,8 @@
 		a2411cdce34e40e9b9c6aea86e09bfab /* SmartProjectCreationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = b79086998a564de490b9a76dbc67c001 /* SmartProjectCreationSheet.swift */; };
 		4653D2A22708134F7A690ED0 /* CanvasZoomControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C4D7B04757247BD5489EBC7 /* CanvasZoomControl.swift */; };
 		3d9b2ec6374d49069afecc8eb54c2178 /* CanvasScrollZoomCatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = b7e96c4970d44133991b9ff817e3cefd /* CanvasScrollZoomCatcher.swift */; };
+		372FA8FC0D6B415B8F59F697CCD2B39A /* CanvasAutoScroller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DC1F9813F6149588206DB57719B8174 /* CanvasAutoScroller.swift */; };
+		35B6FF2A15554A869FE5858A2194F80F /* CanvasRubberBandOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = B24862D0B74E492482C69B38F6415D7A /* CanvasRubberBandOverlay.swift */; };
 
 		5E9444221134D8C65757F8C3 /* DraftCanvasViewModel+Vectorize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 091A3F916EF893CE97206E83 /* DraftCanvasViewModel+Vectorize.swift */; };
 		6159A61814EB3A5C13BFDB5E /* DraftCanvasViewModel+Items.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE02EE4CC52B71578EA2CEAA /* DraftCanvasViewModel+Items.swift */; };
@@ -124,6 +126,8 @@
 		3ADD5B15238E48BDAEF7A6B3 /* ExportPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportPipeline.swift; sourceTree = "<group>"; };
 		3C4D7B04757247BD5489EBC7 /* CanvasZoomControl.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CanvasZoomControl.swift; path = Views/CanvasZoomControl.swift; sourceTree = "<group>"; };
 		b7e96c4970d44133991b9ff817e3cefd /* CanvasScrollZoomCatcher.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CanvasScrollZoomCatcher.swift; path = Views/CanvasScrollZoomCatcher.swift; sourceTree = "<group>"; };
+		5DC1F9813F6149588206DB57719B8174 /* CanvasAutoScroller.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CanvasAutoScroller.swift; path = Views/CanvasAutoScroller.swift; sourceTree = "<group>"; };
+		B24862D0B74E492482C69B38F6415D7A /* CanvasRubberBandOverlay.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CanvasRubberBandOverlay.swift; path = Views/CanvasRubberBandOverlay.swift; sourceTree = "<group>"; };
 
 		4029B2D187F5C59722CE9C73 /* ProjectRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ProjectRow.swift; path = Views/ProjectRow.swift; sourceTree = "<group>"; };
 		4394CD7957B6D4CF7275602C /* DraftCanvasViewModel+PromptEnhance.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+PromptEnhance.swift"; path = "ViewModel/DraftCanvasViewModel+PromptEnhance.swift"; sourceTree = "<group>"; };
@@ -255,6 +259,8 @@
 				DA755653AF12594D863F311F /* StatusBadge.swift */,
 				3C4D7B04757247BD5489EBC7 /* CanvasZoomControl.swift */,
 				b7e96c4970d44133991b9ff817e3cefd /* CanvasScrollZoomCatcher.swift */,
+				5DC1F9813F6149588206DB57719B8174 /* CanvasAutoScroller.swift */,
+				B24862D0B74E492482C69B38F6415D7A /* CanvasRubberBandOverlay.swift */,
 
 				882F372486E669E60EAD25D8 /* AttachedImageThumbnail.swift */,
 				E5EB180980BB2AAFC5E98E4A /* PopoverButton.swift */,
@@ -477,6 +483,8 @@
 				73206F51B692E4A7597E70B7 /* StatusBadge.swift in Sources */,
 				4653D2A22708134F7A690ED0 /* CanvasZoomControl.swift in Sources */,
 				3d9b2ec6374d49069afecc8eb54c2178 /* CanvasScrollZoomCatcher.swift in Sources */,
+				372FA8FC0D6B415B8F59F697CCD2B39A /* CanvasAutoScroller.swift in Sources */,
+				35B6FF2A15554A869FE5858A2194F80F /* CanvasRubberBandOverlay.swift in Sources */,
 
 				11E0B45D4D0F324989FCCD93 /* AttachedImageThumbnail.swift in Sources */,
 				B8D9D407FB64ED096398E71A /* PopoverButton.swift in Sources */,

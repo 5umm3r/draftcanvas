@@ -24,6 +24,11 @@ struct ContentView: View {
     @State var isDroppingOnProject: [UUID: Bool] = [:]
     @State var isConfirmingBatchDelete = false
     @State var isCompletionSoundMenuHovered = false
+    @State var cardFrames: [UUID: CGRect] = [:]
+    @State var marqueeRect: CGRect? = nil
+    @State var isDraggingMarquee: Bool = false
+    @State var isDragStartedOnCard: Bool = false
+    @State var marqueeAdditive: Bool = false
 
     var body: some View {
         VStack(spacing: 0) {

@@ -10,6 +10,11 @@ enum CanvasEntry: Identifiable {
         case .job(let j): return j.id
         }
     }
+
+    var itemID: UUID? {
+        if case .item(let item) = self { return item.id }
+        return nil
+    }
 }
 
 enum CanvasCardLayout {
@@ -173,12 +178,25 @@ extension ContentView {
                             ForEach(canvasEntries) { entry in
                                 canvasCard(for: entry)
                                     .id(entry.id)
+                                    .background(
+                                        Group {
+                                            if let itemID = entry.itemID {
+                                                GeometryReader { geo in
+                                                    Color.clear.preference(
+                                                        key: CardFramePreferenceKey.self,
+                                                        value: [itemID: geo.frame(in: .named("canvasViewport"))]
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    )
                             }
                         }
                         .padding(.top, 72)
                         .padding(.horizontal, 24)
                         .padding(.bottom, 220)
                     }
+                    .coordinateSpace(name: "canvasViewport")
                     .overlay(
                         CanvasScrollZoomCatcher { delta in
                             let newZoom = canvasZoom * CGFloat(exp(delta))
@@ -186,6 +204,28 @@ extension ContentView {
                         }
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                     )
+                    .overlay {
+                        if let rect = marqueeRect {
+                            Rectangle()
+                                .fill(Color.accentColor.opacity(0.15))
+                                .overlay(Rectangle().stroke(Color.accentColor, lineWidth: 1))
+                                .frame(width: rect.width, height: rect.height)
+                                .position(x: rect.midX, y: rect.midY)
+                                .allowsHitTesting(false)
+                        }
+                    }
+                    .simultaneousGesture(
+                        DragGesture(minimumDistance: 4, coordinateSpace: .named("canvasViewport"))
+                            .onChanged { value in
+                                handleMarqueeDrag(value: value)
+                            }
+                            .onEnded { value in
+                                handleMarqueeEnd(value: value)
+                            }
+                    )
+                    .onPreferenceChange(CardFramePreferenceKey.self) { frames in
+                        cardFrames = frames
+                    }
                     .onChange(of: canvasZoom) { _, _ in
                         if let id = viewModel.selectedItemID {
                             DispatchQueue.main.async {
@@ -689,5 +729,57 @@ private struct CheckerboardView: View {
         }
         img.unlockFocus()
         return img
+    }
+}
+
+struct CardFramePreferenceKey: PreferenceKey {
+    nonisolated(unsafe) static var defaultValue: [UUID: CGRect] = [:]
+    static func reduce(value: inout [UUID: CGRect], nextValue: () -> [UUID: CGRect]) {
+        value.merge(nextValue(), uniquingKeysWith: { _, new in new })
+    }
+}
+
+extension ContentView {
+    func applyMarqueeSelection(rect: CGRect, additive: Bool) {
+        let hits = cardFrames.compactMap { id, frame in
+            frame.intersects(rect) ? id : nil
+        }
+        let next: Set<UUID> = additive
+            ? viewModel.selectedItemIDs.union(hits)
+            : Set(hits)
+        if next != viewModel.selectedItemIDs {
+            viewModel.selectedItemIDs = next
+        }
+    }
+
+    func handleMarqueeDrag(value: DragGesture.Value) {
+        guard !viewModel.projects.isEmpty && !canvasEntries.isEmpty else { return }
+        if !isDraggingMarquee {
+            let isOnCard = cardFrames.values.contains { $0.contains(value.startLocation) }
+            if isOnCard {
+                isDragStartedOnCard = true
+                return
+            }
+            isDragStartedOnCard = false
+            isDraggingMarquee = true
+            viewModel.isSelectionMode = true
+            let flags = NSApp.currentEvent?.modifierFlags.intersection(.deviceIndependentFlagsMask) ?? []
+            marqueeAdditive = flags.contains(.shift) || flags.contains(.command)
+        }
+        guard !isDragStartedOnCard else { return }
+        let s = value.startLocation
+        let c = value.location
+        let rect = CGRect(x: min(s.x, c.x), y: min(s.y, c.y),
+                          width: abs(s.x - c.x), height: abs(s.y - c.y))
+        marqueeRect = rect
+        applyMarqueeSelection(rect: rect, additive: marqueeAdditive)
+    }
+
+    func handleMarqueeEnd(value: DragGesture.Value) {
+        if isDraggingMarquee {
+            marqueeRect = nil
+        }
+        isDraggingMarquee = false
+        isDragStartedOnCard = false
     }
 }
