@@ -80,6 +80,8 @@ final class DraftCanvasViewModel: ObservableObject {
         didSet { recomputeDisplayedItems() }
     }
     @Published var backgroundRemovalPreview: BackgroundRemovalPreview? = nil
+    @Published var importProgress: (done: Int, total: Int)? = nil
+    @Published var importError: String? = nil
 
     let client: CodexAppServerClient
     let coordinator: GenerationCoordinator
@@ -176,6 +178,13 @@ final class DraftCanvasViewModel: ObservableObject {
 
     func saveState() {
         projectStore.save(makeSnapshot())
+    }
+
+    func saveStateAsync() {
+        let snapshot = makeSnapshot()
+        Task.detached(priority: .background) { [store = projectStore] in
+            store.save(snapshot)
+        }
     }
 
     func requestNotificationPermission() {

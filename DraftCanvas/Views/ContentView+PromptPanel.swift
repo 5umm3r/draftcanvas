@@ -1,6 +1,30 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
+// loadItem コールバックで URL を収集し、全件揃ったら一括インポートするためのヘルパー
+private final class URLAccumulator: @unchecked Sendable {
+    private let lock = NSLock()
+    private var urls: [(index: Int, url: URL)] = []
+    private var remaining: Int
+
+    init(count: Int) { remaining = count }
+
+    func add(url: URL, index: Int) -> [URL]? {
+        lock.withLock {
+            urls.append((index: index, url: url))
+            remaining -= 1
+            return remaining == 0 ? urls.sorted { $0.index < $1.index }.map(\.url) : nil
+        }
+    }
+
+    func skip() -> [URL]? {
+        lock.withLock {
+            remaining -= 1
+            return remaining == 0 ? urls.sorted { $0.index < $1.index }.map(\.url) : nil
+        }
+    }
+}
+
 extension ContentView {
     func promptPanel(maxPromptHeight: CGFloat) -> some View {
         VStack(spacing: 0) {
@@ -334,34 +358,55 @@ extension ContentView {
     }
 
     func handleCanvasDrop(_ providers: [NSItemProvider]) -> Bool {
-        var handled = false
-        for provider in providers {
-            if provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
+        guard !providers.isEmpty else { return false }
+        guard viewModel.selectedSmartProjectID == nil else { return false }
+
+        let hasURLs = providers.contains { $0.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) }
+        let hasImages = providers.contains { $0.canLoadObject(ofClass: NSImage.self) }
+        guard hasURLs || hasImages else { return false }
+
+        let projectID = viewModel.selectedProjectID ?? viewModel.createProject().id
+
+        let urlProviderCount = providers.filter {
+            $0.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier)
+        }.count
+
+        if urlProviderCount > 0 {
+            let accumulator = URLAccumulator(count: urlProviderCount)
+            for (i, provider) in providers.enumerated() {
+                guard provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) else { continue }
                 provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier) { item, _ in
                     let fileURL: URL?
                     if let u = item as? URL { fileURL = u }
                     else if let u = item as? NSURL { fileURL = u as URL }
                     else if let data = item as? Data { fileURL = URL(dataRepresentation: data, relativeTo: nil) }
                     else { fileURL = nil }
-                    guard let fileURL else { return }
-                    Task { @MainActor in
-                        let projectID = self.viewModel.selectedProjectID ?? self.viewModel.createProject().id
-                        self.viewModel.importImageAsProjectItem(url: fileURL, projectID: projectID)
+
+                    let ready: [URL]?
+                    if let url = fileURL { ready = accumulator.add(url: url, index: i) }
+                    else { ready = accumulator.skip() }
+
+                    if let urls = ready {
+                        Task { @MainActor in
+                            self.viewModel.importImagesAsProjectItems(urls: urls, projectID: projectID)
+                        }
                     }
                 }
-                handled = true
-            } else if provider.canLoadObject(ofClass: NSImage.self) {
-                provider.loadObject(ofClass: NSImage.self) { obj, _ in
-                    guard let image = obj as? NSImage else { return }
-                    Task { @MainActor in
-                        let projectID = self.viewModel.selectedProjectID ?? self.viewModel.createProject().id
-                        self.viewModel.importImageAsProjectItem(image: image, projectID: projectID)
-                    }
-                }
-                handled = true
             }
         }
-        return handled
+
+        // NSImage直接ドロップ: 個別処理（URL変換不可の場合、別PR対象）
+        for provider in providers where provider.canLoadObject(ofClass: NSImage.self)
+            && !provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
+            provider.loadObject(ofClass: NSImage.self) { obj, _ in
+                guard let image = obj as? NSImage else { return }
+                Task { @MainActor in
+                    self.viewModel.importImageAsProjectItem(image: image, projectID: projectID)
+                }
+            }
+        }
+
+        return true
     }
 
     var modelShortName: String {

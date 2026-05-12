@@ -91,7 +91,7 @@ extension DraftCanvasViewModel {
         }
     }
 
-    func loadAndNormalizeImage(from url: URL) throws -> Data {
+    nonisolated func loadAndNormalizeImage(from url: URL) throws -> Data {
         guard let image = NSImage(contentsOf: url) else {
             throw DraftCanvasError.invalidRequest("画像を読み込めませんでした: \(url.lastPathComponent)")
         }
@@ -103,7 +103,7 @@ extension DraftCanvasViewModel {
         return pngData
     }
 
-    func aspectRatioFromImageData(_ data: Data) -> GenerationAspectRatio {
+    nonisolated func aspectRatioFromImageData(_ data: Data) -> GenerationAspectRatio {
         guard let source = CGImageSourceCreateWithData(data as CFData, nil),
               let props = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any] else {
             return .square
