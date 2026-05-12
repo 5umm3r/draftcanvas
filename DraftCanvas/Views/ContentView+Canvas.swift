@@ -769,12 +769,17 @@ struct CardFramePreferenceKey: PreferenceKey {
 
 extension ContentView {
     func applyMarqueeSelection(rect: CGRect, additive: Bool) {
-        let hits = cardFrames.compactMap { id, frame in
+        let visibleHits = Set(cardFrames.compactMap { id, frame in
             frame.intersects(rect) ? id : nil
+        })
+        let next: Set<UUID>
+        if additive {
+            next = viewModel.selectedItemIDs.union(visibleHits)
+        } else {
+            // LazyVGrid で画面外に出てcardFramesから消えたカードは選択を維持
+            let offscreenSelected = viewModel.selectedItemIDs.filter { !cardFrames.keys.contains($0) }
+            next = visibleHits.union(offscreenSelected)
         }
-        let next: Set<UUID> = additive
-            ? viewModel.selectedItemIDs.union(hits)
-            : Set(hits)
         if next != viewModel.selectedItemIDs {
             viewModel.selectedItemIDs = next
         }
