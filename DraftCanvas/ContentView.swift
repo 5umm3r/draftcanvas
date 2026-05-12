@@ -29,6 +29,8 @@ struct ContentView: View {
     @State var isDraggingMarquee: Bool = false
     @State var isDragStartedOnCard: Bool = false
     @State var marqueeAdditive: Bool = false
+    @State var canvasAutoScroller = CanvasAutoScroller()
+    @State var canvasViewportHeight: CGFloat = 600
 
     var body: some View {
         VStack(spacing: 0) {

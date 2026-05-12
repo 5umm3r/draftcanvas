@@ -195,8 +195,18 @@ extension ContentView {
                         .padding(.top, 72)
                         .padding(.horizontal, 24)
                         .padding(.bottom, 220)
+                        .background(
+                            AutoScrollerAnchor(scroller: canvasAutoScroller)
+                                .allowsHitTesting(false)
+                        )
                     }
                     .coordinateSpace(name: "canvasViewport")
+                    .background(
+                        GeometryReader { geo in
+                            Color.clear.onAppear { canvasViewportHeight = geo.size.height }
+                                .onChange(of: geo.size.height) { _, h in canvasViewportHeight = h }
+                        }
+                    )
                     .overlay(
                         CanvasScrollZoomCatcher { delta in
                             let newZoom = canvasZoom * CGFloat(exp(delta))
@@ -225,6 +235,10 @@ extension ContentView {
                     )
                     .onPreferenceChange(CardFramePreferenceKey.self) { frames in
                         cardFrames = frames
+                    }
+                    .onChange(of: cardFrames) { _, _ in
+                        guard isDraggingMarquee, let rect = marqueeRect else { return }
+                        applyMarqueeSelection(rect: rect, additive: marqueeAdditive)
                     }
                     .onChange(of: canvasZoom) { _, _ in
                         if let id = viewModel.selectedItemID {
@@ -732,6 +746,20 @@ private struct CheckerboardView: View {
     }
 }
 
+struct AutoScrollerAnchor: NSViewRepresentable {
+    let scroller: CanvasAutoScroller
+
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView()
+        scroller.hostView = view
+        return view
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {
+        scroller.hostView = nsView
+    }
+}
+
 struct CardFramePreferenceKey: PreferenceKey {
     nonisolated(unsafe) static var defaultValue: [UUID: CGRect] = [:]
     static func reduce(value: inout [UUID: CGRect], nextValue: () -> [UUID: CGRect]) {
@@ -773,9 +801,16 @@ extension ContentView {
                           width: abs(s.x - c.x), height: abs(s.y - c.y))
         marqueeRect = rect
         applyMarqueeSelection(rect: rect, additive: marqueeAdditive)
+        canvasAutoScroller.updateVelocity(mouseY: c.y, viewHeight: canvasViewportHeight)
+        if canvasAutoScroller.velocity != 0 {
+            canvasAutoScroller.start()
+        } else {
+            canvasAutoScroller.stop()
+        }
     }
 
     func handleMarqueeEnd(value: DragGesture.Value) {
+        canvasAutoScroller.stop()
         if isDraggingMarquee {
             marqueeRect = nil
         }
