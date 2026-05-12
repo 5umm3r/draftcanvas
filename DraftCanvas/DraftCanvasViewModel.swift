@@ -47,7 +47,14 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var selectedItemID: UUID?
     @Published var selectedItemIDs: Set<UUID> = []
     @Published var isSelectionMode: Bool = false
-    @Published var logs: [String] = []
+    @Published var logs: [String] = [] {
+        didSet {
+            guard let last = logs.last else { return }
+            #if DEBUG
+            Self.appendToLogFile(last)
+            #endif
+        }
+    }
     @Published var accountUsageStatus = CodexAccountUsageStatus.unavailable
     @Published var isRefreshingAccountUsage = false
     @Published var preferredSaveFolder: URL?
@@ -75,7 +82,13 @@ final class DraftCanvasViewModel: ObservableObject {
     var vectorizationTasks: [UUID: Task<Void, Never>] = [:]
     var enhanceTask: Task<Void, Never>?
     var onReplacePromptText: ((String) -> Void)?
-    let imageCache = NSCache<NSURL, NSImage>()
+    let imageCache: NSCache<NSURL, NSImage> = {
+        let cache = NSCache<NSURL, NSImage>()
+        cache.countLimit = 25
+        cache.totalCostLimit = 150 * 1024 * 1024
+        return cache
+    }()
+    let thumbnailStore: CanvasThumbnailStore
 
     init(
         projectStore: ProjectStore = ProjectStore(),
@@ -87,6 +100,7 @@ final class DraftCanvasViewModel: ObservableObject {
         self.coordinator = GenerationCoordinator(runner: CodexGenerationRunner(client: client))
         self.projectStore = projectStore
         self.preferredSaveFolderStore = preferredSaveFolderStore
+        self.thumbnailStore = CanvasThumbnailStore(itemsDirectory: projectStore.itemsDirectory)
         client.onLog = { [weak self] message in
             Task { @MainActor in
                 self?.logs.append(message)
@@ -115,6 +129,9 @@ final class DraftCanvasViewModel: ObservableObject {
             inputs.reasoningEffort = project.reasoningEffort
             inputsByProject[project.id] = inputs
         }
+        thumbnailStore.backfillMissing(items: items) { [store = projectStore] item in
+            item.fileURL(in: store.rootDirectory)
+        }
     }
 
     func makeSnapshot() -> ProjectStore.Snapshot {
@@ -134,6 +151,28 @@ final class DraftCanvasViewModel: ObservableObject {
     func requestNotificationPermission() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
     }
+
+    #if DEBUG
+    private static let logFile: URL = {
+        let dir = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("Logs/DraftCanvas")
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir.appendingPathComponent("canvas.log")
+    }()
+
+    private static func appendToLogFile(_ message: String) {
+        let line = "[\(ISO8601DateFormatter().string(from: Date()))] \(message)\n"
+        guard let data = line.data(using: .utf8) else { return }
+        if FileManager.default.fileExists(atPath: logFile.path),
+           let fh = try? FileHandle(forWritingTo: logFile) {
+            fh.seekToEndOfFile()
+            fh.write(data)
+            try? fh.close()
+        } else {
+            try? data.write(to: logFile)
+        }
+    }
+    #endif
 
     private static func migrateAppSupportDirectoryIfNeeded() {
         let migrationKey = "draftcanvas.migration.appSupportDirRenamed.v1"

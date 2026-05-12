@@ -124,8 +124,9 @@ extension DraftCanvasViewModel {
                 try projectStore.writeItemData(imageData, for: item)
                 self.items.append(item)
                 if let img = NSImage(data: imageData) {
-                    imageCache.setObject(img, forKey: item.fileURL(in: projectStore.rootDirectory) as NSURL)
+                    imageCache.setObject(img, forKey: item.fileURL(in: projectStore.rootDirectory) as NSURL, cost: img.estimatedBytes)
                 }
+                thumbnailStore.writeThumbnail(from: imageData, item: item)
             } catch {
                 logs.append("プロジェクトへの保存に失敗しました: \(error.localizedDescription)")
             }

@@ -20,7 +20,10 @@
 		10A000342D00000100000001 /* DraftCanvasViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A0003E2D00000100000001 /* DraftCanvasViewModel.swift */; };
 		10A000402D00000100000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 10A0003F2D00000100000001 /* Assets.xcassets */; };
 		10A000FA2D00000100000001 /* BackgroundRemover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A000F92D00000100000001 /* BackgroundRemover.swift */; };
+		D9F69235C6DA480489596D0E /* CanvasMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3503E3DE1E894D1BA41DB46C /* CanvasMetrics.swift */; };
+		98D8CD9E43394E4BB9747CEC /* CanvasThumbnailStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364052427D804C5F964BCF75 /* CanvasThumbnailStore.swift */; };
 		10A000FC2D00000100000001 /* BackgroundRemoverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A000FB2D00000100000001 /* BackgroundRemoverTests.swift */; };
+		BE3A138929BF42F98670599E /* CanvasMetricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A9FECC2E7F14E67952FB30D /* CanvasMetricsTests.swift */; };
 		10A000FE2D00000100000001 /* ImageVectorizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A000FD2D00000100000001 /* ImageVectorizer.swift */; };
 		10A001002D00000100000001 /* ImageVectorizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A000FF2D00000100000001 /* ImageVectorizerTests.swift */; };
 		10A001022D00000100000001 /* InpaintingMaskCompositor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A001012D00000100000001 /* InpaintingMaskCompositor.swift */; };
@@ -96,7 +99,10 @@
 		10A0003E2D00000100000001 /* DraftCanvasViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftCanvasViewModel.swift; sourceTree = "<group>"; };
 		10A0003F2D00000100000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		10A000F92D00000100000001 /* BackgroundRemover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundRemover.swift; sourceTree = "<group>"; };
+		3503E3DE1E894D1BA41DB46C /* CanvasMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasMetrics.swift; sourceTree = "<group>"; };
+		364052427D804C5F964BCF75 /* CanvasThumbnailStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasThumbnailStore.swift; sourceTree = "<group>"; };
 		10A000FB2D00000100000001 /* BackgroundRemoverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundRemoverTests.swift; sourceTree = "<group>"; };
+		8A9FECC2E7F14E67952FB30D /* CanvasMetricsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasMetricsTests.swift; sourceTree = "<group>"; };
 		10A000FD2D00000100000001 /* ImageVectorizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageVectorizer.swift; sourceTree = "<group>"; };
 		10A000FF2D00000100000001 /* ImageVectorizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageVectorizerTests.swift; sourceTree = "<group>"; };
 		10A001012D00000100000001 /* InpaintingMaskCompositor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InpaintingMaskCompositor.swift; sourceTree = "<group>"; };
@@ -185,6 +191,8 @@
 				10A0003D2D00000100000001 /* GenerationCoordinator.swift */,
 				10A0003E2D00000100000001 /* DraftCanvasViewModel.swift */,
 				10A000F92D00000100000001 /* BackgroundRemover.swift */,
+					3503E3DE1E894D1BA41DB46C /* CanvasMetrics.swift */,
+					364052427D804C5F964BCF75 /* CanvasThumbnailStore.swift */,
 					10A000FD2D00000100000001 /* ImageVectorizer.swift */,
 				10A001012D00000100000001 /* InpaintingMaskCompositor.swift */,
 				10A001032D00000100000001 /* InpaintingMaskEditor.swift */,
@@ -212,6 +220,7 @@
 				10A0002A2D00000100000001 /* JSONRPCCodecTests.swift */,
 				10A0002C2D00000100000001 /* GenerationCoordinatorTests.swift */,
 				10A000FB2D00000100000001 /* BackgroundRemoverTests.swift */,
+				8A9FECC2E7F14E67952FB30D /* CanvasMetricsTests.swift */,
 				10A000FF2D00000100000001 /* ImageVectorizerTests.swift */,
 				10A001052D00000100000001 /* CodexVersionFetcherTests.swift */,
 			);
@@ -412,6 +421,8 @@
 				10A000332D00000100000001 /* GenerationCoordinator.swift in Sources */,
 				10A000342D00000100000001 /* DraftCanvasViewModel.swift in Sources */,
 				10A000FA2D00000100000001 /* BackgroundRemover.swift in Sources */,
+					D9F69235C6DA480489596D0E /* CanvasMetrics.swift in Sources */,
+					98D8CD9E43394E4BB9747CEC /* CanvasThumbnailStore.swift in Sources */,
 				10A000FE2D00000100000001 /* ImageVectorizer.swift in Sources */,
 				10A001022D00000100000001 /* InpaintingMaskCompositor.swift in Sources */,
 				10A001042D00000100000001 /* InpaintingMaskEditor.swift in Sources */,
@@ -468,6 +479,7 @@
 				10A0002B2D00000100000001 /* JSONRPCCodecTests.swift in Sources */,
 				10A0002D2D00000100000001 /* GenerationCoordinatorTests.swift in Sources */,
 				10A000FC2D00000100000001 /* BackgroundRemoverTests.swift in Sources */,
+				BE3A138929BF42F98670599E /* CanvasMetricsTests.swift in Sources */,
 				10A001002D00000100000001 /* ImageVectorizerTests.swift in Sources */,
 				10A001062D00000100000001 /* CodexVersionFetcherTests.swift in Sources */,
 			);

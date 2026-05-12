@@ -49,4 +49,9 @@ extension NSImage {
         guard w > 0, h > 0 else { return nil }
         return w / h
     }
+
+    var estimatedBytes: Int {
+        guard let rep = representations.first(where: { $0 is NSBitmapImageRep }) ?? representations.first else { return 0 }
+        return rep.pixelsWide * rep.pixelsHigh * 4
+    }
 }

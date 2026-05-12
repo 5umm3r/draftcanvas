@@ -4,6 +4,7 @@ import Foundation
 extension DraftCanvasViewModel {
     func deleteItem(_ item: ProjectItem) {
         projectStore.deleteItemFile(item)
+        thumbnailStore.deleteThumbnail(for: item)
         items.removeAll { $0.id == item.id }
         if selectedItemID == item.id { selectedItemID = nil }
         if let idx = projects.firstIndex(where: { $0.id == item.projectID }) {
@@ -39,8 +40,9 @@ extension DraftCanvasViewModel {
                 )
             }
             if let img = cachedImage(for: item) {
-                imageCache.setObject(img, forKey: newItem.fileURL(in: projectStore.rootDirectory) as NSURL)
+                imageCache.setObject(img, forKey: newItem.fileURL(in: projectStore.rootDirectory) as NSURL, cost: img.estimatedBytes)
             }
+            thumbnailStore.writeThumbnail(from: newItem.fileURL(in: projectStore.rootDirectory), item: newItem)
             items.append(newItem)
             if let idx = projects.firstIndex(where: { $0.id == item.projectID }) {
                 projects[idx].updatedAt = Date()
@@ -79,8 +81,9 @@ extension DraftCanvasViewModel {
                 )
             }
             if let img = cachedImage(for: item) {
-                imageCache.setObject(img, forKey: newItem.fileURL(in: projectStore.rootDirectory) as NSURL)
+                imageCache.setObject(img, forKey: newItem.fileURL(in: projectStore.rootDirectory) as NSURL, cost: img.estimatedBytes)
             }
+            thumbnailStore.writeThumbnail(from: newItem.fileURL(in: projectStore.rootDirectory), item: newItem)
             items.append(newItem)
             if let idx = projects.firstIndex(where: { $0.id == targetProjectID }) {
                 projects[idx].updatedAt = Date()
@@ -119,8 +122,23 @@ extension DraftCanvasViewModel {
         let url = fileURL(for: item) as NSURL
         if let cached = imageCache.object(forKey: url) { return cached }
         guard let img = NSImage(contentsOf: url as URL) else { return nil }
-        imageCache.setObject(img, forKey: url)
+        imageCache.setObject(img, forKey: url, cost: img.estimatedBytes)
+        #if DEBUG
+        CanvasMetrics.imageLoadCount += 1
+        if let rep = img.representations.first(where: { $0 is NSBitmapImageRep }) ?? img.representations.first {
+            CanvasMetrics.imageLoadBytesEstimate += rep.pixelsWide * rep.pixelsHigh * 4
+        }
+        #endif
         return img
+    }
+
+    func thumbnail(for item: ProjectItem) -> NSImage? {
+        thumbnailStore.thumbnail(
+            for: item,
+            originalURL: fileURL(for: item)
+        ) { [weak self] in
+            self?.objectWillChange.send()
+        }
     }
 
     func ordinalForItem(_ item: ProjectItem, in projectID: UUID) -> Int {

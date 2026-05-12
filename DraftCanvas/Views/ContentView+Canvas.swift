@@ -24,8 +24,7 @@ enum CanvasCardLayout {
 
 extension ContentView {
     func cardSize(forItem item: ProjectItem) -> CGSize {
-        let ratio = viewModel.cachedImage(for: item)?.pixelAspectRatio
-            ?? item.aspectRatio.widthOverHeight
+        let ratio = item.aspectRatio.widthOverHeight
         return CanvasCardLayout.size(for: ratio, zoom: canvasZoom)
     }
 
@@ -45,6 +44,25 @@ extension ContentView {
             .sheet(item: $viewModel.inpaintingTarget) { item in
                 inpaintingEditorSheet(for: item)
             }
+            .onAppear {
+                #if DEBUG
+                CanvasMetrics.reset()
+                viewModel.logs.append(CanvasMetrics.logSummary(tag: "appear"))
+                #endif
+            }
+            .onDisappear {
+                #if DEBUG
+                viewModel.logs.append(CanvasMetrics.logSummary(tag: "disappear"))
+                #endif
+            }
+            #if DEBUG
+            .task {
+                while !Task.isCancelled {
+                    try? await Task.sleep(for: .seconds(5))
+                    viewModel.logs.append(CanvasMetrics.logSummary(tag: "tick"))
+                }
+            }
+            #endif
         }
     }
 
@@ -299,7 +317,7 @@ extension ContentView {
                 .overlay(alignment: .bottomTrailing) {
                     if let sourceID = item.editedFromItemID,
                        let sourceItem = viewModel.items.first(where: { $0.id == sourceID }),
-                       let sourceImage = viewModel.cachedImage(for: sourceItem) {
+                       let sourceImage = viewModel.thumbnail(for: sourceItem) {
                         let thumbSize = 36 * max(0.7, min(canvasZoom, 1.6))
                         Image(nsImage: sourceImage)
                             .resizable()
@@ -366,7 +384,7 @@ extension ContentView {
             NSItemProvider(object: item.id.uuidString as NSString)
         } preview: {
             Group {
-                if let nsImage = viewModel.cachedImage(for: item) {
+                if let nsImage = viewModel.thumbnail(for: item) {
                     Image(nsImage: nsImage)
                         .resizable()
                         .scaledToFit()
@@ -414,19 +432,13 @@ extension ContentView {
 
     @ViewBuilder
     func previewForItem(_ item: ProjectItem) -> some View {
-        if let nsImage = viewModel.cachedImage(for: item) {
+        if let nsImage = viewModel.thumbnail(for: item) {
             Image(nsImage: nsImage)
                 .resizable()
                 .scaledToFit()
         } else {
-            VStack(spacing: 8) {
-                Image(systemName: "questionmark.square")
-                    .font(.system(size: 28))
-                    .foregroundStyle(.secondary)
-                Text("プレビューを読み込めません")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
+            Color.secondary.opacity(0.08)
+                .overlay(ProgressView().controlSize(.small))
         }
     }
 
