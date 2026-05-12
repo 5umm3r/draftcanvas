@@ -49,7 +49,7 @@ struct ItemDetailPopover: View {
                 systemImage: "scissors",
                 title: "背景を除去",
                 action: {
-                    viewModel.removeBackground(item: item)
+                    viewModel.startBackgroundRemoval(item: item)
                     viewModel.selectedItemID = nil
                 },
                 isDisabled: item.isBackgroundRemoved,

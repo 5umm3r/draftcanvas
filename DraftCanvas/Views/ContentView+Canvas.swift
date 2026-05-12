@@ -44,6 +44,9 @@ extension ContentView {
             .sheet(item: $viewModel.inpaintingTarget) { item in
                 inpaintingEditorSheet(for: item)
             }
+            .sheet(item: $viewModel.backgroundRemovalPreview) { preview in
+                BackgroundRemovalPreviewSheet(preview: preview, viewModel: viewModel)
+            }
             .onAppear {
                 #if DEBUG
                 CanvasMetrics.reset()

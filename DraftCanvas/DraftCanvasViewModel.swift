@@ -79,6 +79,7 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var selectedSmartProjectID: UUID? {
         didSet { recomputeDisplayedItems() }
     }
+    @Published var backgroundRemovalPreview: BackgroundRemovalPreview? = nil
 
     let client: CodexAppServerClient
     let coordinator: GenerationCoordinator

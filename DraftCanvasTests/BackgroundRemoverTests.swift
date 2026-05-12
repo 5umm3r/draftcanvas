@@ -65,6 +65,41 @@ final class BackgroundRemoverTests: XCTestCase {
             // OK in CI / test env
         }
     }
+
+    func testProcess_outputPNG_hasSRGBColorProfile() async throws {
+        let inputPNG = makeSolidColorPNG(width: 50, height: 50, red: 0.5, green: 0.5, blue: 0.5)
+        do {
+            let outputData = try await BackgroundRemover.process(data: inputPNG)
+            let sRGBChunk = Data([0x73, 0x52, 0x47, 0x42]) // "sRGB"
+            let iCCPChunk = Data([0x69, 0x43, 0x43, 0x50]) // "iCCP"
+            let hasSRGB = outputData.range(of: sRGBChunk) != nil
+            let hasICCP = outputData.range(of: iCCPChunk) != nil
+            XCTAssertTrue(hasSRGB || hasICCP, "Output PNG must embed sRGB or iCCP color profile")
+        } catch BackgroundRemovalError.noSubjectFound, BackgroundRemovalError.visionFailed,
+                BackgroundRemovalError.maskGenerationFailed {
+            // Acceptable for solid-color test images
+        }
+    }
+
+    func testProcess_edgeStrengthZero_succeedsOrThrowsKnownError() async throws {
+        let inputPNG = makeSolidColorPNG(width: 80, height: 80, red: 0.3, green: 0.6, blue: 0.9)
+        do {
+            _ = try await BackgroundRemover.process(data: inputPNG, edgeStrength: 0.0)
+        } catch BackgroundRemovalError.noSubjectFound, BackgroundRemovalError.visionFailed,
+                BackgroundRemovalError.maskGenerationFailed {
+            // Acceptable
+        }
+    }
+
+    func testProcess_edgeStrengthMax_succeedsOrThrowsKnownError() async throws {
+        let inputPNG = makeSolidColorPNG(width: 80, height: 80, red: 0.3, green: 0.6, blue: 0.9)
+        do {
+            _ = try await BackgroundRemover.process(data: inputPNG, edgeStrength: 1.0)
+        } catch BackgroundRemovalError.noSubjectFound, BackgroundRemovalError.visionFailed,
+                BackgroundRemovalError.maskGenerationFailed {
+            // Acceptable
+        }
+    }
 }
 
 // MARK: - Helpers

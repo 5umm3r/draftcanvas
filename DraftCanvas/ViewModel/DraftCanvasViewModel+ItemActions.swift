@@ -16,7 +16,22 @@ extension DraftCanvasViewModel {
         if let attached = inputs.attachedImage {
             projectStore.cleanupAttachment(id: attached.id)
         }
-        inputs.attachedImage = nil
+
+        // 背景除去済みアイテムは元画像をサムネイル添付として復元する
+        if item.isBackgroundRemoved, let originalID = item.editedFromItemID,
+           let original = items.first(where: { $0.id == originalID }) {
+            let originalURL = original.fileURL(in: projectStore.rootDirectory)
+            // AttachedImage.id に originalID を使うと cleanupAttachment は
+            // attachments/ を探すため items/ の元ファイルは削除されない
+            inputs.attachedImage = AttachedImage(
+                id: originalID,
+                filePath: originalURL.path,
+                originalFileName: nil
+            )
+        } else {
+            inputs.attachedImage = nil
+        }
+
         inputs.prompt = item.prompt
         inputs.aspectRatio = item.aspectRatio
         inputs.editSource = GenerationEditSource(
@@ -190,7 +205,7 @@ extension DraftCanvasViewModel {
         }
     }
 
-    func removeBackground(item: ProjectItem) {
+    func startBackgroundRemoval(item: ProjectItem) {
         switchToProjectIfNeeded(for: item)
         let projectID = selectedProjectID ?? item.projectID
 
@@ -202,53 +217,64 @@ extension DraftCanvasViewModel {
         upsert(job, into: projectID)
 
         let fileURL = item.fileURL(in: projectStore.rootDirectory)
-        let itemAspectRatio = item.aspectRatio
-        let itemPrompt = item.prompt
 
         Task {
             var running = job
             running.status = .running
-            await MainActor.run { [weak self] in self?.upsert(running, into: projectID) }
+            upsert(running, into: projectID)
 
             do {
                 let inputData = try Data(contentsOf: fileURL)
-                let outputData = try await BackgroundRemover.process(data: inputData)
+                let session = try await BackgroundRemover.extractMask(from: inputData)
+                let initialData = try BackgroundRemover.apply(session: session, edgeStrength: 0.5)
 
-                await MainActor.run { [weak self] in
-                    guard let self else { return }
-                    var completed = running
-                    completed.status = .succeeded
-                    completed.imageData = outputData
-                    self.upsert(completed, into: projectID)
+                var succeeded = running
+                succeeded.status = .succeeded
+                upsert(succeeded, into: projectID)
 
-                    let newItem = ProjectItem(projectID: projectID, prompt: itemPrompt, aspectRatio: itemAspectRatio, isBackgroundRemoved: true)
-                    do {
-                        try self.projectStore.writeItemData(outputData, for: newItem)
-                        self.items.append(newItem)
-                        self.thumbnailStore.writeThumbnail(from: outputData, item: newItem)
-                        if let idx = self.projects.firstIndex(where: { $0.id == projectID }) {
-                            self.projects[idx].updatedAt = Date()
-                        }
-                        self.saveState()
-                        self.logs.append("背景除去完了: \(newItem.id)")
-                    } catch {
-                        self.errorToast = "背景除去結果の保存に失敗しました"
-                        self.logs.append("背景除去結果の保存に失敗: \(error.localizedDescription)")
-                    }
-                }
+                backgroundRemovalPreview = BackgroundRemovalPreview(
+                    item: item,
+                    session: session,
+                    initialData: initialData
+                )
+                logs.append("背景除去プレビュー準備完了: \(item.id)")
             } catch {
-                await MainActor.run { [weak self] in
-                    guard let self else { return }
-                    var failed = running
-                    failed.status = .failed
-                    failed.errorMessage = error.localizedDescription
-                    self.upsert(failed, into: projectID)
-                    let message = (error as? BackgroundRemovalError)?.localizedDescription
-                        ?? "背景除去に失敗しました"
-                    self.errorToast = message
-                    self.logs.append("背景除去失敗: \(error.localizedDescription)")
-                }
+                var failed = running
+                failed.status = .failed
+                failed.errorMessage = error.localizedDescription
+                upsert(failed, into: projectID)
+                let message = (error as? BackgroundRemovalError)?.localizedDescription
+                    ?? "背景除去に失敗しました"
+                errorToast = message
+                logs.append("背景除去失敗: \(error.localizedDescription)")
             }
+        }
+    }
+
+    func commitBackgroundRemoval(item: ProjectItem, data: Data) {
+        let projectID = selectedProjectID ?? item.projectID
+
+        backgroundRemovalPreview = nil
+
+        do {
+            let newItem = ProjectItem(
+                projectID: projectID,
+                prompt: item.prompt,
+                aspectRatio: item.aspectRatio,
+                editedFromItemID: item.id,
+                isBackgroundRemoved: true
+            )
+            try projectStore.writeItemData(data, for: newItem)
+            items.append(newItem)
+            thumbnailStore.writeThumbnail(from: data, item: newItem)
+            if let idx = projects.firstIndex(where: { $0.id == projectID }) {
+                projects[idx].updatedAt = Date()
+            }
+            saveState()
+            logs.append("背景除去保存完了: \(newItem.id)")
+        } catch {
+            errorToast = "背景除去結果の保存に失敗しました"
+            logs.append("背景除去保存失敗: \(error.localizedDescription)")
         }
     }
 }
