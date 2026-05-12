@@ -30,9 +30,6 @@ extension DraftCanvasViewModel {
             )
             try projectStore.writeItemData(pngData, for: newItem)
             items.append(newItem)
-            if let img = NSImage(data: pngData) {
-                imageCache.setObject(img, forKey: newItem.fileURL(in: projectStore.rootDirectory) as NSURL, cost: img.estimatedBytes)
-            }
             thumbnailStore.writeThumbnail(from: pngData, item: newItem)
             if let idx = projects.firstIndex(where: { $0.id == projectID }) {
                 projects[idx].updatedAt = Date()
@@ -62,9 +59,6 @@ extension DraftCanvasViewModel {
         do {
             try projectStore.writeItemData(pngData, for: newItem)
             items.append(newItem)
-            if let img = NSImage(data: pngData) {
-                imageCache.setObject(img, forKey: newItem.fileURL(in: projectStore.rootDirectory) as NSURL, cost: img.estimatedBytes)
-            }
             thumbnailStore.writeThumbnail(from: pngData, item: newItem)
             if let idx = projects.firstIndex(where: { $0.id == projectID }) {
                 projects[idx].updatedAt = Date()

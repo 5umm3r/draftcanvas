@@ -26,10 +26,16 @@ final class DraftCanvasViewModel: ObservableObject {
     @AppStorage("canvasSortOrder") var canvasSortOrderRaw: String = CanvasSortOrder.createdAtAscending.rawValue
     var canvasSortOrder: CanvasSortOrder {
         get { CanvasSortOrder(rawValue: canvasSortOrderRaw) ?? .createdAtAscending }
-        set { canvasSortOrderRaw = newValue.rawValue }
+        set {
+            canvasSortOrderRaw = newValue.rawValue
+            recomputeDisplayedItems()
+        }
     }
     @Published var projects: [Project] = []
-    @Published var items: [ProjectItem] = []
+    @Published var items: [ProjectItem] = [] {
+        didSet { if !isLoadingProjects { recomputeDisplayedItems() } }
+    }
+    @Published var displayedItemsSnapshot: [ProjectItem] = []
     @Published var selectedProjectID: UUID? {
         didSet {
             guard selectedProjectID != oldValue, !isLoadingProjects else { return }
@@ -37,6 +43,7 @@ final class DraftCanvasViewModel: ObservableObject {
             selectedItemID = nil
             selectedItemIDs.removeAll()
             isSelectionMode = false
+            recomputeDisplayedItems()
             let snapshot = makeSnapshot()
             Task.detached(priority: .background) { [store = projectStore] in
                 store.save(snapshot)
@@ -47,14 +54,9 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var selectedItemID: UUID?
     @Published var selectedItemIDs: Set<UUID> = []
     @Published var isSelectionMode: Bool = false
-    @Published var logs: [String] = [] {
-        didSet {
-            guard let last = logs.last else { return }
-            #if DEBUG
-            Self.appendToLogFile(last)
-            #endif
-        }
-    }
+    @Published var logs: [String] = []
+    private var logBuffer: [String] = []
+    private var logFlushTask: Task<Void, Never>?
     @Published var accountUsageStatus = CodexAccountUsageStatus.unavailable
     @Published var isRefreshingAccountUsage = false
     @Published var preferredSaveFolder: URL?
@@ -71,8 +73,12 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var exportRequest: ExportRequest? = nil
     @Published var exportingProjectID: UUID? = nil
     @Published var batchExportProgress: (done: Int, total: Int)? = nil
-    @Published var smartProjects: [SmartProject] = []
-    @Published var selectedSmartProjectID: UUID?
+    @Published var smartProjects: [SmartProject] = [] {
+        didSet { if !isLoadingProjects { recomputeDisplayedItems() } }
+    }
+    @Published var selectedSmartProjectID: UUID? {
+        didSet { recomputeDisplayedItems() }
+    }
 
     let client: CodexAppServerClient
     let coordinator: GenerationCoordinator
@@ -82,12 +88,6 @@ final class DraftCanvasViewModel: ObservableObject {
     var vectorizationTasks: [UUID: Task<Void, Never>] = [:]
     var enhanceTask: Task<Void, Never>?
     var onReplacePromptText: ((String) -> Void)?
-    let imageCache: NSCache<NSURL, NSImage> = {
-        let cache = NSCache<NSURL, NSImage>()
-        cache.countLimit = 25
-        cache.totalCostLimit = 150 * 1024 * 1024
-        return cache
-    }()
     let thumbnailStore: CanvasThumbnailStore
 
     init(
@@ -102,8 +102,21 @@ final class DraftCanvasViewModel: ObservableObject {
         self.preferredSaveFolderStore = preferredSaveFolderStore
         self.thumbnailStore = CanvasThumbnailStore(itemsDirectory: projectStore.itemsDirectory)
         client.onLog = { [weak self] message in
-            Task { @MainActor in
-                self?.logs.append(message)
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                self.logBuffer.append(message)
+                if self.logFlushTask == nil {
+                    self.logFlushTask = Task { @MainActor in
+                        try? await Task.sleep(for: .milliseconds(100))
+                        guard !Task.isCancelled else { return }
+                        if self.logs.count + self.logBuffer.count > 1000 {
+                            self.logs = Array(self.logs.suffix(900))
+                        }
+                        self.logs.append(contentsOf: self.logBuffer)
+                        self.logBuffer.removeAll()
+                        self.logFlushTask = nil
+                    }
+                }
             }
         }
         projectStore.cleanupAllAttachments()
@@ -112,11 +125,27 @@ final class DraftCanvasViewModel: ObservableObject {
         prewarmAndRefresh()
     }
 
+    func appendLog(_ message: String) {
+        if logs.count >= 1000 {
+            logs.removeFirst(logs.count - 900)
+        }
+        logs.append(message)
+        #if DEBUG
+        let msg = message
+        Task.detached(priority: .utility) {
+            Self.appendToLogFile(msg)
+        }
+        #endif
+    }
+
     // MARK: - Private
 
     func loadProjects() {
         isLoadingProjects = true
-        defer { isLoadingProjects = false }
+        defer {
+            isLoadingProjects = false
+            recomputeDisplayedItems()
+        }
         let snapshot = projectStore.load()
         projects = snapshot.projects
         items = snapshot.items
@@ -153,14 +182,14 @@ final class DraftCanvasViewModel: ObservableObject {
     }
 
     #if DEBUG
-    private static let logFile: URL = {
+    nonisolated private static let logFile: URL = {
         let dir = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("Logs/DraftCanvas")
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir.appendingPathComponent("canvas.log")
     }()
 
-    private static func appendToLogFile(_ message: String) {
+    nonisolated private static func appendToLogFile(_ message: String) {
         let line = "[\(ISO8601DateFormatter().string(from: Date()))] \(message)\n"
         guard let data = line.data(using: .utf8) else { return }
         if FileManager.default.fileExists(atPath: logFile.path),

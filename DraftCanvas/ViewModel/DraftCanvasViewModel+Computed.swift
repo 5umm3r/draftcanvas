@@ -108,4 +108,8 @@ extension DraftCanvasViewModel {
         }
         return itemsForSelectedProject
     }
+
+    func recomputeDisplayedItems() {
+        displayedItemsSnapshot = displayedItems
+    }
 }

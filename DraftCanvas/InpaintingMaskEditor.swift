@@ -169,6 +169,7 @@ final class MaskCanvasNSView: NSView {
     private var maskBufferPixelSize: CGSize = .zero
     private var committedStrokeCount: Int = 0
     private var cachedCGImage: CGImage?
+    private var cachedMaskCGImage: CGImage?
 
     init(image: NSImage) {
         self.image = image
@@ -232,6 +233,7 @@ final class MaskCanvasNSView: NSView {
         guard let ctx = maskBuffer else { return }
         ctx.setFillColor(CGColor(gray: 0, alpha: 1))
         ctx.fill(CGRect(origin: .zero, size: maskBufferPixelSize))
+        cachedMaskCGImage = nil
     }
 
     private func rebuildMaskBuffer(from strokes: [MaskStroke]) {
@@ -256,21 +258,21 @@ final class MaskCanvasNSView: NSView {
         if points.count == 1 {
             let p = CGPoint(x: points[0].x, y: h - points[0].y)
             ctx.fillEllipse(in: CGRect(x: p.x - r, y: p.y - r, width: r * 2, height: r * 2))
-            return
-        }
-
-        for i in 1 ..< points.count {
-            let p0 = CGPoint(x: points[i - 1].x, y: h - points[i - 1].y)
-            let p1 = CGPoint(x: points[i].x, y: h - points[i].y)
-            let dist = hypot(p1.x - p0.x, p1.y - p0.y)
-            let steps = max(1, Int(dist / (r * 0.5)))
-            for s in 0 ... steps {
-                let t = CGFloat(s) / CGFloat(steps)
-                let x = p0.x + (p1.x - p0.x) * t
-                let y = p0.y + (p1.y - p0.y) * t
-                ctx.fillEllipse(in: CGRect(x: x - r, y: y - r, width: r * 2, height: r * 2))
+        } else {
+            for i in 1 ..< points.count {
+                let p0 = CGPoint(x: points[i - 1].x, y: h - points[i - 1].y)
+                let p1 = CGPoint(x: points[i].x, y: h - points[i].y)
+                let dist = hypot(p1.x - p0.x, p1.y - p0.y)
+                let steps = max(1, Int(dist / (r * 0.5)))
+                for s in 0 ... steps {
+                    let t = CGFloat(s) / CGFloat(steps)
+                    let x = p0.x + (p1.x - p0.x) * t
+                    let y = p0.y + (p1.y - p0.y) * t
+                    ctx.fillEllipse(in: CGRect(x: x - r, y: y - r, width: r * 2, height: r * 2))
+                }
             }
         }
+        cachedMaskCGImage = nil
     }
 
     // MARK: - Coordinate helpers
@@ -323,7 +325,10 @@ final class MaskCanvasNSView: NSView {
 
         // Mask overlay: clip to white areas of buffer, fill red
         ensureMaskBuffer()
-        if let bufCtx = maskBuffer, let maskImage = bufCtx.makeImage() {
+        if let bufCtx = maskBuffer {
+            if cachedMaskCGImage == nil { cachedMaskCGImage = bufCtx.makeImage() }
+        }
+        if let maskImage = cachedMaskCGImage {
             ctx.saveGState()
             ctx.setAlpha(0.5)
             ctx.clip(to: r, mask: maskImage)

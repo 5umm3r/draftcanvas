@@ -225,9 +225,6 @@ extension DraftCanvasViewModel {
                     do {
                         try self.projectStore.writeItemData(outputData, for: newItem)
                         self.items.append(newItem)
-                        if let img = NSImage(data: outputData) {
-                            self.imageCache.setObject(img, forKey: self.fileURL(for: newItem) as NSURL, cost: img.estimatedBytes)
-                        }
                         self.thumbnailStore.writeThumbnail(from: outputData, item: newItem)
                         if let idx = self.projects.firstIndex(where: { $0.id == projectID }) {
                             self.projects[idx].updatedAt = Date()

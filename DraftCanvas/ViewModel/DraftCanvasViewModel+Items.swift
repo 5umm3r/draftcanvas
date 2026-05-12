@@ -39,9 +39,6 @@ extension DraftCanvasViewModel {
                     to: newItem.svgFileURL(in: projectStore.rootDirectory)
                 )
             }
-            if let img = cachedImage(for: item) {
-                imageCache.setObject(img, forKey: newItem.fileURL(in: projectStore.rootDirectory) as NSURL, cost: img.estimatedBytes)
-            }
             thumbnailStore.writeThumbnail(from: newItem.fileURL(in: projectStore.rootDirectory), item: newItem)
             items.append(newItem)
             if let idx = projects.firstIndex(where: { $0.id == item.projectID }) {
@@ -80,9 +77,6 @@ extension DraftCanvasViewModel {
                     to: newItem.svgFileURL(in: projectStore.rootDirectory)
                 )
             }
-            if let img = cachedImage(for: item) {
-                imageCache.setObject(img, forKey: newItem.fileURL(in: projectStore.rootDirectory) as NSURL, cost: img.estimatedBytes)
-            }
             thumbnailStore.writeThumbnail(from: newItem.fileURL(in: projectStore.rootDirectory), item: newItem)
             items.append(newItem)
             if let idx = projects.firstIndex(where: { $0.id == targetProjectID }) {
@@ -119,10 +113,8 @@ extension DraftCanvasViewModel {
     }
 
     func cachedImage(for item: ProjectItem) -> NSImage? {
-        let url = fileURL(for: item) as NSURL
-        if let cached = imageCache.object(forKey: url) { return cached }
-        guard let img = NSImage(contentsOf: url as URL) else { return nil }
-        imageCache.setObject(img, forKey: url, cost: img.estimatedBytes)
+        let url = fileURL(for: item)
+        guard let img = NSImage(contentsOf: url) else { return nil }
         #if DEBUG
         CanvasMetrics.imageLoadCount += 1
         if let rep = img.representations.first(where: { $0 is NSBitmapImageRep }) ?? img.representations.first {
@@ -133,12 +125,7 @@ extension DraftCanvasViewModel {
     }
 
     func thumbnail(for item: ProjectItem) -> NSImage? {
-        thumbnailStore.thumbnail(
-            for: item,
-            originalURL: fileURL(for: item)
-        ) { [weak self] in
-            self?.objectWillChange.send()
-        }
+        thumbnailStore.thumbnail(for: item, originalURL: fileURL(for: item))
     }
 
     func ordinalForItem(_ item: ProjectItem, in projectID: UUID) -> Int {

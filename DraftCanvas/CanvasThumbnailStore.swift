@@ -2,12 +2,14 @@ import AppKit
 import Foundation
 import ImageIO
 
-final class CanvasThumbnailStore: @unchecked Sendable {
+final class CanvasThumbnailStore: ObservableObject, @unchecked Sendable {
     let thumbsDirectory: URL
     private let maxPixelSize: CGFloat = 512
+    @Published private(set) var version: Int = 0
     private let memoryCache: NSCache<NSURL, NSImage> = {
         let c = NSCache<NSURL, NSImage>()
         c.countLimit = 256
+        c.totalCostLimit = 128 * 1024 * 1024
         return c
     }()
 
@@ -21,20 +23,30 @@ final class CanvasThumbnailStore: @unchecked Sendable {
     }
 
     // メインスレッドから呼ぶ。ヒット→即返却。ミス→nil＋非同期生成kick
-    func thumbnail(for item: ProjectItem, originalURL: URL, onGenerated: @escaping @MainActor () -> Void) -> NSImage? {
+    func thumbnail(for item: ProjectItem, originalURL: URL) -> NSImage? {
         let url = thumbnailURL(for: item)
         let key = url as NSURL
         if let cached = memoryCache.object(forKey: key) { return cached }
-        if let img = NSImage(contentsOf: url) {
-            memoryCache.setObject(img, forKey: key)
+        if let img = loadThumbnailFromDisk(url: url) {
+            memoryCache.setObject(img, forKey: key, cost: 1024 * 1024)
             return img
         }
         let store = self
         Task.detached(priority: .utility) {
             store.generateAndSave(from: originalURL, item: item)
-            await onGenerated()
+            await MainActor.run { store.version &+= 1 }
         }
         return nil
+    }
+
+    private func loadThumbnailFromDisk(url: URL) -> NSImage? {
+        guard let src = CGImageSourceCreateWithURL(url as CFURL, nil) else { return nil }
+        let opts: [CFString: Any] = [
+            kCGImageSourceShouldCacheImmediately: true,
+            kCGImageSourceShouldCache: true,
+        ]
+        guard let cg = CGImageSourceCreateImageAtIndex(src, 0, opts as CFDictionary) else { return nil }
+        return NSImage(cgImage: cg, size: NSSize(width: cg.width, height: cg.height))
     }
 
     // 生成/インポート直後に呼ぶ（Data バージョン）
@@ -69,8 +81,12 @@ final class CanvasThumbnailStore: @unchecked Sendable {
             for (item, url) in missing {
                 store.generateAndSave(from: url, item: item)
                 count += 1
-                if count % 2 == 0 { await Task.yield() }
+                if count % 2 == 0 {
+                    await Task.yield()
+                    await MainActor.run { store.version &+= 1 }
+                }
             }
+            await MainActor.run { store.version &+= 1 }
         }
     }
 
@@ -83,8 +99,8 @@ final class CanvasThumbnailStore: @unchecked Sendable {
         let opts: [CFString: Any] = [
             kCGImageSourceCreateThumbnailFromImageAlways: true,
             kCGImageSourceThumbnailMaxPixelSize: maxPixelSize,
-            kCGImageSourceShouldCacheImmediately: false,
-            kCGImageSourceShouldCache: false,
+            kCGImageSourceShouldCacheImmediately: true,
+            kCGImageSourceShouldCache: true,
             kCGImageSourceCreateThumbnailWithTransform: true,
         ]
         guard let cg = CGImageSourceCreateThumbnailAtIndex(source, 0, opts as CFDictionary) else { return }
@@ -100,6 +116,6 @@ final class CanvasThumbnailStore: @unchecked Sendable {
         try? FileManager.default.createDirectory(at: thumbsDirectory, withIntermediateDirectories: true)
         try? thumbData.write(to: dest, options: .atomic)
         let img = NSImage(cgImage: cg, size: NSSize(width: cg.width, height: cg.height))
-        memoryCache.setObject(img, forKey: dest as NSURL)
+        memoryCache.setObject(img, forKey: dest as NSURL, cost: 1024 * 1024)
     }
 }

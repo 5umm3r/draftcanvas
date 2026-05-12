@@ -47,22 +47,14 @@ extension ContentView {
             .onAppear {
                 #if DEBUG
                 CanvasMetrics.reset()
-                viewModel.logs.append(CanvasMetrics.logSummary(tag: "appear"))
+                viewModel.appendLog(CanvasMetrics.logSummary(tag: "appear"))
                 #endif
             }
             .onDisappear {
                 #if DEBUG
-                viewModel.logs.append(CanvasMetrics.logSummary(tag: "disappear"))
+                viewModel.appendLog(CanvasMetrics.logSummary(tag: "disappear"))
                 #endif
             }
-            #if DEBUG
-            .task {
-                while !Task.isCancelled {
-                    try? await Task.sleep(for: .seconds(5))
-                    viewModel.logs.append(CanvasMetrics.logSummary(tag: "tick"))
-                }
-            }
-            #endif
         }
     }
 
@@ -274,7 +266,7 @@ extension ContentView {
     }
 
     var canvasEntries: [CanvasEntry] {
-        let persistedItems = viewModel.displayedItems.map { CanvasEntry.item($0) }
+        let persistedItems = viewModel.displayedItemsSnapshot.map { CanvasEntry.item($0) }
         let showJobs = viewModel.isGeneratingForSelected && viewModel.selectedSmartProjectID == nil
         let inProgressJobs = showJobs ? viewModel.currentJobs.map { CanvasEntry.job($0) } : []
         switch viewModel.canvasSortOrder {
@@ -316,13 +308,15 @@ extension ContentView {
                 .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                 .overlay(alignment: .bottomTrailing) {
                     if let sourceID = item.editedFromItemID,
-                       let sourceItem = viewModel.items.first(where: { $0.id == sourceID }),
-                       let sourceImage = viewModel.thumbnail(for: sourceItem) {
+                       let sourceItem = viewModel.items.first(where: { $0.id == sourceID }) {
                         let thumbSize = 36 * max(0.7, min(canvasZoom, 1.6))
-                        Image(nsImage: sourceImage)
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: thumbSize, height: thumbSize)
+                        ItemThumbnailView(
+                            thumbnailStore: viewModel.thumbnailStore,
+                            item: sourceItem,
+                            originalURL: viewModel.fileURL(for: sourceItem),
+                            contentMode: .fill
+                        )
+                        .frame(width: thumbSize, height: thumbSize)
                             .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                             .overlay {
                                 RoundedRectangle(cornerRadius: 6, style: .continuous)
@@ -383,16 +377,12 @@ extension ContentView {
         .onDrag {
             NSItemProvider(object: item.id.uuidString as NSString)
         } preview: {
-            Group {
-                if let nsImage = viewModel.thumbnail(for: item) {
-                    Image(nsImage: nsImage)
-                        .resizable()
-                        .scaledToFit()
-                } else {
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(Color.secondary.opacity(0.3))
-                }
-            }
+            ItemThumbnailView(
+                thumbnailStore: viewModel.thumbnailStore,
+                item: item,
+                originalURL: viewModel.fileURL(for: item),
+                contentMode: .fit
+            )
             .frame(width: 80, height: 80)
             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         }
@@ -432,50 +422,112 @@ extension ContentView {
 
     @ViewBuilder
     func previewForItem(_ item: ProjectItem) -> some View {
-        if let nsImage = viewModel.thumbnail(for: item) {
+        ItemThumbnailView(
+            thumbnailStore: viewModel.thumbnailStore,
+            item: item,
+            originalURL: viewModel.fileURL(for: item),
+            contentMode: .fit
+        )
+    }
+
+    @ViewBuilder
+    func preview(for job: GenerationJob) -> some View {
+        JobPreviewView(job: job, onStop: viewModel.stopServer)
+    }
+
+    var checkerboard: some View {
+        CheckerboardView(isDark: colorScheme == .dark)
+    }
+}
+
+struct ItemThumbnailView: View {
+    @ObservedObject var thumbnailStore: CanvasThumbnailStore
+    let item: ProjectItem
+    let originalURL: URL
+    let contentMode: ContentMode
+
+    var body: some View {
+        if let nsImage = thumbnailStore.thumbnail(for: item, originalURL: originalURL) {
             Image(nsImage: nsImage)
                 .resizable()
-                .scaledToFit()
+                .aspectRatio(contentMode: contentMode)
         } else {
             Color.secondary.opacity(0.08)
                 .overlay(ProgressView().controlSize(.small))
         }
     }
+}
 
-    @ViewBuilder
-    func preview(for job: GenerationJob) -> some View {
-        if let imageData = job.imageData, let nsImage = NSImage(data: imageData) {
-            Image(nsImage: nsImage)
-                .resizable()
-                .scaledToFit()
-        } else if job.status == .failed {
-            VStack(spacing: 8) {
-                Image(systemName: "exclamationmark.triangle")
-                    .font(.system(size: 28))
-                    .foregroundStyle(.orange)
-                Text(job.errorMessage ?? "生成に失敗しました")
-                    .font(.caption)
-                    .multilineTextAlignment(.center)
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 12)
+struct JobPreviewView: View {
+    let job: GenerationJob
+    let onStop: () -> Void
+    @State private var nsImage: NSImage?
+
+    var body: some View {
+        Group {
+            if let nsImage {
+                Image(nsImage: nsImage)
+                    .resizable()
+                    .scaledToFit()
+            } else if job.status == .failed {
+                VStack(spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.system(size: 28))
+                        .foregroundStyle(.orange)
+                    Text(job.errorMessage ?? "生成に失敗しました")
+                        .font(.caption)
+                        .multilineTextAlignment(.center)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 12)
+                }
+            } else {
+                GenerationProgressView(onStop: onStop)
             }
-        } else {
-            GenerationProgressView(onStop: viewModel.stopServer)
+        }
+        .task(id: job.imageData) {
+            guard let data = job.imageData else { nsImage = nil; return }
+            nsImage = await Task.detached(priority: .utility) { NSImage(data: data) }.value
         }
     }
+}
 
-    var checkerboard: some View {
-        let lightColor: Color = colorScheme == .dark ? Color.white.opacity(0.18) : Color.white
-        let darkColor: Color = colorScheme == .dark ? Color.white.opacity(0.06) : Color.black.opacity(0.045)
-        return Canvas { context, size in
-            let side: CGFloat = 18
-            for x in stride(from: CGFloat(0), to: size.width, by: side) {
-                for y in stride(from: CGFloat(0), to: size.height, by: side) {
-                    let isDark = (Int(x / side) + Int(y / side)).isMultiple(of: 2)
-                    let rect = CGRect(x: x, y: y, width: side, height: side)
-                    context.fill(Path(rect), with: .color(isDark ? lightColor : darkColor))
-                }
-            }
+private struct CheckerboardView: View {
+    let isDark: Bool
+
+    private static var lightImage: NSImage?
+    private static var darkImage: NSImage?
+
+    var body: some View {
+        Image(nsImage: checkerImage)
+            .resizable(resizingMode: .tile)
+    }
+
+    private var checkerImage: NSImage {
+        if isDark, let img = Self.darkImage { return img }
+        if !isDark, let img = Self.lightImage { return img }
+        let img = renderChecker(isDark: isDark)
+        if isDark { Self.darkImage = img } else { Self.lightImage = img }
+        return img
+    }
+
+    private func renderChecker(isDark: Bool) -> NSImage {
+        let side: CGFloat = 18
+        let size = NSSize(width: side * 2, height: side * 2)
+        let img = NSImage(size: size)
+        img.lockFocus()
+        let light: NSColor = isDark ? .white.withAlphaComponent(0.18) : .white
+        let dark: NSColor = isDark ? .white.withAlphaComponent(0.06) : .black.withAlphaComponent(0.045)
+        let tiles: [(CGRect, NSColor)] = [
+            (CGRect(x: 0, y: 0, width: side, height: side), light),
+            (CGRect(x: side, y: 0, width: side, height: side), dark),
+            (CGRect(x: 0, y: side, width: side, height: side), dark),
+            (CGRect(x: side, y: side, width: side, height: side), light),
+        ]
+        for (rect, color) in tiles {
+            color.setFill()
+            NSBezierPath(rect: rect).fill()
         }
+        img.unlockFocus()
+        return img
     }
 }
