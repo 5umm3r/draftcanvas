@@ -91,6 +91,55 @@ extension DraftCanvasViewModel {
         }
     }
 
+    struct DecodedImportImage {
+        let data: Data
+        let fileExtension: String
+        let aspectRatio: GenerationAspectRatio
+    }
+
+    nonisolated func decodeImportImage(from url: URL) throws -> DecodedImportImage {
+        let raw = try Data(contentsOf: url, options: [.mappedIfSafe])
+        guard let source = CGImageSourceCreateWithData(raw as CFData, nil) else {
+            throw DraftCanvasError.invalidRequest("画像を読み込めませんでした: \(url.lastPathComponent)")
+        }
+        let aspect = aspectRatioFromImageSource(source)
+        let typeID = CGImageSourceGetType(source) as String?
+        let passthroughExt: String? = {
+            switch typeID {
+            case "public.png": return "png"
+            case "public.jpeg": return "jpg"
+            case "public.heic", "public.heif": return "heic"
+            default: return nil
+            }
+        }()
+        if let ext = passthroughExt {
+            return DecodedImportImage(data: raw, fileExtension: ext, aspectRatio: aspect)
+        }
+        // フォールバック: CGImageDestination で PNG 化（AppKit 経由しない）
+        let png = NSMutableData()
+        guard let dest = CGImageDestinationCreateWithData(png, "public.png" as CFString, 1, nil) else {
+            throw DraftCanvasError.invalidRequest("画像をPNGに変換できませんでした")
+        }
+        CGImageDestinationAddImageFromSource(dest, source, 0, nil)
+        guard CGImageDestinationFinalize(dest) else {
+            throw DraftCanvasError.invalidRequest("画像をPNGに変換できませんでした")
+        }
+        return DecodedImportImage(data: png as Data, fileExtension: "png", aspectRatio: aspect)
+    }
+
+    nonisolated func aspectRatioFromImageSource(_ source: CGImageSource) -> GenerationAspectRatio {
+        guard let props = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any] else {
+            return .square
+        }
+        let w = (props[kCGImagePropertyPixelWidth] as? CGFloat)
+            ?? (props[kCGImagePropertyPixelWidth] as? Int).map(CGFloat.init) ?? 0
+        let h = (props[kCGImagePropertyPixelHeight] as? CGFloat)
+            ?? (props[kCGImagePropertyPixelHeight] as? Int).map(CGFloat.init) ?? 0
+        guard w > 0, h > 0 else { return .square }
+        let ratio = w / h
+        return GenerationAspectRatio.allCases.min(by: { abs($0.widthOverHeight - ratio) < abs($1.widthOverHeight - ratio) }) ?? .square
+    }
+
     nonisolated func loadAndNormalizeImage(from url: URL) throws -> Data {
         guard let image = NSImage(contentsOf: url) else {
             throw DraftCanvasError.invalidRequest("画像を読み込めませんでした: \(url.lastPathComponent)")

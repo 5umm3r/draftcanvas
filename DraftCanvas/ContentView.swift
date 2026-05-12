@@ -20,7 +20,9 @@ struct ContentView: View {
     @State var isCanvasDropTargeted = false
     @State var dragDropTargetProjectID: UUID?
     @State var dragDropItemID: UUID?
+    @State var dragDropItemIDs: [UUID] = []
     @State var isDroppingOnProject: [UUID: Bool] = [:]
+    @State var isConfirmingBatchDelete = false
     @State var isCompletionSoundMenuHovered = false
 
     var body: some View {
@@ -70,40 +72,41 @@ struct ContentView: View {
         } message: {
             Text("プロジェクトと含まれる全画像を削除します。この操作は取り消せません。")
         }
+        .alert(
+            "\(viewModel.selectedItemIDs.count)件の画像を削除しますか？",
+            isPresented: $isConfirmingBatchDelete
+        ) {
+            Button("削除", role: .destructive) {
+                let ids = viewModel.selectedItemIDs
+                let failed = viewModel.deleteItems(ids: ids)
+                if failed > 0 { viewModel.errorToast = "\(failed)件の削除に失敗しました" }
+                viewModel.isSelectionMode = false
+            }
+            Button("キャンセル", role: .cancel) {}
+        } message: {
+            Text("この操作は取り消せません。")
+        }
         .confirmationDialog(
-            "アイテムを別プロジェクトへ",
+            dragDropDialogTitle,
             isPresented: .init(
-                get: { dragDropItemID != nil && dragDropTargetProjectID != nil },
-                set: { if !$0 { dragDropItemID = nil; dragDropTargetProjectID = nil } }
+                get: { dragDropTargetProjectID != nil && (dragDropItemID != nil || !dragDropItemIDs.isEmpty) },
+                set: { if !$0 { resetDragDropState() } }
             ),
             titleVisibility: .visible
         ) {
-            Button("移動") {
-                if let itemID = dragDropItemID,
-                   let targetID = dragDropTargetProjectID,
-                   let item = viewModel.items.first(where: { $0.id == itemID }) {
-                    viewModel.moveItemToProject(item, targetProjectID: targetID)
-                }
-                dragDropItemID = nil
-                dragDropTargetProjectID = nil
+            Button(dragDropMoveLabel) {
+                performDragDropMove()
             }
-            Button("コピー") {
-                if let itemID = dragDropItemID,
-                   let targetID = dragDropTargetProjectID,
-                   let item = viewModel.items.first(where: { $0.id == itemID }) {
-                    viewModel.copyItemToProject(item, targetProjectID: targetID)
-                }
-                dragDropItemID = nil
-                dragDropTargetProjectID = nil
+            Button(dragDropCopyLabel) {
+                performDragDropCopy()
             }
             Button("キャンセル", role: .cancel) {
-                dragDropItemID = nil
-                dragDropTargetProjectID = nil
+                resetDragDropState()
             }
         } message: {
             if let targetID = dragDropTargetProjectID,
                let project = viewModel.projects.first(where: { $0.id == targetID }) {
-                Text("「\(project.name)」へ移動またはコピーしますか？")
+                Text(dragDropMessage(projectName: project.name))
             }
         }
         .sheet(item: $viewModel.exportRequest) { request in
@@ -120,5 +123,66 @@ struct ContentView: View {
                 onCancel: { viewModel.exportRequest = nil }
             )
         }
+    }
+}
+
+// MARK: - Drag & Drop helpers
+
+extension ContentView {
+
+    var dragDropCount: Int {
+        !dragDropItemIDs.isEmpty ? dragDropItemIDs.count : (dragDropItemID == nil ? 0 : 1)
+    }
+
+    var dragDropDialogTitle: String {
+        dragDropCount > 1 ? "\(dragDropCount)件を別プロジェクトへ" : "アイテムを別プロジェクトへ"
+    }
+
+    var dragDropMoveLabel: String {
+        dragDropCount > 1 ? "\(dragDropCount)件を移動" : "移動"
+    }
+
+    var dragDropCopyLabel: String {
+        dragDropCount > 1 ? "\(dragDropCount)件をコピー" : "コピー"
+    }
+
+    func dragDropMessage(projectName: String) -> String {
+        dragDropCount > 1
+            ? "「\(projectName)」へ\(dragDropCount)件を移動またはコピーしますか？"
+            : "「\(projectName)」へ移動またはコピーしますか？"
+    }
+
+    func performDragDropMove() {
+        guard let targetID = dragDropTargetProjectID else { return }
+        if !dragDropItemIDs.isEmpty {
+            let ids = Set(dragDropItemIDs)
+            let failed = viewModel.moveItems(ids: ids, targetProjectID: targetID)
+            if failed > 0 { viewModel.errorToast = "\(failed)件の移動に失敗しました" }
+            viewModel.isSelectionMode = false
+        } else if let itemID = dragDropItemID,
+                  let item = viewModel.items.first(where: { $0.id == itemID }) {
+            viewModel.moveItemToProject(item, targetProjectID: targetID)
+        }
+        resetDragDropState()
+    }
+
+    func performDragDropCopy() {
+        guard let targetID = dragDropTargetProjectID else { return }
+        if !dragDropItemIDs.isEmpty {
+            let ids = Set(dragDropItemIDs)
+            let failed = viewModel.copyItems(ids: ids, targetProjectID: targetID)
+            if failed > 0 { viewModel.errorToast = "\(failed)件のコピーに失敗しました" }
+            viewModel.isSelectionMode = false
+        } else if let itemID = dragDropItemID,
+                  let item = viewModel.items.first(where: { $0.id == itemID }) {
+            viewModel.copyItemToProject(item, targetProjectID: targetID)
+        }
+        resetDragDropState()
+    }
+
+    func resetDragDropState() {
+        dragDropItemID = nil
+        dragDropItemIDs = []
+        dragDropTargetProjectID = nil
     }
 }

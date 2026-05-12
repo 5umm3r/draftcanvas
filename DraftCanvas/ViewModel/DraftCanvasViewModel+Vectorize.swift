@@ -8,7 +8,7 @@ extension DraftCanvasViewModel {
 
         vectorizingItemIDs.insert(item.id)
 
-        let fileURL = item.fileURL(in: projectStore.rootDirectory)
+        let fileURL = projectStore.resolvedFileURL(for: item)
         let itemAspectRatio = item.aspectRatio
         let itemPrompt = item.prompt
         let itemID = item.id

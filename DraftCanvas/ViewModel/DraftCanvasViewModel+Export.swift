@@ -6,7 +6,7 @@ extension DraftCanvasViewModel {
         guard let project = projects.first(where: { $0.id == item.projectID }) else { return }
         let ordinal = ordinalForItem(item, in: item.projectID)
         let base = ExportNaming.baseFilename(forProjectName: project.name, ordinal: ordinal)
-        let fileURL = item.fileURL(in: projectStore.rootDirectory)
+        let fileURL = projectStore.resolvedFileURL(for: item)
         var originalSize = CGSize(width: 1024, height: 1024)
         if let data = try? Data(contentsOf: fileURL),
            let src = CGImageSourceCreateWithData(data as CFData, nil),

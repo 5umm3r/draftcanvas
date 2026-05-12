@@ -466,6 +466,16 @@ final class ProjectStore: @unchecked Sendable {
 
     let rootDirectory: URL
 
+    private var itemFileExtensions: [UUID: String] = [:]
+    private let itemFileExtensionsLock = NSLock()
+
+    func resolvedFileURL(for item: ProjectItem) -> URL {
+        itemFileExtensionsLock.lock()
+        let ext = itemFileExtensions[item.id] ?? "png"
+        itemFileExtensionsLock.unlock()
+        return itemsDirectory.appendingPathComponent("\(item.id.uuidString).\(ext)")
+    }
+
     private var metadataURL: URL {
         rootDirectory.appendingPathComponent("projects.json")
     }
@@ -524,6 +534,26 @@ final class ProjectStore: @unchecked Sendable {
 
     init(rootDirectory: URL = ProjectStore.defaultRootDirectory()) {
         self.rootDirectory = rootDirectory
+        indexExistingItemFiles()
+    }
+
+    private func indexExistingItemFiles() {
+        guard let contents = try? FileManager.default.contentsOfDirectory(
+            at: itemsDirectory, includingPropertiesForKeys: nil
+        ) else { return }
+        var map: [UUID: String] = [:]
+        for url in contents {
+            let stem = url.deletingPathExtension().lastPathComponent
+            let ext = url.pathExtension.lowercased()
+            guard let id = UUID(uuidString: stem) else { continue }
+            guard ext != "svg" else { continue }
+            // 既存PNG優先（後方互換）
+            if let existing = map[id], existing == "png" { continue }
+            map[id] = ext.isEmpty ? "png" : ext
+        }
+        itemFileExtensionsLock.lock()
+        itemFileExtensions = map
+        itemFileExtensionsLock.unlock()
     }
 
     func load() -> Snapshot {
@@ -549,10 +579,36 @@ final class ProjectStore: @unchecked Sendable {
 
     @discardableResult
     func writeItemData(_ data: Data, for item: ProjectItem) throws -> URL {
+        try writeItemData(data, for: item, fileExtension: "png")
+    }
+
+    @discardableResult
+    func writeItemData(_ data: Data, for item: ProjectItem, fileExtension: String) throws -> URL {
         try FileManager.default.createDirectory(at: itemsDirectory, withIntermediateDirectories: true)
-        let url = item.fileURL(in: rootDirectory)
+        let ext = fileExtension.lowercased()
+        itemFileExtensionsLock.lock()
+        let oldExt = itemFileExtensions[item.id]
+        itemFileExtensions[item.id] = ext
+        itemFileExtensionsLock.unlock()
+        if let oldExt, oldExt != ext {
+            try? FileManager.default.removeItem(
+                at: itemsDirectory.appendingPathComponent("\(item.id.uuidString).\(oldExt)")
+            )
+        }
+        let url = itemsDirectory.appendingPathComponent("\(item.id.uuidString).\(ext)")
         try data.write(to: url, options: .atomic)
         return url
+    }
+
+    func copyItemFile(from src: ProjectItem, to dst: ProjectItem) throws {
+        let srcURL = resolvedFileURL(for: src)
+        let ext = srcURL.pathExtension.isEmpty ? "png" : srcURL.pathExtension.lowercased()
+        try FileManager.default.createDirectory(at: itemsDirectory, withIntermediateDirectories: true)
+        let dstURL = itemsDirectory.appendingPathComponent("\(dst.id.uuidString).\(ext)")
+        try FileManager.default.copyItem(at: srcURL, to: dstURL)
+        itemFileExtensionsLock.lock()
+        itemFileExtensions[dst.id] = ext
+        itemFileExtensionsLock.unlock()
     }
 
     @discardableResult
@@ -564,7 +620,10 @@ final class ProjectStore: @unchecked Sendable {
     }
 
     func deleteItemFile(_ item: ProjectItem) {
-        try? FileManager.default.removeItem(at: item.fileURL(in: rootDirectory))
+        try? FileManager.default.removeItem(at: resolvedFileURL(for: item))
+        itemFileExtensionsLock.lock()
+        itemFileExtensions.removeValue(forKey: item.id)
+        itemFileExtensionsLock.unlock()
         if item.hasSVG {
             try? FileManager.default.removeItem(at: item.svgFileURL(in: rootDirectory))
         }

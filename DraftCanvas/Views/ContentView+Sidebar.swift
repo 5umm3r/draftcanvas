@@ -163,12 +163,23 @@ extension ContentView {
         guard let provider = providers.first,
               provider.canLoadObject(ofClass: NSString.self) else { return false }
         provider.loadObject(ofClass: NSString.self) { obj, _ in
-            guard let uuidString = obj as? String,
-                  let itemID = UUID(uuidString: uuidString) else { return }
+            guard let payload = obj as? String else { return }
+            let ids: [UUID] = payload
+                .split(whereSeparator: { $0.isNewline })
+                .compactMap { UUID(uuidString: String($0).trimmingCharacters(in: .whitespaces)) }
+            guard !ids.isEmpty else { return }
             Task { @MainActor in
-                guard let item = self.viewModel.items.first(where: { $0.id == itemID }),
-                      item.projectID != targetProjectID else { return }
-                self.dragDropItemID = itemID
+                let validIDs = ids.filter { id in
+                    self.viewModel.items.first(where: { $0.id == id })?.projectID != targetProjectID
+                }
+                guard !validIDs.isEmpty else { return }
+                if validIDs.count == 1 {
+                    self.dragDropItemID = validIDs[0]
+                    self.dragDropItemIDs = []
+                } else {
+                    self.dragDropItemIDs = validIDs
+                    self.dragDropItemID = nil
+                }
                 self.dragDropTargetProjectID = targetProjectID
             }
         }

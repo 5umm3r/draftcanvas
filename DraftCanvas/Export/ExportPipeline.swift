@@ -91,7 +91,7 @@ enum ExportPipeline {
     ) throws -> Data {
         switch source {
         case .singleItem(let item):
-            return try Data(contentsOf: item.fileURL(in: projectStore.rootDirectory))
+            return try Data(contentsOf: projectStore.resolvedFileURL(for: item))
         case .currentJob(let pngData, _):
             return pngData
         case .batchItems:

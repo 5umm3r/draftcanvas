@@ -40,6 +40,57 @@ extension ContentView {
                 promptPanel(maxPromptHeight: geometry.size.height / 2)
                     .padding(.horizontal, 24)
                     .padding(.bottom, 18)
+
+                VStack(spacing: 8) {
+                    if let errorMessage = viewModel.importError {
+                        HStack(spacing: 8) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundStyle(.red)
+                                .font(.subheadline)
+                            Text(errorMessage)
+                                .font(.subheadline.weight(.medium))
+                                .foregroundStyle(.red)
+                            Button {
+                                viewModel.importError = nil
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundStyle(.secondary)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .stroke(Color.red.opacity(0.2), lineWidth: 1)
+                        }
+                        .shadow(color: .black.opacity(0.12), radius: 8, x: 0, y: 2)
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    }
+                    if let progress = viewModel.batchExportProgress {
+                        HStack(spacing: 10) {
+                            ProgressView()
+                                .scaleEffect(0.7)
+                                .frame(width: 16, height: 16)
+                            Text("\(progress.done) / \(progress.total) 枚処理中…")
+                                .font(.subheadline.weight(.medium))
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+                        }
+                        .shadow(color: .black.opacity(0.12), radius: 8, x: 0, y: 2)
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    }
+                }
+                .padding(.bottom, 24)
+                .animation(.easeInOut(duration: 0.2), value: viewModel.batchExportProgress != nil)
+                .animation(.easeInOut(duration: 0.2), value: viewModel.importProgress != nil)
+                .animation(.easeInOut(duration: 0.2), value: viewModel.importError != nil)
             }
             .sheet(item: $viewModel.inpaintingTarget) { item in
                 inpaintingEditorSheet(for: item)
@@ -149,6 +200,25 @@ extension ContentView {
         }
         .overlay(alignment: .topTrailing) {
             HStack(spacing: 8) {
+                if let progress = viewModel.importProgress {
+                    HStack(spacing: 6) {
+                        ProgressView()
+                            .scaleEffect(0.6)
+                            .frame(width: 14, height: 14)
+                        Text("\(progress.done)/\(progress.total)")
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(Color.secondary)
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 6)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+                    }
+                    .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
+                    .transition(.opacity.combined(with: .scale(scale: 0.9)))
+                }
                 if viewModel.projects.isEmpty == false && viewModel.selectedSmartProjectID == nil {
                     Button {
                         viewModel.importImageToCanvas()
@@ -190,12 +260,24 @@ extension ContentView {
                     CanvasZoomControl(zoom: $canvasZoom)
                 }
             }
+            .animation(.easeInOut(duration: 0.2), value: viewModel.importProgress != nil)
             .padding(.top, 16)
             .padding(.trailing, 16)
         }
         .overlay(alignment: .topLeading) {
             if !viewModel.projects.isEmpty && !canvasEntries.isEmpty {
                 HStack(spacing: 8) {
+                    Text("\(viewModel.displayedItemsSnapshot.count)")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(Color.secondary)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 6)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+                        }
+                        .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
                     Button {
                         viewModel.toggleSelectionMode()
                     } label: {
@@ -229,6 +311,25 @@ extension ContentView {
                                 .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
                         }
                         Button {
+                            isConfirmingBatchDelete = true
+                        } label: {
+                            Image(systemName: "trash")
+                                .font(.system(size: 13, weight: .medium))
+                                .frame(width: 18, height: 18)
+                                .foregroundStyle(Color.red)
+                                .padding(8)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .stroke(Color.red.opacity(0.3), lineWidth: 1)
+                        }
+                        .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
+                        .disabled(viewModel.selectedItemIDs.isEmpty)
+                        .help("選択画像を一括削除")
+                        Button {
                             viewModel.exportSelectedBatch()
                         } label: {
                             Image(systemName: "square.and.arrow.up.on.square")
@@ -260,76 +361,6 @@ extension ContentView {
         .onDrop(of: [.image, .fileURL], isTargeted: $isCanvasDropTargeted) { providers in
             handleCanvasDrop(providers)
         }
-        .overlay(alignment: .bottom) {
-            VStack(spacing: 8) {
-                if let progress = viewModel.importProgress {
-                    HStack(spacing: 10) {
-                        ProgressView()
-                            .scaleEffect(0.7)
-                            .frame(width: 16, height: 16)
-                        Text("インポート \(progress.done) / \(progress.total) 枚…")
-                            .font(.subheadline.weight(.medium))
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .stroke(Color.primary.opacity(0.08), lineWidth: 1)
-                    }
-                    .shadow(color: .black.opacity(0.12), radius: 8, x: 0, y: 2)
-                    .transition(.opacity.combined(with: .move(edge: .bottom)))
-                }
-                if let errorMessage = viewModel.importError {
-                    HStack(spacing: 8) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundStyle(.red)
-                            .font(.subheadline)
-                        Text(errorMessage)
-                            .font(.subheadline.weight(.medium))
-                            .foregroundStyle(.red)
-                        Button {
-                            viewModel.importError = nil
-                        } label: {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundStyle(.secondary)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .stroke(Color.red.opacity(0.2), lineWidth: 1)
-                    }
-                    .shadow(color: .black.opacity(0.12), radius: 8, x: 0, y: 2)
-                    .transition(.opacity.combined(with: .move(edge: .bottom)))
-                }
-                if let progress = viewModel.batchExportProgress {
-                    HStack(spacing: 10) {
-                        ProgressView()
-                            .scaleEffect(0.7)
-                            .frame(width: 16, height: 16)
-                        Text("\(progress.done) / \(progress.total) 枚処理中…")
-                            .font(.subheadline.weight(.medium))
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .stroke(Color.primary.opacity(0.08), lineWidth: 1)
-                    }
-                    .shadow(color: .black.opacity(0.12), radius: 8, x: 0, y: 2)
-                    .transition(.opacity.combined(with: .move(edge: .bottom)))
-                }
-            }
-            .padding(.bottom, 24)
-        }
-        .animation(.easeInOut(duration: 0.2), value: viewModel.batchExportProgress != nil)
-        .animation(.easeInOut(duration: 0.2), value: viewModel.importProgress != nil)
-        .animation(.easeInOut(duration: 0.2), value: viewModel.importError != nil)
     }
 
     var canvasEntries: [CanvasEntry] {
@@ -442,16 +473,39 @@ extension ContentView {
             ItemDetailPopover(item: item, viewModel: viewModel)
         }
         .onDrag {
-            NSItemProvider(object: item.id.uuidString as NSString)
+            let isBatch = viewModel.isSelectionMode
+                && viewModel.selectedItemIDs.contains(item.id)
+                && viewModel.selectedItemIDs.count > 1
+            if isBatch {
+                let payload = viewModel.items
+                    .filter { viewModel.selectedItemIDs.contains($0.id) }
+                    .map { $0.id.uuidString }
+                    .joined(separator: "\n")
+                return NSItemProvider(object: payload as NSString)
+            } else {
+                return NSItemProvider(object: item.id.uuidString as NSString)
+            }
         } preview: {
-            ItemThumbnailView(
-                thumbnailStore: viewModel.thumbnailStore,
-                item: item,
-                originalURL: viewModel.fileURL(for: item),
-                contentMode: .fit
-            )
-            .frame(width: 80, height: 80)
-            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            let isBatch = viewModel.isSelectionMode
+                && viewModel.selectedItemIDs.contains(item.id)
+                && viewModel.selectedItemIDs.count > 1
+            if isBatch {
+                let selected = viewModel.items.filter { viewModel.selectedItemIDs.contains($0.id) }
+                MultiDragPreview(
+                    items: Array(selected.prefix(3)),
+                    total: selected.count,
+                    viewModel: viewModel
+                )
+            } else {
+                ItemThumbnailView(
+                    thumbnailStore: viewModel.thumbnailStore,
+                    item: item,
+                    originalURL: viewModel.fileURL(for: item),
+                    contentMode: .fit
+                )
+                .frame(width: 80, height: 80)
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            }
         }
     }
 
@@ -554,6 +608,45 @@ struct JobPreviewView: View {
         .task(id: job.imageData) {
             guard let data = job.imageData else { nsImage = nil; return }
             nsImage = await Task.detached(priority: .utility) { NSImage(data: data) }.value
+        }
+    }
+}
+
+struct MultiDragPreview: View {
+    let items: [ProjectItem]
+    let total: Int
+    @ObservedObject var viewModel: DraftCanvasViewModel
+
+    var body: some View {
+        ZStack {
+            ForEach(Array(items.enumerated().reversed()), id: \.element.id) { idx, item in
+                ItemThumbnailView(
+                    thumbnailStore: viewModel.thumbnailStore,
+                    item: item,
+                    originalURL: viewModel.fileURL(for: item),
+                    contentMode: .fill
+                )
+                .frame(width: 72, height: 72)
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .stroke(Color.white, lineWidth: 2)
+                }
+                .shadow(color: .black.opacity(0.25), radius: 3, x: 0, y: 1)
+                .rotationEffect(.degrees(Double(idx) * -4 + 4))
+                .offset(x: CGFloat(idx) * 4, y: CGFloat(idx) * 4)
+            }
+        }
+        .frame(width: 96, height: 96)
+        .overlay(alignment: .topTrailing) {
+            Text("\(total)")
+                .font(.caption2.weight(.bold))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(Capsule().fill(Color.accentColor))
+                .overlay(Capsule().stroke(.white, lineWidth: 1))
+                .offset(x: 6, y: -6)
         }
     }
 }

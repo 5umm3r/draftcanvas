@@ -11,7 +11,7 @@ extension DraftCanvasViewModel {
     func edit(item: ProjectItem) {
         switchToProjectIfNeeded(for: item)
         let id = selectedProjectID ?? item.projectID
-        let fileURL = item.fileURL(in: projectStore.rootDirectory)
+        let fileURL = projectStore.resolvedFileURL(for: item)
         var inputs = inputsByProject[id] ?? ProjectInputs()
         if let attached = inputs.attachedImage {
             projectStore.cleanupAttachment(id: attached.id)
@@ -20,7 +20,7 @@ extension DraftCanvasViewModel {
         // 背景除去済みアイテムは元画像をサムネイル添付として復元する
         if item.isBackgroundRemoved, let originalID = item.editedFromItemID,
            let original = items.first(where: { $0.id == originalID }) {
-            let originalURL = original.fileURL(in: projectStore.rootDirectory)
+            let originalURL = projectStore.resolvedFileURL(for: original)
             // AttachedImage.id に originalID を使うと cleanupAttachment は
             // attachments/ を探すため items/ の元ファイルは削除されない
             inputs.attachedImage = AttachedImage(
@@ -61,7 +61,7 @@ extension DraftCanvasViewModel {
     func applyInpaintingMask(item: ProjectItem, strokes: [MaskStroke]) {
         let id = selectedProjectID ?? item.projectID
 
-        let fileURL = item.fileURL(in: projectStore.rootDirectory)
+        let fileURL = projectStore.resolvedFileURL(for: item)
 
         Task.detached(priority: .userInitiated) {
             do {
@@ -120,7 +120,7 @@ extension DraftCanvasViewModel {
 
     func applyMaskRemoval(item: ProjectItem, strokes: [MaskStroke]) {
         let projectID = selectedProjectID ?? item.projectID
-        let fileURL = item.fileURL(in: projectStore.rootDirectory)
+        let fileURL = projectStore.resolvedFileURL(for: item)
 
         inpaintingTarget = nil
 
@@ -216,7 +216,7 @@ extension DraftCanvasViewModel {
         )
         upsert(job, into: projectID)
 
-        let fileURL = item.fileURL(in: projectStore.rootDirectory)
+        let fileURL = projectStore.resolvedFileURL(for: item)
 
         Task {
             var running = job

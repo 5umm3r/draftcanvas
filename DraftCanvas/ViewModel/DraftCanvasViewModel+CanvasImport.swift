@@ -1,6 +1,11 @@
 import AppKit
 import Foundation
 
+private actor ImportProgressCounter {
+    private(set) var done: Int = 0
+    func increment() { done += 1 }
+}
+
 extension DraftCanvasViewModel {
     func importImageToCanvas() {
         let panel = NSOpenPanel()
@@ -20,7 +25,7 @@ extension DraftCanvasViewModel {
         importImagesAsProjectItems(urls: [url], projectID: projectID)
     }
 
-    // N枚バッチインポート: 並列デコード+書き込み(max4並列) → 選択順append → 末尾1回保存
+    // N枚バッチインポート: 原本コピー優先 + 並列デコード(max4) + 100msスロットリング進捗 + signpost
     func importImagesAsProjectItems(urls: [URL], projectID: UUID) {
         guard selectedSmartProjectID == nil else {
             appendLog("[Import] Smart プロジェクト選択中はスキップ")
@@ -28,7 +33,8 @@ extension DraftCanvasViewModel {
         }
         guard !urls.isEmpty else { return }
 
-        importProgress = (done: 0, total: urls.count)
+        let total = urls.count
+        importProgress = (done: 0, total: total)
         importError = nil
         #if DEBUG
         appendLog(CanvasMetrics.logSummary(tag: "import-start"))
@@ -36,9 +42,13 @@ extension DraftCanvasViewModel {
 
         let projectStoreRef = projectStore
         let thumbnailStoreRef = thumbnailStore
+        let counter = ImportProgressCounter()
 
         Task.detached(priority: .userInitiated) { [weak self] in
             guard let self else { return }
+
+            let batchID = ImportSignposter.signposter.makeSignpostID()
+            let batchState = ImportSignposter.signposter.beginInterval("import-batch", id: batchID, "\(total) images")
 
             struct ImportResult {
                 let index: Int
@@ -49,32 +59,58 @@ extension DraftCanvasViewModel {
             var rollbackItems: [ProjectItem] = []
             var errorMessage: String? = nil
 
+            // 100ms flush Task: 進捗をスロットリングして MainActor 更新
+            let flushTask = Task.detached { [weak self] in
+                while !Task.isCancelled {
+                    try? await Task.sleep(nanoseconds: 100_000_000)
+                    let current = await counter.done
+                    await MainActor.run { [weak self] in
+                        self?.importProgress?.done = current
+                    }
+                    ImportSignposter.signposter.emitEvent("progress-flush", "\(current)/\(total)")
+                    if current >= total { break }
+                }
+            }
+
             await withTaskGroup(of: Result<ImportResult, Error>.self) { group in
                 let maxConcurrent = 4
                 var iterator = urls.enumerated().makeIterator()
 
                 func addJob(index: Int, url: URL) {
                     group.addTask {
+                        let decodeID = ImportSignposter.signposter.makeSignpostID()
+                        let decodeState = ImportSignposter.signposter.beginInterval("decode", id: decodeID, "\(url.lastPathComponent)")
                         do {
-                            let pngData = try self.loadAndNormalizeImage(from: url)
-                            let aspectRatio = self.aspectRatioFromImageData(pngData)
+                            let decoded = try self.decodeImportImage(from: url)
+                            ImportSignposter.signposter.endInterval("decode", decodeState)
+
                             let name = url.deletingPathExtension().lastPathComponent
                             let item = ProjectItem(
                                 projectID: projectID,
                                 prompt: name,
-                                aspectRatio: aspectRatio,
+                                aspectRatio: decoded.aspectRatio,
                                 isImported: true
                             )
-                            try projectStoreRef.writeItemData(pngData, for: item)
-                            thumbnailStoreRef.writeThumbnail(from: pngData, item: item)
+
+                            let writeID = ImportSignposter.signposter.makeSignpostID()
+                            let writeState = ImportSignposter.signposter.beginInterval("write-item", id: writeID)
+                            try projectStoreRef.writeItemData(decoded.data, for: item, fileExtension: decoded.fileExtension)
+                            ImportSignposter.signposter.endInterval("write-item", writeState)
+
+                            let thumbID = ImportSignposter.signposter.makeSignpostID()
+                            let thumbState = ImportSignposter.signposter.beginInterval("thumb", id: thumbID)
+                            thumbnailStoreRef.writeThumbnail(from: decoded.data, item: item)
+                            ImportSignposter.signposter.endInterval("thumb", thumbState)
+
+                            await counter.increment()
                             return .success(ImportResult(index: index, item: item))
                         } catch {
+                            ImportSignposter.signposter.endInterval("decode", decodeState)
                             return .failure(error)
                         }
                     }
                 }
 
-                // 初期ジョブ投入
                 for _ in 0..<maxConcurrent {
                     guard let (index, url) = iterator.next() else { break }
                     addJob(index: index, url: url)
@@ -85,10 +121,6 @@ extension DraftCanvasViewModel {
                     case .success(let r):
                         results.append(r)
                         rollbackItems.append(r.item)
-                        await MainActor.run { [weak self] in
-                            self?.importProgress?.done += 1
-                        }
-                        // 次ジョブ投入
                         if errorMessage == nil, let (index, url) = iterator.next() {
                             addJob(index: index, url: url)
                         }
@@ -101,11 +133,14 @@ extension DraftCanvasViewModel {
                 }
             }
 
+            flushTask.cancel()
+
             if let errorMessage {
                 for item in rollbackItems {
                     projectStoreRef.deleteItemFile(item)
                     thumbnailStoreRef.deleteThumbnail(for: item)
                 }
+                ImportSignposter.signposter.endInterval("import-batch", batchState, "error")
                 await MainActor.run { [weak self] in
                     self?.importError = errorMessage
                     self?.importProgress = nil
@@ -117,6 +152,8 @@ extension DraftCanvasViewModel {
             let sortedItems = results.sorted { $0.index < $1.index }.map(\.item)
             let projectIDToUpdate = projectID
 
+            let finalizeID = ImportSignposter.signposter.makeSignpostID()
+            let finalizeState = ImportSignposter.signposter.beginInterval("main-finalize", id: finalizeID)
             await MainActor.run { [weak self] in
                 guard let self else { return }
                 self.isLoadingProjects = true
@@ -133,35 +170,46 @@ extension DraftCanvasViewModel {
                 self.appendLog(CanvasMetrics.logSummary(tag: "import-done"))
                 #endif
             }
+            ImportSignposter.signposter.endInterval("main-finalize", finalizeState)
+            ImportSignposter.signposter.endInterval("import-batch", batchState, "done \(sortedItems.count)")
         }
     }
 
     func importImageAsProjectItem(image: NSImage, projectID: UUID) {
-        guard let tiff = image.tiffRepresentation,
-              let rep = NSBitmapImageRep(data: tiff),
-              let pngData = rep.representation(using: .png, properties: [:]) else {
-            errorToast = "画像の変換に失敗しました"
-            return
-        }
-        let aspectRatio = aspectRatioFromImageData(pngData)
-        let newItem = ProjectItem(
-            projectID: projectID,
-            prompt: "Imported Image",
-            aspectRatio: aspectRatio,
-            isImported: true
-        )
-        do {
-            try projectStore.writeItemData(pngData, for: newItem)
-            items.append(newItem)
-            thumbnailStore.writeThumbnail(from: pngData, item: newItem)
-            if let idx = projects.firstIndex(where: { $0.id == projectID }) {
-                projects[idx].updatedAt = Date()
+        Task.detached(priority: .userInitiated) { [weak self] in
+            guard let self else { return }
+            guard let tiff = image.tiffRepresentation,
+                  let rep = NSBitmapImageRep(data: tiff),
+                  let pngData = rep.representation(using: .png, properties: [:]) else {
+                await MainActor.run { self.errorToast = "画像の変換に失敗しました" }
+                return
             }
-            saveState()
-            logs.append("画像をインポートしました (ドラッグ&ドロップ)")
-        } catch {
-            errorToast = "画像のインポートに失敗しました"
-            logs.append("インポートエラー: \(error.localizedDescription)")
+            let aspectRatio = self.aspectRatioFromImageData(pngData)
+            let newItem = ProjectItem(
+                projectID: projectID,
+                prompt: "Imported Image",
+                aspectRatio: aspectRatio,
+                isImported: true
+            )
+            do {
+                try self.projectStore.writeItemData(pngData, for: newItem)
+                let thumbnailStoreRef = self.thumbnailStore
+                thumbnailStoreRef.writeThumbnail(from: pngData, item: newItem)
+                await MainActor.run { [weak self] in
+                    guard let self else { return }
+                    self.items.append(newItem)
+                    if let idx = self.projects.firstIndex(where: { $0.id == projectID }) {
+                        self.projects[idx].updatedAt = Date()
+                    }
+                    self.saveState()
+                    self.logs.append("画像をインポートしました (ドラッグ&ドロップ)")
+                }
+            } catch {
+                await MainActor.run { [weak self] in
+                    self?.errorToast = "画像のインポートに失敗しました"
+                    self?.logs.append("インポートエラー: \(error.localizedDescription)")
+                }
+            }
         }
     }
 }

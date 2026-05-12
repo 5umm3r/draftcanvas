@@ -162,7 +162,7 @@ final class DraftCanvasViewModel: ObservableObject {
             inputsByProject[project.id] = inputs
         }
         thumbnailStore.backfillMissing(items: items) { [store = projectStore] item in
-            item.fileURL(in: store.rootDirectory)
+            store.resolvedFileURL(for: item)
         }
     }
 

@@ -2,14 +2,72 @@ import AppKit
 import Foundation
 
 extension DraftCanvasViewModel {
-    func deleteItem(_ item: ProjectItem) {
+
+    // MARK: - Private helpers (no saveState, no selectedItemID side-effects)
+
+    private func performDelete(_ item: ProjectItem) {
         projectStore.deleteItemFile(item)
         thumbnailStore.deleteThumbnail(for: item)
         items.removeAll { $0.id == item.id }
-        if selectedItemID == item.id { selectedItemID = nil }
         if let idx = projects.firstIndex(where: { $0.id == item.projectID }) {
             projects[idx].updatedAt = Date()
         }
+    }
+
+    private func performMove(_ item: ProjectItem, targetProjectID: UUID) -> Bool {
+        guard let idx = items.firstIndex(where: { $0.id == item.id }),
+              items[idx].projectID != targetProjectID else { return false }
+        let sourceProjectID = items[idx].projectID
+        items[idx].projectID = targetProjectID
+        items[idx].editedFromItemID = nil
+        if let srcIdx = projects.firstIndex(where: { $0.id == sourceProjectID }) {
+            projects[srcIdx].updatedAt = Date()
+        }
+        if let dstIdx = projects.firstIndex(where: { $0.id == targetProjectID }) {
+            projects[dstIdx].updatedAt = Date()
+        }
+        return true
+    }
+
+    private func performCopy(_ item: ProjectItem, targetProjectID: UUID) -> Bool {
+        let newItem = ProjectItem(
+            id: UUID(),
+            projectID: targetProjectID,
+            prompt: item.prompt,
+            revisedPrompt: item.revisedPrompt,
+            aspectRatio: item.aspectRatio,
+            createdAt: item.createdAt,
+            errorMessage: item.errorMessage,
+            editedFromItemID: nil,
+            hasSVG: item.hasSVG,
+            isBackgroundRemoved: item.isBackgroundRemoved,
+            isImported: item.isImported
+        )
+        do {
+            try projectStore.copyItemFile(from: item, to: newItem)
+            if item.hasSVG {
+                try FileManager.default.copyItem(
+                    at: item.svgFileURL(in: projectStore.rootDirectory),
+                    to: newItem.svgFileURL(in: projectStore.rootDirectory)
+                )
+            }
+            thumbnailStore.writeThumbnail(from: projectStore.resolvedFileURL(for: newItem), item: newItem)
+            items.append(newItem)
+            if let idx = projects.firstIndex(where: { $0.id == targetProjectID }) {
+                projects[idx].updatedAt = Date()
+            }
+            return true
+        } catch {
+            logs.append("コピーエラー: \(error.localizedDescription)")
+            return false
+        }
+    }
+
+    // MARK: - Single-item public API
+
+    func deleteItem(_ item: ProjectItem) {
+        performDelete(item)
+        if selectedItemID == item.id { selectedItemID = nil }
         saveState()
     }
 
@@ -28,18 +86,14 @@ extension DraftCanvasViewModel {
             isImported: item.isImported
         )
         do {
-            try FileManager.default.createDirectory(at: projectStore.itemsDirectory, withIntermediateDirectories: true)
-            try FileManager.default.copyItem(
-                at: item.fileURL(in: projectStore.rootDirectory),
-                to: newItem.fileURL(in: projectStore.rootDirectory)
-            )
+            try projectStore.copyItemFile(from: item, to: newItem)
             if item.hasSVG {
                 try FileManager.default.copyItem(
                     at: item.svgFileURL(in: projectStore.rootDirectory),
                     to: newItem.svgFileURL(in: projectStore.rootDirectory)
                 )
             }
-            thumbnailStore.writeThumbnail(from: newItem.fileURL(in: projectStore.rootDirectory), item: newItem)
+            thumbnailStore.writeThumbnail(from: projectStore.resolvedFileURL(for: newItem), item: newItem)
             items.append(newItem)
             if let idx = projects.firstIndex(where: { $0.id == item.projectID }) {
                 projects[idx].updatedAt = Date()
@@ -52,64 +106,67 @@ extension DraftCanvasViewModel {
     }
 
     func copyItemToProject(_ item: ProjectItem, targetProjectID: UUID) {
-        let newItem = ProjectItem(
-            id: UUID(),
-            projectID: targetProjectID,
-            prompt: item.prompt,
-            revisedPrompt: item.revisedPrompt,
-            aspectRatio: item.aspectRatio,
-            createdAt: item.createdAt,
-            errorMessage: item.errorMessage,
-            editedFromItemID: nil,
-            hasSVG: item.hasSVG,
-            isBackgroundRemoved: item.isBackgroundRemoved,
-            isImported: item.isImported
-        )
-        do {
-            try FileManager.default.createDirectory(at: projectStore.itemsDirectory, withIntermediateDirectories: true)
-            try FileManager.default.copyItem(
-                at: item.fileURL(in: projectStore.rootDirectory),
-                to: newItem.fileURL(in: projectStore.rootDirectory)
-            )
-            if item.hasSVG {
-                try FileManager.default.copyItem(
-                    at: item.svgFileURL(in: projectStore.rootDirectory),
-                    to: newItem.svgFileURL(in: projectStore.rootDirectory)
-                )
-            }
-            thumbnailStore.writeThumbnail(from: newItem.fileURL(in: projectStore.rootDirectory), item: newItem)
-            items.append(newItem)
-            if let idx = projects.firstIndex(where: { $0.id == targetProjectID }) {
-                projects[idx].updatedAt = Date()
-            }
-            saveState()
-        } catch {
+        if !performCopy(item, targetProjectID: targetProjectID) {
             errorToast = "アイテムのコピーに失敗しました"
-            logs.append("コピーエラー: \(error.localizedDescription)")
-        }
-    }
-
-    func moveItemToProject(_ item: ProjectItem, targetProjectID: UUID) {
-        guard let idx = items.firstIndex(where: { $0.id == item.id }) else { return }
-        let sourceProjectID = items[idx].projectID
-        items[idx].projectID = targetProjectID
-        items[idx].editedFromItemID = nil
-        if selectedItemID == item.id { selectedItemID = nil }
-        if let srcIdx = projects.firstIndex(where: { $0.id == sourceProjectID }) {
-            projects[srcIdx].updatedAt = Date()
-        }
-        if let dstIdx = projects.firstIndex(where: { $0.id == targetProjectID }) {
-            projects[dstIdx].updatedAt = Date()
         }
         saveState()
     }
 
+    func moveItemToProject(_ item: ProjectItem, targetProjectID: UUID) {
+        guard performMove(item, targetProjectID: targetProjectID) else { return }
+        if selectedItemID == item.id { selectedItemID = nil }
+        saveState()
+    }
+
+    // MARK: - Batch public API (returns failure count)
+
+    @discardableResult
+    func deleteItems(ids: Set<UUID>) -> Int {
+        guard !ids.isEmpty else { return 0 }
+        let targets = items.filter { ids.contains($0.id) }
+        for item in targets {
+            performDelete(item)
+        }
+        if let sel = selectedItemID, ids.contains(sel) { selectedItemID = nil }
+        selectedItemIDs.subtract(ids)
+        saveState()
+        return 0
+    }
+
+    @discardableResult
+    func moveItems(ids: Set<UUID>, targetProjectID: UUID) -> Int {
+        guard !ids.isEmpty else { return 0 }
+        let targets = items.filter { ids.contains($0.id) }
+        var failed = 0
+        for item in targets {
+            if !performMove(item, targetProjectID: targetProjectID) { failed += 1 }
+        }
+        if let sel = selectedItemID, ids.contains(sel) { selectedItemID = nil }
+        selectedItemIDs.subtract(ids)
+        saveState()
+        return failed
+    }
+
+    @discardableResult
+    func copyItems(ids: Set<UUID>, targetProjectID: UUID) -> Int {
+        guard !ids.isEmpty else { return 0 }
+        let targets = items.filter { ids.contains($0.id) }
+        var failed = 0
+        for item in targets {
+            if !performCopy(item, targetProjectID: targetProjectID) { failed += 1 }
+        }
+        saveState()
+        return failed
+    }
+
+    // MARK: - Utilities
+
     func reveal(item: ProjectItem) {
-        NSWorkspace.shared.activateFileViewerSelecting([item.fileURL(in: projectStore.rootDirectory)])
+        NSWorkspace.shared.activateFileViewerSelecting([projectStore.resolvedFileURL(for: item)])
     }
 
     func fileURL(for item: ProjectItem) -> URL {
-        item.fileURL(in: projectStore.rootDirectory)
+        projectStore.resolvedFileURL(for: item)
     }
 
     func cachedImage(for item: ProjectItem) -> NSImage? {
@@ -154,6 +211,8 @@ extension DraftCanvasViewModel {
         items[idx].tags = tags.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }
         saveState()
     }
+
+    // MARK: - Selection
 
     func toggleSelectionMode() {
         isSelectionMode.toggle()
