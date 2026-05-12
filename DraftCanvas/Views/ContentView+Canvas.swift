@@ -236,9 +236,14 @@ extension ContentView {
                     .onPreferenceChange(CardFramePreferenceKey.self) { frames in
                         cardFrames = frames
                     }
-                    .onChange(of: cardFrames) { _, _ in
+                    .onChange(of: cardFrames) { _, newFrames in
                         guard isDraggingMarquee, let rect = marqueeRect else { return }
-                        applyMarqueeSelection(rect: rect, additive: marqueeAdditive)
+                        let hits = Set(newFrames.compactMap { id, frame in
+                            frame.intersects(rect) ? id : nil
+                        })
+                        let next = dragSelectedIDs.union(hits)
+                        if next != dragSelectedIDs { dragSelectedIDs = next }
+                        if next != viewModel.selectedItemIDs { viewModel.selectedItemIDs = next }
                     }
                     .onChange(of: canvasZoom) { _, _ in
                         if let id = viewModel.selectedItemID {
@@ -768,23 +773,6 @@ struct CardFramePreferenceKey: PreferenceKey {
 }
 
 extension ContentView {
-    func applyMarqueeSelection(rect: CGRect, additive: Bool) {
-        let visibleHits = Set(cardFrames.compactMap { id, frame in
-            frame.intersects(rect) ? id : nil
-        })
-        let next: Set<UUID>
-        if additive {
-            next = viewModel.selectedItemIDs.union(visibleHits)
-        } else {
-            // LazyVGrid で画面外に出てcardFramesから消えたカードは選択を維持
-            let offscreenSelected = viewModel.selectedItemIDs.filter { !cardFrames.keys.contains($0) }
-            next = visibleHits.union(offscreenSelected)
-        }
-        if next != viewModel.selectedItemIDs {
-            viewModel.selectedItemIDs = next
-        }
-    }
-
     func handleMarqueeDrag(value: DragGesture.Value) {
         guard !viewModel.projects.isEmpty && !canvasEntries.isEmpty else { return }
         if !isDraggingMarquee {
@@ -798,6 +786,7 @@ extension ContentView {
             viewModel.isSelectionMode = true
             let flags = NSApp.currentEvent?.modifierFlags.intersection(.deviceIndependentFlagsMask) ?? []
             marqueeAdditive = flags.contains(.shift) || flags.contains(.command)
+            dragSelectedIDs = marqueeAdditive ? viewModel.selectedItemIDs : []
         }
         guard !isDragStartedOnCard else { return }
         let s = value.startLocation
@@ -805,21 +794,18 @@ extension ContentView {
         let rect = CGRect(x: min(s.x, c.x), y: min(s.y, c.y),
                           width: abs(s.x - c.x), height: abs(s.y - c.y))
         marqueeRect = rect
-        applyMarqueeSelection(rect: rect, additive: marqueeAdditive)
+        let hits = Set(cardFrames.compactMap { id, frame in frame.intersects(rect) ? id : nil })
+        dragSelectedIDs = dragSelectedIDs.union(hits)
+        viewModel.selectedItemIDs = dragSelectedIDs
         canvasAutoScroller.updateVelocity(mouseY: c.y, viewHeight: canvasViewportHeight)
-        if canvasAutoScroller.velocity != 0 {
-            canvasAutoScroller.start()
-        } else {
-            canvasAutoScroller.stop()
-        }
+        if canvasAutoScroller.velocity != 0 { canvasAutoScroller.start() } else { canvasAutoScroller.stop() }
     }
 
     func handleMarqueeEnd(value: DragGesture.Value) {
         canvasAutoScroller.stop()
-        if isDraggingMarquee {
-            marqueeRect = nil
-        }
+        marqueeRect = nil
         isDraggingMarquee = false
         isDragStartedOnCard = false
+        dragSelectedIDs = []
     }
 }

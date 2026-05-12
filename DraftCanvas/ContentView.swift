@@ -29,6 +29,7 @@ struct ContentView: View {
     @State var isDraggingMarquee: Bool = false
     @State var isDragStartedOnCard: Bool = false
     @State var marqueeAdditive: Bool = false
+    @State var dragSelectedIDs: Set<UUID> = []
     @State var canvasAutoScroller = CanvasAutoScroller()
     @State var canvasViewportHeight: CGFloat = 600
 
