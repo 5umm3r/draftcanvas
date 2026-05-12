@@ -123,7 +123,7 @@ extension ContentView {
                         }
                     }
                     .padding(.top, 72)
-                    .padding(.horizontal, 90)
+                    .padding(.horizontal, 24)
                     .padding(.bottom, 220)
                 }
                 .onDrop(of: [.image, .fileURL], isTargeted: $isCanvasDropTargeted) { providers in
