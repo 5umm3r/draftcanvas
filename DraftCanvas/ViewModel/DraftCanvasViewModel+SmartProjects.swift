@@ -23,9 +23,6 @@ extension DraftCanvasViewModel {
     }
 
     func selectSmartProject(id: UUID) {
-        selectedSmartProjectID = id
-        if selectedProjectID != nil {
-            selectedProjectID = nil
-        }
+        sidebarSelection = .smart(id)
     }
 }

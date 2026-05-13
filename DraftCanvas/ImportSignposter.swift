@@ -8,3 +8,10 @@ enum ImportSignposter {
     )
     static let signposter = OSSignposter(logHandle: log)
 }
+
+enum PopoverSignposter {
+    static let log = OSLog(
+        subsystem: Bundle.main.bundleIdentifier ?? "com.spade3.DraftCanvas",
+        category: "Popover"
+    )
+}

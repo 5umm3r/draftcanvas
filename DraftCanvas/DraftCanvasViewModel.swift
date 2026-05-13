@@ -33,12 +33,18 @@ final class DraftCanvasViewModel: ObservableObject {
     }
     @Published var projects: [Project] = []
     @Published var items: [ProjectItem] = [] {
-        didSet { if !isLoadingProjects { recomputeDisplayedItems() } }
-    }
-    @Published var displayedItemsSnapshot: [ProjectItem] = []
-    @Published var selectedProjectID: UUID? {
         didSet {
-            guard selectedProjectID != oldValue, !isLoadingProjects else { return }
+            if !isLoadingProjects {
+                recomputeDisplayedItems()
+                rebuildAllTagsCache()
+            }
+        }
+    }
+    @Published private(set) var allTagsCache: [String] = []
+    @Published var displayedItemsSnapshot: [ProjectItem] = []
+    @Published var sidebarSelection: SidebarSelection = .none {
+        didSet {
+            guard sidebarSelection != oldValue, !isLoadingProjects else { return }
             selectedJobID = nil
             selectedItemID = nil
             selectedItemIDs.removeAll()
@@ -49,6 +55,26 @@ final class DraftCanvasViewModel: ObservableObject {
                 store.save(snapshot)
             }
         }
+    }
+    @Published var expandedSections: [String: Bool] = [:]
+
+    var selectedProjectID: UUID? {
+        get {
+            if case .project(let id) = sidebarSelection { return id }
+            return nil
+        }
+        set {
+            if let id = newValue {
+                sidebarSelection = .project(id)
+            } else if case .project = sidebarSelection {
+                sidebarSelection = .none
+            }
+        }
+    }
+
+    var isAllImagesSelected: Bool {
+        if case .allImages = sidebarSelection { return true }
+        return false
     }
     @Published var selectedJobID: UUID?
     @Published var selectedItemID: UUID?
@@ -76,8 +102,18 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var smartProjects: [SmartProject] = [] {
         didSet { if !isLoadingProjects { recomputeDisplayedItems() } }
     }
-    @Published var selectedSmartProjectID: UUID? {
-        didSet { recomputeDisplayedItems() }
+    var selectedSmartProjectID: UUID? {
+        get {
+            if case .smart(let id) = sidebarSelection { return id }
+            return nil
+        }
+        set {
+            if let id = newValue {
+                sidebarSelection = .smart(id)
+            } else if case .smart = sidebarSelection {
+                sidebarSelection = .none
+            }
+        }
     }
     @Published var backgroundRemovalPreview: BackgroundRemovalPreview? = nil
     @Published var importProgress: (done: Int, total: Int)? = nil
@@ -128,6 +164,10 @@ final class DraftCanvasViewModel: ObservableObject {
         prewarmAndRefresh()
     }
 
+    func rebuildAllTagsCache() {
+        allTagsCache = Array(Set(items.flatMap(\.tags))).sorted()
+    }
+
     func appendLog(_ message: String) {
         if logs.count >= 1000 {
             logs.removeFirst(logs.count - 900)
@@ -148,13 +188,14 @@ final class DraftCanvasViewModel: ObservableObject {
         defer {
             isLoadingProjects = false
             recomputeDisplayedItems()
+            rebuildAllTagsCache()
         }
         let snapshot = projectStore.load()
         projects = snapshot.projects
         items = snapshot.items
-        selectedProjectID = snapshot.selectedProjectID
         smartProjects = snapshot.smartProjects
-        selectedSmartProjectID = snapshot.selectedSmartProjectID
+        sidebarSelection = snapshot.sidebarSelection
+        expandedSections = snapshot.expandedSections
         for project in projects {
             var inputs = ProjectInputs()
             inputs.model = project.model
@@ -170,9 +211,9 @@ final class DraftCanvasViewModel: ObservableObject {
         ProjectStore.Snapshot(
             projects: projects,
             items: items,
-            selectedProjectID: selectedProjectID,
             smartProjects: smartProjects,
-            selectedSmartProjectID: selectedSmartProjectID
+            sidebarSelection: sidebarSelection,
+            expandedSections: expandedSections
         )
     }
 

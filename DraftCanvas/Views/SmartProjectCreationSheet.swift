@@ -10,7 +10,7 @@ struct SmartProjectCreationSheet: View {
     @State private var newTagInput: String = ""
 
     private var isEditing: Bool { existingSmart != nil }
-    private var candidateTags: [String] { viewModel.allTags }
+    private var candidateTags: [String] { viewModel.allTagsCache }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {

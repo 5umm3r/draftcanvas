@@ -1,4 +1,5 @@
 import SwiftUI
+import os.signpost
 
 enum CanvasEntry: Identifiable {
     case item(ProjectItem)
@@ -440,8 +441,12 @@ extension ContentView {
             if viewModel.isSelectionMode {
                 viewModel.toggleMultiSelection(item)
             } else {
-                viewModel.selectedItemID = (viewModel.selectedItemID == item.id) ? nil : item.id
+                let opening = viewModel.selectedItemID != item.id
+                viewModel.selectedItemID = opening ? item.id : nil
                 viewModel.selectedJobID = nil
+                if opening {
+                    os_signpost(.begin, log: PopoverSignposter.log, name: "ItemDetailPopover")
+                }
             }
         } label: {
             VStack(alignment: .leading, spacing: 8) {

@@ -4,19 +4,27 @@ import SwiftUI
 
 struct SmartSectionHeader: View {
     @ObservedObject var viewModel: DraftCanvasViewModel
+    @Binding var isExpanded: Bool
     @State private var showCreation = false
 
     var body: some View {
-        HStack {
+        HStack(spacing: 0) {
             Text("スマート")
             Spacer()
-            Button {
-                showCreation = true
-            } label: {
+            Button { showCreation = true } label: {
                 Image(systemName: "plus").font(.system(size: 11, weight: .medium))
             }
             .buttonStyle(.borderless)
             .help("スマートプロジェクトを作成")
+            Spacer().frame(width: 12)
+            Button { isExpanded.toggle() } label: {
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 10, weight: .semibold))
+                    .rotationEffect(isExpanded ? .zero : .degrees(-90))
+                    .animation(.easeInOut(duration: 0.15), value: isExpanded)
+            }
+            .buttonStyle(.borderless)
+            .padding(.trailing, 8)
         }
         .sheet(isPresented: $showCreation) {
             SmartProjectCreationSheet(viewModel: viewModel)
@@ -30,27 +38,55 @@ struct SmartProjectRow: View {
     @State private var showEdit = false
 
     var body: some View {
-        Button {
-            viewModel.selectSmartProject(id: smart.id)
-        } label: {
-            Label(smart.name, systemImage: "line.3.horizontal.decrease.circle")
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .selectionDisabled(true)
-        .listRowBackground(
-            viewModel.selectedSmartProjectID == smart.id
-                ? RoundedRectangle(cornerRadius: 5).fill(Color.accentColor.opacity(0.18))
-                : nil
-        )
-        .contextMenu {
-            Button("条件を編集") { showEdit = true }
-            Divider()
-            Button("削除", role: .destructive) { viewModel.deleteSmartProject(id: smart.id) }
-        }
-        .sheet(isPresented: $showEdit) {
-            SmartProjectCreationSheet(viewModel: viewModel, existingSmart: smart)
+        Label(smart.name, systemImage: "line.3.horizontal.decrease.circle")
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
+            .contextMenu {
+                Button("条件を編集") { showEdit = true }
+                Divider()
+                Button("削除", role: .destructive) { viewModel.deleteSmartProject(id: smart.id) }
+            }
+            .sheet(isPresented: $showEdit) {
+                SmartProjectCreationSheet(viewModel: viewModel, existingSmart: smart)
+            }
+    }
+}
+
+// MARK: - All Images row
+
+struct AllImagesRow: View {
+    var body: some View {
+        Label("すべての画像", systemImage: "photo.on.rectangle.angled")
+            .font(.system(size: 13, weight: .semibold))
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
+    }
+}
+
+// MARK: - Project section header
+
+struct ProjectSectionHeader: View {
+    let onAdd: () -> Void
+    @Binding var isExpanded: Bool
+
+    var body: some View {
+        HStack(spacing: 0) {
+            Text("プロジェクト")
+            Spacer()
+            Button { onAdd() } label: {
+                Image(systemName: "plus").font(.system(size: 11, weight: .medium))
+            }
+            .buttonStyle(.borderless)
+            .help("新規プロジェクト")
+            Spacer().frame(width: 12)
+            Button { isExpanded.toggle() } label: {
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 10, weight: .semibold))
+                    .rotationEffect(isExpanded ? .zero : .degrees(-90))
+                    .animation(.easeInOut(duration: 0.15), value: isExpanded)
+            }
+            .buttonStyle(.borderless)
+            .padding(.trailing, 8)
         }
     }
 }
@@ -59,55 +95,55 @@ struct SmartProjectRow: View {
 
 extension ContentView {
     var projectSidebar: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Text("プロジェクト")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                Spacer()
-                Button {
-                    viewModel.createProject()
-                } label: {
-                    Image(systemName: "plus")
-                        .font(.system(size: 13, weight: .medium))
-                }
-                .buttonStyle(.borderless)
-                .help("新規プロジェクト")
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-
-            Divider()
-
-            List(selection: Binding(
-                get: { viewModel.selectedProjectID },
-                set: { id in
-                    viewModel.selectedSmartProjectID = nil
-                    viewModel.selectedProjectID = id
-                }
-            )) {
-                if !viewModel.favoriteProjects.isEmpty {
-                    Section("お気に入り") {
-                        ForEach(viewModel.favoriteProjects) { project in
-                            projectRowView(for: project)
-                        }
+        List(selection: $viewModel.sidebarSelection) {
+            Section {
+                if viewModel.expandedSections["favorites"] ?? true {
+                    ForEach(viewModel.favoriteProjects) { project in
+                        projectRowView(for: project)
                     }
                 }
-                Section {
+            } header: {
+                HStack(spacing: 0) {
+                    Text("お気に入り")
+                    Spacer()
+                    Button { viewModel.toggleSection("favorites") } label: {
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 10, weight: .semibold))
+                            .rotationEffect((viewModel.expandedSections["favorites"] ?? true) ? .zero : .degrees(-90))
+                            .animation(.easeInOut(duration: 0.15), value: viewModel.expandedSections["favorites"] ?? true)
+                    }
+                    .buttonStyle(.borderless)
+                    .padding(.trailing, 8)
+                }
+            }
+
+            Section {
+                if viewModel.expandedSections["smart"] ?? true {
                     ForEach(viewModel.smartProjects) { smart in
                         SmartProjectRow(smart: smart, viewModel: viewModel)
+                            .tag(SidebarSelection.smart(smart.id))
                     }
-                } header: {
-                    SmartSectionHeader(viewModel: viewModel)
                 }
-                Section(viewModel.favoriteProjects.isEmpty ? "" : "すべて") {
+            } header: {
+                SmartSectionHeader(viewModel: viewModel, isExpanded: bindingFor("smart"))
+            }
+
+            Section {
+                AllImagesRow()
+                    .tag(SidebarSelection.allImages)
+            }
+
+            Section {
+                if viewModel.expandedSections["projects"] ?? true {
                     ForEach(viewModel.regularProjects) { project in
                         projectRowView(for: project)
                     }
                 }
+            } header: {
+                ProjectSectionHeader(onAdd: { viewModel.createProject() }, isExpanded: bindingFor("projects"))
             }
-            .listStyle(.sidebar)
         }
+        .listStyle(.sidebar)
         .frame(width: 200)
         .background(.regularMaterial)
         .overlay(alignment: .trailing) {
@@ -115,6 +151,13 @@ extension ContentView {
                 .fill(Color.primary.opacity(0.06))
                 .frame(width: 1)
         }
+    }
+
+    private func bindingFor(_ key: String) -> Binding<Bool> {
+        Binding(
+            get: { viewModel.expandedSections[key] ?? true },
+            set: { _ in viewModel.toggleSection(key) }
+        )
     }
 
     @ViewBuilder
@@ -134,7 +177,7 @@ extension ContentView {
             onStop: viewModel.stopServer
         )
         .contentShape(Rectangle())
-        .tag(project.id as UUID?)
+        .tag(SidebarSelection.project(project.id))
         .contextMenu {
             Button(project.isFavorite ? "お気に入りから外す" : "お気に入りに追加") {
                 viewModel.toggleFavorite(id: project.id)

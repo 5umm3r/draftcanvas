@@ -14,9 +14,9 @@ struct TagEditorRow: View {
     private var suggestions: [String] {
         let existing = Set(currentTags)
         if tagInput.isEmpty {
-            return viewModel.allTags.filter { !existing.contains($0) }
+            return viewModel.allTagsCache.filter { !existing.contains($0) }
         }
-        return viewModel.allTags.filter {
+        return viewModel.allTagsCache.filter {
             $0.localizedCaseInsensitiveContains(tagInput) && !existing.contains($0)
         }
     }

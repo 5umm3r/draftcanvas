@@ -432,35 +432,63 @@ extension ProjectItem: Codable {
     }
 }
 
+// MARK: - SidebarSelection
+
+enum SidebarSelection: Codable, Equatable, Hashable {
+    case project(UUID)
+    case smart(UUID)
+    case allImages
+    case none
+}
+
 // MARK: - ProjectStore
 
 final class ProjectStore: @unchecked Sendable {
     struct Snapshot: Codable {
         var projects: [Project] = []
         var items: [ProjectItem] = []
-        var selectedProjectID: UUID? = nil
         var smartProjects: [SmartProject] = []
-        var selectedSmartProjectID: UUID? = nil
+        var sidebarSelection: SidebarSelection = .none
+        var expandedSections: [String: Bool] = [:]
 
         enum CodingKeys: String, CodingKey {
-            case projects, items, selectedProjectID, smartProjects, selectedSmartProjectID
+            case projects, items, smartProjects
+            case sidebarSelection, expandedSections
+            case selectedProjectID, selectedSmartProjectID
         }
 
-        init(projects: [Project] = [], items: [ProjectItem] = [], selectedProjectID: UUID? = nil, smartProjects: [SmartProject] = [], selectedSmartProjectID: UUID? = nil) {
+        init(projects: [Project] = [], items: [ProjectItem] = [], smartProjects: [SmartProject] = [], sidebarSelection: SidebarSelection = .none, expandedSections: [String: Bool] = [:]) {
             self.projects = projects
             self.items = items
-            self.selectedProjectID = selectedProjectID
             self.smartProjects = smartProjects
-            self.selectedSmartProjectID = selectedSmartProjectID
+            self.sidebarSelection = sidebarSelection
+            self.expandedSections = expandedSections
         }
 
         init(from decoder: Decoder) throws {
             let c = try decoder.container(keyedBy: CodingKeys.self)
             projects = try c.decodeIfPresent([Project].self, forKey: .projects) ?? []
             items = try c.decodeIfPresent([ProjectItem].self, forKey: .items) ?? []
-            selectedProjectID = try c.decodeIfPresent(UUID.self, forKey: .selectedProjectID)
             smartProjects = try c.decodeIfPresent([SmartProject].self, forKey: .smartProjects) ?? []
-            selectedSmartProjectID = try c.decodeIfPresent(UUID.self, forKey: .selectedSmartProjectID)
+            expandedSections = try c.decodeIfPresent([String: Bool].self, forKey: .expandedSections) ?? [:]
+            if let sel = try c.decodeIfPresent(SidebarSelection.self, forKey: .sidebarSelection) {
+                sidebarSelection = sel
+            } else if let smartID = try c.decodeIfPresent(UUID.self, forKey: .selectedSmartProjectID) {
+                sidebarSelection = .smart(smartID)
+            } else if let projectID = try c.decodeIfPresent(UUID.self, forKey: .selectedProjectID) {
+                sidebarSelection = .project(projectID)
+            } else {
+                sidebarSelection = .none
+            }
+        }
+
+        func encode(to encoder: Encoder) throws {
+            var c = encoder.container(keyedBy: CodingKeys.self)
+            try c.encode(projects, forKey: .projects)
+            try c.encode(items, forKey: .items)
+            try c.encode(smartProjects, forKey: .smartProjects)
+            try c.encode(sidebarSelection, forKey: .sidebarSelection)
+            try c.encode(expandedSections, forKey: .expandedSections)
         }
     }
 

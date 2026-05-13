@@ -35,6 +35,18 @@ extension DraftCanvasViewModel {
         saveState()
     }
 
+    func selectAllImages() {
+        sidebarSelection = .allImages
+    }
+
+    func toggleSection(_ key: String) {
+        expandedSections[key] = !(expandedSections[key] ?? true)
+        let snapshot = makeSnapshot()
+        Task.detached(priority: .background) { [store = projectStore] in
+            store.save(snapshot)
+        }
+    }
+
     func deleteProject(id: UUID) {
         for item in items where item.projectID == id {
             projectStore.deleteItemFile(item)

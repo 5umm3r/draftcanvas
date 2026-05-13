@@ -86,10 +86,6 @@ extension DraftCanvasViewModel {
         projects.filter { !$0.isFavorite }.sorted { $0.updatedAt > $1.updatedAt }
     }
 
-    var allTags: [String] {
-        Array(Set(items.flatMap(\.tags))).sorted()
-    }
-
     func itemsMatchingSmart(_ smart: SmartProject) -> [ProjectItem] {
         guard !smart.tagConditions.isEmpty else { return [] }
         return items.filter { item in
@@ -98,6 +94,12 @@ extension DraftCanvasViewModel {
     }
 
     var displayedItems: [ProjectItem] {
+        if isAllImagesSelected {
+            switch canvasSortOrder {
+            case .createdAtAscending: return items.sorted { $0.createdAt < $1.createdAt }
+            case .createdAtDescending: return items.sorted { $0.createdAt > $1.createdAt }
+            }
+        }
         if let smartID = selectedSmartProjectID,
            let smart = smartProjects.first(where: { $0.id == smartID }) {
             let matched = itemsMatchingSmart(smart)
