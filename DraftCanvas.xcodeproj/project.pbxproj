@@ -23,6 +23,7 @@
 		D9F69235C6DA480489596D0E /* CanvasMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3503E3DE1E894D1BA41DB46C /* CanvasMetrics.swift */; };
 		60fbbabf84104a96aba9dcf0ae00bbb7 /* ImportSignposter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0b24c56e3df1460d8b338d4d618036f2 /* ImportSignposter.swift */; };
 		98D8CD9E43394E4BB9747CEC /* CanvasThumbnailStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364052427D804C5F964BCF75 /* CanvasThumbnailStore.swift */; };
+			CEAF7E7A4A4541C89658D0A3 /* CanvasOriginalImageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 519D0FA75CC744B6BE1E253B /* CanvasOriginalImageStore.swift */; };
 		10A000FC2D00000100000001 /* BackgroundRemoverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A000FB2D00000100000001 /* BackgroundRemoverTests.swift */; };
 		BE3A138929BF42F98670599E /* CanvasMetricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A9FECC2E7F14E67952FB30D /* CanvasMetricsTests.swift */; };
 		10A000FE2D00000100000001 /* ImageVectorizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A000FD2D00000100000001 /* ImageVectorizer.swift */; };
@@ -108,6 +109,7 @@
 		3503E3DE1E894D1BA41DB46C /* CanvasMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasMetrics.swift; sourceTree = "<group>"; };
 		0b24c56e3df1460d8b338d4d618036f2 /* ImportSignposter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportSignposter.swift; sourceTree = "<group>"; };
 		364052427D804C5F964BCF75 /* CanvasThumbnailStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasThumbnailStore.swift; sourceTree = "<group>"; };
+			519D0FA75CC744B6BE1E253B /* CanvasOriginalImageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasOriginalImageStore.swift; sourceTree = "<group>"; };
 		10A000FB2D00000100000001 /* BackgroundRemoverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundRemoverTests.swift; sourceTree = "<group>"; };
 		8A9FECC2E7F14E67952FB30D /* CanvasMetricsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasMetricsTests.swift; sourceTree = "<group>"; };
 		10A000FD2D00000100000001 /* ImageVectorizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageVectorizer.swift; sourceTree = "<group>"; };
@@ -205,6 +207,7 @@
 				10A000F92D00000100000001 /* BackgroundRemover.swift */,
 					3503E3DE1E894D1BA41DB46C /* CanvasMetrics.swift */,
 					364052427D804C5F964BCF75 /* CanvasThumbnailStore.swift */,
+					519D0FA75CC744B6BE1E253B /* CanvasOriginalImageStore.swift */,
 					0b24c56e3df1460d8b338d4d618036f2 /* ImportSignposter.swift */,
 					10A000FD2D00000100000001 /* ImageVectorizer.swift */,
 				10A001012D00000100000001 /* InpaintingMaskCompositor.swift */,
@@ -441,6 +444,7 @@
 				10A000FA2D00000100000001 /* BackgroundRemover.swift in Sources */,
 					D9F69235C6DA480489596D0E /* CanvasMetrics.swift in Sources */,
 					98D8CD9E43394E4BB9747CEC /* CanvasThumbnailStore.swift in Sources */,
+					CEAF7E7A4A4541C89658D0A3 /* CanvasOriginalImageStore.swift in Sources */,
 					60fbbabf84104a96aba9dcf0ae00bbb7 /* ImportSignposter.swift in Sources */,
 				10A000FE2D00000100000001 /* ImageVectorizer.swift in Sources */,
 				10A001022D00000100000001 /* InpaintingMaskCompositor.swift in Sources */,

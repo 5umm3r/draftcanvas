@@ -134,12 +134,13 @@ extension DraftCanvasViewModel {
     }
 
     func cancelEditingHistoryItem() {
-        guard let id = selectedProjectID else { return }
+        guard let id = effectiveProjectID else { return }
         var inputs = inputsByProject[id] ?? ProjectInputs()
         if let editSource = inputs.editSource, editSource.isInpainting {
             projectStore.cleanupMaskFiles(id: editSource.projectItemID)
         }
         inputs.editSource = nil
         inputsByProject[id] = inputs
+        activeEditProjectID = nil
     }
 }

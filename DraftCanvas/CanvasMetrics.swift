@@ -6,6 +6,10 @@ import Foundation
 enum CanvasMetrics {
     static var imageLoadCount = 0
     static var imageLoadBytesEstimate: Int = 0
+    static var originalLoadCount = 0
+    static var originalLoadBytesEstimate: Int = 0
+    static var originalCacheHitCount = 0
+    static var originalCacheMissCount = 0
 
     static var residentMemoryMB: Int {
         var info = mach_task_basic_info()
@@ -20,12 +24,16 @@ enum CanvasMetrics {
     }
 
     static func logSummary(tag: String) -> String {
-        "[CanvasMetrics:\(tag)] loads=\(imageLoadCount) estimatedMB=\(imageLoadBytesEstimate / 1_048_576) residentMB=\(residentMemoryMB)"
+        "[CanvasMetrics:\(tag)] loads=\(imageLoadCount) estimatedMB=\(imageLoadBytesEstimate / 1_048_576) origLoads=\(originalLoadCount) origMB=\(originalLoadBytesEstimate / 1_048_576) origHits=\(originalCacheHitCount) origMisses=\(originalCacheMissCount) residentMB=\(residentMemoryMB)"
     }
 
     static func reset() {
         imageLoadCount = 0
         imageLoadBytesEstimate = 0
+        originalLoadCount = 0
+        originalLoadBytesEstimate = 0
+        originalCacheHitCount = 0
+        originalCacheMissCount = 0
     }
 }
 #endif

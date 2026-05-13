@@ -1,26 +1,28 @@
 import SwiftUI
 
 extension DraftCanvasViewModel {
+    var effectiveProjectID: UUID? { activeEditProjectID ?? selectedProjectID }
+
     var currentInputs: ProjectInputs {
-        if let id = selectedProjectID, let inputs = inputsByProject[id] {
+        if let id = effectiveProjectID, let inputs = inputsByProject[id] {
             return inputs
         }
         return draftInputs
     }
 
     var currentJobs: [GenerationJob] {
-        selectedProjectID.flatMap { jobsByProject[$0] } ?? []
+        effectiveProjectID.flatMap { jobsByProject[$0] } ?? []
     }
 
     var isGeneratingForSelected: Bool {
-        selectedProjectID.map { generatingProjectIDs.contains($0) } ?? false
+        effectiveProjectID.map { generatingProjectIDs.contains($0) } ?? false
     }
 
     func binding<T>(for keyPath: WritableKeyPath<ProjectInputs, T>) -> Binding<T> {
         Binding(
             get: { self.currentInputs[keyPath: keyPath] },
             set: { newValue in
-                if let id = self.selectedProjectID {
+                if let id = self.effectiveProjectID {
                     var inputs = self.inputsByProject[id] ?? ProjectInputs()
                     inputs[keyPath: keyPath] = newValue
                     self.inputsByProject[id] = inputs

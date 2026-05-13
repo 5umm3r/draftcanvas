@@ -308,11 +308,14 @@ extension ContentView {
                     Button {
                         viewModel.canvasSortOrder = viewModel.canvasSortOrder == .createdAtAscending ? .createdAtDescending : .createdAtAscending
                     } label: {
-                        Image(systemName: "line.3.horizontal.decrease")
-                            .font(.system(size: 13, weight: .medium))
-                            .frame(width: 18, height: 18)
-                            .scaleEffect(y: viewModel.canvasSortOrder == .createdAtDescending ? -1 : 1)
-                            .padding(8)
+                        HStack(spacing: 2) {
+                            Image(systemName: viewModel.canvasSortOrder == .createdAtAscending ? "arrow.up" : "arrow.down")
+                            Image(systemName: "calendar")
+                        }
+                        .font(.system(size: 13, weight: .medium))
+                        .frame(height: 18)
+                        .padding(.horizontal, 2)
+                        .padding(8)
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
@@ -450,14 +453,7 @@ extension ContentView {
             }
         } label: {
             VStack(alignment: .leading, spacing: 8) {
-                ZStack {
-                    checkerboard
-                    previewForItem(item)
-                }
-                .frame(width: size.width, height: size.height)
-                .background(Color(nsColor: .controlBackgroundColor))
-                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                .overlay(alignment: .bottomTrailing) {
+                ZStack(alignment: .bottomTrailing) {
                     if let sourceID = item.editedFromItemID,
                        let sourceItem = viewModel.items.first(where: { $0.id == sourceID }) {
                         let thumbSize = 36 * max(0.7, min(canvasZoom, 1.6))
@@ -483,36 +479,43 @@ extension ContentView {
                                     .offset(x: -thumbSize * 0.15, y: -thumbSize * 0.15)
                             }
                             .shadow(color: .black.opacity(0.25), radius: 3, x: 0, y: 1)
-                            .padding(.trailing, -thumbSize / 3)
-                            .padding(.bottom, -thumbSize / 3)
+                            .offset(x: thumbSize / 3, y: thumbSize / 3)
+                            .zIndex(isSelected ? -1 : 1)
                     }
-                }
-                .overlay {
-                    if viewModel.currentInputs.editSource?.projectItemID == item.id {
+                    ZStack {
+                        checkerboard
+                        previewForItem(item)
+                    }
+                    .frame(width: size.width, height: size.height)
+                    .background(Color(nsColor: .controlBackgroundColor))
+                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .overlay {
+                        if viewModel.currentInputs.editSource?.projectItemID == item.id {
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .stroke(Color.accentColor, style: StrokeStyle(lineWidth: 3, dash: [4, 3]))
+                        }
+                    }
+                    .overlay {
                         RoundedRectangle(cornerRadius: 6, style: .continuous)
-                            .stroke(Color.accentColor, style: StrokeStyle(lineWidth: 3, dash: [4, 3]))
+                            .stroke(
+                                isSelected ? Color.accentColor : Color.primary.opacity(0.10),
+                                lineWidth: isSelected ? 3 : 1
+                            )
                     }
-                }
-                .overlay {
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .stroke(
-                            isSelected ? Color.accentColor : Color.primary.opacity(0.10),
-                            lineWidth: isSelected ? 3 : 1
-                        )
-                }
-                .overlay(alignment: .topLeading) {
-                    if viewModel.isSelectionMode {
-                        Image(systemName: isMultiSelected ? "checkmark.circle.fill" : "circle")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundStyle(isMultiSelected ? Color.accentColor : Color.primary.opacity(0.4))
-                            .background(Circle().fill(.white).padding(2))
-                            .padding(6)
+                    .overlay(alignment: .topLeading) {
+                        if viewModel.isSelectionMode {
+                            Image(systemName: isMultiSelected ? "checkmark.circle.fill" : "circle")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundStyle(isMultiSelected ? Color.accentColor : Color.primary.opacity(0.4))
+                                .background(Circle().fill(.white).padding(2))
+                                .padding(6)
+                        }
                     }
-                }
-                .overlay {
-                    if viewModel.vectorizingItemIDs.contains(item.id) {
-                        VectorizingOverlay {
-                            viewModel.cancelVectorization(for: item)
+                    .overlay {
+                        if viewModel.vectorizingItemIDs.contains(item.id) {
+                            VectorizingOverlay {
+                                viewModel.cancelVectorization(for: item)
+                            }
                         }
                     }
                 }
@@ -600,7 +603,10 @@ extension ContentView {
             thumbnailStore: viewModel.thumbnailStore,
             item: item,
             originalURL: viewModel.fileURL(for: item),
-            contentMode: .fit
+            contentMode: .fit,
+            cardSize: cardSize(forItem: item),
+            originalStore: viewModel.originalImageStore,
+            enableOriginalUpgrade: true
         )
     }
 
@@ -619,15 +625,65 @@ struct ItemThumbnailView: View {
     let item: ProjectItem
     let originalURL: URL
     let contentMode: ContentMode
+    var cardSize: CGSize = .zero
+    var originalStore: CanvasOriginalImageStore? = nil
+    var enableOriginalUpgrade: Bool = false
+
+    @Environment(\.displayScale) private var displayScale
+    @State private var originalImage: NSImage?
+    @State private var loadTask: Task<Void, Never>?
+
+    private var needsOriginal: Bool {
+        guard enableOriginalUpgrade, originalStore != nil else { return false }
+        return CanvasResolutionPolicy.requiresOriginal(cardSize: cardSize, screenScale: displayScale)
+    }
 
     var body: some View {
-        if let nsImage = thumbnailStore.thumbnail(for: item, originalURL: originalURL) {
-            Image(nsImage: nsImage)
-                .resizable()
-                .aspectRatio(contentMode: contentMode)
-        } else {
-            Color.secondary.opacity(0.08)
-                .overlay(ProgressView().controlSize(.small))
+        ZStack {
+            if let nsImage = thumbnailStore.thumbnail(for: item, originalURL: originalURL) {
+                Image(nsImage: nsImage)
+                    .resizable()
+                    .aspectRatio(contentMode: contentMode)
+            } else {
+                Color.secondary.opacity(0.08)
+                    .overlay(ProgressView().controlSize(.small))
+            }
+            if let original = originalImage {
+                Image(nsImage: original)
+                    .resizable()
+                    .aspectRatio(contentMode: contentMode)
+                    .transition(.opacity)
+            }
+        }
+        .animation(.easeInOut(duration: 0.22), value: originalImage != nil)
+        .onAppear {
+            if needsOriginal { applyNeedsOriginal(true) }
+        }
+        .onChange(of: needsOriginal) { _, newValue in
+            applyNeedsOriginal(newValue)
+        }
+        .onDisappear {
+            loadTask?.cancel()
+            originalImage = nil
+        }
+    }
+
+    private func applyNeedsOriginal(_ needs: Bool) {
+        loadTask?.cancel()
+        guard needs else {
+            originalImage = nil
+            return
+        }
+        loadTask = Task {
+            try? await Task.sleep(for: .milliseconds(180))
+            guard !Task.isCancelled, let store = originalStore else { return }
+            if let cached = store.cached(for: originalURL) {
+                withAnimation { originalImage = cached }
+                return
+            }
+            if let img = await store.loadIfNeeded(url: originalURL) {
+                withAnimation { originalImage = img }
+            }
         }
     }
 }

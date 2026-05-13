@@ -3,7 +3,6 @@ import Foundation
 
 extension DraftCanvasViewModel {
     func vectorize(item: ProjectItem) {
-        switchToProjectIfNeeded(for: item)
         let projectID = selectedProjectID ?? item.projectID
 
         vectorizingItemIDs.insert(item.id)

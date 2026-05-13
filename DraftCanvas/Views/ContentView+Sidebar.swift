@@ -38,7 +38,7 @@ struct FilteringProjectRow: View {
     @State private var showEdit = false
 
     var body: some View {
-        Label(filtering.name, systemImage: "line.3.horizontal.decrease.circle")
+        Label(filtering.name, systemImage: "tag")
             .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(Rectangle())
             .contextMenu {
@@ -146,6 +146,15 @@ extension ContentView {
         .listStyle(.sidebar)
         .frame(width: 200)
         .background(.regularMaterial)
+        .onKeyPress(.return) {
+            guard editingProjectID == nil,
+                  case .project(let id) = viewModel.sidebarSelection,
+                  let project = viewModel.projects.first(where: { $0.id == id })
+            else { return .ignored }
+            renamingText = project.name
+            editingProjectID = id
+            return .handled
+        }
         .overlay(alignment: .trailing) {
             Rectangle()
                 .fill(Color.primary.opacity(0.06))

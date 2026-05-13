@@ -42,9 +42,11 @@ final class DraftCanvasViewModel: ObservableObject {
     }
     @Published private(set) var allTagsCache: [String] = []
     @Published var displayedItemsSnapshot: [ProjectItem] = []
+    @Published var activeEditProjectID: UUID?
     @Published var sidebarSelection: SidebarSelection = .none {
         didSet {
             guard sidebarSelection != oldValue, !isLoadingProjects else { return }
+            activeEditProjectID = nil
             selectedJobID = nil
             selectedItemID = nil
             selectedItemIDs.removeAll()
@@ -128,6 +130,7 @@ final class DraftCanvasViewModel: ObservableObject {
     var enhanceTask: Task<Void, Never>?
     var onReplacePromptText: ((String) -> Void)?
     let thumbnailStore: CanvasThumbnailStore
+    let originalImageStore: CanvasOriginalImageStore
 
     init(
         projectStore: ProjectStore = ProjectStore(),
@@ -140,6 +143,7 @@ final class DraftCanvasViewModel: ObservableObject {
         self.projectStore = projectStore
         self.preferredSaveFolderStore = preferredSaveFolderStore
         self.thumbnailStore = CanvasThumbnailStore(itemsDirectory: projectStore.itemsDirectory)
+        self.originalImageStore = CanvasOriginalImageStore()
         client.onLog = { [weak self] message in
             Task { @MainActor [weak self] in
                 guard let self else { return }

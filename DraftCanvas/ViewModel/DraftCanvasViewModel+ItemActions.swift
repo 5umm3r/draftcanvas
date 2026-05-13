@@ -2,15 +2,9 @@ import AppKit
 import Foundation
 
 extension DraftCanvasViewModel {
-    func switchToProjectIfNeeded(for item: ProjectItem) {
-        guard selectedFilteringProjectID != nil else { return }
-        selectedFilteringProjectID = nil
-        selectedProjectID = item.projectID
-    }
-
     func edit(item: ProjectItem) {
-        switchToProjectIfNeeded(for: item)
-        let id = selectedProjectID ?? item.projectID
+        activeEditProjectID = item.projectID
+        let id = item.projectID
         let fileURL = projectStore.resolvedFileURL(for: item)
         var inputs = inputsByProject[id] ?? ProjectInputs()
         if let attached = inputs.attachedImage {
@@ -47,13 +41,11 @@ extension DraftCanvasViewModel {
     }
 
     func inpaint(item: ProjectItem) {
-        switchToProjectIfNeeded(for: item)
         inpaintMode = .edit
         inpaintingTarget = item
     }
 
     func maskRemove(item: ProjectItem) {
-        switchToProjectIfNeeded(for: item)
         inpaintMode = .remove
         inpaintingTarget = item
     }
@@ -206,7 +198,6 @@ extension DraftCanvasViewModel {
     }
 
     func startBackgroundRemoval(item: ProjectItem) {
-        switchToProjectIfNeeded(for: item)
         let projectID = selectedProjectID ?? item.projectID
 
         let job = GenerationJob(

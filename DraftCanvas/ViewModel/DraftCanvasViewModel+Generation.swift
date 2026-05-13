@@ -6,7 +6,7 @@ extension DraftCanvasViewModel {
     func generate() {
         guard canGenerate else { return }
         if currentInputs.model.isEmpty, let fallback = availableModels.first(where: \.isDefault)?.id ?? availableModels.first?.id {
-            if let id = selectedProjectID {
+            if let id = effectiveProjectID {
                 inputsByProject[id]?.model = fallback
             } else {
                 draftInputs.model = fallback
@@ -17,7 +17,7 @@ extension DraftCanvasViewModel {
         let promptText = inputs.prompt.trimmingCharacters(in: .whitespacesAndNewlines)
 
         let targetProjectID: UUID
-        if let existing = selectedProjectID, projects.contains(where: { $0.id == existing }) {
+        if let existing = effectiveProjectID, projects.contains(where: { $0.id == existing }) {
             targetProjectID = existing
             if let idx = projects.firstIndex(where: { $0.id == existing }),
                projects[idx].isAutoNamed,
@@ -79,6 +79,7 @@ extension DraftCanvasViewModel {
                     inputs.attachedImage = nil
                     self.inputsByProject[targetProjectID] = inputs
                 }
+                self.activeEditProjectID = nil
                 self.logs.append("全ジョブが終了しました。")
                 self.refreshAccountUsage()
             }
