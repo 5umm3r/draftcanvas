@@ -38,7 +38,7 @@ struct FilteringProjectRow: View {
     @State private var showEdit = false
 
     var body: some View {
-        Label(filtering.name, systemImage: "tag")
+        Label(filtering.name, systemImage: "line.3.horizontal.decrease.circle")
             .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(Rectangle())
             .contextMenu {
@@ -95,71 +95,151 @@ struct ProjectSectionHeader: View {
 
 extension ContentView {
     var projectSidebar: some View {
-        List(selection: $viewModel.sidebarSelection) {
-            Section {
-                if viewModel.expandedSections["favorites"] ?? true {
-                    ForEach(viewModel.favoriteProjects) { project in
-                        projectRowView(for: project)
+        VStack(spacing: 0) {
+            sidebarSearchBar
+            Divider()
+            List(selection: sidebarSelectionBinding) {
+                Section {
+                    if viewModel.expandedSections["favorites"] ?? true {
+                        ForEach(viewModel.favoriteProjects) { project in
+                            projectRowView(for: project)
+                        }
+                    }
+                } header: {
+                    HStack(spacing: 0) {
+                        Text("お気に入り")
+                        Spacer()
+                        Button { viewModel.toggleSection("favorites") } label: {
+                            Image(systemName: "chevron.down")
+                                .font(.system(size: 10, weight: .semibold))
+                                .rotationEffect((viewModel.expandedSections["favorites"] ?? true) ? .zero : .degrees(-90))
+                                .animation(.easeInOut(duration: 0.15), value: viewModel.expandedSections["favorites"] ?? true)
+                        }
+                        .buttonStyle(.borderless)
+                        .padding(.trailing, 8)
                     }
                 }
-            } header: {
-                HStack(spacing: 0) {
-                    Text("お気に入り")
-                    Spacer()
-                    Button { viewModel.toggleSection("favorites") } label: {
-                        Image(systemName: "chevron.down")
-                            .font(.system(size: 10, weight: .semibold))
-                            .rotationEffect((viewModel.expandedSections["favorites"] ?? true) ? .zero : .degrees(-90))
-                            .animation(.easeInOut(duration: 0.15), value: viewModel.expandedSections["favorites"] ?? true)
+
+                Section {
+                    if viewModel.expandedSections["filtering"] ?? true {
+                        ForEach(viewModel.filteringProjects) { filtering in
+                            FilteringProjectRow(filtering: filtering, viewModel: viewModel)
+                                .tag(SidebarSelection.filtering(filtering.id))
+                        }
                     }
-                    .buttonStyle(.borderless)
-                    .padding(.trailing, 8)
+                } header: {
+                    FilteringSectionHeader(viewModel: viewModel, isExpanded: bindingFor("filtering"))
+                }
+
+                Section {
+                    AllImagesRow()
+                        .tag(SidebarSelection.allImages)
+                }
+
+                Section {
+                    if viewModel.expandedSections["projects"] ?? true {
+                        ForEach(viewModel.regularProjects) { project in
+                            projectRowView(for: project)
+                        }
+                    }
+                } header: {
+                    ProjectSectionHeader(onAdd: { viewModel.createProject() }, isExpanded: bindingFor("projects"))
                 }
             }
-
-            Section {
-                if viewModel.expandedSections["filtering"] ?? true {
-                    ForEach(viewModel.filteringProjects) { filtering in
-                        FilteringProjectRow(filtering: filtering, viewModel: viewModel)
-                            .tag(SidebarSelection.filtering(filtering.id))
-                    }
-                }
-            } header: {
-                FilteringSectionHeader(viewModel: viewModel, isExpanded: bindingFor("filtering"))
+            .listStyle(.sidebar)
+            .environment(\.defaultMinListHeaderHeight, 0)
+            .background(.regularMaterial)
+            .onKeyPress(.return) {
+                guard editingProjectID == nil,
+                      case .project(let id) = viewModel.sidebarSelection,
+                      let project = viewModel.projects.first(where: { $0.id == id })
+                else { return .ignored }
+                renamingText = project.name
+                editingProjectID = id
+                return .handled
             }
-
-            Section {
-                AllImagesRow()
-                    .tag(SidebarSelection.allImages)
-            }
-
-            Section {
-                if viewModel.expandedSections["projects"] ?? true {
-                    ForEach(viewModel.regularProjects) { project in
-                        projectRowView(for: project)
-                    }
-                }
-            } header: {
-                ProjectSectionHeader(onAdd: { viewModel.createProject() }, isExpanded: bindingFor("projects"))
+            .overlay(alignment: .trailing) {
+                Rectangle()
+                    .fill(Color.primary.opacity(0.06))
+                    .frame(width: 1)
             }
         }
-        .listStyle(.sidebar)
         .frame(width: 200)
-        .background(.regularMaterial)
-        .onKeyPress(.return) {
-            guard editingProjectID == nil,
-                  case .project(let id) = viewModel.sidebarSelection,
-                  let project = viewModel.projects.first(where: { $0.id == id })
-            else { return .ignored }
-            renamingText = project.name
-            editingProjectID = id
-            return .handled
+        .alert("検索結果を保存しますか？", isPresented: $showSaveSearchAlert) {
+            Button("保存して移動") {
+                let dest = pendingSidebarSelection
+                viewModel.saveCurrentSearchAsFilteringProject(thenSelect: dest)
+                pendingSidebarSelection = nil
+            }
+            Button("保存せずに移動", role: .destructive) {
+                let dest = pendingSidebarSelection
+                viewModel.exitSearchMode(clearDraft: true)
+                if let dest { viewModel.sidebarSelection = dest }
+                pendingSidebarSelection = nil
+            }
+            Button("キャンセル", role: .cancel) {
+                pendingSidebarSelection = nil
+            }
+        } message: {
+            Text("「\(viewModel.sidebarSearchCommitted)」の検索結果をフィルタリングプロジェクトとして保存できます。")
         }
-        .overlay(alignment: .trailing) {
-            Rectangle()
-                .fill(Color.primary.opacity(0.06))
-                .frame(width: 1)
+    }
+
+    private var sidebarSearchBar: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 11))
+                .foregroundStyle(.secondary)
+            TextField("検索", text: $viewModel.sidebarSearchDraft)
+                .textFieldStyle(.plain)
+                .onChange(of: viewModel.sidebarSearchDraft) { _, new in
+                    viewModel.onSearchDraftChanged(new)
+                }
+            if !viewModel.sidebarSearchDraft.isEmpty {
+                Button {
+                    viewModel.exitSearchMode(clearDraft: true)
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                }
+                .buttonStyle(.borderless)
+                Button {
+                    viewModel.saveCurrentSearchAsFilteringProject()
+                } label: {
+                    Image(systemName: "plus")
+                }
+                .buttonStyle(.borderless)
+                .help("この検索条件を保存")
+                .disabled(viewModel.sidebarSearchCommitted.isEmpty)
+            }
         }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
+        .background(
+            RoundedRectangle(cornerRadius: 6)
+                .fill(Color(NSColor.textBackgroundColor))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 6)
+                .stroke(Color.primary.opacity(0.15), lineWidth: 1)
+        )
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+    }
+
+    private var sidebarSelectionBinding: Binding<SidebarSelection> {
+        Binding(
+            get: { viewModel.sidebarSelection },
+            set: { newValue in
+                if case .search = newValue { return }
+                if viewModel.isSearchActive {
+                    if case .none = newValue { return }
+                    pendingSidebarSelection = newValue
+                    showSaveSearchAlert = true
+                    return
+                }
+                viewModel.sidebarSelection = newValue
+            }
+        )
     }
 
     private func bindingFor(_ key: String) -> Binding<Bool> {

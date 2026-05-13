@@ -88,14 +88,33 @@ extension DraftCanvasViewModel {
         projects.filter { !$0.isFavorite }.sorted { $0.updatedAt > $1.updatedAt }
     }
 
-    func itemsMatchingFiltering(_ filtering: FilteringProject) -> [ProjectItem] {
-        guard !filtering.tagConditions.isEmpty else { return [] }
+    func itemsMatching(searchQuery: String) -> [ProjectItem] {
+        let tokens = searchQuery
+            .split(whereSeparator: { $0.isWhitespace })
+            .map(String.init)
+            .filter { !$0.isEmpty }
+        guard !tokens.isEmpty else { return [] }
         return items.filter { item in
-            filtering.tagConditions.allSatisfy { item.tags.contains($0) }
+            tokens.allSatisfy { token in
+                item.tags.contains(where: { $0.localizedCaseInsensitiveContains(token) })
+                || item.prompt.localizedCaseInsensitiveContains(token)
+                || (item.revisedPrompt?.localizedCaseInsensitiveContains(token) ?? false)
+            }
         }
     }
 
+    func itemsMatchingFiltering(_ filtering: FilteringProject) -> [ProjectItem] {
+        itemsMatching(searchQuery: filtering.searchQuery)
+    }
+
     var displayedItems: [ProjectItem] {
+        if isSearchActive {
+            let matched = itemsMatching(searchQuery: sidebarSearchCommitted)
+            switch canvasSortOrder {
+            case .createdAtAscending: return matched.sorted { $0.createdAt < $1.createdAt }
+            case .createdAtDescending: return matched.sorted { $0.createdAt > $1.createdAt }
+            }
+        }
         if isAllImagesSelected {
             switch canvasSortOrder {
             case .createdAtAscending: return items.sorted { $0.createdAt < $1.createdAt }

@@ -42,6 +42,53 @@ final class DraftCanvasViewModel: ObservableObject {
     }
     @Published private(set) var allTagsCache: [String] = []
     @Published var displayedItemsSnapshot: [ProjectItem] = []
+
+    // MARK: - Search state
+    @Published var sidebarSearchDraft: String = ""
+    @Published private(set) var sidebarSearchCommitted: String = ""
+    private var searchDebounceTask: Task<Void, Never>?
+    private var preSearchSidebarSelection: SidebarSelection?
+
+    var isSearchActive: Bool {
+        if case .search = sidebarSelection { return true }
+        return false
+    }
+
+    func onSearchDraftChanged(_ value: String) {
+        searchDebounceTask?.cancel()
+        searchDebounceTask = Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(250))
+            guard !Task.isCancelled else { return }
+            await MainActor.run { self?.commitSearch() }
+        }
+    }
+
+    func commitSearch() {
+        let trimmed = sidebarSearchDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            exitSearchMode(clearDraft: false)
+            return
+        }
+        if preSearchSidebarSelection == nil {
+            preSearchSidebarSelection = sidebarSelection
+        }
+        sidebarSearchCommitted = trimmed
+        if !isSearchActive { sidebarSelection = .search }
+        recomputeDisplayedItems()
+    }
+
+    func exitSearchMode(clearDraft: Bool) {
+        searchDebounceTask?.cancel()
+        sidebarSearchCommitted = ""
+        if clearDraft { sidebarSearchDraft = "" }
+        if let prev = preSearchSidebarSelection {
+            sidebarSelection = prev
+        } else if isSearchActive {
+            sidebarSelection = .none
+        }
+        preSearchSidebarSelection = nil
+        recomputeDisplayedItems()
+    }
     @Published var activeEditProjectID: UUID?
     @Published var sidebarSelection: SidebarSelection = .none {
         didSet {

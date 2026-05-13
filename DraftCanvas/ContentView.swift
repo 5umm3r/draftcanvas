@@ -32,6 +32,8 @@ struct ContentView: View {
     @State var dragSelectedIDs: Set<UUID> = []
     @State var canvasAutoScroller = CanvasAutoScroller()
     @State var canvasViewportHeight: CGFloat = 600
+    @State var showSaveSearchAlert = false
+    @State var pendingSidebarSelection: SidebarSelection?
 
     var body: some View {
         VStack(spacing: 0) {

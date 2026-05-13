@@ -6,11 +6,17 @@ struct FilteringProjectCreationSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var name: String = ""
-    @State private var selectedTags: Set<String> = []
-    @State private var newTagInput: String = ""
+    @State private var searchQuery: String = ""
 
     private var isEditing: Bool { existingFiltering != nil }
-    private var candidateTags: [String] { viewModel.allTagsCache }
+
+    private var matchCount: Int {
+        viewModel.itemsMatching(searchQuery: searchQuery).count
+    }
+
+    private var queryTokens: Set<String> {
+        Set(searchQuery.split(whereSeparator: { $0.isWhitespace }).map(String.init))
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -24,55 +30,39 @@ struct FilteringProjectCreationSheet: View {
             }
 
             VStack(alignment: .leading, spacing: 8) {
-                Text("タグ条件 (AND)")
+                Text("検索クエリ（スペース区切り AND 部分一致）")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
-                Text("選択したすべてのタグを持つカードを表示します")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
-
-                if candidateTags.isEmpty && selectedTags.isEmpty {
-                    Text("まだタグがありません。カードにタグを追加してください。")
-                        .font(.caption)
+                TextField("例: 猫 夕日", text: $searchQuery)
+                    .textFieldStyle(.roundedBorder)
+                if !searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    Text("該当カード: \(matchCount)枚")
+                        .font(.caption2)
                         .foregroundStyle(.secondary)
-                } else {
-                    ScrollView {
+                }
+            }
+
+            if !viewModel.allTagsCache.isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("既存タグから追加")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                    ScrollView(.vertical, showsIndicators: false) {
                         LazyVGrid(
-                            columns: [GridItem(.adaptive(minimum: 70, maximum: 150), spacing: 6)],
+                            columns: [GridItem(.adaptive(minimum: 60, maximum: 140), spacing: 6)],
                             alignment: .leading,
                             spacing: 6
                         ) {
-                            ForEach(allCandidates, id: \.self) { tag in
+                            ForEach(viewModel.allTagsCache, id: \.self) { tag in
                                 TagToggleChip(
                                     tag: tag,
-                                    isSelected: selectedTags.contains(tag),
+                                    isSelected: queryTokens.contains(tag),
                                     onToggle: { toggleTag(tag) }
                                 )
                             }
                         }
                     }
-                    .frame(maxHeight: 160)
-                }
-
-                HStack(spacing: 6) {
-                    TextField("新しいタグ条件を追加", text: $newTagInput)
-                        .textFieldStyle(.roundedBorder)
-                        .font(.caption)
-                        .onSubmit { commitNewTag() }
-                    Button("追加") { commitNewTag() }
-                        .disabled(newTagInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                        .controlSize(.small)
-                }
-            }
-
-            if !selectedTags.isEmpty {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("選択中: \(selectedTags.sorted().joined(separator: " AND "))")
-                        .font(.caption)
-                        .foregroundStyle(.blue)
-                    Text("該当カード: \(matchCount)枚")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+                    .frame(maxHeight: 120)
                 }
             }
 
@@ -82,7 +72,7 @@ struct FilteringProjectCreationSheet: View {
                     .keyboardShortcut(.escape, modifiers: [])
                 Button(isEditing ? "保存" : "作成") { submit() }
                     .buttonStyle(.borderedProminent)
-                    .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || selectedTags.isEmpty)
+                    .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     .keyboardShortcut(.return, modifiers: [])
             }
         }
@@ -91,45 +81,30 @@ struct FilteringProjectCreationSheet: View {
         .onAppear {
             if let filtering = existingFiltering {
                 name = filtering.name
-                selectedTags = Set(filtering.tagConditions)
+                searchQuery = filtering.searchQuery
             }
         }
     }
 
-    private var allCandidates: [String] {
-        let base = Set(candidateTags)
-        return Array(base.union(selectedTags)).sorted()
-    }
-
-    private var matchCount: Int {
-        let conds = Array(selectedTags)
-        return viewModel.items.filter { item in
-            conds.allSatisfy { item.tags.contains($0) }
-        }.count
-    }
-
     private func toggleTag(_ tag: String) {
-        if selectedTags.contains(tag) {
-            selectedTags.remove(tag)
+        var tokens = searchQuery
+            .split(whereSeparator: { $0.isWhitespace })
+            .map(String.init)
+        if let idx = tokens.firstIndex(of: tag) {
+            tokens.remove(at: idx)
         } else {
-            selectedTags.insert(tag)
+            tokens.append(tag)
         }
-    }
-
-    private func commitNewTag() {
-        let trimmed = newTagInput.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
-        selectedTags.insert(trimmed)
-        newTagInput = ""
+        searchQuery = tokens.joined(separator: " ")
     }
 
     private func submit() {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedName.isEmpty, !selectedTags.isEmpty else { return }
+        guard !trimmedName.isEmpty else { return }
         if let filtering = existingFiltering {
-            viewModel.updateFilteringProject(id: filtering.id, name: trimmedName, tags: Array(selectedTags).sorted())
+            viewModel.updateFilteringProject(id: filtering.id, name: trimmedName, searchQuery: searchQuery)
         } else {
-            viewModel.createFilteringProject(name: trimmedName, tags: Array(selectedTags).sorted())
+            viewModel.createFilteringProject(name: trimmedName, searchQuery: searchQuery)
         }
         dismiss()
     }
