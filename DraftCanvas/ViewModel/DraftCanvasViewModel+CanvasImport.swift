@@ -89,6 +89,7 @@ extension DraftCanvasViewModel {
                                 projectID: projectID,
                                 prompt: name,
                                 aspectRatio: decoded.aspectRatio,
+                                actualAspectRatio: decoded.actualAspectRatio,
                                 isImported: true
                             )
 
@@ -185,10 +186,12 @@ extension DraftCanvasViewModel {
                 return
             }
             let aspectRatio = self.aspectRatioFromImageData(pngData)
+            let actualRatio = self.pixelAspectRatioFromImageData(pngData)
             let newItem = ProjectItem(
                 projectID: projectID,
                 prompt: "Imported Image",
                 aspectRatio: aspectRatio,
+                actualAspectRatio: actualRatio,
                 isImported: true
             )
             do {

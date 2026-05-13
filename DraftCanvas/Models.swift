@@ -47,6 +47,7 @@ struct ModelRating: Equatable {
 }
 
 enum GenerationAspectRatio: String, CaseIterable, Identifiable, Codable {
+    case auto
     case square
     case portrait
     case story
@@ -57,6 +58,8 @@ enum GenerationAspectRatio: String, CaseIterable, Identifiable, Codable {
 
     var title: String {
         switch self {
+        case .auto:
+            return "自動"
         case .square:
             return "正方形"
         case .portrait:
@@ -72,6 +75,8 @@ enum GenerationAspectRatio: String, CaseIterable, Identifiable, Codable {
 
     var value: String {
         switch self {
+        case .auto:
+            return "auto"
         case .square:
             return "1:1"
         case .portrait:
@@ -85,12 +90,17 @@ enum GenerationAspectRatio: String, CaseIterable, Identifiable, Codable {
         }
     }
 
+    var displayLabel: String {
+        self == .auto ? "自動" : value
+    }
+
     var promptDescription: String {
-        "\(value) \(rawValue)"
+        self == .auto ? "auto" : "\(value) \(rawValue)"
     }
 
     var widthOverHeight: CGFloat {
         switch self {
+        case .auto:      return 1.0
         case .square:    return 1.0
         case .portrait:  return 3.0 / 4.0
         case .story:     return 9.0 / 16.0
@@ -104,7 +114,7 @@ struct GenerationRequest: Equatable {
     var prompt: String
     var count: Int
     var concurrency: Int
-    var aspectRatio: GenerationAspectRatio = .square
+    var aspectRatio: GenerationAspectRatio = .auto
     var editSource: GenerationEditSource? = nil
     var attachedImagePath: String? = nil
     var model: String = ""
@@ -356,6 +366,7 @@ struct ProjectItem: Identifiable, Equatable {
     let prompt: String
     let revisedPrompt: String?
     let aspectRatio: GenerationAspectRatio
+    let actualAspectRatio: CGFloat?
     let createdAt: Date
     let errorMessage: String?
     var editedFromItemID: UUID?
@@ -370,6 +381,7 @@ struct ProjectItem: Identifiable, Equatable {
         prompt: String,
         revisedPrompt: String? = nil,
         aspectRatio: GenerationAspectRatio,
+        actualAspectRatio: CGFloat? = nil,
         createdAt: Date = Date(),
         errorMessage: String? = nil,
         editedFromItemID: UUID? = nil,
@@ -383,6 +395,7 @@ struct ProjectItem: Identifiable, Equatable {
         self.prompt = prompt
         self.revisedPrompt = revisedPrompt
         self.aspectRatio = aspectRatio
+        self.actualAspectRatio = actualAspectRatio
         self.createdAt = createdAt
         self.errorMessage = errorMessage
         self.editedFromItemID = editedFromItemID
@@ -407,7 +420,7 @@ struct ProjectItem: Identifiable, Equatable {
 
 extension ProjectItem: Codable {
     enum CodingKeys: String, CodingKey {
-        case id, projectID, prompt, revisedPrompt, aspectRatio, createdAt, errorMessage, editedFromItemID
+        case id, projectID, prompt, revisedPrompt, aspectRatio, actualAspectRatio, createdAt, errorMessage, editedFromItemID
         case hasSVG
         case isBackgroundRemoved
         case isImported
@@ -421,6 +434,7 @@ extension ProjectItem: Codable {
         prompt = try c.decode(String.self, forKey: .prompt)
         revisedPrompt = try c.decodeIfPresent(String.self, forKey: .revisedPrompt)
         aspectRatio = try c.decodeIfPresent(GenerationAspectRatio.self, forKey: .aspectRatio) ?? .square
+        actualAspectRatio = try c.decodeIfPresent(CGFloat.self, forKey: .actualAspectRatio)
         createdAt = try c.decode(Date.self, forKey: .createdAt)
         errorMessage = try c.decodeIfPresent(String.self, forKey: .errorMessage)
         editedFromItemID = try c.decodeIfPresent(UUID.self, forKey: .editedFromItemID)
@@ -437,6 +451,7 @@ extension ProjectItem: Codable {
         try c.encode(prompt, forKey: .prompt)
         try c.encodeIfPresent(revisedPrompt, forKey: .revisedPrompt)
         try c.encode(aspectRatio, forKey: .aspectRatio)
+        try c.encodeIfPresent(actualAspectRatio, forKey: .actualAspectRatio)
         try c.encode(createdAt, forKey: .createdAt)
         try c.encodeIfPresent(errorMessage, forKey: .errorMessage)
         try c.encodeIfPresent(editedFromItemID, forKey: .editedFromItemID)

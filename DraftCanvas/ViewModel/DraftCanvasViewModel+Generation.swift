@@ -111,11 +111,13 @@ extension DraftCanvasViewModel {
         }
 
         for job in jobs where job.status == .succeeded {
+            let actualRatio = job.imageData.flatMap { pixelAspectRatioFromImageData($0) }
             let item = ProjectItem(
                 projectID: projectID,
                 prompt: job.prompt,
                 revisedPrompt: job.revisedPrompt,
                 aspectRatio: request.aspectRatio,
+                actualAspectRatio: actualRatio,
                 errorMessage: job.errorMessage,
                 editedFromItemID: request.editSource?.projectItemID
             )

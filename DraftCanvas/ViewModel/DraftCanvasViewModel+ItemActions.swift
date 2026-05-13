@@ -252,6 +252,7 @@ extension DraftCanvasViewModel {
                 projectID: projectID,
                 prompt: item.prompt,
                 aspectRatio: item.aspectRatio,
+                actualAspectRatio: item.actualAspectRatio,
                 editedFromItemID: item.id,
                 isBackgroundRemoved: true
             )

@@ -9,6 +9,7 @@ extension DraftCanvasViewModel {
 
         let fileURL = projectStore.resolvedFileURL(for: item)
         let itemAspectRatio = item.aspectRatio
+        let itemActualAspectRatio = item.actualAspectRatio
         let itemPrompt = item.prompt
         let itemID = item.id
 
@@ -26,6 +27,7 @@ extension DraftCanvasViewModel {
                         projectID: projectID,
                         prompt: itemPrompt,
                         aspectRatio: itemAspectRatio,
+                        actualAspectRatio: itemActualAspectRatio,
                         hasSVG: true
                     )
                     do {

@@ -30,7 +30,7 @@ enum CanvasCardLayout {
 
 extension ContentView {
     func cardSize(forItem item: ProjectItem) -> CGSize {
-        let ratio = item.aspectRatio.widthOverHeight
+        let ratio = item.actualAspectRatio ?? item.aspectRatio.widthOverHeight
         return CanvasCardLayout.size(for: ratio, zoom: canvasZoom)
     }
 

@@ -214,14 +214,14 @@ extension ContentView {
                         Button {
                             viewModel.binding(for: \.aspectRatio).wrappedValue = ar
                         } label: {
-                            Label("\(ar.title) \(ar.value)", systemImage: selected ? "checkmark" : "")
+                            Label(ar == .auto ? ar.title : "\(ar.title) \(ar.value)", systemImage: selected ? "checkmark" : "")
                         }
                     }
                 } label: {
                     HStack(spacing: 5) {
                         Image(systemName: "aspectratio")
                             .font(.system(size: 13))
-                        Text(viewModel.currentInputs.aspectRatio.value)
+                        Text(viewModel.currentInputs.aspectRatio.displayLabel)
                             .font(.system(size: 13, weight: .medium))
                         Image(systemName: "chevron.down")
                             .font(.system(size: 9, weight: .semibold))

@@ -12,7 +12,11 @@ struct ItemDetailPopover: View {
             Color.clear.frame(width: 0, height: 0).onAppear {
                 os_signpost(.end, log: PopoverSignposter.log, name: "ItemDetailPopover")
             }
-            DetailRow(label: "Prompt", value: item.prompt)
+            DetailRow(
+                label: "Prompt",
+                value: item.prompt,
+                trailing: item.prompt.isEmpty ? nil : AnyView(PromptCopyButton(prompt: item.prompt))
+            )
             DetailRow(label: "Created", value: item.createdAt.formatted(date: .abbreviated, time: .shortened))
 
             if let revisedPrompt = item.revisedPrompt {
