@@ -60,7 +60,8 @@ extension ContentView {
                 .padding(.vertical, 8)
             }
 
-            let minH: CGFloat = 76
+            let isCompact = !promptIsFocused && viewModel.currentInputs.prompt.isEmpty
+            let minH: CGFloat = isCompact ? 28 : 76
             let maxH = max(minH, maxPromptHeight)
             let clampedHeight = min(max(promptTextHeight, minH), maxH)
             ZStack(alignment: .bottomTrailing) {
@@ -90,7 +91,7 @@ extension ContentView {
                     }
                 )
                 .frame(height: clampedHeight)
-                .animation(.easeOut(duration: 0.12), value: clampedHeight)
+                .animation(.easeInOut(duration: 0.2), value: clampedHeight)
                 .overlay(alignment: .topLeading) {
                     if viewModel.currentInputs.prompt.isEmpty && !promptIsFocused {
                         Text("生成したい画像を説明")

@@ -233,6 +233,12 @@ extension ContentView {
                                 handleMarqueeEnd(value: value)
                             }
                     )
+                    .simultaneousGesture(
+                        TapGesture()
+                            .onEnded {
+                                NSApp.keyWindow?.makeFirstResponder(nil)
+                            }
+                    )
                     .onPreferenceChange(CardFramePreferenceKey.self) { frames in
                         cardFrames = frames
                     }
@@ -257,7 +263,7 @@ extension ContentView {
                 }
             }
         }
-        .overlay(alignment: .topTrailing) {
+        .overlay(alignment: .topLeading) {
             HStack(spacing: 8) {
                 if let progress = viewModel.importProgress {
                     HStack(spacing: 6) {
@@ -316,27 +322,61 @@ extension ContentView {
                     }
                     .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
                     .help(viewModel.canvasSortOrder == .createdAtAscending ? "古い順 → 新しい順に切替" : "新しい順 → 古い順に切替")
-                    CanvasZoomControl(zoom: $canvasZoom)
                 }
             }
             .animation(.easeInOut(duration: 0.2), value: viewModel.importProgress != nil)
             .padding(.top, 16)
-            .padding(.trailing, 16)
+            .padding(.leading, 16)
         }
-        .overlay(alignment: .topLeading) {
-            if !viewModel.projects.isEmpty && !canvasEntries.isEmpty {
-                HStack(spacing: 8) {
-                    Text("\(viewModel.displayedItemsSnapshot.count)")
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(Color.secondary)
+        .overlay(alignment: .topTrailing) {
+            HStack(spacing: 8) {
+                if viewModel.isSelectionMode {
+                    Button {
+                        isConfirmingBatchDelete = true
+                    } label: {
+                        Image(systemName: "trash")
+                            .font(.system(size: 13, weight: .medium))
+                            .frame(width: 18, height: 18)
+                            .foregroundStyle(Color.red)
+                            .padding(8)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .stroke(Color.red.opacity(0.3), lineWidth: 1)
+                    }
+                    .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
+                    .disabled(viewModel.selectedItemIDs.isEmpty)
+                    .help("選択画像を一括削除")
+                    Button {
+                        viewModel.exportSelectedBatch()
+                    } label: {
+                        Image(systemName: "square.and.arrow.up.on.square")
+                            .font(.system(size: 13, weight: .medium))
+                            .frame(width: 18, height: 18)
+                            .padding(8)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+                    }
+                    .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
+                    .disabled(viewModel.selectedItemIDs.isEmpty)
+                    .help("選択画像を一括エクスポート")
+                }
+                if !viewModel.projects.isEmpty && !canvasEntries.isEmpty {
+                    let total = viewModel.displayedItemsSnapshot.count
+                    let selected = viewModel.selectedItemIDs.count
+                    Text(viewModel.isSelectionMode ? "\(selected)/\(total)" : "\(total)")
+                        .font(.caption.weight(.medium).monospacedDigit())
+                        .foregroundStyle(viewModel.isSelectionMode ? Color.accentColor : Color.secondary)
+                        .frame(height: 34)
                         .padding(.horizontal, 8)
-                        .padding(.vertical, 6)
-                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
-                        }
-                        .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
                     Button {
                         viewModel.toggleSelectionMode()
                     } label: {
@@ -355,62 +395,11 @@ extension ContentView {
                     }
                     .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
                     .help(viewModel.isSelectionMode ? "選択モード終了" : "選択モード")
-                    if viewModel.isSelectionMode {
-                        if !viewModel.selectedItemIDs.isEmpty {
-                            Text("\(viewModel.selectedItemIDs.count)件選択中")
-                                .font(.caption.weight(.medium))
-                                .foregroundStyle(Color.accentColor)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 6)
-                                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-                                .overlay {
-                                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                        .stroke(Color.accentColor.opacity(0.3), lineWidth: 1)
-                                }
-                                .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
-                        }
-                        Button {
-                            isConfirmingBatchDelete = true
-                        } label: {
-                            Image(systemName: "trash")
-                                .font(.system(size: 13, weight: .medium))
-                                .frame(width: 18, height: 18)
-                                .foregroundStyle(Color.red)
-                                .padding(8)
-                                .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .stroke(Color.red.opacity(0.3), lineWidth: 1)
-                        }
-                        .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
-                        .disabled(viewModel.selectedItemIDs.isEmpty)
-                        .help("選択画像を一括削除")
-                        Button {
-                            viewModel.exportSelectedBatch()
-                        } label: {
-                            Image(systemName: "square.and.arrow.up.on.square")
-                                .font(.system(size: 13, weight: .medium))
-                                .frame(width: 18, height: 18)
-                                .padding(8)
-                                .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
-                        }
-                        .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
-                        .disabled(viewModel.selectedItemIDs.isEmpty)
-                        .help("選択画像を一括エクスポート")
-                    }
+                    CanvasZoomControl(zoom: $canvasZoom)
                 }
-                .padding(.top, 16)
-                .padding(.leading, 16)
             }
+            .padding(.top, 16)
+            .padding(.trailing, 16)
         }
         .overlay(
             RoundedRectangle(cornerRadius: 0)
