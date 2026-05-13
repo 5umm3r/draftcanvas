@@ -1,20 +1,20 @@
 import SwiftUI
 
-struct SmartProjectCreationSheet: View {
+struct FilteringProjectCreationSheet: View {
     @ObservedObject var viewModel: DraftCanvasViewModel
-    var existingSmart: SmartProject? = nil
+    var existingFiltering: FilteringProject? = nil
     @Environment(\.dismiss) private var dismiss
 
     @State private var name: String = ""
     @State private var selectedTags: Set<String> = []
     @State private var newTagInput: String = ""
 
-    private var isEditing: Bool { existingSmart != nil }
+    private var isEditing: Bool { existingFiltering != nil }
     private var candidateTags: [String] { viewModel.allTagsCache }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(isEditing ? "スマートプロジェクトを編集" : "スマートプロジェクトを作成")
+            Text(isEditing ? "フィルタリングプロジェクトを編集" : "フィルタリングプロジェクトを作成")
                 .font(.headline)
 
             VStack(alignment: .leading, spacing: 6) {
@@ -89,9 +89,9 @@ struct SmartProjectCreationSheet: View {
         .padding(20)
         .frame(width: 400)
         .onAppear {
-            if let smart = existingSmart {
-                name = smart.name
-                selectedTags = Set(smart.tagConditions)
+            if let filtering = existingFiltering {
+                name = filtering.name
+                selectedTags = Set(filtering.tagConditions)
             }
         }
     }
@@ -126,10 +126,10 @@ struct SmartProjectCreationSheet: View {
     private func submit() {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty, !selectedTags.isEmpty else { return }
-        if let smart = existingSmart {
-            viewModel.updateSmartProject(id: smart.id, name: trimmedName, tags: Array(selectedTags).sorted())
+        if let filtering = existingFiltering {
+            viewModel.updateFilteringProject(id: filtering.id, name: trimmedName, tags: Array(selectedTags).sorted())
         } else {
-            viewModel.createSmartProject(name: trimmedName, tags: Array(selectedTags).sorted())
+            viewModel.createFilteringProject(name: trimmedName, tags: Array(selectedTags).sorted())
         }
         dismiss()
     }

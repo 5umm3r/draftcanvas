@@ -360,7 +360,7 @@ extension ContentView {
 
     func handleCanvasDrop(_ providers: [NSItemProvider]) -> Bool {
         guard !providers.isEmpty else { return false }
-        guard viewModel.selectedSmartProjectID == nil else { return false }
+        guard viewModel.selectedFilteringProjectID == nil else { return false }
 
         let hasURLs = providers.contains { $0.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) }
         let hasImages = providers.contains { $0.canLoadObject(ofClass: NSImage.self) }

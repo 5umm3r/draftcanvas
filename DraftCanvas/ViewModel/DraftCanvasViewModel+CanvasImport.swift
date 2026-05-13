@@ -27,8 +27,8 @@ extension DraftCanvasViewModel {
 
     // N枚バッチインポート: 原本コピー優先 + 並列デコード(max4) + 100msスロットリング進捗 + signpost
     func importImagesAsProjectItems(urls: [URL], projectID: UUID) {
-        guard selectedSmartProjectID == nil else {
-            appendLog("[Import] Smart プロジェクト選択中はスキップ")
+        guard selectedFilteringProjectID == nil else {
+            appendLog("[Import] フィルタリングプロジェクト選択中はスキップ")
             return
         }
         guard !urls.isEmpty else { return }

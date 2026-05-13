@@ -3,8 +3,8 @@ import Foundation
 
 extension DraftCanvasViewModel {
     func switchToProjectIfNeeded(for item: ProjectItem) {
-        guard selectedSmartProjectID != nil else { return }
-        selectedSmartProjectID = nil
+        guard selectedFilteringProjectID != nil else { return }
+        selectedFilteringProjectID = nil
         selectedProjectID = item.projectID
     }
 

@@ -99,18 +99,18 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var exportRequest: ExportRequest? = nil
     @Published var exportingProjectID: UUID? = nil
     @Published var batchExportProgress: (done: Int, total: Int)? = nil
-    @Published var smartProjects: [SmartProject] = [] {
+    @Published var filteringProjects: [FilteringProject] = [] {
         didSet { if !isLoadingProjects { recomputeDisplayedItems() } }
     }
-    var selectedSmartProjectID: UUID? {
+    var selectedFilteringProjectID: UUID? {
         get {
-            if case .smart(let id) = sidebarSelection { return id }
+            if case .filtering(let id) = sidebarSelection { return id }
             return nil
         }
         set {
             if let id = newValue {
-                sidebarSelection = .smart(id)
-            } else if case .smart = sidebarSelection {
+                sidebarSelection = .filtering(id)
+            } else if case .filtering = sidebarSelection {
                 sidebarSelection = .none
             }
         }
@@ -193,7 +193,7 @@ final class DraftCanvasViewModel: ObservableObject {
         let snapshot = projectStore.load()
         projects = snapshot.projects
         items = snapshot.items
-        smartProjects = snapshot.smartProjects
+        filteringProjects = snapshot.filteringProjects
         sidebarSelection = snapshot.sidebarSelection
         expandedSections = snapshot.expandedSections
         for project in projects {
@@ -211,7 +211,7 @@ final class DraftCanvasViewModel: ObservableObject {
         ProjectStore.Snapshot(
             projects: projects,
             items: items,
-            smartProjects: smartProjects,
+            filteringProjects: filteringProjects,
             sidebarSelection: sidebarSelection,
             expandedSections: expandedSections
         )

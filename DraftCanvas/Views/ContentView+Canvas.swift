@@ -285,7 +285,7 @@ extension ContentView {
                     .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
                     .transition(.opacity.combined(with: .scale(scale: 0.9)))
                 }
-                if viewModel.projects.isEmpty == false && viewModel.selectedSmartProjectID == nil {
+                if viewModel.projects.isEmpty == false && viewModel.selectedFilteringProjectID == nil {
                     Button {
                         viewModel.importImageToCanvas()
                     } label: {
@@ -414,7 +414,7 @@ extension ContentView {
 
     var canvasEntries: [CanvasEntry] {
         let persistedItems = viewModel.displayedItemsSnapshot.map { CanvasEntry.item($0) }
-        let showJobs = viewModel.isGeneratingForSelected && viewModel.selectedSmartProjectID == nil
+        let showJobs = viewModel.isGeneratingForSelected && viewModel.selectedFilteringProjectID == nil
         let inProgressJobs = showJobs ? viewModel.currentJobs.map { CanvasEntry.job($0) } : []
         switch viewModel.canvasSortOrder {
         case .createdAtAscending: return persistedItems + inProgressJobs

@@ -93,9 +93,9 @@ extension DraftCanvasViewModel {
         guard !selectedItemIDs.isEmpty else { return }
         let projectName: String
         let orderedItems: [ProjectItem]
-        if let smartID = selectedSmartProjectID,
-           let smart = smartProjects.first(where: { $0.id == smartID }) {
-            projectName = smart.name
+        if let filteringID = selectedFilteringProjectID,
+           let filtering = filteringProjects.first(where: { $0.id == filteringID }) {
+            projectName = filtering.name
             orderedItems = displayedItems.filter { selectedItemIDs.contains($0.id) }
         } else {
             guard let project = projects.first(where: { $0.id == selectedProjectID }) else { return }

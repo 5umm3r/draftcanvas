@@ -1,21 +1,21 @@
 import SwiftUI
 
-// MARK: - Smart Project views
+// MARK: - Filtering Project views
 
-struct SmartSectionHeader: View {
+struct FilteringSectionHeader: View {
     @ObservedObject var viewModel: DraftCanvasViewModel
     @Binding var isExpanded: Bool
     @State private var showCreation = false
 
     var body: some View {
         HStack(spacing: 0) {
-            Text("スマート")
+            Text("フィルタリング")
             Spacer()
             Button { showCreation = true } label: {
                 Image(systemName: "plus").font(.system(size: 11, weight: .medium))
             }
             .buttonStyle(.borderless)
-            .help("スマートプロジェクトを作成")
+            .help("フィルタリングプロジェクトを作成")
             Spacer().frame(width: 12)
             Button { isExpanded.toggle() } label: {
                 Image(systemName: "chevron.down")
@@ -27,27 +27,27 @@ struct SmartSectionHeader: View {
             .padding(.trailing, 8)
         }
         .sheet(isPresented: $showCreation) {
-            SmartProjectCreationSheet(viewModel: viewModel)
+            FilteringProjectCreationSheet(viewModel: viewModel)
         }
     }
 }
 
-struct SmartProjectRow: View {
-    let smart: SmartProject
+struct FilteringProjectRow: View {
+    let filtering: FilteringProject
     @ObservedObject var viewModel: DraftCanvasViewModel
     @State private var showEdit = false
 
     var body: some View {
-        Label(smart.name, systemImage: "line.3.horizontal.decrease.circle")
+        Label(filtering.name, systemImage: "line.3.horizontal.decrease.circle")
             .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(Rectangle())
             .contextMenu {
                 Button("条件を編集") { showEdit = true }
                 Divider()
-                Button("削除", role: .destructive) { viewModel.deleteSmartProject(id: smart.id) }
+                Button("削除", role: .destructive) { viewModel.deleteFilteringProject(id: filtering.id) }
             }
             .sheet(isPresented: $showEdit) {
-                SmartProjectCreationSheet(viewModel: viewModel, existingSmart: smart)
+                FilteringProjectCreationSheet(viewModel: viewModel, existingFiltering: filtering)
             }
     }
 }
@@ -118,14 +118,14 @@ extension ContentView {
             }
 
             Section {
-                if viewModel.expandedSections["smart"] ?? true {
-                    ForEach(viewModel.smartProjects) { smart in
-                        SmartProjectRow(smart: smart, viewModel: viewModel)
-                            .tag(SidebarSelection.smart(smart.id))
+                if viewModel.expandedSections["filtering"] ?? true {
+                    ForEach(viewModel.filteringProjects) { filtering in
+                        FilteringProjectRow(filtering: filtering, viewModel: viewModel)
+                            .tag(SidebarSelection.filtering(filtering.id))
                     }
                 }
             } header: {
-                SmartSectionHeader(viewModel: viewModel, isExpanded: bindingFor("smart"))
+                FilteringSectionHeader(viewModel: viewModel, isExpanded: bindingFor("filtering"))
             }
 
             Section {

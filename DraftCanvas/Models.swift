@@ -293,9 +293,9 @@ struct Project: Identifiable, Equatable {
     }
 }
 
-// MARK: - SmartProject
+// MARK: - FilteringProject
 
-struct SmartProject: Identifiable, Codable, Equatable {
+struct FilteringProject: Identifiable, Codable, Equatable {
     let id: UUID
     var name: String
     var tagConditions: [String]
@@ -436,9 +436,30 @@ extension ProjectItem: Codable {
 
 enum SidebarSelection: Codable, Equatable, Hashable {
     case project(UUID)
-    case smart(UUID)
+    case filtering(UUID)
     case allImages
     case none
+
+    private enum OuterKey: String, CodingKey { case project, filtering, smart, allImages, none }
+    private enum InnerKey: String, CodingKey { case _0 }
+
+    init(from decoder: Decoder) throws {
+        let outer = try decoder.container(keyedBy: OuterKey.self)
+        if outer.contains(.project) {
+            let inner = try outer.nestedContainer(keyedBy: InnerKey.self, forKey: .project)
+            self = .project(try inner.decode(UUID.self, forKey: ._0))
+        } else if outer.contains(.filtering) {
+            let inner = try outer.nestedContainer(keyedBy: InnerKey.self, forKey: .filtering)
+            self = .filtering(try inner.decode(UUID.self, forKey: ._0))
+        } else if outer.contains(.smart) {
+            let inner = try outer.nestedContainer(keyedBy: InnerKey.self, forKey: .smart)
+            self = .filtering(try inner.decode(UUID.self, forKey: ._0))
+        } else if outer.contains(.allImages) {
+            self = .allImages
+        } else {
+            self = .none
+        }
+    }
 }
 
 // MARK: - ProjectStore
@@ -447,20 +468,20 @@ final class ProjectStore: @unchecked Sendable {
     struct Snapshot: Codable {
         var projects: [Project] = []
         var items: [ProjectItem] = []
-        var smartProjects: [SmartProject] = []
+        var filteringProjects: [FilteringProject] = []
         var sidebarSelection: SidebarSelection = .none
         var expandedSections: [String: Bool] = [:]
 
         enum CodingKeys: String, CodingKey {
-            case projects, items, smartProjects
+            case projects, items, filteringProjects
             case sidebarSelection, expandedSections
-            case selectedProjectID, selectedSmartProjectID
+            case selectedProjectID, selectedFilteringProjectID
         }
 
-        init(projects: [Project] = [], items: [ProjectItem] = [], smartProjects: [SmartProject] = [], sidebarSelection: SidebarSelection = .none, expandedSections: [String: Bool] = [:]) {
+        init(projects: [Project] = [], items: [ProjectItem] = [], filteringProjects: [FilteringProject] = [], sidebarSelection: SidebarSelection = .none, expandedSections: [String: Bool] = [:]) {
             self.projects = projects
             self.items = items
-            self.smartProjects = smartProjects
+            self.filteringProjects = filteringProjects
             self.sidebarSelection = sidebarSelection
             self.expandedSections = expandedSections
         }
@@ -469,12 +490,12 @@ final class ProjectStore: @unchecked Sendable {
             let c = try decoder.container(keyedBy: CodingKeys.self)
             projects = try c.decodeIfPresent([Project].self, forKey: .projects) ?? []
             items = try c.decodeIfPresent([ProjectItem].self, forKey: .items) ?? []
-            smartProjects = try c.decodeIfPresent([SmartProject].self, forKey: .smartProjects) ?? []
+            filteringProjects = try c.decodeIfPresent([FilteringProject].self, forKey: .filteringProjects) ?? []
             expandedSections = try c.decodeIfPresent([String: Bool].self, forKey: .expandedSections) ?? [:]
             if let sel = try c.decodeIfPresent(SidebarSelection.self, forKey: .sidebarSelection) {
                 sidebarSelection = sel
-            } else if let smartID = try c.decodeIfPresent(UUID.self, forKey: .selectedSmartProjectID) {
-                sidebarSelection = .smart(smartID)
+            } else if let filteringID = try c.decodeIfPresent(UUID.self, forKey: .selectedFilteringProjectID) {
+                sidebarSelection = .filtering(filteringID)
             } else if let projectID = try c.decodeIfPresent(UUID.self, forKey: .selectedProjectID) {
                 sidebarSelection = .project(projectID)
             } else {
@@ -486,7 +507,7 @@ final class ProjectStore: @unchecked Sendable {
             var c = encoder.container(keyedBy: CodingKeys.self)
             try c.encode(projects, forKey: .projects)
             try c.encode(items, forKey: .items)
-            try c.encode(smartProjects, forKey: .smartProjects)
+            try c.encode(filteringProjects, forKey: .filteringProjects)
             try c.encode(sidebarSelection, forKey: .sidebarSelection)
             try c.encode(expandedSections, forKey: .expandedSections)
         }
