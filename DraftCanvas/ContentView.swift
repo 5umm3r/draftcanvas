@@ -137,6 +137,11 @@ struct ContentView: View {
                 onCancel: { viewModel.exportRequest = nil }
             )
         }
+        .onChange(of: viewModel.focusPromptTrigger) { _, _ in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                promptFocusTrigger = true
+            }
+        }
     }
 }
 

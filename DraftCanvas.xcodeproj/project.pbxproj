@@ -63,6 +63,8 @@
 		AD4934E858494D91AE6A39DA /* ImageEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 463F16CE063D41F7BE7DEBD8 /* ImageEncoder.swift */; };
 		B27426D2BB989AB418B9CE0A /* VectorizingOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A210B096C95BC73D72354E1 /* VectorizingOverlay.swift */; };
 		B2D5DA32E3484C4696DB4A27 /* BinaryRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F69E3FAEA4A4B2AB9EFF224 /* BinaryRunner.swift */; };
+		A132B80CE0D6480F8C6609F5 /* CodexCostBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A116412C44FA2816DEBF3 /* CodexCostBadge.swift */; };
+		6D5D1FA5364B40638154C18BA55ADB3F /* AuroraPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F4EB0EF2B144D698A6FF43FDBF0752B /* AuroraPlaceholderView.swift */; };
 		B8D9D407FB64ED096398E71A /* PopoverButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5EB180980BB2AAFC5E98E4A /* PopoverButton.swift */; };
 		BE3A138929BF42F98670599E /* CanvasMetricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A9FECC2E7F14E67952FB30D /* CanvasMetricsTests.swift */; };
 		C1F60926268CA8767E51619D /* DraftCanvasViewModel+CanvasImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A03337AB6A2A6AB4F968292 /* DraftCanvasViewModel+CanvasImport.swift */; };
@@ -164,6 +166,8 @@
 		DA755653AF12594D863F311F /* StatusBadge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = StatusBadge.swift; path = Views/StatusBadge.swift; sourceTree = "<group>"; };
 		DBBB7479702C367B6BF48DFA /* ItemDetailPopover.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ItemDetailPopover.swift; path = Views/ItemDetailPopover.swift; sourceTree = "<group>"; };
 		DE038D36DC08113ECCE4458E /* DraftCanvasViewModel+Export.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Export.swift"; path = "ViewModel/DraftCanvasViewModel+Export.swift"; sourceTree = "<group>"; };
+		134A116412C44FA2816DEBF3 /* CodexCostBadge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CodexCostBadge.swift; path = Views/CodexCostBadge.swift; sourceTree = "<group>"; };
+		5F4EB0EF2B144D698A6FF43FDBF0752B /* AuroraPlaceholderView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AuroraPlaceholderView.swift; path = Views/AuroraPlaceholderView.swift; sourceTree = "<group>"; };
 		E5EB180980BB2AAFC5E98E4A /* PopoverButton.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PopoverButton.swift; path = Views/PopoverButton.swift; sourceTree = "<group>"; };
 		E824D7305F84430390074FD7 /* PromptCopyButton.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptCopyButton.swift; path = Views/PromptCopyButton.swift; sourceTree = "<group>"; };
 		EE02EE4CC52B71578EA2CEAA /* DraftCanvasViewModel+Items.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Items.swift"; path = "ViewModel/DraftCanvasViewModel+Items.swift"; sourceTree = "<group>"; };
@@ -272,6 +276,8 @@
 				5DC1F9813F6149588206DB57719B8174 /* CanvasAutoScroller.swift */,
 				B24862D0B74E492482C69B38F6415D7A /* CanvasRubberBandOverlay.swift */,
 				882F372486E669E60EAD25D8 /* AttachedImageThumbnail.swift */,
+				134A116412C44FA2816DEBF3 /* CodexCostBadge.swift */,
+				5F4EB0EF2B144D698A6FF43FDBF0752B /* AuroraPlaceholderView.swift */,
 				E5EB180980BB2AAFC5E98E4A /* PopoverButton.swift */,
 				E824D7305F84430390074FD7 /* PromptCopyButton.swift */,
 				CD72E76B8321BE3FC8DC9891 /* GenerationCountPopover.swift */,
@@ -499,6 +505,8 @@
 				372FA8FC0D6B415B8F59F697CCD2B39A /* CanvasAutoScroller.swift in Sources */,
 				35B6FF2A15554A869FE5858A2194F80F /* CanvasRubberBandOverlay.swift in Sources */,
 				11E0B45D4D0F324989FCCD93 /* AttachedImageThumbnail.swift in Sources */,
+				A132B80CE0D6480F8C6609F5 /* CodexCostBadge.swift in Sources */,
+				6D5D1FA5364B40638154C18BA55ADB3F /* AuroraPlaceholderView.swift in Sources */,
 				B8D9D407FB64ED096398E71A /* PopoverButton.swift in Sources */,
 				6C7D321C41B44E16A879562D /* PromptCopyButton.swift in Sources */,
 				8454C6ADF1B737489686A10D /* GenerationCountPopover.swift in Sources */,

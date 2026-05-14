@@ -60,7 +60,13 @@ extension ContentView {
                 HStack {
                     AttachedImageThumbnail(
                         filePath: attachedImage.filePath,
-                        onRemove: { viewModel.removeAttachedImage() }
+                        onRemove: {
+                            if viewModel.currentInputs.editSource != nil {
+                                viewModel.cancelEditingHistoryItem()
+                            } else {
+                                viewModel.removeAttachedImage()
+                            }
+                        }
                     )
                     Spacer()
                 }
@@ -116,22 +122,26 @@ extension ContentView {
                     Button {
                         viewModel.enhancePrompt()
                     } label: {
-                        Group {
-                            if viewModel.isEnhancingPrompt {
-                                Image(systemName: "sparkle")
-                                    .rotationEffect(.degrees(enhanceRotation))
-                                    .onAppear {
-                                        withAnimation(.linear(duration: 1.5).repeatForever(autoreverses: false)) {
-                                            enhanceRotation = 360
+                        HStack(spacing: 3) {
+                            Group {
+                                if viewModel.isEnhancingPrompt {
+                                    Image(systemName: "sparkle")
+                                        .rotationEffect(.degrees(enhanceRotation))
+                                        .onAppear {
+                                            withAnimation(.linear(duration: 1.5).repeatForever(autoreverses: false)) {
+                                                enhanceRotation = 360
+                                            }
                                         }
-                                    }
-                                    .onDisappear { enhanceRotation = 0 }
-                            } else {
-                                Image(systemName: "sparkles")
+                                        .onDisappear { enhanceRotation = 0 }
+                                } else {
+                                    Image(systemName: "sparkles")
+                                }
                             }
+                            .font(.system(size: 14, weight: .medium))
+                            CodexCostBadge(level: viewModel.itemActionCostLevel)
                         }
-                        .font(.system(size: 14, weight: .medium))
-                        .frame(width: 28, height: 28)
+                        .frame(minWidth: 28, minHeight: 28, maxHeight: 28)
+                        .padding(.horizontal, viewModel.itemActionCostLevel > 0 ? 4 : 0)
                         .background(
                             viewModel.isEnhancingPrompt
                                 ? Color.accentColor.opacity(0.15)
@@ -350,12 +360,16 @@ extension ContentView {
                     Button {
                         viewModel.generate()
                     } label: {
-                        Image(systemName: "arrow.up")
-                            .font(.system(size: 18, weight: .semibold))
-                            .frame(width: 42, height: 42)
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.up")
+                                .font(.system(size: 18, weight: .semibold))
+                            CodexCostBadge(level: viewModel.selectedModelCostLevel)
+                        }
+                        .frame(minWidth: 42, minHeight: 42, maxHeight: 42)
+                        .padding(.horizontal, 6)
                     }
                     .buttonStyle(.borderedProminent)
-                    .clipShape(Circle())
+                    .clipShape(Capsule())
                     .disabled(!viewModel.canGenerate)
                 }
                 .padding(.horizontal, 16)

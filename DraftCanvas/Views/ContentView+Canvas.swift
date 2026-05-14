@@ -585,10 +585,7 @@ extension ContentView {
             viewModel.selectedItemID = nil
         } label: {
             VStack(alignment: .leading, spacing: 8) {
-                ZStack {
-                    checkerboard
-                    preview(for: job)
-                }
+                preview(for: job)
                 .frame(width: size.width, height: size.height)
                 .background(Color(nsColor: .controlBackgroundColor))
                 .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))

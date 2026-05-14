@@ -168,6 +168,7 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var materialExtractionPreview: MaterialExtractionPreview? = nil
     @Published var importProgress: (done: Int, total: Int)? = nil
     @Published var importError: String? = nil
+    @Published var focusPromptTrigger: UUID? = nil
 
     let client: CodexAppServerClient
     let coordinator: GenerationCoordinator

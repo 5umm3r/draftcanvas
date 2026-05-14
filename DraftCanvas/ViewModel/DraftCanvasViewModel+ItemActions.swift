@@ -23,10 +23,14 @@ extension DraftCanvasViewModel {
                 originalFileName: nil
             )
         } else {
-            inputs.attachedImage = nil
+            inputs.attachedImage = AttachedImage(
+                id: item.id,
+                filePath: fileURL.path,
+                originalFileName: nil
+            )
         }
 
-        inputs.prompt = item.prompt
+        inputs.prompt = ""
         inputs.aspectRatio = item.aspectRatio
         inputs.editSource = GenerationEditSource(
             projectItemID: item.id,
@@ -34,6 +38,7 @@ extension DraftCanvasViewModel {
             originalPrompt: item.prompt
         )
         inputsByProject[id] = inputs
+        focusPromptTrigger = UUID()
         if let idx = projects.firstIndex(where: { $0.id == id }) {
             projects[idx].updatedAt = Date()
         }
@@ -87,8 +92,12 @@ extension DraftCanvasViewModel {
                     if let attached = inputs.attachedImage {
                         self.projectStore.cleanupAttachment(id: attached.id)
                     }
-                    inputs.attachedImage = nil
-                    inputs.prompt = item.prompt
+                    inputs.attachedImage = AttachedImage(
+                        id: item.id,
+                        filePath: fileURL.path,
+                        originalFileName: nil
+                    )
+                    inputs.prompt = ""
                     inputs.aspectRatio = item.aspectRatio
                     inputs.editSource = GenerationEditSource(
                         projectItemID: item.id,
@@ -98,7 +107,9 @@ extension DraftCanvasViewModel {
                         compositeFilePath: compositeURL.path
                     )
                     self.inputsByProject[id] = inputs
+                    self.activeEditProjectID = id
                     self.inpaintingTarget = nil
+                    self.focusPromptTrigger = UUID()
                     self.logs.append("マスク編集を設定しました: \(item.id)")
                 }
             } catch {
@@ -115,6 +126,7 @@ extension DraftCanvasViewModel {
         let fileURL = projectStore.resolvedFileURL(for: item)
 
         inpaintingTarget = nil
+        activeEditProjectID = projectID
 
         let fastModel = Self.selectFastLowCostModel(from: availableModels)
         let removalCoordinator = coordinator

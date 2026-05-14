@@ -66,6 +66,19 @@ extension DraftCanvasViewModel {
         currentInputs.editSource != nil
     }
 
+    var selectedModelCostLevel: Int {
+        let modelID = currentInputs.model
+        guard !modelID.isEmpty,
+              let model = availableModels.first(where: { $0.id == modelID }) else { return 0 }
+        return model.rating?.costLevel ?? 0
+    }
+
+    var itemActionCostLevel: Int {
+        guard !availableModels.isEmpty else { return 0 }
+        let model = Self.selectFastLowCostModel(from: availableModels)
+        return model.rating?.costLevel ?? 0
+    }
+
     var canGenerate: Bool {
         !currentInputs.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             && !isGeneratingForSelected

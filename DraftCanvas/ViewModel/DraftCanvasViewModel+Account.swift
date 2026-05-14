@@ -139,6 +139,10 @@ extension DraftCanvasViewModel {
         if let editSource = inputs.editSource, editSource.isInpainting {
             projectStore.cleanupMaskFiles(id: editSource.projectItemID)
         }
+        if let attached = inputs.attachedImage {
+            projectStore.cleanupAttachment(id: attached.id)
+        }
+        inputs.attachedImage = nil
         inputs.editSource = nil
         inputsByProject[id] = inputs
         activeEditProjectID = nil

@@ -38,20 +38,26 @@ struct ItemDetailPopover: View {
             Divider()
                 .padding(.vertical, 2)
 
-            PopoverButton(systemImage: "wand.and.stars", title: "再編集") {
-                viewModel.edit(item: item)
-                viewModel.selectedItemID = nil
-            }
+            PopoverButton(systemImage: "wand.and.stars", title: "再編集",
+                          action: {
+                              viewModel.edit(item: item)
+                              viewModel.selectedItemID = nil
+                          },
+                          costLevel: viewModel.selectedModelCostLevel)
 
-            PopoverButton(systemImage: "paintbrush.pointed", title: "マスクして編集") {
-                viewModel.inpaint(item: item)
-                viewModel.selectedItemID = nil
-            }
+            PopoverButton(systemImage: "paintbrush.pointed", title: "マスクして編集",
+                          action: {
+                              viewModel.inpaint(item: item)
+                              viewModel.selectedItemID = nil
+                          },
+                          costLevel: viewModel.itemActionCostLevel)
 
-            PopoverButton(systemImage: "eraser", title: "マスクして除去") {
-                viewModel.maskRemove(item: item)
-                viewModel.selectedItemID = nil
-            }
+            PopoverButton(systemImage: "eraser", title: "マスクして除去",
+                          action: {
+                              viewModel.maskRemove(item: item)
+                              viewModel.selectedItemID = nil
+                          },
+                          costLevel: viewModel.itemActionCostLevel)
 
             PopoverButton(
                 systemImage: "scissors",

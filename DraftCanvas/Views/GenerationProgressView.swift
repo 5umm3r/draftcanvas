@@ -14,8 +14,7 @@ struct GenerationProgressView: View {
                 }
                 .buttonStyle(.plain)
             } else {
-                ProgressView()
-                    .controlSize(.large)
+                AuroraPlaceholderView()
             }
         }
         .animation(.easeInOut(duration: 0.15), value: isHovering)

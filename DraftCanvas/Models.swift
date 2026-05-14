@@ -44,6 +44,15 @@ struct ModelRating: Equatable {
     ]
 
     static func lookup(displayName: String) -> ModelRating? { table[displayName] }
+
+    var costLevel: Int {
+        switch cost.lowercased() {
+        case "low":  return 1
+        case "mid":  return 2
+        case "high": return 3
+        default:     return 0
+        }
+    }
 }
 
 enum GenerationAspectRatio: String, CaseIterable, Identifiable, Codable {
