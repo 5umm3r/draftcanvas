@@ -519,4 +519,5 @@ extension ContentView {
         default: return effort
         }
     }
+
 }

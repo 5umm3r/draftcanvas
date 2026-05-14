@@ -108,6 +108,11 @@ extension ContentView {
                 .animation(.easeInOut(duration: 0.2), value: viewModel.importProgress != nil)
                 .animation(.easeInOut(duration: 0.2), value: viewModel.importError != nil)
             }
+            .overlay(alignment: .leading) {
+                canvasActionPanel
+                    .padding(.leading, 16)
+            }
+            .animation(.easeInOut(duration: 0.2), value: viewModel.selectedItemID)
             .sheet(item: $viewModel.inpaintingTarget) { item in
                 inpaintingEditorSheet(for: item)
             }
@@ -208,7 +213,8 @@ extension ContentView {
                             }
                         }
                         .padding(.top, 72)
-                        .padding(.horizontal, 24)
+                        .padding(.leading, 84)
+                        .padding(.trailing, 24)
                         .padding(.bottom, 220)
                         .background(
                             AutoScrollerAnchor(scroller: canvasAutoScroller)
@@ -216,6 +222,10 @@ extension ContentView {
                         )
                     }
                     .coordinateSpace(name: "canvasViewport")
+                    .onTapGesture {
+                        viewModel.selectedItemID = nil
+                        viewModel.selectedJobID = nil
+                    }
                     .background(
                         GeometryReader { geo in
                             Color.clear.onAppear { canvasViewportHeight = geo.size.height }
@@ -252,6 +262,7 @@ extension ContentView {
                         TapGesture()
                             .onEnded {
                                 NSApp.keyWindow?.makeFirstResponder(nil)
+                                promptIsFocused = false
                             }
                     )
                     .onPreferenceChange(CardFramePreferenceKey.self) { frames in
@@ -454,19 +465,7 @@ extension ContentView {
         let isMultiSelected = viewModel.selectedItemIDs.contains(item.id)
         let isSingleSelected = viewModel.selectedItemID == item.id
         let isSelected = isMultiSelected || isSingleSelected
-        return Button {
-            if viewModel.isSelectionMode {
-                viewModel.toggleMultiSelection(item)
-            } else {
-                let opening = viewModel.selectedItemID != item.id
-                viewModel.selectedItemID = opening ? item.id : nil
-                viewModel.selectedJobID = nil
-                if opening {
-                    os_signpost(.begin, log: PopoverSignposter.log, name: "ItemDetailPopover")
-                }
-            }
-        } label: {
-            VStack(alignment: .leading, spacing: 8) {
+        return VStack(alignment: .leading, spacing: 8) {
                 ZStack(alignment: .bottomTrailing) {
                     if let sourceID = item.editedFromItemID,
                        let sourceItem = viewModel.items.first(where: { $0.id == sourceID }) {
@@ -533,12 +532,23 @@ extension ContentView {
                     }
                 }
             }
+        .onTapGesture(count: 2) {
+            expandedItem = item
         }
-        .buttonStyle(.plain)
-        .popover(isPresented: .init(
-            get: { viewModel.selectedItemID == item.id && !viewModel.isSelectionMode && viewModel.selectedItemIDs.isEmpty },
-            set: { if !$0 { viewModel.selectedItemID = nil } }
-        )) {
+        .onTapGesture(count: 1) {
+            if viewModel.isSelectionMode {
+                viewModel.toggleMultiSelection(item)
+            } else {
+                viewModel.selectedItemID = (viewModel.selectedItemID == item.id) ? nil : item.id
+                viewModel.selectedJobID = nil
+            }
+        }
+        .rightClickPopover(
+            onOpen: {
+                viewModel.selectedItemID = item.id
+                os_signpost(.begin, log: PopoverSignposter.log, name: "ItemDetailPopover")
+            }
+        ) {
             ItemDetailPopover(item: item, viewModel: viewModel)
         }
         .onDrag {
@@ -627,6 +637,90 @@ extension ContentView {
 
     var checkerboard: some View {
         CheckerboardView(isDark: colorScheme == .dark)
+    }
+
+    @ViewBuilder
+    var canvasActionPanel: some View {
+        if let item = viewModel.items.first(where: { $0.id == viewModel.selectedItemID }),
+           !viewModel.isSelectionMode {
+            VStack(spacing: 6) {
+                CircularPromptActionButton(
+                    systemImage: "wand.and.stars",
+                    tooltip: "再編集",
+                    costLevel: viewModel.selectedModelCostLevel
+                ) {
+                    viewModel.edit(item: item)
+                }
+                CircularPromptActionButton(
+                    systemImage: "paintbrush.pointed",
+                    tooltip: "マスクして編集",
+                    costLevel: viewModel.itemActionCostLevel
+                ) {
+                    viewModel.inpaint(item: item)
+                }
+                CircularPromptActionButton(
+                    systemImage: "eraser",
+                    tooltip: "マスクして除去",
+                    costLevel: viewModel.itemActionCostLevel
+                ) {
+                    viewModel.maskRemove(item: item)
+                }
+                CircularPromptActionButton(
+                    systemImage: "scissors",
+                    tooltip: "背景を除去",
+                    isDisabled: item.isBackgroundRemoved
+                ) {
+                    viewModel.startBackgroundRemoval(item: item)
+                }
+                CircularPromptActionButton(
+                    systemImage: "square.3.layers.3d",
+                    tooltip: "素材分解"
+                ) {
+                    viewModel.startMaterialExtraction(item: item)
+                }
+                CircularPromptActionButton(
+                    systemImage: "pencil.and.outline",
+                    tooltip: "ベクター化",
+                    isDisabled: item.hasSVG
+                ) {
+                    viewModel.vectorize(item: item)
+                }
+
+                Rectangle()
+                    .fill(Color.primary.opacity(0.12))
+                    .frame(width: 28, height: 1)
+                    .padding(.vertical, 2)
+
+                CircularPromptActionButton(
+                    systemImage: "doc.on.doc",
+                    tooltip: "複製"
+                ) {
+                    viewModel.duplicateItem(item)
+                }
+                CircularPromptActionButton(
+                    systemImage: "square.and.arrow.up",
+                    tooltip: "エクスポート"
+                ) {
+                    viewModel.exportItem(item)
+                }
+                CircularPromptActionButton(
+                    systemImage: "folder",
+                    tooltip: "Finderで表示"
+                ) {
+                    viewModel.reveal(item: item)
+                }
+                CircularPromptActionButton(
+                    systemImage: "trash",
+                    tooltip: "削除"
+                ) {
+                    confirmingDeleteItemID = item.id
+                }
+            }
+            .padding(10)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .shadow(color: .black.opacity(0.15), radius: 10, x: 2, y: 4)
+            .transition(.opacity.combined(with: .move(edge: .leading)))
+        }
     }
 }
 

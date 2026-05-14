@@ -38,6 +38,8 @@ struct ContentView: View {
     @State var hoverExpandTask: Task<Void, Never>? = nil
     @State var hoverCollapseTask: Task<Void, Never>? = nil
     @State var promptFocusTrigger: Bool = false
+    @State var expandedItem: ProjectItem? = nil
+    @State var confirmingDeleteItemID: UUID? = nil
 
     var body: some View {
         VStack(spacing: 0) {
@@ -66,6 +68,15 @@ struct ContentView: View {
                     }
             }
         }
+        .overlay {
+            if let item = expandedItem {
+                ExpandedImageSheet(item: item, viewModel: viewModel) {
+                    withAnimation(.easeInOut(duration: 0.2)) { expandedItem = nil }
+                }
+                .transition(.opacity)
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: expandedItem != nil)
         .animation(.easeInOut(duration: 0.25), value: viewModel.errorToast)
         .onDisappear {
             viewModel.stopServer()
@@ -136,6 +147,21 @@ struct ContentView: View {
                 },
                 onCancel: { viewModel.exportRequest = nil }
             )
+        }
+        .alert("画像を削除しますか？", isPresented: .init(
+            get: { confirmingDeleteItemID != nil },
+            set: { if !$0 { confirmingDeleteItemID = nil } }
+        )) {
+            Button("削除", role: .destructive) {
+                if let id = confirmingDeleteItemID,
+                   let item = viewModel.items.first(where: { $0.id == id }) {
+                    viewModel.deleteItem(item)
+                }
+                confirmingDeleteItemID = nil
+            }
+            Button("キャンセル", role: .cancel) { confirmingDeleteItemID = nil }
+        } message: {
+            Text("この操作は取り消せません。")
         }
         .onChange(of: viewModel.focusPromptTrigger) { _, _ in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
