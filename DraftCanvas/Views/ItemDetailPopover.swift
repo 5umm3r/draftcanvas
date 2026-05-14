@@ -64,6 +64,11 @@ struct ItemDetailPopover: View {
                 disabledReason: item.isBackgroundRemoved ? "背景除去済み" : nil
             )
 
+            PopoverButton(systemImage: "square.3.layers.3d", title: "素材分解") {
+                viewModel.startMaterialExtraction(item: item)
+                viewModel.selectedItemID = nil
+            }
+
             PopoverButton(
                 systemImage: "pencil.and.outline",
                 title: "ベクター化",

@@ -20,11 +20,21 @@ enum CanvasEntry: Identifiable {
 
 enum CanvasCardLayout {
     static let baseSquareSide: CGFloat = 220
-    static let maxWidthMultiplier: CGFloat = 4.0 / 3.0
+    static let baseSpacing: CGFloat = 20
+    static let minSpacing: CGFloat = 8
+
     static func size(for ratio: CGFloat, zoom: CGFloat) -> CGSize {
         let r = max(ratio, 0.01)
-        let s = sqrt(r)
-        return CGSize(width: baseSquareSide * s * zoom, height: baseSquareSide / s * zoom)
+        let longSide = baseSquareSide * zoom
+        if r >= 1 {
+            return CGSize(width: longSide, height: longSide / r)
+        } else {
+            return CGSize(width: longSide * r, height: longSide)
+        }
+    }
+
+    static func spacing(zoom: CGFloat) -> CGFloat {
+        max(minSpacing, baseSpacing * zoom)
     }
 }
 
@@ -104,6 +114,9 @@ extension ContentView {
             .sheet(item: $viewModel.backgroundRemovalPreview) { preview in
                 BackgroundRemovalPreviewSheet(preview: preview, viewModel: viewModel)
             }
+            .sheet(item: $viewModel.materialExtractionPreview) { preview in
+                MaterialExtractionSheet(preview: preview, viewModel: viewModel)
+            }
             .onAppear {
                 #if DEBUG
                 CanvasMetrics.reset()
@@ -169,12 +182,13 @@ extension ContentView {
             } else {
                 ScrollViewReader { proxy in
                     ScrollView(.vertical) {
+                        let gridSpacing = CanvasCardLayout.spacing(zoom: canvasZoom)
                         LazyVGrid(
                             columns: [GridItem(
                                 .adaptive(minimum: CanvasCardLayout.baseSquareSide * canvasZoom),
-                                spacing: 28
+                                spacing: gridSpacing
                             )],
-                            spacing: 28
+                            spacing: gridSpacing
                         ) {
                             ForEach(canvasEntries) { entry in
                                 canvasCard(for: entry)

@@ -34,6 +34,10 @@ struct ContentView: View {
     @State var canvasViewportHeight: CGFloat = 600
     @State var showSaveSearchAlert = false
     @State var pendingSidebarSelection: SidebarSelection?
+    @State var isPromptHoverExpanded: Bool = false
+    @State var hoverExpandTask: Task<Void, Never>? = nil
+    @State var hoverCollapseTask: Task<Void, Never>? = nil
+    @State var promptFocusTrigger: Bool = false
 
     var body: some View {
         VStack(spacing: 0) {

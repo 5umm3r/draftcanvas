@@ -110,6 +110,7 @@ struct PromptTextView: NSViewRepresentable {
     var onDropNSImage: ((NSImage) -> Void)?
     var onDragEntered: (() -> Void)?
     var onDragExited: (() -> Void)?
+    var focusTrigger: Binding<Bool>? = nil
 
     func makeNSView(context: Context) -> NSScrollView {
         let textView = FocusableTextView()
@@ -185,6 +186,13 @@ struct PromptTextView: NSViewRepresentable {
         context.coordinator.onDragExited = onDragExited
         context.coordinator.maxHeight = maxHeight
         scrollView.hasVerticalScroller = dynamicHeight >= maxHeight
+        if focusTrigger?.wrappedValue == true {
+            if let textView = scrollView.documentView as? FocusableTextView {
+                scrollView.window?.makeFirstResponder(textView)
+            }
+            let trigger = focusTrigger
+            DispatchQueue.main.async { trigger?.wrappedValue = false }
+        }
     }
 
     func makeCoordinator() -> Coordinator {

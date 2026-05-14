@@ -165,6 +165,7 @@ final class DraftCanvasViewModel: ObservableObject {
         }
     }
     @Published var backgroundRemovalPreview: BackgroundRemovalPreview? = nil
+    @Published var materialExtractionPreview: MaterialExtractionPreview? = nil
     @Published var importProgress: (done: Int, total: Int)? = nil
     @Published var importError: String? = nil
 
