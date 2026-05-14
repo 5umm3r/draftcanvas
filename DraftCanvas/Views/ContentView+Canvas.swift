@@ -485,12 +485,11 @@ extension ContentView {
                             }
                             .overlay(alignment: .topLeading) {
                                 Image(systemName: "arrow.uturn.backward")
-                                    .font(.system(size: thumbSize * 0.32, weight: .bold))
-                                    .foregroundStyle(.white)
-                                    .frame(width: thumbSize * 0.5, height: thumbSize * 0.5)
-                                    .background(Circle().fill(Color.accentColor))
-                                    .overlay(Circle().stroke(.white, lineWidth: 1.5))
-                                    .offset(x: -thumbSize * 0.15, y: -thumbSize * 0.15)
+                                    .font(.system(size: thumbSize * 0.26, weight: .medium))
+                                    .foregroundStyle(.white.opacity(0.9))
+                                    .frame(width: thumbSize * 0.38, height: thumbSize * 0.38)
+                                    .background(Circle().fill(Color.black.opacity(0.55)))
+                                    .offset(x: -thumbSize * 0.1, y: -thumbSize * 0.1)
                             }
                             .shadow(color: .black.opacity(0.25), radius: 3, x: 0, y: 1)
                             .offset(x: thumbSize / 3, y: thumbSize / 3)
