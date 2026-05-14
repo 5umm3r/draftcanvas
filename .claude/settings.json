@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f ~/Library/Logs/DraftCanvas/canvas.log ]; then echo '=== DraftCanvas CanvasMetrics ===' && grep 'CanvasMetrics' ~/Library/Logs/DraftCanvas/canvas.log | tail -20; echo '=== Recent App Events (non-JSONRPC) ===' && grep -v '-> {\\|<- {\\|-> {\\|method\\|result' ~/Library/Logs/DraftCanvas/canvas.log | tail -10; fi"
+          }
+        ]
+      }
+    ]
+  }
+}

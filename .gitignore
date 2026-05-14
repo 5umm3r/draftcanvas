@@ -36,10 +36,6 @@ Carthage/Build/
 .Trashes
 
 # Screenshots
-*.png
-*.jpg
-*.jpeg
-*.gif
 !Assets.xcassets/**
 
 # Build artifacts
@@ -56,3 +52,9 @@ fastlane/test_output
 # Env
 .env
 .env.local
+
+# build files
+_build/
+
+# Claude Code local settings
+.claude/settings.local.json

@@ -1,8 +1,8 @@
-# AGENTS.md - kakeibo Development Workflow
+# AGENTS.md - DraftCanvas Development Workflow
 
 ## Project Overview
 
-**Project**: Image Creator
+**Project**: DraftCanvas
 
 ---
 
@@ -38,4 +38,5 @@ AIエージェントが計画・実装・レビューを一貫して担当しま
 - 一時しのぎではなく根本原因を特定して修正する
 - 翻訳は直訳ではなく、アプリUIとして自然な文言にする
 
----
+### ビルド
+- ビルドした成果物は _build/ ディレクトリに格納
