@@ -390,6 +390,7 @@ extension ContentView {
 
                     if viewModel.isSelectionMode {
                         Button {
+                            guard EntitlementGate.shared.requireUnlocked() else { return }
                             viewModel.exportSelectedBatch()
                         } label: {
                             Image(systemName: "square.and.arrow.up.on.square")
@@ -685,6 +686,7 @@ extension ContentView {
                     tooltip: "マスクして編集",
                     costLevel: viewModel.itemActionCostLevel
                 ) {
+                    guard EntitlementGate.shared.requireUnlocked() else { return }
                     viewModel.inpaint(item: item)
                 }
                 CircularPromptActionButton(
@@ -692,6 +694,7 @@ extension ContentView {
                     tooltip: "マスクして除去",
                     costLevel: viewModel.itemActionCostLevel
                 ) {
+                    guard EntitlementGate.shared.requireUnlocked() else { return }
                     viewModel.maskRemove(item: item)
                 }
                 CircularPromptActionButton(
@@ -713,6 +716,7 @@ extension ContentView {
                     costLevel: viewModel.itemActionCostLevel,
                     isDisabled: viewModel.upscalingItemIDs.contains(item.id)
                 ) {
+                    guard EntitlementGate.shared.requireUnlocked() else { return }
                     viewModel.upscaleItem(item)
                 }
                 CircularPromptActionButton(
@@ -738,6 +742,7 @@ extension ContentView {
                     systemImage: "square.and.arrow.up",
                     tooltip: "エクスポート"
                 ) {
+                    guard EntitlementGate.shared.requireUnlocked() else { return }
                     viewModel.exportItem(item)
                 }
                 CircularPromptActionButton(

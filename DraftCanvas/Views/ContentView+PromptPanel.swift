@@ -164,6 +164,7 @@ extension ContentView {
                     let promptEmpty = prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                     let enhanceDisabled = promptEmpty || viewModel.isEnhancingPrompt
                     Button {
+                        guard EntitlementGate.shared.requireUnlocked() else { return }
                         viewModel.enhancePrompt()
                     } label: {
                         HStack(spacing: 3) {
