@@ -536,6 +536,17 @@ extension ContentView {
                                 .padding(6)
                         }
                     }
+                    .overlay(alignment: .bottomLeading) {
+                        if item.hasSVG && !viewModel.vectorizingItemIDs.contains(item.id) {
+                            Text("SVG")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 5)
+                                .padding(.vertical, 2)
+                                .background(Color.primary.opacity(0.45), in: Capsule())
+                                .padding(6)
+                        }
+                    }
                     .overlay {
                         if viewModel.vectorizingItemIDs.contains(item.id) {
                             VectorizingOverlay {

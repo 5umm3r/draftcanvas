@@ -91,6 +91,9 @@
 		a2411cdce34e40e9b9c6aea86e09bfab /* FilteringProjectCreationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = b79086998a564de490b9a76dbc67c001 /* FilteringProjectCreationSheet.swift */; };
 		dffa5788acfc4dfdada1510b9c9aee33 /* DraftCanvasViewModel+FilteringProjects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 142b1b577a9b4336b315f08d800e5d6a /* DraftCanvasViewModel+FilteringProjects.swift */; };
 		f930d5d3164b439c85edb6c7ee4b9d7e /* TagEditorRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5e64e8265c0548dab23dae9cd36602db /* TagEditorRow.swift */; };
+		233426AE6B9448EEA45C33DEBB80E13C /* libvtracer_ffi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FFF632FC9AA946138EEF8D01EA71C8FB /* libvtracer_ffi.a */; };
+		3EBD259BE36E47A89FD065CB179640B0 /* SVGRasterizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE3EFA5CDD03465BACB7B5F557FDE24B /* SVGRasterizer.swift */; };
+		5D142797DE754E1BAF92366C248B473D /* SVGRasterizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EAD194EAC8422CB56493A8620C628D /* SVGRasterizerTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -190,6 +193,10 @@
 		F24932CE5F0543658FB9BBC0 /* ExportOptionsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportOptionsViewModel.swift; sourceTree = "<group>"; };
 		b79086998a564de490b9a76dbc67c001 /* FilteringProjectCreationSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FilteringProjectCreationSheet.swift; path = Views/FilteringProjectCreationSheet.swift; sourceTree = "<group>"; };
 		b7e96c4970d44133991b9ff817e3cefd /* CanvasScrollZoomCatcher.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CanvasScrollZoomCatcher.swift; path = Views/CanvasScrollZoomCatcher.swift; sourceTree = "<group>"; };
+		FFF632FC9AA946138EEF8D01EA71C8FB /* libvtracer_ffi.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libvtracer_ffi.a; path = Vendor/vtracer/libvtracer_ffi.a; sourceTree = "<group>"; };
+		F734F6B0F1AA4ED5A56AC808B41AB8F9 /* DraftCanvas-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DraftCanvas-Bridging-Header.h"; sourceTree = "<group>"; };
+		EE3EFA5CDD03465BACB7B5F557FDE24B /* SVGRasterizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SVGRasterizer.swift; sourceTree = "<group>"; };
+		B4EAD194EAC8422CB56493A8620C628D /* SVGRasterizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SVGRasterizerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -197,6 +204,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				233426AE6B9448EEA45C33DEBB80E13C /* libvtracer_ffi.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -246,6 +254,9 @@
 				501EDB9B442663ADFD8D33AE /* Views */,
 				348EA8028E7876473A56C7EA /* MaterialExtractor.swift */,
 				AA0000010000000100000001 /* ImageUpscaler.swift */,
+				EE3EFA5CDD03465BACB7B5F557FDE24B /* SVGRasterizer.swift */,
+				F734F6B0F1AA4ED5A56AC808B41AB8F9 /* DraftCanvas-Bridging-Header.h */,
+				FFF632FC9AA946138EEF8D01EA71C8FB /* libvtracer_ffi.a */,
 			);
 			path = DraftCanvas;
 			sourceTree = "<group>";
@@ -268,6 +279,7 @@
 				8A9FECC2E7F14E67952FB30D /* CanvasMetricsTests.swift */,
 				10A000FF2D00000100000001 /* ImageVectorizerTests.swift */,
 				10A001052D00000100000001 /* CodexVersionFetcherTests.swift */,
+				B4EAD194EAC8422CB56493A8620C628D /* SVGRasterizerTests.swift */,
 			);
 			path = DraftCanvasTests;
 			sourceTree = "<group>";
@@ -559,6 +571,7 @@
 				AA0000010000000100000011 /* ImageUpscaler.swift in Sources */,
 				AA0000010000000100000012 /* DraftCanvasViewModel+Upscale.swift in Sources */,
 				AA0000010000000100000013 /* UpscalePreviewSheet.swift in Sources */,
+				3EBD259BE36E47A89FD065CB179640B0 /* SVGRasterizer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -572,6 +585,7 @@
 				BE3A138929BF42F98670599E /* CanvasMetricsTests.swift in Sources */,
 				10A001002D00000100000001 /* ImageVectorizerTests.swift in Sources */,
 				10A001062D00000100000001 /* CodexVersionFetcherTests.swift in Sources */,
+				5D142797DE754E1BAF92366C248B473D /* SVGRasterizerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -710,16 +724,25 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/DraftCanvas/Vendor/vtracer",
+				);
 				INFOPLIST_KEY_CFBundleDisplayName = "Draft Canvas";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/DraftCanvas/Vendor/vtracer",
+				);
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = local.draftcanvas.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "DraftCanvas/DraftCanvas-Bridging-Header.h";
 				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
@@ -734,16 +757,25 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/DraftCanvas/Vendor/vtracer",
+				);
 				INFOPLIST_KEY_CFBundleDisplayName = "Draft Canvas";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/DraftCanvas/Vendor/vtracer",
+				);
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = local.draftcanvas.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "DraftCanvas/DraftCanvas-Bridging-Header.h";
 				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
@@ -756,6 +788,10 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/DraftCanvas/Vendor/vtracer",
+				);
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -777,6 +813,10 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/DraftCanvas/Vendor/vtracer",
+				);
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",

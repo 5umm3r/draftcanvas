@@ -33,6 +33,11 @@ struct ExportOptionsSheet: View {
             footer
         }
         .frame(minWidth: 520, idealWidth: 560, minHeight: 480)
+        .onAppear {
+            if vm.request.hasVectorSVG {
+                vm.format = .svg
+            }
+        }
     }
 
     // MARK: - Header
@@ -55,6 +60,7 @@ struct ExportOptionsSheet: View {
             }
             .pickerStyle(.segmented)
             .frame(width: 200)
+            .disabled(vm.request.hasVectorSVG)
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 12)

@@ -15,8 +15,11 @@ extension DraftCanvasViewModel {
 
         let task = Task {
             do {
+                try Task.checkCancellation()
                 let inputData = try Data(contentsOf: fileURL)
+                try Task.checkCancellation()
                 let result = try await ImageVectorizer.process(data: inputData)
+                try Task.checkCancellation()
 
                 await MainActor.run { [weak self] in
                     guard let self else { return }
