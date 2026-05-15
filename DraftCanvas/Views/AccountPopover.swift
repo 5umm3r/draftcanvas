@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct AccountPopover: View {
+    @EnvironmentObject private var l10n: LocalizationManager
+
     let status: CodexAccountUsageStatus
     let isLoading: Bool
     let hasFailed: Bool
@@ -18,16 +20,16 @@ struct AccountPopover: View {
             if isLoading {
                 HStack {
                     Spacer()
-                    ProgressView("読み込み中...")
+                    ProgressView(L("読み込み中..."))
                         .padding(.vertical, 16)
                     Spacer()
                 }
             } else if hasFailed {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("取得に失敗しました")
+                    Text(L("取得に失敗しました"))
                         .foregroundStyle(.secondary)
                         .font(.subheadline)
-                    Button("再試行", action: onRetry)
+                    Button(L("再試行"), action: onRetry)
                 }
             } else {
                 HStack(spacing: 10) {
@@ -55,6 +57,25 @@ struct AccountPopover: View {
                     .foregroundStyle(.tertiary)
                     .padding(.top, 4)
 
+                Divider().padding(.vertical, 10)
+                HStack {
+                    Text(L("言語 / Language"))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Picker("", selection: Binding(
+                        get: { l10n.current },
+                        set: { l10n.current = $0 }
+                    )) {
+                        ForEach(LocalizationManager.AppLanguage.allCases) { lang in
+                            Text(lang.displayName).tag(lang)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .labelsHidden()
+                    .fixedSize()
+                }
+
                 if canLogout {
                     Divider().padding(.vertical, 10)
                     Button(action: onLogout) {
@@ -64,7 +85,7 @@ struct AccountPopover: View {
                             } else {
                                 Image(systemName: "rectangle.portrait.and.arrow.right")
                             }
-                            Text("ログアウト")
+                            Text(L("ログアウト"))
                         }
                         .foregroundStyle(.red)
                         .font(.subheadline)

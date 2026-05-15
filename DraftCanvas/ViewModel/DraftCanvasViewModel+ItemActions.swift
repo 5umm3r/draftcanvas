@@ -74,7 +74,7 @@ extension DraftCanvasViewModel {
                 let canvasSize = CGSize(width: pw, height: ph)
 
                 guard let maskData = InpaintingMaskCompositor.renderMask(from: strokes, canvasSize: canvasSize) else {
-                    await MainActor.run { self.errorToast = "マスク画像の生成に失敗しました。" }
+                    await MainActor.run { self.errorToast = L("マスク画像の生成に失敗しました。") }
                     return
                 }
 
@@ -114,7 +114,7 @@ extension DraftCanvasViewModel {
                 }
             } catch {
                 await MainActor.run {
-                    self.errorToast = "マスクの処理に失敗しました: \(error.localizedDescription)"
+                    self.errorToast = L("マスクの処理に失敗しました: \(error.localizedDescription)")
                     self.logs.append("マスク編集処理エラー: \(error.localizedDescription)")
                 }
             }
@@ -153,7 +153,7 @@ extension DraftCanvasViewModel {
 
                 guard let maskData = InpaintingMaskCompositor.renderMask(from: strokes, canvasSize: canvasSize) else {
                     await MainActor.run {
-                        self.errorToast = "マスク画像の生成に失敗しました。"
+                        self.errorToast = L("マスク画像の生成に失敗しました。")
                         self.generatingProjectIDs.remove(projectID)
                     }
                     return
@@ -201,7 +201,7 @@ extension DraftCanvasViewModel {
                 }
             } catch {
                 await MainActor.run {
-                    self.errorToast = "マスク除去に失敗しました: \(error.localizedDescription)"
+                    self.errorToast = L("マスク除去に失敗しました: \(error.localizedDescription)")
                     self.logs.append("マスク除去エラー: \(error.localizedDescription)")
                     self.generatingProjectIDs.remove(projectID)
                 }
@@ -229,7 +229,7 @@ extension DraftCanvasViewModel {
             do {
                 let inputData = try Data(contentsOf: fileURL)
                 let session = try await BackgroundRemover.extractMask(from: inputData)
-                let initialData = try BackgroundRemover.apply(session: session, edgeStrength: 0.5)
+                let initialData = try BackgroundRemover.apply(session: session, edgeStrength: 0.5, mode: session.initialMode)
 
                 var succeeded = running
                 succeeded.status = .succeeded
@@ -247,7 +247,7 @@ extension DraftCanvasViewModel {
                 failed.errorMessage = error.localizedDescription
                 upsert(failed, into: projectID)
                 let message = (error as? BackgroundRemovalError)?.localizedDescription
-                    ?? "背景除去に失敗しました"
+                    ?? L("背景除去に失敗しました")
                 errorToast = message
                 logs.append("背景除去失敗: \(error.localizedDescription)")
             }
@@ -277,7 +277,7 @@ extension DraftCanvasViewModel {
             saveState()
             logs.append("背景除去保存完了: \(newItem.id)")
         } catch {
-            errorToast = "背景除去結果の保存に失敗しました"
+            errorToast = L("背景除去結果の保存に失敗しました")
             logs.append("背景除去保存失敗: \(error.localizedDescription)")
         }
     }

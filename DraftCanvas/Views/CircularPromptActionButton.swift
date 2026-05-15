@@ -2,7 +2,7 @@ import SwiftUI
 
 struct CircularPromptActionButton: View {
     let systemImage: String
-    let tooltip: String
+    let tooltip: LocalizedStringKey
     var costLevel: Int? = nil
     var isDisabled: Bool = false
     let action: () -> Void

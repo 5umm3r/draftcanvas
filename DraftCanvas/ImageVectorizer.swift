@@ -11,12 +11,12 @@ enum ImageVectorizationError: Error, LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .imageDecodeFailed:              return "画像ファイルを読み込めませんでした"
-        case .colorQuantizationFailed:        return "色の解析に失敗しました"
-        case .contourDetectionFailed(let e):  return "輪郭検出に失敗しました: \(e.localizedDescription)"
-        case .noContoursFound:                return "画像から輪郭を検出できませんでした"
-        case .svgEncodeFailed:                return "SVGの生成に失敗しました"
-        case .previewRenderFailed:            return "プレビュー画像の生成に失敗しました"
+        case .imageDecodeFailed:              return L("画像ファイルを読み込めませんでした")
+        case .colorQuantizationFailed:        return L("色の解析に失敗しました")
+        case .contourDetectionFailed(let e):  return L("輪郭検出に失敗しました: \(e.localizedDescription)")
+        case .noContoursFound:                return L("画像から輪郭を検出できませんでした")
+        case .svgEncodeFailed:                return L("SVGの生成に失敗しました")
+        case .previewRenderFailed:            return L("プレビュー画像の生成に失敗しました")
         }
     }
 }

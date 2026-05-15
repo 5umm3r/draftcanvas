@@ -89,7 +89,7 @@ extension ContentView {
                             ProgressView()
                                 .scaleEffect(0.7)
                                 .frame(width: 16, height: 16)
-                            Text("\(progress.done) / \(progress.total) 枚処理中…")
+                            Text(L("\(progress.done) / \(progress.total) 枚処理中…"))
                                 .font(.subheadline.weight(.medium))
                         }
                         .padding(.horizontal, 16)
@@ -115,17 +115,21 @@ extension ContentView {
             .animation(.easeInOut(duration: 0.2), value: viewModel.selectedItemID)
             .sheet(item: $viewModel.inpaintingTarget) { item in
                 inpaintingEditorSheet(for: item)
+                    .environment(\.locale, l10n.locale)
             }
             .sheet(item: $viewModel.backgroundRemovalPreview) { preview in
                 BackgroundRemovalPreviewSheet(preview: preview, viewModel: viewModel)
+                    .environment(\.locale, l10n.locale)
             }
             .sheet(item: $viewModel.materialExtractionPreview) { preview in
                 MaterialExtractionSheet(preview: preview, viewModel: viewModel)
+                    .environment(\.locale, l10n.locale)
             }
             .sheet(item: $viewModel.upscalePreview) { payload in
                 UpscalePreviewSheet(payload: payload) { mode in
                     viewModel.commitUpscale(payload: payload, mode: mode)
                 }
+                .environment(\.locale, l10n.locale)
             }
             .onAppear {
                 #if DEBUG
@@ -374,7 +378,7 @@ extension ContentView {
                             .stroke(viewModel.isSelectionMode ? Color.accentColor.opacity(0.4) : Color.primary.opacity(0.08), lineWidth: 1)
                     }
                     .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
-                    .help(viewModel.isSelectionMode ? "選択モード終了" : "選択モード")
+                    .help(viewModel.isSelectionMode ? LocalizedStringKey("選択モード終了") : LocalizedStringKey("選択モード"))
 
                     let total = viewModel.displayedItemsSnapshot.count
                     let selected = viewModel.selectedItemIDs.count
@@ -627,6 +631,7 @@ extension ContentView {
             set: { if !$0 { viewModel.selectedJobID = nil } }
         )) {
             GenerationDetailPopover(job: job, viewModel: viewModel)
+                .environment(\.locale, l10n.locale)
         }
     }
 
@@ -829,7 +834,7 @@ struct JobPreviewView: View {
                     Image(systemName: "exclamationmark.triangle")
                         .font(.system(size: 28))
                         .foregroundStyle(.orange)
-                    Text(job.errorMessage ?? "生成に失敗しました")
+                    Text(job.errorMessage ?? L("生成に失敗しました"))
                         .font(.caption)
                         .multilineTextAlignment(.center)
                         .foregroundStyle(.secondary)

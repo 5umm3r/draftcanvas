@@ -85,7 +85,7 @@ extension ContentView {
                 HStack(spacing: 8) {
                     Image(systemName: editSource.isInpainting ? "paintbrush.pointed" : "wand.and.stars")
                         .foregroundStyle(.secondary)
-                    Text(editSource.isInpainting ? "マスクして編集モード" : "再編集モード")
+                    Text(editSource.isInpainting ? LocalizedStringKey("マスクして編集モード") : LocalizedStringKey("再編集モード"))
                         .font(.caption.weight(.semibold))
                     Spacer()
                     Button("解除") {
@@ -250,7 +250,7 @@ extension ContentView {
                             } label: {
                                 if let r = model.rating {
                                     Label(
-                                        "\(model.displayName)   コスト:\(r.cost)  賢さ:\(r.smart)  速さ:\(r.speed)",
+                                        "\(model.displayName)   \(L("コスト")):\(r.cost)  \(L("賢さ")):\(r.smart)  \(L("速さ")):\(r.speed)",
                                         systemImage: viewModel.currentInputs.model == model.id ? "checkmark" : ""
                                     )
                                 } else {
@@ -347,7 +347,7 @@ extension ContentView {
                         HStack(spacing: 5) {
                             Image(systemName: "square.stack")
                                 .font(.system(size: 13))
-                            Text("\(viewModel.currentInputs.count)枚")
+                            Text(L("\(viewModel.currentInputs.count)枚"))
                                 .font(.system(size: 13, weight: .medium))
                             Image(systemName: "chevron.down")
                                 .font(.system(size: 9, weight: .semibold))
@@ -370,7 +370,7 @@ extension ContentView {
                         HStack(spacing: 5) {
                             Image(systemName: "square.split.2x1")
                                 .font(.system(size: 13))
-                            Text("\(viewModel.currentInputs.concurrency)並列")
+                            Text(L("\(viewModel.currentInputs.concurrency)並列"))
                                 .font(.system(size: 13, weight: .medium))
                             Image(systemName: "chevron.down")
                                 .font(.system(size: 9, weight: .semibold))
@@ -405,7 +405,7 @@ extension ContentView {
                     }
                     .buttonStyle(.borderless)
                     .disabled(viewModel.currentInputs.editSource != nil)
-                    .help(viewModel.currentInputs.attachedImage != nil ? "参照画像添付中" : "参照画像を添付")
+                    .help(viewModel.currentInputs.attachedImage != nil ? LocalizedStringKey("参照画像添付中") : LocalizedStringKey("参照画像を添付"))
 
                     Button {
                         viewModel.generate()
@@ -567,10 +567,10 @@ extension ContentView {
 
     func reasoningLabel(_ effort: String) -> String {
         switch effort {
-        case "low": return "低"
-        case "medium": return "中"
-        case "high": return "高"
-        case "xhigh": return "最高"
+        case "low": return L("低")
+        case "medium": return L("中")
+        case "high": return L("高")
+        case "xhigh": return L("最高")
         default: return effort
         }
     }

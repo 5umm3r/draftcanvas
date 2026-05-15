@@ -4,6 +4,7 @@ import SwiftUI
 
 struct FilteringSectionHeader: View {
     @ObservedObject var viewModel: DraftCanvasViewModel
+    @EnvironmentObject private var l10n: LocalizationManager
     @Binding var isExpanded: Bool
     @State private var showCreation = false
 
@@ -28,6 +29,7 @@ struct FilteringSectionHeader: View {
         }
         .sheet(isPresented: $showCreation) {
             FilteringProjectCreationSheet(viewModel: viewModel)
+                .environment(\.locale, l10n.locale)
         }
     }
 }
@@ -35,6 +37,7 @@ struct FilteringSectionHeader: View {
 struct FilteringProjectRow: View {
     let filtering: FilteringProject
     @ObservedObject var viewModel: DraftCanvasViewModel
+    @EnvironmentObject private var l10n: LocalizationManager
     @State private var showEdit = false
 
     var body: some View {
@@ -48,6 +51,7 @@ struct FilteringProjectRow: View {
             }
             .sheet(isPresented: $showEdit) {
                 FilteringProjectCreationSheet(viewModel: viewModel, existingFiltering: filtering)
+                    .environment(\.locale, l10n.locale)
             }
     }
 }
@@ -268,7 +272,7 @@ extension ContentView {
         .contentShape(Rectangle())
         .tag(SidebarSelection.project(project.id))
         .contextMenu {
-            Button(project.isFavorite ? "お気に入りから外す" : "お気に入りに追加") {
+            Button(project.isFavorite ? LocalizedStringKey("お気に入りから外す") : LocalizedStringKey("お気に入りに追加")) {
                 viewModel.toggleFavorite(id: project.id)
             }
             Button("名前を変更") {

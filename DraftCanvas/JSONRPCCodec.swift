@@ -23,7 +23,7 @@ enum JSONRPCCodec {
         }
 
         guard JSONSerialization.isValidJSONObject(object) else {
-            throw DraftCanvasError.invalidRequest("JSON-RPCリクエストをJSONとしてエンコードできません。")
+            throw DraftCanvasError.invalidRequest(L("JSON-RPCリクエストをJSONとしてエンコードできません。"))
         }
 
         return try JSONSerialization.data(withJSONObject: object, options: [])

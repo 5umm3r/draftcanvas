@@ -38,9 +38,9 @@ enum JPEGQualityPreset: Int, CaseIterable, Codable {
 
     var displayName: String {
         switch self {
-        case .high98: return "高 (98)"
-        case .mid80: return "中 (80)"
-        case .low60: return "低 (60)"
+        case .high98: return L("高 (98)")
+        case .mid80: return L("中 (80)")
+        case .low60: return L("低 (60)")
         }
     }
 }
@@ -51,8 +51,8 @@ enum PNGOptimizationLevel: Int, CaseIterable, Codable {
 
     var displayName: String {
         switch self {
-        case .fast: return "高速圧縮"
-        case .max: return "最大圧縮（ロッシー）"
+        case .fast: return L("高速圧縮")
+        case .max: return L("最大圧縮（ロッシー）")
         }
     }
 
@@ -76,9 +76,9 @@ enum ExportError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .encodeFailed: return "エクスポートのエンコードに失敗しました。"
-        case .decodeFailed: return "画像のデコードに失敗しました。"
-        case .resizeFailed: return "リサイズに失敗しました。"
+        case .encodeFailed: return L("エクスポートのエンコードに失敗しました。")
+        case .decodeFailed: return L("画像のデコードに失敗しました。")
+        case .resizeFailed: return L("リサイズに失敗しました。")
         }
     }
 }

@@ -72,7 +72,7 @@ extension DraftCanvasViewModel {
             } catch {
                 await MainActor.run {
                     self.isLoggingOut = false
-                    self.errorToast = "ログアウトに失敗しました"
+                    self.errorToast = L("ログアウトに失敗しました")
                     self.logs.append("ログアウト失敗: \(error.localizedDescription)")
                 }
             }

@@ -12,6 +12,7 @@ struct BackgroundRemovalPreviewSheet: View {
     @ObservedObject var viewModel: DraftCanvasViewModel
 
     @State private var edgeStrength: Double = 0.5
+    @State private var mode: BackgroundRemover.Mode
     @State private var currentData: Data
     @State private var isProcessing = false
     @State private var updateTask: Task<Void, Never>?
@@ -20,6 +21,7 @@ struct BackgroundRemovalPreviewSheet: View {
         self.preview = preview
         self.viewModel = viewModel
         self._currentData = State(initialValue: preview.initialData)
+        self._mode = State(initialValue: preview.session.initialMode)
     }
 
     var body: some View {
@@ -34,6 +36,7 @@ struct BackgroundRemovalPreviewSheet: View {
         }
         .frame(minWidth: 640, minHeight: 540)
         .onChange(of: edgeStrength) { scheduleUpdate() }
+        .onChange(of: mode) { scheduleUpdate() }
     }
 
     // MARK: - Subviews
@@ -69,6 +72,16 @@ struct BackgroundRemovalPreviewSheet: View {
 
     private var controlBar: some View {
         HStack(spacing: 16) {
+            // モード切替
+            Picker("", selection: $mode) {
+                Text("ロゴ").tag(BackgroundRemover.Mode.logo)
+                Text("写真").tag(BackgroundRemover.Mode.photo)
+            }
+            .pickerStyle(.segmented)
+            .frame(width: 120)
+            .help(modePickerHelp)
+
+            // 境界調整スライダー
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Text("境界調整")
@@ -85,7 +98,7 @@ struct BackgroundRemovalPreviewSheet: View {
                     Text("拡張").font(.caption2).foregroundStyle(.tertiary)
                 }
             }
-            .frame(maxWidth: 280)
+            .frame(maxWidth: 240)
 
             Spacer()
 
@@ -94,13 +107,21 @@ struct BackgroundRemovalPreviewSheet: View {
             }
             .keyboardShortcut(.escape, modifiers: [])
 
-            Button(isProcessing ? "処理中..." : "保存") {
+            Button(isProcessing ? LocalizedStringKey("処理中...") : LocalizedStringKey("保存")) {
                 viewModel.commitBackgroundRemoval(item: preview.item, data: currentData)
             }
             .buttonStyle(.borderedProminent)
             .disabled(isProcessing)
             .keyboardShortcut(.return, modifiers: [.command])
         }
+    }
+
+    private var modePickerHelp: String {
+        let logoAvail = preview.session.logoMaskCI != nil
+        let photoAvail = preview.session.photoMaskCI != nil
+        if logoAvail && photoAvail { return L("ロゴ: 色差ベース / 写真: AI検出") }
+        if logoAvail { return L("ロゴモードのみ利用可能") }
+        return L("写真モードのみ利用可能")
     }
 
     // MARK: - Real-time update
@@ -119,10 +140,11 @@ struct BackgroundRemovalPreviewSheet: View {
     private func renderPreview() async {
         isProcessing = true
         let strength = edgeStrength
+        let currentMode = mode
         let session = preview.session
         do {
             let data = try await Task.detached(priority: .userInitiated) {
-                try BackgroundRemover.apply(session: session, edgeStrength: strength)
+                try BackgroundRemover.apply(session: session, edgeStrength: strength, mode: currentMode)
             }.value
             currentData = data
         } catch {

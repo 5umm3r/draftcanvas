@@ -13,8 +13,8 @@ extension DraftCanvasViewModel {
         panel.canChooseDirectories = false
         panel.allowsMultipleSelection = true
         panel.allowedContentTypes = Self.supportedImageTypes
-        panel.prompt = "インポート"
-        panel.message = "キャンバスにインポートする画像を選択してください。"
+        panel.prompt = L("インポート")
+        panel.message = L("キャンバスにインポートする画像を選択してください。")
         guard panel.runModal() == .OK, !panel.urls.isEmpty else { return }
         let projectID = selectedProjectID ?? createProject().id
         importImagesAsProjectItems(urls: panel.urls, projectID: projectID)
@@ -28,7 +28,7 @@ extension DraftCanvasViewModel {
     // N枚バッチインポート: 原本コピー優先 + 並列デコード(max4) + 100msスロットリング進捗 + signpost
     func importImagesAsProjectItems(urls: [URL], projectID: UUID) {
         guard selectedFilteringProjectID == nil else {
-            appendLog("[Import] フィルタリングプロジェクト選択中はスキップ")
+            appendLog(L("[Import] フィルタリングプロジェクト選択中はスキップ"))
             return
         }
         guard !urls.isEmpty else { return }
@@ -127,7 +127,7 @@ extension DraftCanvasViewModel {
                         }
                     case .failure(let error):
                         if errorMessage == nil {
-                            errorMessage = "インポート失敗: \(error.localizedDescription)"
+                            errorMessage = L("インポート失敗: \(error.localizedDescription)")
                             group.cancelAll()
                         }
                     }
@@ -182,7 +182,7 @@ extension DraftCanvasViewModel {
             guard let tiff = image.tiffRepresentation,
                   let rep = NSBitmapImageRep(data: tiff),
                   let pngData = rep.representation(using: .png, properties: [:]) else {
-                await MainActor.run { self.errorToast = "画像の変換に失敗しました" }
+                await MainActor.run { self.errorToast = L("画像の変換に失敗しました") }
                 return
             }
             let aspectRatio = self.aspectRatioFromImageData(pngData)
@@ -209,7 +209,7 @@ extension DraftCanvasViewModel {
                 }
             } catch {
                 await MainActor.run { [weak self] in
-                    self?.errorToast = "画像のインポートに失敗しました"
+                    self?.errorToast = L("画像のインポートに失敗しました")
                     self?.logs.append("インポートエラー: \(error.localizedDescription)")
                 }
             }

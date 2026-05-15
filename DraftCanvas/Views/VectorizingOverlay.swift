@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct VectorizingOverlay: View {
-    var label: String = "ベクター化中"
+    var label: LocalizedStringKey = "ベクター化中"
     let onCancel: () -> Void
     @State private var isHovering = false
 

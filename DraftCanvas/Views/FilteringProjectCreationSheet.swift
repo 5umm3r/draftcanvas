@@ -20,7 +20,7 @@ struct FilteringProjectCreationSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(isEditing ? "フィルタリングプロジェクトを編集" : "フィルタリングプロジェクトを作成")
+            Text(isEditing ? LocalizedStringKey("フィルタリングプロジェクトを編集") : LocalizedStringKey("フィルタリングプロジェクトを作成"))
                 .font(.headline)
 
             VStack(alignment: .leading, spacing: 6) {
@@ -70,7 +70,7 @@ struct FilteringProjectCreationSheet: View {
                 Spacer()
                 Button("キャンセル") { dismiss() }
                     .keyboardShortcut(.escape, modifiers: [])
-                Button(isEditing ? "保存" : "作成") { submit() }
+                Button(isEditing ? LocalizedStringKey("保存") : LocalizedStringKey("作成")) { submit() }
                     .buttonStyle(.borderedProminent)
                     .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     .keyboardShortcut(.return, modifiers: [])

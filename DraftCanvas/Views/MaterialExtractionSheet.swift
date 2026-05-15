@@ -57,7 +57,7 @@ struct MaterialExtractionSheet: View {
             }
             .keyboardShortcut(.escape, modifiers: [])
 
-            Button(isSaving ? "保存中..." : "保存 (\(selectedInstanceIDs.count))") {
+            Button(isSaving ? LocalizedStringKey("保存中...") : LocalizedStringKey("保存 (\(selectedInstanceIDs.count))")) {
                 isSaving = true
                 viewModel.commitMaterialExtraction(
                     originalItem: preview.item,

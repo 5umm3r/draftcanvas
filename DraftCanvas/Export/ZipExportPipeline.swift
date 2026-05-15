@@ -7,8 +7,8 @@ enum ZipExportPipeline {
 
         var errorDescription: String? {
             switch self {
-            case .allEntriesFailed: return "全ての画像のエクスポートに失敗しました"
-            case .zipFailed(let msg): return "ZIP作成に失敗しました: \(msg)"
+            case .allEntriesFailed: return L("全ての画像のエクスポートに失敗しました")
+            case .zipFailed(let msg): return L("ZIP作成に失敗しました: \(msg)")
             }
         }
     }
@@ -82,7 +82,7 @@ enum ZipExportPipeline {
             group.addTask {
                 try await Task.sleep(nanoseconds: 300_000_000_000) // 5分タイムアウト
                 if p.isRunning { p.terminate() }
-                throw Failure.zipFailed("タイムアウト")
+                throw Failure.zipFailed(L("タイムアウト"))
             }
             try await group.next()!
             group.cancelAll()

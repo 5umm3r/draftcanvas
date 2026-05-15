@@ -7,7 +7,7 @@ extension DraftCanvasViewModel {
         guard !upscalingItemIDs.contains(item.id) else { return }
         upscalingItemIDs.insert(item.id)
 
-        let label = item.prompt.prefix(30).isEmpty ? "素材" : String(item.prompt.prefix(30))
+        let label = item.prompt.prefix(30).isEmpty ? L("素材") : String(item.prompt.prefix(30))
         let job = GenerationJob(
             index: jobsByProject[projectID]?.count ?? 0,
             prompt: "高解像度化: \(label)",
@@ -57,7 +57,7 @@ extension DraftCanvasViewModel {
                 failed.status = .failed
                 failed.errorMessage = error.localizedDescription
                 upsert(failed, into: projectID)
-                errorToast = "高解像度化に失敗しました"
+                errorToast = L("高解像度化に失敗しました")
                 logs.append("高解像度化失敗: \(error.localizedDescription)")
             }
         }
@@ -99,7 +99,7 @@ extension DraftCanvasViewModel {
                 saveState()
                 logs.append("高解像度化: 新規アイテム追加 \(newItem.id)")
             } catch {
-                errorToast = "高解像度化結果の保存に失敗しました"
+                errorToast = L("高解像度化結果の保存に失敗しました")
                 logs.append("高解像度化保存失敗: \(error.localizedDescription)")
             }
 
@@ -117,7 +117,7 @@ extension DraftCanvasViewModel {
                 saveState()
                 logs.append("高解像度化: 上書き完了 \(item.id)")
             } catch {
-                errorToast = "高解像度化結果の上書きに失敗しました"
+                errorToast = L("高解像度化結果の上書きに失敗しました")
                 logs.append("高解像度化上書き失敗: \(error.localizedDescription)")
             }
         }

@@ -91,6 +91,8 @@ extension ContentView {
             .help("生成枚数の詳細")
             .popover(isPresented: $showCountPopover, arrowEdge: .bottom) {
                 GenerationCountPopover(viewModel: viewModel)
+                    .environment(\.locale, l10n.locale)
+                    .environmentObject(l10n)
             }
 
             usagePill(
@@ -156,6 +158,8 @@ extension ContentView {
                     onRetry: viewModel.refreshAccountUsage,
                     onLogout: viewModel.logout
                 )
+                .environment(\.locale, l10n.locale)
+                .environmentObject(l10n)
             }
         }
         .padding(.horizontal, 16)
