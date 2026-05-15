@@ -112,7 +112,7 @@ extension ContentView {
                 canvasActionPanel
                     .padding(.leading, 16)
             }
-            .animation(.easeInOut(duration: 0.2), value: viewModel.selectedItemID)
+            .animation(.easeInOut(duration: 0.1), value: viewModel.selectedItemID)
             .sheet(item: $viewModel.inpaintingTarget) { item in
                 inpaintingEditorSheet(for: item)
                     .environment(\.locale, l10n.locale)
@@ -697,19 +697,19 @@ extension ContentView {
                     viewModel.startMaterialExtraction(item: item)
                 }
                 CircularPromptActionButton(
-                    systemImage: "pencil.and.outline",
-                    tooltip: "ベクター化",
-                    isDisabled: item.hasSVG
-                ) {
-                    viewModel.vectorize(item: item)
-                }
-                CircularPromptActionButton(
                     systemImage: "arrow.down.left.and.arrow.up.right.rectangle",
                     tooltip: "高解像度化",
                     costLevel: viewModel.itemActionCostLevel,
                     isDisabled: viewModel.upscalingItemIDs.contains(item.id)
                 ) {
                     viewModel.upscaleItem(item)
+                }
+                CircularPromptActionButton(
+                    systemImage: "pencil.and.outline",
+                    tooltip: "ベクター化",
+                    isDisabled: item.hasSVG
+                ) {
+                    viewModel.vectorize(item: item)
                 }
 
                 Rectangle()
