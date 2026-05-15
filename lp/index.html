@@ -65,6 +65,25 @@ h1 .grad{background:linear-gradient(135deg,#a78bfa,#60a5fa);-webkit-background-c
   .feature-grid{grid-template-columns:1fr}
   .features,.pricing{padding:60px 20px}
 }
+
+/* FAQ */
+.faq{max-width:680px;margin:0 auto;padding:60px 48px}
+.faq-item{border-bottom:1px solid #18181b;padding:22px 0}
+.faq-q{color:#e4e4e7;font-size:15px;font-weight:600;margin-bottom:10px}
+.faq-a{color:#71717a;font-size:14px;line-height:1.75}
+
+/* Footer */
+footer{border-top:1px solid #18181b;padding:28px 48px;display:flex;align-items:center;justify-content:space-between}
+.footer-copy{color:#3f3f46;font-size:12px}
+.footer-links{display:flex;gap:24px}
+.footer-links a{color:#52525b;font-size:12px;transition:color .2s}
+.footer-links a:hover{color:#a1a1aa}
+
+@media(max-width:768px){
+  .faq{padding:40px 20px}
+  footer{flex-direction:column;gap:16px;padding:24px 20px;text-align:center}
+  .footer-links{flex-wrap:wrap;justify-content:center;gap:16px}
+}
 </style>
 </head>
 <body>
@@ -154,6 +173,37 @@ h1 .grad{background:linear-gradient(135deg,#a78bfa,#60a5fa);-webkit-background-c
   </div>
 </section>
 
-<!-- FAQ, Footer は後で追加 -->
+<section class="faq">
+  <h2 class="section-title" style="margin-bottom:36px">よくある質問</h2>
+  <div class="faq-item">
+    <div class="faq-q">返金ポリシーは？</div>
+    <div class="faq-a">購入後 30 日以内であれば、理由を問わず全額返金いたします。<a href="mailto:spade3yasui@gmail.com" style="color:#a78bfa">spade3yasui@gmail.com</a> までご連絡ください。</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">動作環境は？</div>
+    <div class="faq-a">macOS 14.0 (Sonoma) 以上が必要です。Apple Silicon / Intel Mac の両方に対応しています。</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">1 ライセンスで何台まで使えますか？</div>
+    <div class="faq-a">1 ライセンスで最大 2 台の Mac で使用できます。</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">将来のメジャーバージョンアップも無料ですか？</div>
+    <div class="faq-a">v1.x 系のアップデートはすべて無料です。将来の v2.0 では既存ユーザー向けの優待価格でのアップグレードを予定しています。</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">インターネット接続は必要ですか？</div>
+    <div class="faq-a">背景除去とベクター化はオフラインで動作します。AI 画像生成・高解像度化・マスク編集はインターネット接続が必要です。</div>
+  </div>
+</section>
+
+<footer>
+  <span class="footer-copy">© 2026 Yuichiro Yasui</span>
+  <div class="footer-links">
+    <a href="privacy.html">プライバシーポリシー</a>
+    <a href="terms.html">利用規約</a>
+    <a href="mailto:spade3yasui@gmail.com">お問い合わせ</a>
+  </div>
+</footer>
 </body>
 </html>
