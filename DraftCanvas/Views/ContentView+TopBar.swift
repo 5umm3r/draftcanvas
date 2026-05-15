@@ -144,10 +144,11 @@ extension ContentView {
             Button {
                 isAccountPopoverPresented.toggle()
             } label: {
-                Image(systemName: "person.crop.circle")
+                Image(systemName: "gearshape")
                     .font(.body)
             }
             .buttonStyle(TopBarButtonStyle())
+            .accessibilityLabel(L("設定"))
             .popover(isPresented: $isAccountPopoverPresented, arrowEdge: .bottom) {
                 AccountPopover(
                     status: viewModel.accountUsageStatus,

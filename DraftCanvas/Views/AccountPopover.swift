@@ -57,7 +57,26 @@ struct AccountPopover: View {
                     .foregroundStyle(.tertiary)
                     .padding(.top, 4)
 
-                Divider().padding(.vertical, 10)
+                if canLogout {
+                    Button(action: onLogout) {
+                        HStack(spacing: 6) {
+                            if isLoggingOut {
+                                ProgressView().controlSize(.small)
+                            } else {
+                                Image(systemName: "rectangle.portrait.and.arrow.right")
+                            }
+                            Text(L("ログアウト"))
+                        }
+                        .foregroundStyle(.red)
+                        .font(.subheadline)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(isLoggingOut)
+                    .padding(.top, 10)
+                }
+
+                Divider().padding(.vertical, 12)
+
                 HStack {
                     Text(L("言語 / Language"))
                         .font(.subheadline)
@@ -74,24 +93,6 @@ struct AccountPopover: View {
                     .pickerStyle(.menu)
                     .labelsHidden()
                     .fixedSize()
-                }
-
-                if canLogout {
-                    Divider().padding(.vertical, 10)
-                    Button(action: onLogout) {
-                        HStack(spacing: 6) {
-                            if isLoggingOut {
-                                ProgressView().controlSize(.small)
-                            } else {
-                                Image(systemName: "rectangle.portrait.and.arrow.right")
-                            }
-                            Text(L("ログアウト"))
-                        }
-                        .foregroundStyle(.red)
-                        .font(.subheadline)
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(isLoggingOut)
                 }
             }
         }
