@@ -68,17 +68,17 @@ enum GenerationAspectRatio: String, CaseIterable, Identifiable, Codable {
     var title: String {
         switch self {
         case .auto:
-            return "自動"
+            return L("自動")
         case .square:
-            return "正方形"
+            return L("正方形")
         case .portrait:
-            return "ポートレート"
+            return L("ポートレート")
         case .story:
-            return "ストーリー"
+            return L("ストーリー")
         case .landscape:
-            return "横長"
+            return L("横長")
         case .wide:
-            return "ワイドスクリーン"
+            return L("ワイドスクリーン")
         }
     }
 
@@ -100,7 +100,7 @@ enum GenerationAspectRatio: String, CaseIterable, Identifiable, Codable {
     }
 
     var displayLabel: String {
-        self == .auto ? "自動" : value
+        self == .auto ? L("自動") : value
     }
 
     var promptDescription: String {
@@ -187,13 +187,13 @@ enum GenerationJobStatus: String {
     var title: String {
         switch self {
         case .queued:
-            return "待機中"
+            return L("待機中")
         case .running:
-            return "生成中"
+            return L("生成中")
         case .succeeded:
-            return "完了"
+            return L("完了")
         case .failed:
-            return "失敗"
+            return L("失敗")
         }
     }
 }
@@ -252,7 +252,7 @@ struct ProjectInputs: Equatable {
     var prompt: String = ""
     var count: Int = 1
     var concurrency: Int = 1
-    var aspectRatio: GenerationAspectRatio = .square
+    var aspectRatio: GenerationAspectRatio = .auto
     var editSource: GenerationEditSource? = nil
     var attachedImage: AttachedImage? = nil
     var model: String = ""
@@ -267,8 +267,8 @@ enum CanvasSortOrder: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var label: String {
         switch self {
-        case .createdAtAscending: return "作成日 古い順"
-        case .createdAtDescending: return "作成日 新しい順"
+        case .createdAtAscending: return L("作成日 古い順")
+        case .createdAtDescending: return L("作成日 新しい順")
         }
     }
     var systemImage: String {
@@ -762,7 +762,7 @@ enum ProjectNaming {
     static func defaultName() -> String {
         let f = DateFormatter()
         f.dateFormat = "yyyy-MM-dd HH:mm"
-        return "新規プロジェクト " + f.string(from: Date())
+        return L("新規プロジェクト ") + f.string(from: Date())
     }
 }
 
@@ -828,10 +828,10 @@ enum AccountKind: Equatable {
     var japaneseLabel: String {
         switch self {
         case .chatgpt: return "ChatGPT"
-        case .apiKey: return "APIキー"
+        case .apiKey: return L("APIキー")
         case .amazonBedrock: return "Amazon Bedrock"
-        case .unauthenticated: return "未ログイン"
-        case .unknown: return "不明"
+        case .unauthenticated: return L("未ログイン")
+        case .unknown: return L("不明")
         }
     }
 
@@ -861,7 +861,7 @@ struct CodexAccountUsageStatus: Equatable {
     var secondaryResetDate: Date?
 
     static let unavailable = CodexAccountUsageStatus(
-        accountLabel: "アカウント未取得",
+        accountLabel: L("アカウント未取得"),
         planLabel: "-",
         primaryUsageLabel: "5h -",
         secondaryUsageLabel: "weekly -",
@@ -905,7 +905,7 @@ struct CodexAccountUsageStatus: Equatable {
         case .none:
             accountKind = .unauthenticated
             accountEmail = nil
-            accountLabel = "未ログイン"
+            accountLabel = L("未ログイン")
         }
 
         let rateLimits = preferredRateLimits(from: rateLimitsResponse)
@@ -980,15 +980,15 @@ struct CodexAccountUsageStatus: Equatable {
     private static func formatRelativeReset(to target: Date) -> String? {
         // UTC差分秒で計算。タイムゾーン変換不要
         let diff = target.timeIntervalSince(Date())
-        if diff <= 60 { return "もうすぐ" }
+        if diff <= 60 { return L("もうすぐ") }
         let totalMin = Int(diff / 60)
         let hours = totalMin / 60
         let mins = totalMin % 60
-        if hours < 1 { return "あと \(totalMin)m" }
-        if hours < 24 { return mins > 0 ? "あと \(hours)h\(mins)m" : "あと \(hours)h" }
+        if hours < 1 { return L("あと \(totalMin)m") }
+        if hours < 24 { return mins > 0 ? L("あと \(hours)h\(mins)m") : L("あと \(hours)h") }
         let days = hours / 24
         let hrs = hours % 24
-        return hrs > 0 ? "あと \(days)d \(hrs)h" : "あと \(days)d"
+        return hrs > 0 ? L("あと \(days)d \(hrs)h") : L("あと \(days)d")
     }
 
     private static func numericValue(_ value: Any?) -> Double? {
@@ -1014,21 +1014,21 @@ enum DraftCanvasError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidJSONLine(let line):
-            return "JSON行を解析できません: \(line)"
+            return L("JSON行を解析できません: \(line)")
         case .invalidRequest(let message):
             return message
         case .processNotRunning:
-            return "codex app-server が起動していません。"
+            return L("codex app-server が起動していません。")
         case .processExited:
-            return "codex app-server が終了しました。"
+            return L("codex app-server が終了しました。")
         case .rpcError(let message):
             return message
         case .missingThreadID:
-            return "thread/start のレスポンスから thread id を取得できませんでした。"
+            return L("thread/start のレスポンスから thread id を取得できませんでした。")
         case .missingGeneratedContent:
-            return "生成結果を取得できませんでした。ログを確認してください。"
+            return L("生成結果を取得できませんでした。ログを確認してください。")
         case .unsupportedImageResult(let value):
-            return "未対応の画像結果形式です: \(value.prefix(64))"
+            return L("未対応の画像結果形式です: \(value.prefix(64))")
         }
     }
 }
@@ -1073,7 +1073,7 @@ enum CompletionSoundOption: String, CaseIterable {
 
     var displayName: String {
         switch self {
-        case .off: return "オフ"
+        case .off: return L("オフ")
         default: return rawValue
         }
     }

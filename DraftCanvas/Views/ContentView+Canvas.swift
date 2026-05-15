@@ -89,7 +89,7 @@ extension ContentView {
                             ProgressView()
                                 .scaleEffect(0.7)
                                 .frame(width: 16, height: 16)
-                            Text("\(progress.done) / \(progress.total) 枚処理中…")
+                            Text(L("\(progress.done) / \(progress.total) 枚処理中…"))
                                 .font(.subheadline.weight(.medium))
                         }
                         .padding(.horizontal, 16)
@@ -115,12 +115,21 @@ extension ContentView {
             .animation(.easeInOut(duration: 0.2), value: viewModel.selectedItemID)
             .sheet(item: $viewModel.inpaintingTarget) { item in
                 inpaintingEditorSheet(for: item)
+                    .environment(\.locale, l10n.locale)
             }
             .sheet(item: $viewModel.backgroundRemovalPreview) { preview in
                 BackgroundRemovalPreviewSheet(preview: preview, viewModel: viewModel)
+                    .environment(\.locale, l10n.locale)
             }
             .sheet(item: $viewModel.materialExtractionPreview) { preview in
                 MaterialExtractionSheet(preview: preview, viewModel: viewModel)
+                    .environment(\.locale, l10n.locale)
+            }
+            .sheet(item: $viewModel.upscalePreview) { payload in
+                UpscalePreviewSheet(payload: payload) { mode in
+                    viewModel.commitUpscale(payload: payload, mode: mode)
+                }
+                .environment(\.locale, l10n.locale)
             }
             .onAppear {
                 #if DEBUG
@@ -333,15 +342,16 @@ extension ContentView {
                     Button {
                         viewModel.canvasSortOrder = viewModel.canvasSortOrder == .createdAtAscending ? .createdAtDescending : .createdAtAscending
                     } label: {
-                        HStack(spacing: 2) {
-                            Image(systemName: viewModel.canvasSortOrder == .createdAtAscending ? "arrow.up" : "arrow.down")
-                            Image(systemName: "calendar")
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.up.arrow.down")
+                                .font(.system(size: 13, weight: .medium))
+                            Text(viewModel.canvasSortOrder == .createdAtDescending ? "Newest First" : "Oldest First")
+                                .font(.system(size: 11, weight: .medium))
                         }
-                        .font(.system(size: 13, weight: .medium))
                         .frame(height: 18)
-                        .padding(.horizontal, 2)
+                        .padding(.horizontal, 4)
                         .padding(8)
-                            .contentShape(Rectangle())
+                        .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
@@ -350,62 +360,7 @@ extension ContentView {
                             .stroke(Color.primary.opacity(0.08), lineWidth: 1)
                     }
                     .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
-                    .help(viewModel.canvasSortOrder == .createdAtAscending ? "古い順 → 新しい順に切替" : "新しい順 → 古い順に切替")
-                }
-            }
-            .animation(.easeInOut(duration: 0.2), value: viewModel.importProgress != nil)
-            .padding(.top, 16)
-            .padding(.leading, 16)
-        }
-        .overlay(alignment: .topTrailing) {
-            HStack(spacing: 8) {
-                if viewModel.isSelectionMode {
-                    Button {
-                        isConfirmingBatchDelete = true
-                    } label: {
-                        Image(systemName: "trash")
-                            .font(.system(size: 13, weight: .medium))
-                            .frame(width: 18, height: 18)
-                            .foregroundStyle(Color.red)
-                            .padding(8)
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .stroke(Color.red.opacity(0.3), lineWidth: 1)
-                    }
-                    .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
-                    .disabled(viewModel.selectedItemIDs.isEmpty)
-                    .help("選択画像を一括削除")
-                    Button {
-                        viewModel.exportSelectedBatch()
-                    } label: {
-                        Image(systemName: "square.and.arrow.up.on.square")
-                            .font(.system(size: 13, weight: .medium))
-                            .frame(width: 18, height: 18)
-                            .padding(8)
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .stroke(Color.primary.opacity(0.08), lineWidth: 1)
-                    }
-                    .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
-                    .disabled(viewModel.selectedItemIDs.isEmpty)
-                    .help("選択画像を一括エクスポート")
-                }
-                if !viewModel.projects.isEmpty && !canvasEntries.isEmpty {
-                    let total = viewModel.displayedItemsSnapshot.count
-                    let selected = viewModel.selectedItemIDs.count
-                    Text(viewModel.isSelectionMode ? "\(selected)/\(total)" : "\(total)")
-                        .font(.caption.weight(.medium).monospacedDigit())
-                        .foregroundStyle(viewModel.isSelectionMode ? Color.accentColor : Color.secondary)
-                        .frame(height: 34)
-                        .padding(.horizontal, 8)
+
                     Button {
                         viewModel.toggleSelectionMode()
                     } label: {
@@ -423,7 +378,65 @@ extension ContentView {
                             .stroke(viewModel.isSelectionMode ? Color.accentColor.opacity(0.4) : Color.primary.opacity(0.08), lineWidth: 1)
                     }
                     .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
-                    .help(viewModel.isSelectionMode ? "選択モード終了" : "選択モード")
+                    .help(viewModel.isSelectionMode ? LocalizedStringKey("選択モード終了") : LocalizedStringKey("選択モード"))
+
+                    let total = viewModel.displayedItemsSnapshot.count
+                    let selected = viewModel.selectedItemIDs.count
+                    Text(viewModel.isSelectionMode ? "\(selected)/\(total)" : "\(total)")
+                        .font(.caption.weight(.medium).monospacedDigit())
+                        .foregroundStyle(viewModel.isSelectionMode ? Color.accentColor : Color.secondary)
+                        .frame(height: 34)
+                        .padding(.horizontal, 8)
+
+                    if viewModel.isSelectionMode {
+                        Button {
+                            viewModel.exportSelectedBatch()
+                        } label: {
+                            Image(systemName: "square.and.arrow.up.on.square")
+                                .font(.system(size: 13, weight: .medium))
+                                .frame(width: 18, height: 18)
+                                .padding(8)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+                        }
+                        .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
+                        .disabled(viewModel.selectedItemIDs.isEmpty)
+                        .help("選択画像を一括エクスポート")
+
+                        Button {
+                            isConfirmingBatchDelete = true
+                        } label: {
+                            Image(systemName: "trash")
+                                .font(.system(size: 13, weight: .medium))
+                                .frame(width: 18, height: 18)
+                                .foregroundStyle(Color.red)
+                                .padding(8)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .stroke(Color.red.opacity(0.3), lineWidth: 1)
+                        }
+                        .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
+                        .disabled(viewModel.selectedItemIDs.isEmpty)
+                        .help("選択画像を一括削除")
+                    }
+                }
+            }
+            .animation(.easeInOut(duration: 0.2), value: viewModel.importProgress != nil)
+            .padding(.top, 16)
+            .padding(.leading, 16)
+        }
+        .overlay(alignment: .topTrailing) {
+            HStack(spacing: 8) {
+                if !viewModel.projects.isEmpty && !canvasEntries.isEmpty {
                     CanvasZoomControl(zoom: $canvasZoom)
                 }
             }
@@ -528,6 +541,10 @@ extension ContentView {
                             VectorizingOverlay {
                                 viewModel.cancelVectorization(for: item)
                             }
+                        } else if viewModel.upscalingItemIDs.contains(item.id) {
+                            VectorizingOverlay(label: "高解像度化中") {
+                                viewModel.cancelUpscale(itemID: item.id)
+                            }
                         }
                     }
                 }
@@ -614,6 +631,7 @@ extension ContentView {
             set: { if !$0 { viewModel.selectedJobID = nil } }
         )) {
             GenerationDetailPopover(job: job, viewModel: viewModel)
+                .environment(\.locale, l10n.locale)
         }
     }
 
@@ -673,8 +691,8 @@ extension ContentView {
                     viewModel.startBackgroundRemoval(item: item)
                 }
                 CircularPromptActionButton(
-                    systemImage: "square.3.layers.3d",
-                    tooltip: "素材分解"
+                    systemImage: "pointer.arrow.and.square.on.square.dashed",
+                    tooltip: "素材として分離"
                 ) {
                     viewModel.startMaterialExtraction(item: item)
                 }
@@ -684,6 +702,14 @@ extension ContentView {
                     isDisabled: item.hasSVG
                 ) {
                     viewModel.vectorize(item: item)
+                }
+                CircularPromptActionButton(
+                    systemImage: "arrow.down.left.and.arrow.up.right.rectangle",
+                    tooltip: "高解像度化",
+                    costLevel: viewModel.itemActionCostLevel,
+                    isDisabled: viewModel.upscalingItemIDs.contains(item.id)
+                ) {
+                    viewModel.upscaleItem(item)
                 }
 
                 Rectangle()
@@ -808,7 +834,7 @@ struct JobPreviewView: View {
                     Image(systemName: "exclamationmark.triangle")
                         .font(.system(size: 28))
                         .foregroundStyle(.orange)
-                    Text(job.errorMessage ?? "生成に失敗しました")
+                    Text(job.errorMessage ?? L("生成に失敗しました"))
                         .font(.caption)
                         .multilineTextAlignment(.center)
                         .foregroundStyle(.secondary)

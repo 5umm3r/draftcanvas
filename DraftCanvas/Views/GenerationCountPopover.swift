@@ -2,6 +2,7 @@ import SwiftUI
 
 struct GenerationCountPopover: View {
     @ObservedObject var viewModel: DraftCanvasViewModel
+    @EnvironmentObject private var l10n: LocalizationManager
     @State private var showResetConfirm = false
 
     var body: some View {
@@ -15,7 +16,7 @@ struct GenerationCountPopover: View {
             Button(role: .destructive) {
                 showResetConfirm = true
             } label: {
-                Text("リセット")
+                Text(L("リセット"))
                     .font(.subheadline)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
@@ -29,15 +30,15 @@ struct GenerationCountPopover: View {
             isPresented: $showResetConfirm,
             titleVisibility: .visible
         ) {
-            Button("リセット", role: .destructive) { viewModel.resetAllCounters() }
-            Button("キャンセル", role: .cancel) {}
+            Button(L("リセット"), role: .destructive) { viewModel.resetAllCounters() }
+            Button(L("キャンセル"), role: .cancel) {}
         } message: {
-            Text("5h・週次・累計すべて 0 になります。元に戻せません。")
+            Text(L("5h・週次・累計すべて 0 になります。元に戻せません。"))
         }
     }
 
     @ViewBuilder
-    private func countRow(icon: String, title: String, count: Int) -> some View {
+    private func countRow(icon: String, title: LocalizedStringKey, count: Int) -> some View {
         HStack(spacing: 8) {
             Image(systemName: icon)
                 .frame(width: 16)
@@ -49,7 +50,7 @@ struct GenerationCountPopover: View {
             Text("\(count)")
                 .monospacedDigit()
                 .font(.subheadline.weight(.semibold))
-            Text("枚")
+            Text(L("枚"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }

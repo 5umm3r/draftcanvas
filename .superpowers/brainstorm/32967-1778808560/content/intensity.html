@@ -1,0 +1,34 @@
+<h2>ライト時 オーロラの存在感</h2>
+<p class="subtitle">ダーク時と「同じ強度」か「弱め調整」か</p>
+
+<div class="cards">
+  <div class="card" data-choice="i1" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#fafafc;display:flex;align-items:center;justify-content:center;padding:20px;">
+      <div style="width:100%;aspect-ratio:1;border-radius:12px;background:radial-gradient(circle at 35% 40%, #ff6a9e 0%, transparent 50%), radial-gradient(circle at 70% 60%, #c46eff 0%, transparent 50%), radial-gradient(circle at 50% 75%, #5cd0ff 0%, transparent 50%), #ffffff;mix-blend-mode:normal;filter:saturate(1.0);box-shadow:inset 0 0 0 1px rgba(0,0,0,0.06);"></div>
+    </div>
+    <div class="card-body">
+      <h3>I1: ダーク同等強度</h3>
+      <p>blob 不透明度・サイズ そのまま。ライト時も <b>視覚的存在感大</b>。生成中であることが強くアピールされる。ライトUIへの主張 強。</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="i2" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#fafafc;display:flex;align-items:center;justify-content:center;padding:20px;">
+      <div style="width:100%;aspect-ratio:1;border-radius:12px;background:radial-gradient(circle at 35% 40%, rgba(255,106,158,0.7) 0%, transparent 55%), radial-gradient(circle at 70% 60%, rgba(196,110,255,0.65) 0%, transparent 55%), radial-gradient(circle at 50% 75%, rgba(92,208,255,0.7) 0%, transparent 55%), #ffffff;box-shadow:inset 0 0 0 1px rgba(0,0,0,0.06);"></div>
+    </div>
+    <div class="card-body">
+      <h3>I2: やや控えめ（推奨）</h3>
+      <p>blob 不透明度 約70%、彩度やや抑制。<b>処理中シグナルは明確</b>だが、UIに溶け込む。ライト感も保持。</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="i3" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#fafafc;display:flex;align-items:center;justify-content:center;padding:20px;">
+      <div style="width:100%;aspect-ratio:1;border-radius:12px;background:radial-gradient(circle at 35% 40%, rgba(255,150,180,0.4) 0%, transparent 60%), radial-gradient(circle at 70% 60%, rgba(200,160,255,0.4) 0%, transparent 60%), radial-gradient(circle at 50% 75%, rgba(140,210,255,0.4) 0%, transparent 60%), #ffffff;box-shadow:inset 0 0 0 1px rgba(0,0,0,0.06);"></div>
+    </div>
+    <div class="card-body">
+      <h3>I3: 大幅控えめ</h3>
+      <p>blob 不透明度 約40%・彩度低・blur 強。<b>環境装飾</b>的に背景に溶ける。視覚的雑音 最小。ただしオーロラ感は薄まる。</p>
+    </div>
+  </div>
+</div>

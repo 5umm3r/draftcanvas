@@ -9,10 +9,10 @@ enum BinaryRunner {
 
         var errorDescription: String? {
             switch self {
-            case .binaryNotFound(let name): return "バイナリが見つかりません: \(name)"
-            case .timeout: return "処理がタイムアウトしました"
-            case .nonZeroExit(let code, let err): return "終了コード \(code): \(err)"
-            case .io(let e): return "IO エラー: \(e.localizedDescription)"
+            case .binaryNotFound(let name): return L("バイナリが見つかりません: \(name)")
+            case .timeout: return L("処理がタイムアウトしました")
+            case .nonZeroExit(let code, let err): return L("終了コード \(code): \(err)")
+            case .io(let e): return L("IO エラー: \(e.localizedDescription)")
             }
         }
     }

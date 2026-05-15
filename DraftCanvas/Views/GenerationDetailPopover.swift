@@ -21,7 +21,7 @@ struct GenerationDetailPopover: View {
 
             Divider()
 
-            PopoverButton(systemImage: "square.and.arrow.up", title: "エクスポート") {
+            PopoverButton(systemImage: "square.and.arrow.up", title: L("エクスポート")) {
                 viewModel.exportSelected()
             }
             .disabled(job.status != .succeeded)

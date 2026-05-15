@@ -91,6 +91,8 @@ extension ContentView {
             .help("生成枚数の詳細")
             .popover(isPresented: $showCountPopover, arrowEdge: .bottom) {
                 GenerationCountPopover(viewModel: viewModel)
+                    .environment(\.locale, l10n.locale)
+                    .environmentObject(l10n)
             }
 
             usagePill(
@@ -127,12 +129,26 @@ extension ContentView {
                 .frame(height: 22)
 
             Button {
+                viewModel.cycleAppearance()
+            } label: {
+                Image(systemName: AppAppearance(rawValue: viewModel.appAppearanceRaw)?.systemImage ?? "sun.max")
+                    .font(.body)
+                    .frame(width: 28, height: 28)
+            }
+            .buttonStyle(TopBarButtonStyle())
+            .help("テーマ切替")
+
+            Divider()
+                .frame(height: 20)
+
+            Button {
                 isAccountPopoverPresented.toggle()
             } label: {
-                Image(systemName: "person.crop.circle")
+                Image(systemName: "gearshape")
                     .font(.body)
             }
             .buttonStyle(TopBarButtonStyle())
+            .accessibilityLabel(L("設定"))
             .popover(isPresented: $isAccountPopoverPresented, arrowEdge: .bottom) {
                 AccountPopover(
                     status: viewModel.accountUsageStatus,
@@ -143,20 +159,9 @@ extension ContentView {
                     onRetry: viewModel.refreshAccountUsage,
                     onLogout: viewModel.logout
                 )
+                .environment(\.locale, l10n.locale)
+                .environmentObject(l10n)
             }
-
-            Divider()
-                .frame(height: 20)
-
-            Button {
-                viewModel.cycleAppearance()
-            } label: {
-                Image(systemName: AppAppearance(rawValue: viewModel.appAppearanceRaw)?.systemImage ?? "sun.max")
-                    .font(.body)
-                    .frame(width: 28, height: 28)
-            }
-            .buttonStyle(TopBarButtonStyle())
-            .help("テーマ切替")
         }
         .padding(.horizontal, 16)
         .frame(height: 44)
@@ -179,7 +184,13 @@ extension ContentView {
                 .lineLimit(1)
                 .monospacedDigit()
 
-            usageProgressBar(value: remainingFraction)
+            HStack(spacing: 2) {
+                Image(systemName: "bolt.fill")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundStyle(Color.accentColor.opacity(0.8))
+
+                usageProgressBar(value: remainingFraction)
+            }
 
             if let resetText {
                 Text(resetText)

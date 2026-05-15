@@ -84,7 +84,7 @@ extension DraftCanvasViewModel {
                 NSWorkspace.shared.activateFileViewerSelecting([destination])
             } catch {
                 self.logs.append("エクスポートに失敗しました: \(error.localizedDescription)")
-                self.errorToast = "エクスポートに失敗しました"
+                self.errorToast = L("エクスポートに失敗しました")
             }
         }
     }
@@ -159,7 +159,7 @@ extension DraftCanvasViewModel {
             } catch {
                 self.batchExportProgress = nil
                 self.logs.append("一括エクスポートに失敗しました: \(error.localizedDescription)")
-                self.errorToast = "一括エクスポートに失敗しました"
+                self.errorToast = L("一括エクスポートに失敗しました")
             }
         }
     }
@@ -170,8 +170,8 @@ extension DraftCanvasViewModel {
         panel.canChooseDirectories = true
         panel.canCreateDirectories = true
         panel.allowsMultipleSelection = false
-        panel.prompt = "選択"
-        panel.message = "生成物を保存するときの既定フォルダを選択してください。"
+        panel.prompt = L("選択")
+        panel.message = L("生成物を保存するときの既定フォルダを選択してください。")
         panel.directoryURL = preferredSaveFolder
 
         guard panel.runModal() == .OK, let directory = panel.url else { return }

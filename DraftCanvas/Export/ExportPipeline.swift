@@ -95,7 +95,7 @@ enum ExportPipeline {
         case .currentJob(let pngData, _):
             return pngData
         case .batchItems:
-            fatalError("batchItems は ZipExportPipeline で処理してください")
+            fatalError(L("batchItems は ZipExportPipeline で処理してください"))
         }
     }
 }

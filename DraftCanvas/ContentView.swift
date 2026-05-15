@@ -3,6 +3,7 @@ import UniformTypeIdentifiers
 
 struct ContentView: View {
     @ObservedObject var viewModel: DraftCanvasViewModel
+    @EnvironmentObject var l10n: LocalizationManager
     @Environment(\.openWindow) var openWindow
     @Environment(\.dismissWindow) var dismissWindow
     @Environment(\.colorScheme) var colorScheme
@@ -42,7 +43,8 @@ struct ContentView: View {
     @State var confirmingDeleteItemID: UUID? = nil
 
     var body: some View {
-        VStack(spacing: 0) {
+        let _ = l10n.locale  // l10n 変化で ContentView を再描画させる
+        return VStack(spacing: 0) {
             topStatusBar
 
             Divider()
@@ -70,7 +72,10 @@ struct ContentView: View {
         }
         .overlay {
             if let item = expandedItem {
-                ExpandedImageSheet(item: item, viewModel: viewModel) {
+                let canvasItems = canvasEntries.compactMap { entry -> ProjectItem? in
+                    if case .item(let i) = entry { return i } else { return nil }
+                }
+                ExpandedImageSheet(item: item, items: canvasItems, viewModel: viewModel) {
                     withAnimation(.easeInOut(duration: 0.2)) { expandedItem = nil }
                 }
                 .transition(.opacity)
@@ -104,7 +109,7 @@ struct ContentView: View {
             Button("削除", role: .destructive) {
                 let ids = viewModel.selectedItemIDs
                 let failed = viewModel.deleteItems(ids: ids)
-                if failed > 0 { viewModel.errorToast = "\(failed)件の削除に失敗しました" }
+                if failed > 0 { viewModel.errorToast = L("\(failed)件の削除に失敗しました") }
                 viewModel.isSelectionMode = false
             }
             Button("キャンセル", role: .cancel) {}
@@ -180,21 +185,21 @@ extension ContentView {
     }
 
     var dragDropDialogTitle: String {
-        dragDropCount > 1 ? "\(dragDropCount)件を別プロジェクトへ" : "アイテムを別プロジェクトへ"
+        dragDropCount > 1 ? L("\(dragDropCount)件を別プロジェクトへ") : L("アイテムを別プロジェクトへ")
     }
 
     var dragDropMoveLabel: String {
-        dragDropCount > 1 ? "\(dragDropCount)件を移動" : "移動"
+        dragDropCount > 1 ? L("\(dragDropCount)件を移動") : L("移動")
     }
 
     var dragDropCopyLabel: String {
-        dragDropCount > 1 ? "\(dragDropCount)件をコピー" : "コピー"
+        dragDropCount > 1 ? L("\(dragDropCount)件をコピー") : L("コピー")
     }
 
     func dragDropMessage(projectName: String) -> String {
         dragDropCount > 1
-            ? "「\(projectName)」へ\(dragDropCount)件を移動またはコピーしますか？"
-            : "「\(projectName)」へ移動またはコピーしますか？"
+            ? L("「\(projectName)」へ\(dragDropCount)件を移動またはコピーしますか？")
+            : L("「\(projectName)」へ移動またはコピーしますか？")
     }
 
     func performDragDropMove() {
@@ -202,7 +207,7 @@ extension ContentView {
         if !dragDropItemIDs.isEmpty {
             let ids = Set(dragDropItemIDs)
             let failed = viewModel.moveItems(ids: ids, targetProjectID: targetID)
-            if failed > 0 { viewModel.errorToast = "\(failed)件の移動に失敗しました" }
+            if failed > 0 { viewModel.errorToast = L("\(failed)件の移動に失敗しました") }
             viewModel.isSelectionMode = false
         } else if let itemID = dragDropItemID,
                   let item = viewModel.items.first(where: { $0.id == itemID }) {
@@ -216,7 +221,7 @@ extension ContentView {
         if !dragDropItemIDs.isEmpty {
             let ids = Set(dragDropItemIDs)
             let failed = viewModel.copyItems(ids: ids, targetProjectID: targetID)
-            if failed > 0 { viewModel.errorToast = "\(failed)件のコピーに失敗しました" }
+            if failed > 0 { viewModel.errorToast = L("\(failed)件のコピーに失敗しました") }
             viewModel.isSelectionMode = false
         } else if let itemID = dragDropItemID,
                   let item = viewModel.items.first(where: { $0.id == itemID }) {

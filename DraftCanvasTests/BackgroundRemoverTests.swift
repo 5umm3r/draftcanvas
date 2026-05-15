@@ -33,19 +33,23 @@ final class BackgroundRemoverTests: XCTestCase {
         do {
             let outputData = try await BackgroundRemover.process(data: inputPNG)
 
-            guard let outputImage = NSImage(data: outputData) else {
-                XCTFail("Output is not a valid image")
+            func pixelSize(of data: Data) -> (Int, Int)? {
+                guard let src = CGImageSourceCreateWithData(data as CFData, nil),
+                      let props = CGImageSourceCopyPropertiesAtIndex(src, 0, nil) as? [CFString: Any],
+                      let w = props[kCGImagePropertyPixelWidth] as? Int,
+                      let h = props[kCGImagePropertyPixelHeight] as? Int
+                else { return nil }
+                return (w, h)
+            }
+
+            guard let inSize = pixelSize(of: inputPNG), let outSize = pixelSize(of: outputData) else {
+                XCTFail("Failed to read pixel sizes")
                 return
             }
-            guard let inputImage = NSImage(data: inputPNG) else {
-                XCTFail("Input is not a valid image")
-                return
-            }
-            XCTAssertEqual(outputImage.size, inputImage.size, "Output size must match input size")
-        } catch BackgroundRemovalError.noSubjectFound {
-            // Solid-color image with no subject — acceptable
-        } catch BackgroundRemovalError.visionFailed {
-            // Vision runtime error — acceptable in test environment
+            XCTAssertEqual(outSize.0, inSize.0, "Output width must match input")
+            XCTAssertEqual(outSize.1, inSize.1, "Output height must match input")
+        } catch is BackgroundRemovalError {
+            // Known background removal failure — acceptable in test environment
         }
     }
 

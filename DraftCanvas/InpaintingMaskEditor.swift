@@ -101,7 +101,7 @@ struct InpaintingMaskEditorSheet: View {
             Button("キャンセル", role: .cancel) { onCancel() }
                 .keyboardShortcut(.escape, modifiers: [])
 
-            Button(mode == .remove ? "除去" : "完了") { onComplete(strokes) }
+            Button(mode == .remove ? LocalizedStringKey("除去") : LocalizedStringKey("完了")) { onComplete(strokes) }
                 .buttonStyle(.borderedProminent)
                 .disabled(strokes.isEmpty)
                 .keyboardShortcut(.return, modifiers: .command)

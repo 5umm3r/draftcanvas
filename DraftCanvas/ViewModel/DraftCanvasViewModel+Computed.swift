@@ -59,7 +59,7 @@ extension DraftCanvasViewModel {
     }
 
     var preferredSaveFolderLabel: String {
-        preferredSaveFolder?.lastPathComponent ?? "未選択"
+        preferredSaveFolder?.lastPathComponent ?? L("未選択")
     }
 
     var isEditingHistoryItem: Bool {

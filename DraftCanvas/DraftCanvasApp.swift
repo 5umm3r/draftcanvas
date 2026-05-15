@@ -3,11 +3,14 @@ import SwiftUI
 @main
 struct DraftCanvasApp: App {
     @StateObject private var viewModel = DraftCanvasViewModel()
+    @StateObject private var l10n = LocalizationManager.shared
 
     var body: some Scene {
         WindowGroup {
             ContentView(viewModel: viewModel)
                 .preferredColorScheme(viewModel.preferredColorScheme)
+                .environment(\.locale, l10n.locale)
+                .environmentObject(l10n)
                 .onAppear {
                     viewModel.requestNotificationPermission()
                 }

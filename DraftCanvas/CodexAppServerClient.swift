@@ -405,7 +405,7 @@ final class CodexAppServerClient: @unchecked Sendable {
         stdoutHandle = nil
         stderrHandle = nil
         startupTask = nil
-        emitLog("codex app-server が終了しました。")
+        emitLog(L("codex app-server が終了しました。"))
     }
 
     private func emitLog(_ message: String) {
@@ -583,11 +583,11 @@ private func withTimeout<T: Sendable>(
         }
         group.addTask {
             try await Task.sleep(nanoseconds: seconds * 1_000_000_000)
-            throw DraftCanvasError.rpcError("Codex turn がタイムアウトしました。")
+            throw DraftCanvasError.rpcError(L("Codex turn がタイムアウトしました。"))
         }
 
         guard let result = try await group.next() else {
-            throw DraftCanvasError.rpcError("Codex turn の結果を取得できませんでした。")
+            throw DraftCanvasError.rpcError(L("Codex turn の結果を取得できませんでした。"))
         }
         group.cancelAll()
         return result
