@@ -166,6 +166,7 @@ final class DraftCanvasViewModel: ObservableObject {
     }
     @Published var backgroundRemovalPreview: BackgroundRemovalPreview? = nil
     @Published var materialExtractionPreview: MaterialExtractionPreview? = nil
+    @Published var upscalePreview: UpscalePreviewPayload? = nil
     @Published var importProgress: (done: Int, total: Int)? = nil
     @Published var importError: String? = nil
     @Published var focusPromptTrigger: UUID? = nil
@@ -176,6 +177,8 @@ final class DraftCanvasViewModel: ObservableObject {
     let preferredSaveFolderStore: PreferredSaveFolderStore
     var isLoadingProjects = false
     var vectorizationTasks: [UUID: Task<Void, Never>] = [:]
+    var upscalingItemIDs: Set<UUID> = []
+    var upscalingTasks: [UUID: Task<Void, Never>] = [:]
     var enhanceTask: Task<Void, Never>?
     var onReplacePromptText: ((String) -> Void)?
     let thumbnailStore: CanvasThumbnailStore

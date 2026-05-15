@@ -70,7 +70,10 @@ struct ContentView: View {
         }
         .overlay {
             if let item = expandedItem {
-                ExpandedImageSheet(item: item, viewModel: viewModel) {
+                let canvasItems = canvasEntries.compactMap { entry -> ProjectItem? in
+                    if case .item(let i) = entry { return i } else { return nil }
+                }
+                ExpandedImageSheet(item: item, items: canvasItems, viewModel: viewModel) {
                     withAnimation(.easeInOut(duration: 0.2)) { expandedItem = nil }
                 }
                 .transition(.opacity)

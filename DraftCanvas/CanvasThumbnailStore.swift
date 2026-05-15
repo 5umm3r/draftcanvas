@@ -60,6 +60,10 @@ final class CanvasThumbnailStore: ObservableObject, @unchecked Sendable {
         generateAndSave(from: url, item: item)
     }
 
+    func invalidate() {
+        version &+= 1
+    }
+
     func deleteThumbnail(for item: ProjectItem) {
         let url = thumbnailURL(for: item)
         memoryCache.removeObject(forKey: url as NSURL)

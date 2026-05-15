@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct VectorizingOverlay: View {
+    var label: String = "ベクター化中"
     let onCancel: () -> Void
     @State private var isHovering = false
 
@@ -21,7 +22,7 @@ struct VectorizingOverlay: View {
                     ProgressView()
                         .controlSize(.large)
                         .colorScheme(.dark)
-                    Text("ベクター化中")
+                    Text(label)
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.white)
                 }

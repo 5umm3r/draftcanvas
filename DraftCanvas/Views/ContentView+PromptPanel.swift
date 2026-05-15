@@ -25,16 +25,60 @@ private final class URLAccumulator: @unchecked Sendable {
     }
 }
 
+enum PromptPanelLayout {
+    static func minHeight(isEmptyIdle: Bool, isCollapsed: Bool) -> CGFloat {
+        isEmptyIdle ? 28 : (isCollapsed ? 32 : 76)
+    }
+
+    static func maxHeight(maxPromptHeight: CGFloat, minHeight: CGFloat, isCollapsed: Bool) -> CGFloat {
+        if isCollapsed {
+            return 32
+        }
+
+        let safeMaxPromptHeight = maxPromptHeight.isFinite && maxPromptHeight > 0
+            ? maxPromptHeight
+            : minHeight
+        return max(minHeight, safeMaxPromptHeight)
+    }
+
+    static func clampedHeight(
+        promptTextHeight: CGFloat,
+        maxPromptHeight: CGFloat,
+        isEmptyIdle: Bool,
+        isCollapsed: Bool
+    ) -> CGFloat {
+        let minHeight = minHeight(isEmptyIdle: isEmptyIdle, isCollapsed: isCollapsed)
+        let maxHeight = maxHeight(
+            maxPromptHeight: maxPromptHeight,
+            minHeight: minHeight,
+            isCollapsed: isCollapsed
+        )
+        let safePromptTextHeight = promptTextHeight.isFinite && promptTextHeight > 0
+            ? promptTextHeight
+            : minHeight
+        return min(max(safePromptTextHeight, minHeight), maxHeight)
+    }
+}
+
 extension ContentView {
     func promptPanel(maxPromptHeight: CGFloat) -> some View {
         let prompt = viewModel.currentInputs.prompt
         let hasText = !prompt.isEmpty
-        let isEmptyIdle = !promptIsFocused && !hasText
+        let isEmptyIdle = false
         let isCollapsed = !promptIsFocused && hasText && !isPromptHoverExpanded
 
-        let minH: CGFloat = isEmptyIdle ? 28 : (isCollapsed ? 32 : 76)
-        let maxH: CGFloat = isCollapsed ? 32 : max(minH, maxPromptHeight)
-        let clampedHeight = min(max(promptTextHeight, minH), maxH)
+        let minH = PromptPanelLayout.minHeight(isEmptyIdle: isEmptyIdle, isCollapsed: isCollapsed)
+        let maxH = PromptPanelLayout.maxHeight(
+            maxPromptHeight: maxPromptHeight,
+            minHeight: minH,
+            isCollapsed: isCollapsed
+        )
+        let clampedHeight = PromptPanelLayout.clampedHeight(
+            promptTextHeight: promptTextHeight,
+            maxPromptHeight: maxPromptHeight,
+            isEmptyIdle: isEmptyIdle,
+            isCollapsed: isCollapsed
+        )
 
         return VStack(spacing: 0) {
             if !isCollapsed, let editSource = viewModel.currentInputs.editSource {
@@ -138,7 +182,6 @@ extension ContentView {
                                 }
                             }
                             .font(.system(size: 14, weight: .medium))
-                            CodexCostBadge(level: viewModel.itemActionCostLevel)
                         }
                         .frame(minWidth: 28, minHeight: 28, maxHeight: 28)
                         .padding(.horizontal, viewModel.itemActionCostLevel > 0 ? 4 : 0)
@@ -150,6 +193,13 @@ extension ContentView {
                         .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                     }
                     .buttonStyle(.plain)
+                    .overlay(alignment: .bottomTrailing) {
+                        Image(systemName: "bolt.fill")
+                            .font(.system(size: 9, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                            .opacity(viewModel.itemActionCostLevel > 0 ? 1 : 0)
+                            .offset(x: 3, y: 3)
+                    }
                     .disabled(enhanceDisabled)
                     .opacity(enhanceDisabled && !viewModel.isEnhancingPrompt ? 0.3 : 1.0)
                     .help("プロンプトをエンハンス (詳細化)")
@@ -363,13 +413,18 @@ extension ContentView {
                         HStack(spacing: 4) {
                             Image(systemName: "arrow.up")
                                 .font(.system(size: 18, weight: .semibold))
-                            CodexCostBadge(level: viewModel.selectedModelCostLevel)
                         }
-                        .frame(minWidth: 42, minHeight: 42, maxHeight: 42)
-                        .padding(.horizontal, 6)
+                        .frame(width: 42, height: 42)
                     }
                     .buttonStyle(.borderedProminent)
-                    .clipShape(Capsule())
+                    .clipShape(Circle())
+                    .overlay(alignment: .bottomTrailing) {
+                        Image(systemName: "bolt.fill")
+                            .font(.system(size: 9, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                            .opacity(viewModel.selectedModelCostLevel > 0 ? 1 : 0)
+                            .offset(x: 3, y: 3)
+                    }
                     .disabled(!viewModel.canGenerate)
                 }
                 .padding(.horizontal, 16)

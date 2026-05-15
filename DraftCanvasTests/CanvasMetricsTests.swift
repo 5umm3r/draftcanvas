@@ -65,5 +65,25 @@ final class CanvasMetricsTests: XCTestCase {
         XCTAssertGreaterThan(rep?.pixelsWide ?? 0, 0, "幅 > 0")
         XCTAssertGreaterThan(rep?.pixelsHigh ?? 0, 0, "高さ > 0")
     }
+
+    func testPromptPanelHeightClampsInvalidRestoredGeometryValues() {
+        let expandedHeight = PromptPanelLayout.clampedHeight(
+            promptTextHeight: .nan,
+            maxPromptHeight: .infinity,
+            isEmptyIdle: false,
+            isCollapsed: false
+        )
+
+        XCTAssertEqual(expandedHeight, 76)
+
+        let emptyIdleHeight = PromptPanelLayout.clampedHeight(
+            promptTextHeight: -.infinity,
+            maxPromptHeight: -.infinity,
+            isEmptyIdle: true,
+            isCollapsed: false
+        )
+
+        XCTAssertEqual(emptyIdleHeight, 28)
+    }
 }
 #endif
