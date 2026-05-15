@@ -36,6 +36,35 @@ h1 .grad{background:linear-gradient(135deg,#a78bfa,#60a5fa);-webkit-background-c
   .hero{grid-template-columns:1fr;gap:40px;padding:60px 20px}
   h1{font-size:32px}
 }
+
+/* Features */
+.features{max-width:1100px;margin:0 auto;padding:80px 48px}
+.section-label{color:#a78bfa;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-align:center;margin-bottom:12px}
+.section-title{font-size:34px;font-weight:800;text-align:center;color:#fff;margin-bottom:8px}
+.section-sub{color:#52525b;text-align:center;font-size:15px;margin-bottom:52px}
+.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.feature-card{border:1px solid #18181b;border-radius:14px;padding:28px;background:linear-gradient(135deg,rgba(124,58,237,.04),rgba(37,99,235,.04));transition:border-color .2s}
+.feature-card:hover{border-color:#312e81}
+.feature-icon{font-size:30px;margin-bottom:14px}
+.feature-name{font-size:15px;font-weight:700;color:#fff;margin-bottom:8px}
+.feature-desc{color:#71717a;font-size:13px;line-height:1.65}
+
+/* Pricing */
+.pricing{max-width:560px;margin:0 auto;padding:80px 48px}
+.price-card{border:1px solid #312e81;border-radius:20px;padding:44px;background:linear-gradient(135deg,rgba(124,58,237,.08),rgba(37,99,235,.08));text-align:center}
+.price-badge{display:inline-block;background:rgba(167,139,250,.15);color:#a78bfa;padding:4px 14px;border-radius:99px;font-size:11px;font-weight:700;margin-bottom:20px}
+.price-amount{font-size:56px;font-weight:800;color:#fff;margin-bottom:4px}
+.price-note{color:#52525b;font-size:13px;margin-bottom:32px}
+.price-list{list-style:none;text-align:left;margin-bottom:36px;display:flex;flex-direction:column;gap:12px}
+.price-list li{display:flex;align-items:center;gap:10px;color:#a1a1aa;font-size:14px}
+.price-list li::before{content:'✓';color:#a78bfa;font-weight:700;flex-shrink:0}
+.btn-full{background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;padding:16px 40px;border-radius:12px;font-size:16px;font-weight:700;display:block;margin-bottom:14px}
+.trial-note{color:#52525b;font-size:12px}
+
+@media(max-width:768px){
+  .feature-grid{grid-template-columns:1fr}
+  .features,.pricing{padding:60px 20px}
+}
 </style>
 </head>
 <body>
@@ -69,6 +98,62 @@ h1 .grad{background:linear-gradient(135deg,#a78bfa,#60a5fa);-webkit-background-c
   </div>
 </section>
 
-<!-- Features, Pricing, FAQ, Footer は後で追加 -->
+<section class="features">
+  <div class="section-label">Features</div>
+  <h2 class="section-title">必要な機能が、全部ある</h2>
+  <p class="section-sub">6つのコア機能を、1つのアプリに凝縮</p>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🎨</div>
+      <div class="feature-name">AI 画像生成</div>
+      <div class="feature-desc">テキストプロンプトからキャンバスに素材を生成。無料で使えるコア機能。</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">✂️</div>
+      <div class="feature-name">背景除去</div>
+      <div class="feature-desc">Apple Vision Framework でオフライン処理。データは端末の外に出ない。</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔍</div>
+      <div class="feature-name">高解像度化</div>
+      <div class="feature-desc">AI アップスケールで画像を鮮明に拡大。Web・印刷用途に最適化。</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🖋️</div>
+      <div class="feature-name">ベクター化</div>
+      <div class="feature-desc">ラスター画像を SVG に高精度変換。vtracer エンジン採用。</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎭</div>
+      <div class="feature-name">マスク編集</div>
+      <div class="feature-desc">ブラシでマスクを描いて AI に再編集・除去を指示。細部まで制御可能。</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📦</div>
+      <div class="feature-name">一括エクスポート</div>
+      <div class="feature-desc">PNG・JPEG・WebP・SVG に一括書き出し。解像度カスタマイズ対応。</div>
+    </div>
+  </div>
+</section>
+
+<section class="pricing">
+  <div class="section-label">Pricing</div>
+  <h2 class="section-title" style="margin-bottom:44px">シンプルな価格</h2>
+  <div class="price-card">
+    <div class="price-badge">買い切り &nbsp;·&nbsp; 永久アップデート無料</div>
+    <div class="price-amount">¥2,000</div>
+    <div class="price-note">一度購入すればずっと使える</div>
+    <ul class="price-list">
+      <li>全6機能アンロック</li>
+      <li>将来のアップデートも無料</li>
+      <li>最大2台の Mac で使用可</li>
+      <li>サブスクリプションなし</li>
+    </ul>
+    <a href="https://draftcanvas.lemonsqueezy.com/checkout/buy/2330d4a5-c212-4248-8053-07993e8522e4" class="btn-full">購入する</a>
+    <p class="trial-note">まず 14 日間無料で試せます &nbsp;·&nbsp; クレジットカード不要</p>
+  </div>
+</section>
+
+<!-- FAQ, Footer は後で追加 -->
 </body>
 </html>
