@@ -3,6 +3,10 @@ import SwiftUI
 @main
 struct DraftCanvasApp: App {
     @StateObject private var viewModel = DraftCanvasViewModel()
+
+    init() {
+        NSWindow.allowsAutomaticWindowTabbing = false
+    }
     @StateObject private var l10n = LocalizationManager.shared
     @StateObject private var sparkleUpdater = SparkleUpdaterController()
     @StateObject private var gate = EntitlementGate.shared
@@ -29,6 +33,7 @@ struct DraftCanvasApp: App {
         }
         .windowStyle(.titleBar)
         .commands {
+            CommandGroup(replacing: .newItem) { }
             CommandGroup(after: .appInfo) {
                 Button("アップデートを確認…") {
                     sparkleUpdater.checkForUpdates()

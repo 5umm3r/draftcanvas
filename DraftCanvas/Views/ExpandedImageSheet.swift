@@ -29,31 +29,6 @@ struct ExpandedImageSheet: View {
                 .allowsHitTesting(false)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            if items.count > 1 {
-                HStack {
-                    Button(action: goPrevious) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 18, weight: .semibold))
-                            .frame(width: 44, height: 44)
-                            .background(.ultraThinMaterial, in: Circle())
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.leading, 20)
-
-                    Spacer()
-
-                    Button(action: goNext) {
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 18, weight: .semibold))
-                            .frame(width: 44, height: 44)
-                            .background(.ultraThinMaterial, in: Circle())
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.trailing, 20)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
-
             Button { onDismiss() } label: {
                 Image(systemName: "xmark")
                     .font(.system(size: 13, weight: .semibold))
@@ -67,13 +42,31 @@ struct ExpandedImageSheet: View {
             if items.count > 1 {
                 VStack {
                     Spacer()
-                    Text("\(currentIndex + 1) / \(items.count)")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(.ultraThinMaterial, in: Capsule())
-                        .padding(.bottom, 20)
+                    HStack(spacing: 8) {
+                        Button(action: goPrevious) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 13, weight: .semibold))
+                                .frame(width: 28, height: 28)
+                                .background(.ultraThinMaterial, in: Circle())
+                        }
+                        .buttonStyle(.plain)
+
+                        Text("\(currentIndex + 1) / \(items.count)")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(.ultraThinMaterial, in: Capsule())
+
+                        Button(action: goNext) {
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 13, weight: .semibold))
+                                .frame(width: 28, height: 28)
+                                .background(.ultraThinMaterial, in: Circle())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.bottom, 20)
                 }
                 .frame(maxWidth: .infinity)
             }

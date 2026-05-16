@@ -9,7 +9,7 @@ private struct TopBarButtonStyle: ButtonStyle {
         @State private var isHovered = false
         var body: some View {
             configuration.label
-                .frame(width: 28, height: 28)
+                .frame(minWidth: 28, minHeight: 28)
                 .contentShape(Rectangle())
                 .opacity(isHovered || configuration.isPressed ? 1.0 : 0.55)
                 .onHover { isHovered = $0 }
@@ -105,6 +105,15 @@ extension ContentView {
             .accessibilityLabel("完了音")
 
             Button {
+                viewModel.cycleAppearance()
+            } label: {
+                Image(systemName: AppAppearance(rawValue: viewModel.appAppearanceRaw)?.systemImage ?? "sun.max")
+                    .font(.body)
+            }
+            .buttonStyle(TopBarButtonStyle())
+            .help("テーマ切替")
+
+            Button {
                 openSettings()
             } label: {
                 Image(systemName: "gearshape")
@@ -114,28 +123,21 @@ extension ContentView {
             .help("設定")
             .accessibilityLabel("設定")
 
-            Button {
-                viewModel.cycleAppearance()
-            } label: {
-                Image(systemName: AppAppearance(rawValue: viewModel.appAppearanceRaw)?.systemImage ?? "sun.max")
-                    .font(.body)
-            }
-            .buttonStyle(TopBarButtonStyle())
-            .help("テーマ切替")
-
             Spacer(minLength: 16)
 
             Button {
                 showCountPopover.toggle()
             } label: {
-                Image(systemName: "photo.stack")
-                    .font(.body.weight(.semibold))
-                    .overlay(alignment: .bottomTrailing) {
+                HStack(spacing: 4) {
+                    Image(systemName: "photo.stack")
+                        .font(.body.weight(.semibold))
+                    if viewModel.totalGeneratedImages > 0 {
                         Text("\(viewModel.totalGeneratedImages)")
-                            .font(.system(size: 8, weight: .semibold))
+                            .font(.subheadline.weight(.semibold))
                             .monospacedDigit()
-                            .offset(x: 4, y: 4)
                     }
+                }
+                .padding(.horizontal, viewModel.totalGeneratedImages > 0 ? 6 : 0)
             }
             .buttonStyle(TopBarButtonStyle())
             .help("生成枚数の詳細")
