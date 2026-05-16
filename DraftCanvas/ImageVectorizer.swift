@@ -8,9 +8,9 @@ enum ImageVectorizationError: Error, LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .imageDecodeFailed:        return L("画像の解析に失敗しました")
-        case .conversionFailed(let c):  return L("ベクター変換に失敗しました (code: \(c))")
-        case .previewRenderFailed:      return L("プレビュー画像の生成に失敗しました")
+        case .imageDecodeFailed:        return String(localized: "画像の解析に失敗しました")
+        case .conversionFailed(let c):  return String(localized: "ベクター変換に失敗しました (code: \(c))")
+        case .previewRenderFailed:      return String(localized: "プレビュー画像の生成に失敗しました")
         }
     }
 }

@@ -13,6 +13,7 @@
 		06CD4B452FB74F27005BA6D5 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 06CD4B442FB74F27005BA6D5 /* Sparkle */; };
 		0793126E77CD1041375063C0 /* TrialExpiredView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 588B9107340E5F4424AC7842 /* TrialExpiredView.swift */; };
 		07ADD4FFDF95499A9975EECA /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 959C1E64059D47058262CABB /* Localizable.xcstrings */; };
+		DC6F3E2000000011A0000001 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = DC6F3E1000000011A0000001 /* InfoPlist.xcstrings */; };
 		0995B3E90B03C38F331D2D45 /* DraftCanvasViewModel+MaterialExtract.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5831C49A57AB9C7A2D8B1C1D /* DraftCanvasViewModel+MaterialExtract.swift */; };
 		0CEE8A5F3C8EEE502B378859 /* ContentView+TopBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FF7C5825340C2B5EBFBDCD7 /* ContentView+TopBar.swift */; };
 		10A0001B2D00000100000001 /* DraftCanvasApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A0000B2D00000100000001 /* DraftCanvasApp.swift */; };
@@ -60,7 +61,8 @@
 		6E955589E8B6F4A5A1DD7CB6 /* GenerationDetailPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2DA3047FC4CE3B239B0FA74 /* GenerationDetailPopover.swift */; };
 		71E1860A1767EA5E4033632D /* LicenseStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA930F33BC026AB401A560F4 /* LicenseStore.swift */; };
 		73206F51B692E4A7597E70B7 /* StatusBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA755653AF12594D863F311F /* StatusBadge.swift */; };
-		74E51C345A4B59211EC0CBF4 /* AccountPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = B268164EA0D2A09163FB3A63 /* AccountPopover.swift */; };
+		DC6F3E3000000011A0000001 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC6F3E1100000011A0000001 /* SettingsView.swift */; };
+		74E51C345A4B59211EC0CBF4 /* AccountPopover.swift in Sources */ = {isa = PBXBuildFile;fileRef = B268164EA0D2A09163FB3A63 /* AccountPopover.swift */; };
 		792AEA440F9CE6B09D6DA653 /* DraftCanvasViewModel+Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F699822142103ADBE227AC1 /* DraftCanvasViewModel+Account.swift */; };
 		7AA25878CCC1E7EF5305FA7E /* ExportNaming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117AE1F8D5A65A54ADEDE469 /* ExportNaming.swift */; };
 		7BE2D769348A44FB8F3CD718C1F337EF /* ExpandedImageSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 931EFDA997C949FD9E4D485A8C876F0D /* ExpandedImageSheet.swift */; };
@@ -185,6 +187,8 @@
 		8D6C2EE6CD1FA3D9302FB26F /* DraftCanvasViewModel+Projects.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Projects.swift"; path = "ViewModel/DraftCanvasViewModel+Projects.swift"; sourceTree = "<group>"; };
 		931EFDA997C949FD9E4D485A8C876F0D /* ExpandedImageSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpandedImageSheet.swift; path = Views/ExpandedImageSheet.swift; sourceTree = "<group>"; };
 		959C1E64059D47058262CABB /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		DC6F3E1000000011A0000001 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
+		DC6F3E1100000011A0000001 /* SettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SettingsView.swift; path = Views/SettingsView.swift; sourceTree = "<group>"; };
 		98263DF32F2140108D8FA3CF /* LocalizationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationManager.swift; sourceTree = "<group>"; };
 		9A210B096C95BC73D72354E1 /* VectorizingOverlay.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = VectorizingOverlay.swift; path = Views/VectorizingOverlay.swift; sourceTree = "<group>"; };
 		9C26379656AAE5325F4969BC /* LicenseClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LicenseClient.swift; path = License/LicenseClient.swift; sourceTree = "<group>"; };
@@ -331,6 +335,7 @@
 				931EFDA997C949FD9E4D485A8C876F0D /* ExpandedImageSheet.swift */,
 				ACF65D5F66CC46589243299381594A99 /* CircularPromptActionButton.swift */,
 				053F5A416ED0C9A5453822CD /* DetailRow.swift */,
+				DC6F3E1100000011A0000001 /* SettingsView.swift */,
 				B268164EA0D2A09163FB3A63 /* AccountPopover.swift */,
 				BFC23E9DED99669C4518E0C5 /* LogWindow.swift */,
 				CDE4F73BDF7FFF820CD906D9 /* GenerationProgressView.swift */,
@@ -364,6 +369,7 @@
 		71D9B64C22F34738AC6F6CB0 /* Localization */ = {
 			isa = PBXGroup;
 			children = (
+				DC6F3E1000000011A0000001 /* InfoPlist.xcstrings */,
 				959C1E64059D47058262CABB /* Localizable.xcstrings */,
 				98263DF32F2140108D8FA3CF /* LocalizationManager.swift */,
 			);
@@ -478,11 +484,11 @@
 			};
 			buildConfigurationList = 10A000042D00000100000001 /* Build configuration list for PBXProject "DraftCanvas" */;
 			compatibilityVersion = "Xcode 14.0";
-			developmentRegion = en;
+			developmentRegion = ja;
 			hasScannedForEncodings = 0;
 			knownRegions = (
-				en,
 				ja,
+				en,
 				Base,
 			);
 			mainGroup = 10A000002D00000100000001;
@@ -507,6 +513,7 @@
 				10A000402D00000100000001 /* Assets.xcassets in Resources */,
 				810EF0171FB44986BA128E23 /* bin in Resources */,
 				07ADD4FFDF95499A9975EECA /* Localizable.xcstrings in Resources */,
+				DC6F3E2000000011A0000001 /* InfoPlist.xcstrings in Resources */,
 				C041F91DE6E54E1E9E3C79AA /* Licenses in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -596,6 +603,7 @@
 				7BE2D769348A44FB8F3CD718C1F337EF /* ExpandedImageSheet.swift in Sources */,
 				87F3707632A04A009F6F6A1EF5730A47 /* CircularPromptActionButton.swift in Sources */,
 				22DC46FE87112CB30AC876F0 /* DetailRow.swift in Sources */,
+				DC6F3E3000000011A0000001 /* SettingsView.swift in Sources */,
 				74E51C345A4B59211EC0CBF4 /* AccountPopover.swift in Sources */,
 				A13017642482452211C4E9A0 /* LogWindow.swift in Sources */,
 				1A4DA35B6990671B2B04CE17 /* GenerationProgressView.swift in Sources */,

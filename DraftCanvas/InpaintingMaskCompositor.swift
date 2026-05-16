@@ -17,11 +17,11 @@ enum InpaintingCompositorError: Error, LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .imageDecodeFailed: return L("元画像のデコードに失敗しました。")
-        case .maskDecodeFailed: return L("マスク画像のデコードに失敗しました。")
-        case .maskRenderFailed: return L("マスク画像の生成に失敗しました。")
-        case .compositeFailed: return L("マスク合成に失敗しました。")
-        case .encodeFailed: return L("画像エンコードに失敗しました。")
+        case .imageDecodeFailed: return String(localized: "元画像のデコードに失敗しました。")
+        case .maskDecodeFailed: return String(localized: "マスク画像のデコードに失敗しました。")
+        case .maskRenderFailed: return String(localized: "マスク画像の生成に失敗しました。")
+        case .compositeFailed: return String(localized: "マスク合成に失敗しました。")
+        case .encodeFailed: return String(localized: "画像エンコードに失敗しました。")
         }
     }
 }

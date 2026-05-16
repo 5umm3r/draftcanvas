@@ -128,9 +128,15 @@ struct ExportOptionsSheet: View {
             HStack(spacing: 8) {
                 Image(systemName: vm.request.hasVectorSVG ? "point.3.connected.trianglepath.dotted" : "photo")
                     .foregroundStyle(.secondary)
-                Text(vm.request.hasVectorSVG ? "ベクターSVG出力" : "PNG埋込SVG出力")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                if vm.request.hasVectorSVG {
+                    Text("ベクターSVG出力")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text("PNG埋込SVG出力")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
             }
         }
     }
@@ -158,7 +164,7 @@ struct ExportOptionsSheet: View {
                             Text("幅")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
-                                .frame(width: 20, alignment: .trailing)
+                                .frame(minWidth: 20, alignment: .trailing)
                             TextField("", text: $vm.widthText)
                                 .textFieldStyle(.roundedBorder)
                                 .frame(width: 80)
@@ -177,7 +183,7 @@ struct ExportOptionsSheet: View {
                             Text("高")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
-                                .frame(width: 20, alignment: .trailing)
+                                .frame(minWidth: 20, alignment: .trailing)
                             TextField("", text: $vm.heightText)
                                 .textFieldStyle(.roundedBorder)
                                 .frame(width: 80)
@@ -238,7 +244,7 @@ struct ExportOptionsSheet: View {
             }
             .buttonStyle(.borderedProminent)
             .keyboardShortcut(.defaultAction)
-            .disabled(!vm.isValid || (!isBatch && saveFolderName == nil))
+            .disabled(!vm.isValid)
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 12)

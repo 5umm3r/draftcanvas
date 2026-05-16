@@ -68,7 +68,7 @@ extension DraftCanvasViewModel {
                 let canvasSize = CGSize(width: pw, height: ph)
 
                 guard let maskData = InpaintingMaskCompositor.renderMask(from: strokes, canvasSize: canvasSize) else {
-                    await MainActor.run { self.errorToast = L("マスク画像の生成に失敗しました。") }
+                    await MainActor.run { self.errorToast = String(localized: "マスク画像の生成に失敗しました。") }
                     return
                 }
 
@@ -114,7 +114,7 @@ extension DraftCanvasViewModel {
                 }
             } catch {
                 await MainActor.run {
-                    self.errorToast = L("マスクの処理に失敗しました: \(error.localizedDescription)")
+                    self.errorToast = String(localized: "マスクの処理に失敗しました: \(error.localizedDescription)")
                     self.logs.append("マスク編集処理エラー: \(error.localizedDescription)")
                 }
             }
@@ -153,7 +153,7 @@ extension DraftCanvasViewModel {
 
                 guard let maskData = InpaintingMaskCompositor.renderMask(from: strokes, canvasSize: canvasSize) else {
                     await MainActor.run {
-                        self.errorToast = L("マスク画像の生成に失敗しました。")
+                        self.errorToast = String(localized: "マスク画像の生成に失敗しました。")
                         self.generatingProjectIDs.remove(projectID)
                     }
                     return
@@ -201,7 +201,7 @@ extension DraftCanvasViewModel {
                 }
             } catch {
                 await MainActor.run {
-                    self.errorToast = L("マスク除去に失敗しました: \(error.localizedDescription)")
+                    self.errorToast = String(localized: "マスク除去に失敗しました: \(error.localizedDescription)")
                     self.logs.append("マスク除去エラー: \(error.localizedDescription)")
                     self.generatingProjectIDs.remove(projectID)
                 }
@@ -247,7 +247,7 @@ extension DraftCanvasViewModel {
                 failed.errorMessage = error.localizedDescription
                 upsert(failed, into: projectID)
                 let message = (error as? BackgroundRemovalError)?.localizedDescription
-                    ?? L("背景除去に失敗しました")
+                    ?? String(localized: "背景除去に失敗しました")
                 errorToast = message
                 logs.append("背景除去失敗: \(error.localizedDescription)")
             }
@@ -277,7 +277,7 @@ extension DraftCanvasViewModel {
             saveState()
             logs.append("背景除去保存完了: \(newItem.id)")
         } catch {
-            errorToast = L("背景除去結果の保存に失敗しました")
+            errorToast = String(localized: "背景除去結果の保存に失敗しました")
             logs.append("背景除去保存失敗: \(error.localizedDescription)")
         }
     }

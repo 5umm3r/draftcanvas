@@ -222,6 +222,7 @@ final class DraftCanvasViewModel: ObservableObject {
         projectStore.cleanupAllAttachments()
         loadProjects()
         preferredSaveFolder = preferredSaveFolderStore.load()
+            ?? FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
         prewarmAndRefresh()
     }
 

@@ -21,7 +21,7 @@ struct GenerationDetailPopover: View {
 
             Divider()
 
-            PopoverButton(systemImage: "square.and.arrow.up", title: L("エクスポート")) {
+            PopoverButton(systemImage: "square.and.arrow.up", title: String(localized: "エクスポート")) {
                 guard EntitlementGate.shared.requireUnlocked() else { return }
                 viewModel.exportSelected()
             }

@@ -16,13 +16,13 @@ struct LicensesWindow: View {
                 .padding(.vertical, 2)
             }
             .frame(minWidth: 180)
-            .navigationTitle(L("ライセンス"))
+            .navigationTitle(String(localized: "ライセンス"))
         } detail: {
             if let id = selection,
                let entry = LicensesCatalog.all.first(where: { $0.id == id }) {
                 LicenseDetailView(entry: entry)
             } else {
-                ContentUnavailableView(L("ライセンスを選択"), systemImage: "doc.text")
+                ContentUnavailableView(String(localized: "ライセンスを選択"), systemImage: "doc.text")
             }
         }
         .frame(minWidth: 720, minHeight: 480)

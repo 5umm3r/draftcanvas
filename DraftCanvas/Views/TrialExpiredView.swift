@@ -11,9 +11,9 @@ struct TrialExpiredView: View {
                 .foregroundStyle(.secondary)
 
             VStack(spacing: 8) {
-                Text(L("トライアル期間が終了しました"))
+                Text(String(localized: "トライアル期間が終了しました"))
                     .font(.title2.bold())
-                Text(L("引き続きご利用いただくには\nDraft Canvas をご購入ください。"))
+                Text(String(localized: "引き続きご利用いただくには\nDraft Canvas をご購入ください。"))
                     .font(.body)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -23,20 +23,20 @@ struct TrialExpiredView: View {
                 Button {
                     NSWorkspace.shared.open(PurchaseConfig.purchaseURL)
                 } label: {
-                    Text(L("購入する"))
+                    Text(String(localized: "購入する"))
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 .frame(maxWidth: 260)
 
-                Button(L("ライセンスキーを持っている")) {
+                Button(String(localized: "ライセンスキーを持っている")) {
                     dismiss()
                     gate.showLicenseSheet = true
                 }
                 .foregroundStyle(.secondary)
 
-                Button(L("後で")) { dismiss() }
+                Button(String(localized: "後で")) { dismiss() }
                     .foregroundStyle(.tertiary)
                     .font(.caption)
             }

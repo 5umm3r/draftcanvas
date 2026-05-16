@@ -9,10 +9,10 @@ enum MaterialExtractionError: Error, LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .imageDecodeFailed:    return L("画像ファイルを読み込めませんでした")
-        case .noInstancesFound:     return L("素材を検出できませんでした")
-        case .maskGenerationFailed: return L("マスクの生成に失敗しました")
-        case .encodeFailed:         return L("結果画像の保存に失敗しました")
+        case .imageDecodeFailed:    return String(localized: "画像ファイルを読み込めませんでした")
+        case .noInstancesFound:     return String(localized: "素材を検出できませんでした")
+        case .maskGenerationFailed: return String(localized: "マスクの生成に失敗しました")
+        case .encodeFailed:         return String(localized: "結果画像の保存に失敗しました")
         }
     }
 }

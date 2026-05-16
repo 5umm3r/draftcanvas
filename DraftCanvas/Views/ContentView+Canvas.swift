@@ -99,7 +99,7 @@ extension ContentView {
                             ProgressView()
                                 .scaleEffect(0.7)
                                 .frame(width: 16, height: 16)
-                            Text(L("\(progress.done) / \(progress.total) 枚処理中…"))
+                            Text(String(localized: "\(progress.done) / \(progress.total) 枚処理中…"))
                                 .font(.subheadline.weight(.medium))
                         }
                         .padding(.horizontal, 16)
@@ -846,7 +846,7 @@ struct JobPreviewView: View {
                     Image(systemName: "exclamationmark.triangle")
                         .font(.system(size: 28))
                         .foregroundStyle(.orange)
-                    Text(job.errorMessage ?? L("生成に失敗しました"))
+                    Text(job.errorMessage ?? String(localized: "生成に失敗しました"))
                         .font(.caption)
                         .multilineTextAlignment(.center)
                         .foregroundStyle(.secondary)

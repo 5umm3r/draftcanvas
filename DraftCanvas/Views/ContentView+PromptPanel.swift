@@ -262,7 +262,7 @@ extension ContentView {
                             } label: {
                                 if let r = model.rating {
                                     Label(
-                                        "\(model.displayName)   \(L("コスト")):\(r.cost)  \(L("賢さ")):\(r.smart)  \(L("速さ")):\(r.speed)",
+                                        "\(model.displayName)   \(String(localized: "コスト")):\(r.cost)  \(String(localized: "賢さ")):\(r.smart)  \(String(localized: "速さ")):\(r.speed)",
                                         systemImage: viewModel.currentInputs.model == model.id ? "checkmark" : ""
                                     )
                                 } else {
@@ -359,7 +359,7 @@ extension ContentView {
                         HStack(spacing: 5) {
                             Image(systemName: "square.stack")
                                 .font(.system(size: 13))
-                            Text(L("\(viewModel.currentInputs.count)枚"))
+                            Text("\(viewModel.currentInputs.count)枚")
                                 .font(.system(size: 13, weight: .medium))
                             Image(systemName: "chevron.down")
                                 .font(.system(size: 9, weight: .semibold))
@@ -382,7 +382,7 @@ extension ContentView {
                         HStack(spacing: 5) {
                             Image(systemName: "square.split.2x1")
                                 .font(.system(size: 13))
-                            Text(L("\(viewModel.currentInputs.concurrency)並列"))
+                            Text("\(viewModel.currentInputs.concurrency)並列")
                                 .font(.system(size: 13, weight: .medium))
                             Image(systemName: "chevron.down")
                                 .font(.system(size: 9, weight: .semibold))
@@ -579,10 +579,10 @@ extension ContentView {
 
     func reasoningLabel(_ effort: String) -> String {
         switch effort {
-        case "low": return L("低")
-        case "medium": return L("中")
-        case "high": return L("高")
-        case "xhigh": return L("最高")
+        case "low": return String(localized: "低")
+        case "medium": return String(localized: "中")
+        case "high": return String(localized: "高")
+        case "xhigh": return String(localized: "最高")
         default: return effort
         }
     }

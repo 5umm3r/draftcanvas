@@ -16,7 +16,7 @@ struct GenerationCountPopover: View {
             Button(role: .destructive) {
                 showResetConfirm = true
             } label: {
-                Text(L("リセット"))
+                Text(String(localized: "リセット"))
                     .font(.subheadline)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
@@ -30,10 +30,10 @@ struct GenerationCountPopover: View {
             isPresented: $showResetConfirm,
             titleVisibility: .visible
         ) {
-            Button(L("リセット"), role: .destructive) { viewModel.resetAllCounters() }
-            Button(L("キャンセル"), role: .cancel) {}
+            Button(String(localized: "リセット"), role: .destructive) { viewModel.resetAllCounters() }
+            Button(String(localized: "キャンセル"), role: .cancel) {}
         } message: {
-            Text(L("5h・週次・累計すべて 0 になります。元に戻せません。"))
+            Text(String(localized: "5h・週次・累計すべて 0 になります。元に戻せません。"))
         }
     }
 
@@ -50,7 +50,7 @@ struct GenerationCountPopover: View {
             Text("\(count)")
                 .monospacedDigit()
                 .font(.subheadline.weight(.semibold))
-            Text(L("枚"))
+            Text(String(localized: "枚"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }

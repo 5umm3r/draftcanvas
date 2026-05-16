@@ -146,10 +146,10 @@ extension DraftCanvasViewModel {
 
     func sendCompletionNotification(succeeded: Int, failed: Int) {
         let content = UNMutableNotificationContent()
-        content.title = L("画像生成完了")
+        content.title = String(localized: "画像生成完了")
         content.body = failed > 0
-            ? L("\(succeeded)枚成功、\(failed)枚失敗")
-            : L("\(succeeded)枚の画像を生成しました")
+            ? String(localized: "\(succeeded)枚成功、\(failed)枚失敗")
+            : String(localized: "\(succeeded)枚の画像を生成しました")
         let request = UNNotificationRequest(
             identifier: UUID().uuidString,
             content: content,

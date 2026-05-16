@@ -30,12 +30,12 @@ struct DraftCanvasApp: App {
         .windowStyle(.titleBar)
         .commands {
             CommandGroup(after: .appInfo) {
-                Button(L("アップデートを確認…")) {
+                Button("アップデートを確認…") {
                     sparkleUpdater.checkForUpdates()
                 }
                 .disabled(!sparkleUpdater.canCheckForUpdates)
                 trialStatusMenuItem
-                Button(L("ライセンス…")) {
+                Button("ライセンス…") {
                     NotificationCenter.default.post(name: .openLicensesWindow, object: nil)
                 }
             }
@@ -47,13 +47,20 @@ struct DraftCanvasApp: App {
         .windowStyle(.titleBar)
         .defaultSize(width: 760, height: 520)
 
-        WindowGroup(L("ライセンス"), id: "licenses") {
+        WindowGroup("ライセンス", id: "licenses") {
             LicensesWindow()
                 .environmentObject(l10n)
                 .environment(\.locale, l10n.locale)
         }
         .windowStyle(.titleBar)
         .defaultSize(width: 760, height: 520)
+
+        Settings {
+            SettingsView()
+                .environmentObject(l10n)
+                .environmentObject(viewModel)
+                .environment(\.locale, l10n.locale)
+        }
     }
 }
 
@@ -72,17 +79,17 @@ private extension DraftCanvasApp {
                 gate.showLicenseSheet = true
             } label: {
                 if daysLeft <= 3 {
-                    Label(L("トライアル: 残 \(daysLeft) 日"),
+                    Label("トライアル: 残 \(daysLeft) 日",
                           systemImage: "exclamationmark.triangle.fill")
                 } else {
-                    Text(L("トライアル: 残 \(daysLeft) 日"))
+                    Text("トライアル: 残 \(daysLeft) 日")
                 }
             }
         case .expired:
             Button {
                 gate.showLicenseSheet = true
             } label: {
-                Label(L("トライアル期限切れ"),
+                Label("トライアル期限切れ",
                       systemImage: "exclamationmark.octagon.fill")
             }
         }

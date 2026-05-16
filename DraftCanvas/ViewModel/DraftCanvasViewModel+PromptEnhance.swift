@@ -5,7 +5,7 @@ extension DraftCanvasViewModel {
         let promptText = currentInputs.prompt.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !promptText.isEmpty, !isEnhancingPrompt else { return }
         guard !availableModels.isEmpty else {
-            errorToast = L("利用可能なモデルがありません")
+            errorToast = String(localized: "利用可能なモデルがありません")
             return
         }
 
@@ -27,10 +27,10 @@ extension DraftCanvasViewModel {
                     }
                     group.addTask {
                         try await Task.sleep(nanoseconds: 15 * 1_000_000_000)
-                        throw DraftCanvasError.rpcError(L("プロンプトエンハンスがタイムアウトしました"))
+                        throw DraftCanvasError.rpcError(String(localized: "プロンプトエンハンスがタイムアウトしました"))
                     }
                     guard let r = try await group.next() else {
-                        throw DraftCanvasError.rpcError(L("エンハンス結果を取得できませんでした"))
+                        throw DraftCanvasError.rpcError(String(localized: "エンハンス結果を取得できませんでした"))
                     }
                     group.cancelAll()
                     return r
@@ -48,7 +48,7 @@ extension DraftCanvasViewModel {
                 _ = quoteChars
 
                 guard !enhanced.isEmpty else {
-                    throw DraftCanvasError.rpcError(L("エンハンス結果が空でした"))
+                    throw DraftCanvasError.rpcError(String(localized: "エンハンス結果が空でした"))
                 }
 
                 await MainActor.run { [weak self] in
@@ -73,7 +73,7 @@ extension DraftCanvasViewModel {
                         self.logs.append("プロンプトエンハンス キャンセル")
                         return
                     }
-                    self.errorToast = L("プロンプトエンハンスに失敗しました")
+                    self.errorToast = String(localized: "プロンプトエンハンスに失敗しました")
                     self.logs.append("プロンプトエンハンス失敗: \(error.localizedDescription)")
                 }
             }

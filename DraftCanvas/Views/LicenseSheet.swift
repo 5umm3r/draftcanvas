@@ -13,21 +13,21 @@ struct LicenseSheet: View {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 56))
                         .foregroundStyle(.green)
-                    Text(L("有効化完了"))
+                    Text(String(localized: "有効化完了"))
                         .font(.title2.bold())
-                    Text(L("Draft Canvas のすべての機能が使えるようになりました。"))
+                    Text(String(localized: "Draft Canvas のすべての機能が使えるようになりました。"))
                         .font(.body)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
-                    Button(L("閉じる")) { dismiss() }
+                    Button(String(localized: "閉じる")) { dismiss() }
                         .buttonStyle(.borderedProminent)
                         .controlSize(.large)
                 }
             } else {
                 VStack(spacing: 8) {
-                    Text(L("ライセンスを有効化"))
+                    Text(String(localized: "ライセンスを有効化"))
                         .font(.title2.bold())
-                    Text(L("購入後に届いたライセンスキーを入力してください。"))
+                    Text(String(localized: "購入後に届いたライセンスキーを入力してください。"))
                         .font(.body)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -37,9 +37,9 @@ struct LicenseSheet: View {
                     NSWorkspace.shared.open(PurchaseConfig.purchaseURL)
                 } label: {
                     HStack(spacing: 4) {
-                        Text(L("ライセンスをお持ちでない方は"))
+                        Text(String(localized: "ライセンスをお持ちでない方は"))
                             .foregroundStyle(.secondary)
-                        Text(L("購入する"))
+                        Text(String(localized: "購入する"))
                             .foregroundStyle(Color.accentColor)
                     }
                     .font(.caption)
@@ -68,7 +68,7 @@ struct LicenseSheet: View {
                             if gate.isActivating {
                                 ProgressView().controlSize(.small)
                             } else {
-                                Text(L("有効化する"))
+                                Text(String(localized: "有効化する"))
                             }
                         }
                         .frame(maxWidth: .infinity)
@@ -78,7 +78,7 @@ struct LicenseSheet: View {
                     .disabled(key.trimmingCharacters(in: .whitespaces).isEmpty || gate.isActivating)
                     .frame(maxWidth: 260)
 
-                    Button(L("キャンセル")) { dismiss() }
+                    Button(String(localized: "キャンセル")) { dismiss() }
                         .foregroundStyle(.secondary)
                 }
             }
