@@ -35,11 +35,6 @@ struct DraftCanvasApp: App {
                 }
                 .disabled(!sparkleUpdater.canCheckForUpdates)
                 trialStatusMenuItem
-                if gate.status != .licensed {
-                    Button(L("ライセンスを有効化…")) {
-                        gate.showLicenseSheet = true
-                    }
-                }
                 Button(L("ライセンス…")) {
                     NotificationCenter.default.post(name: .openLicensesWindow, object: nil)
                 }
