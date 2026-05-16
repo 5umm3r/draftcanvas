@@ -68,6 +68,13 @@ final class LicenseStore: @unchecked Sendable {
         return String(data: data, encoding: .utf8)
     }
 
+    func resetAll() {
+        deleteItem(account: "licenseKey")
+        deleteItem(account: "instanceID")
+        deleteItem(account: "trialStartDate")
+        deleteItem(account: "lastSeenDate")
+    }
+
     func deleteItem(account: String) {
         let query: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,

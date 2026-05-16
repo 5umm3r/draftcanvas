@@ -16,6 +16,9 @@ struct DraftCanvasApp: App {
                 .onAppear {
                     viewModel.requestNotificationPermission()
                     EntitlementGate.shared.evaluate()
+                    if let warning = EntitlementGate.shared.consumeTrialWarning() {
+                        viewModel.errorToast = warning
+                    }
                 }
                 .sheet(isPresented: $gate.showLicensePrompt) {
                     TrialExpiredView()
@@ -31,6 +34,7 @@ struct DraftCanvasApp: App {
                     sparkleUpdater.checkForUpdates()
                 }
                 .disabled(!sparkleUpdater.canCheckForUpdates)
+                trialStatusMenuItem
                 if gate.status != .licensed {
                     Button(L("ライセンスを有効化…")) {
                         gate.showLicenseSheet = true
@@ -60,4 +64,32 @@ struct DraftCanvasApp: App {
 
 extension Notification.Name {
     static let openLicensesWindow = Notification.Name("openLicensesWindow")
+}
+
+private extension DraftCanvasApp {
+    @ViewBuilder
+    var trialStatusMenuItem: some View {
+        switch gate.status {
+        case .licensed:
+            EmptyView()
+        case .trial(let daysLeft):
+            Button {
+                gate.showLicenseSheet = true
+            } label: {
+                if daysLeft <= 3 {
+                    Label(L("トライアル: 残 \(daysLeft) 日"),
+                          systemImage: "exclamationmark.triangle.fill")
+                } else {
+                    Text(L("トライアル: 残 \(daysLeft) 日"))
+                }
+            }
+        case .expired:
+            Button {
+                gate.showLicenseSheet = true
+            } label: {
+                Label(L("トライアル期限切れ"),
+                      systemImage: "exclamationmark.octagon.fill")
+            }
+        }
+    }
 }

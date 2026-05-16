@@ -17,9 +17,52 @@ final class EntitlementGate: ObservableObject {
     @Published var isActivating = false
 
     private let trialDays = 14
+    private let warningThreshold = 3
+    private let warningStateKey = "lastTrialWarningDaysLeft"
     private init() {}
 
+    func consumeTrialWarning() -> String? {
+        guard case .trial(let daysLeft) = status, daysLeft <= warningThreshold else {
+            UserDefaults.standard.removeObject(forKey: warningStateKey)
+            return nil
+        }
+        let lastShown = UserDefaults.standard.object(forKey: warningStateKey) as? Int
+        guard lastShown != daysLeft else { return nil }
+        UserDefaults.standard.set(daysLeft, forKey: warningStateKey)
+        return daysLeft > 0 ? "トライアル残り\(daysLeft)日" : "トライアル本日まで"
+    }
+
     func evaluate() {
+        #if DEBUG
+        if let override = ProcessInfo.processInfo.environment["DRAFTCANVAS_LICENSE_OVERRIDE"] {
+            let trimmed = override.trimmingCharacters(in: .whitespaces).lowercased()
+            switch trimmed {
+            case "licensed":
+                status = .licensed
+                print("[EntitlementGate] DEBUG override: licensed")
+                return
+            case "expired":
+                status = .expired
+                print("[EntitlementGate] DEBUG override: expired")
+                return
+            case "trial":
+                status = .trial(daysLeft: trialDays)
+                print("[EntitlementGate] DEBUG override: trial(\(trialDays))")
+                return
+            case "reset":
+                LicenseStore.shared.resetAll()
+                print("[EntitlementGate] DEBUG override: reset Keychain → continue")
+            default:
+                if trimmed.hasPrefix("trial:"), let n = Int(trimmed.dropFirst("trial:".count)) {
+                    status = n > 0 ? .trial(daysLeft: n) : .expired
+                    print("[EntitlementGate] DEBUG override: trial(\(n))")
+                    return
+                }
+                print("[EntitlementGate] DEBUG override: 不正値 '\(override)' → 通常評価")
+            }
+        }
+        #endif
+
         let store = LicenseStore.shared
 
         if let key = store.licenseKey, let instanceID = store.instanceID {

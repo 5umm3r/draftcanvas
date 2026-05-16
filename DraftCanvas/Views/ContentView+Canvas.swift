@@ -50,11 +50,21 @@ extension ContentView {
 
     var canvasArea: some View {
         GeometryReader { geometry in
+            let actionPanelVisible: Bool =
+                !viewModel.isSelectionMode
+                && viewModel.selectedItemID != nil
+                && viewModel.items.contains(where: { $0.id == viewModel.selectedItemID })
+            let actionPanelReservation: CGFloat = 96
+            let promptStandardPad: CGFloat = 24
+            let needShift = actionPanelVisible && geometry.size.width < (actionPanelReservation + 780 + promptStandardPad)
+            let promptLeading: CGFloat = needShift ? actionPanelReservation : promptStandardPad
+
             ZStack(alignment: .bottom) {
                 canvas
 
                 promptPanel(maxPromptHeight: geometry.size.height / 2)
-                    .padding(.horizontal, 24)
+                    .padding(.leading, promptLeading)
+                    .padding(.trailing, promptStandardPad)
                     .padding(.bottom, 18)
 
                 VStack(spacing: 8) {
@@ -736,12 +746,6 @@ extension ContentView {
                 ) {
                     guard EntitlementGate.shared.requireUnlocked() else { return }
                     viewModel.exportItem(item)
-                }
-                CircularPromptActionButton(
-                    systemImage: "folder",
-                    tooltip: "Finderで表示"
-                ) {
-                    viewModel.reveal(item: item)
                 }
                 CircularPromptActionButton(
                     systemImage: "trash",

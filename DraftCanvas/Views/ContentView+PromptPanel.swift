@@ -349,7 +349,7 @@ extension ContentView {
                     .help("アスペクト比")
 
                     Menu {
-                        ForEach(1...4, id: \.self) { n in
+                        ForEach(1...8, id: \.self) { n in
                             Button {
                                 viewModel.binding(for: \.count).wrappedValue = n
                                 viewModel.binding(for: \.concurrency).wrappedValue = n

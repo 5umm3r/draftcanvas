@@ -33,6 +33,16 @@ struct ItemDetailPopover: View {
             }
 
             TagEditorRow(itemID: item.id, viewModel: viewModel)
+
+            Divider().padding(.top, 4)
+            Button {
+                viewModel.reveal(item: item)
+            } label: {
+                Label("Finderで表示", systemImage: "folder")
+                    .font(.caption)
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.secondary)
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 16)
