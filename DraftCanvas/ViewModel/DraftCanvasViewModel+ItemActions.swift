@@ -186,11 +186,10 @@ extension DraftCanvasViewModel {
                 )
 
                 let results = await removalCoordinator.run(request: request) { [weak self] job in
-                    await MainActor.run { self?.upsert(job, into: projectID) }
+                    await MainActor.run { self?.handleJobUpdate(job, into: projectID, request: request) }
                 }
 
                 await MainActor.run {
-                    self.persistSucceededJobs(results, request: request, projectID: projectID)
                     removalStore.cleanupMaskFiles(id: itemID)
                     self.generatingProjectIDs.remove(projectID)
                     if self.generatingProjectIDs.isEmpty {

@@ -146,7 +146,7 @@ final class CodexAppServerClient: @unchecked Sendable {
     }
 
     func stop() {
-        queue.sync {
+        queue.async {
             ProcessTerminationResources.release(
                 process: self.process,
                 stdinHandle: self.stdinHandle,
@@ -367,8 +367,12 @@ final class CodexAppServerClient: @unchecked Sendable {
         }
 
         if let error = message["error"] as? [String: Any] {
-            let errorMessage = error["message"] as? String ?? compactJSONString(error)
-            continuation.resume(throwing: DraftCanvasError.rpcError(errorMessage))
+            if let rateLimitError = RateLimitClassifier.classify(error) {
+                continuation.resume(throwing: rateLimitError)
+            } else {
+                let errorMessage = error["message"] as? String ?? compactJSONString(error)
+                continuation.resume(throwing: DraftCanvasError.rpcError(errorMessage))
+            }
             return
         }
 
@@ -570,6 +574,37 @@ private final class TurnWaiter: @unchecked Sendable {
         didFinish = true
         continuation?.resume(throwing: error)
         continuation = nil
+    }
+}
+
+enum RateLimitClassifier {
+    private static let rateLimitKeywords = ["rate_limit", "rate limit", "too many requests", "quota"]
+
+    static func classify(_ error: [String: Any]) -> DraftCanvasError? {
+        let isRateLimitCode: Bool
+        if let intCode = error["code"] as? Int {
+            isRateLimitCode = intCode == 429 || intCode == -32029
+        } else if let strCode = error["code"] as? String {
+            isRateLimitCode = strCode == "429"
+        } else {
+            isRateLimitCode = false
+        }
+
+        let message = (error["message"] as? String ?? "").lowercased()
+        let hasRateLimitKeyword = rateLimitKeywords.contains { message.contains($0) }
+
+        guard isRateLimitCode || hasRateLimitKeyword else { return nil }
+
+        let retryAfter: TimeInterval? = {
+            guard let data = error["data"] as? [String: Any] else { return nil }
+            if let ra = data["retry_after"] as? TimeInterval { return ra }
+            if let ra = data["retryAfter"] as? TimeInterval { return ra }
+            if let ra = data["retry_after"] as? Int { return TimeInterval(ra) }
+            if let ra = data["retryAfter"] as? Int { return TimeInterval(ra) }
+            return nil
+        }()
+
+        return .rateLimited(retryAfter: retryAfter)
     }
 }
 

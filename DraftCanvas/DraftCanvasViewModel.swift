@@ -11,6 +11,7 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var jobsByProject: [UUID: [GenerationJob]] = [:]
     @Published var generatingProjectIDs: Set<UUID> = []
     @Published var draftInputs: ProjectInputs = ProjectInputs()
+    var lastRequestByProject: [UUID: GenerationRequest] = [:]
 
     // MARK: - Global state
     @AppStorage("appAppearance") var appAppearanceRaw: String = "light"
@@ -133,6 +134,8 @@ final class DraftCanvasViewModel: ObservableObject {
     private var logBuffer: [String] = []
     private var logFlushTask: Task<Void, Never>?
     @Published var accountUsageStatus = CodexAccountUsageStatus.unavailable
+    var accountUsageStatusFetchedAt: Date?
+    @Published var pendingRateLimitConfirmation: RateLimitConfirmation?
     @Published var isRefreshingAccountUsage = false
     @Published var preferredSaveFolder: URL?
     @Published var errorToast: String?
@@ -217,6 +220,11 @@ final class DraftCanvasViewModel: ObservableObject {
                         self.logFlushTask = nil
                     }
                 }
+            }
+        }
+        coordinator.onConcurrencyAdjusted = { [weak self] old, new in
+            Task { @MainActor [weak self] in
+                self?.logs.append("並列度を \(old) → \(new) に調整しました")
             }
         }
         projectStore.cleanupAllAttachments()

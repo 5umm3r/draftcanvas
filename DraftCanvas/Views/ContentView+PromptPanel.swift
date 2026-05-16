@@ -136,7 +136,7 @@ extension ContentView {
                     isFocused: $promptIsFocused,
                     dynamicHeight: $promptTextHeight,
                     maxHeight: maxH,
-                    onSubmit: viewModel.generate,
+                    onSubmit: { viewModel.generate() },
                     onSetupReplacer: { replacer in
                         viewModel.onReplacePromptText = replacer
                     },
@@ -419,6 +419,8 @@ extension ContentView {
                     .disabled(viewModel.currentInputs.editSource != nil)
                     .help(viewModel.currentInputs.attachedImage != nil ? LocalizedStringKey("参照画像添付中") : LocalizedStringKey("参照画像を添付"))
 
+                    retryFailedJobsButton
+
                     Button {
                         viewModel.generate()
                     } label: {
@@ -584,6 +586,30 @@ extension ContentView {
         case "high": return String(localized: "高")
         case "xhigh": return String(localized: "最高")
         default: return effort
+        }
+    }
+
+    @ViewBuilder
+    var retryFailedJobsButton: some View {
+        let failedJobs = viewModel.currentJobs.filter { $0.status == .failed }
+        if !failedJobs.isEmpty,
+           !viewModel.isGeneratingForSelected,
+           let projectID = viewModel.effectiveProjectID,
+           viewModel.lastRequestByProject[projectID] != nil {
+            Button {
+                viewModel.retryFailedJobs(projectID: projectID)
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "arrow.circlepath")
+                        .font(.system(size: 14, weight: .medium))
+                    Text(String(localized: "失敗のみ再試行 (\(failedJobs.count))"))
+                        .font(.system(size: 13))
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 8)
+            }
+            .buttonStyle(.bordered)
+            .help(String(localized: "失敗したジョブのみ再試行"))
         }
     }
 

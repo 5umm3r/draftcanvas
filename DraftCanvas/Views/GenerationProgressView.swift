@@ -2,24 +2,12 @@ import SwiftUI
 
 struct GenerationProgressView: View {
     let prompt: String
-    let onStop: () -> Void
     @State private var isHovering = false
     @State private var showPromptOverlay = false
     @State private var promptDelayTask: Task<Void, Never>?
 
     var body: some View {
-        ZStack {
-            AuroraPlaceholderView()
-
-            if isHovering {
-                Button(action: onStop) {
-                    Image(systemName: "stop.circle.fill")
-                        .font(.system(size: 28))
-                        .foregroundStyle(.red)
-                }
-                .buttonStyle(.plain)
-            }
-        }
+        AuroraPlaceholderView()
         .overlay(alignment: .bottom) {
             if showPromptOverlay && !prompt.isEmpty {
                 Text(prompt)
@@ -43,7 +31,6 @@ struct GenerationProgressView: View {
                     .transition(.opacity)
             }
         }
-        .animation(.easeInOut(duration: 0.15), value: isHovering)
         .animation(.easeInOut(duration: 0.15), value: showPromptOverlay)
         .onHover { hovering in
             isHovering = hovering

@@ -4,8 +4,38 @@ protocol GenerationRunning: AnyObject, Sendable {
     func run(job: GenerationJob, request: GenerationRequest) async -> GenerationJob
 }
 
-final class GenerationCoordinator: Sendable {
+actor ConcurrencyController {
+    private let initial: Int
+    private(set) var effective: Int
+    private var consecutiveSuccess: Int = 0
+    private let restoreThreshold = 5
+
+    init(initial: Int) {
+        self.initial = initial
+        self.effective = initial
+    }
+
+    func didSucceed() -> (old: Int, new: Int)? {
+        consecutiveSuccess += 1
+        guard consecutiveSuccess >= restoreThreshold, effective < initial else { return nil }
+        consecutiveSuccess = 0
+        let old = effective
+        effective = min(initial, effective + 1)
+        return (old, effective)
+    }
+
+    func didHitRateLimit() -> (old: Int, new: Int)? {
+        consecutiveSuccess = 0
+        guard effective > 1 else { return nil }
+        let old = effective
+        effective = max(1, effective - 1)
+        return (old, effective)
+    }
+}
+
+final class GenerationCoordinator: @unchecked Sendable {
     private let runner: GenerationRunning
+    var onConcurrencyAdjusted: (@Sendable (Int, Int) -> Void)?
 
     init(runner: GenerationRunning) {
         self.runner = runner
@@ -15,19 +45,26 @@ final class GenerationCoordinator: Sendable {
         request: GenerationRequest,
         onUpdate: (@Sendable (GenerationJob) async -> Void)? = nil
     ) async -> [GenerationJob] {
-        let count = request.normalizedCount
-        let concurrency = request.normalizedConcurrency
-        var jobs = (0..<count).map { index in
+        let jobList = (0..<request.normalizedCount).map { index in
             GenerationJob(index: index, prompt: request.prompt, aspectRatio: request.aspectRatio)
         }
+        return await runSpecific(jobs: jobList, request: request, onUpdate: onUpdate)
+    }
+
+    func runSpecific(
+        jobs inputJobs: [GenerationJob],
+        request: GenerationRequest,
+        onUpdate: (@Sendable (GenerationJob) async -> Void)? = nil
+    ) async -> [GenerationJob] {
+        let controller = ConcurrencyController(initial: request.normalizedConcurrency)
+        var jobs = inputJobs
 
         await withTaskGroup(of: GenerationJob.self) { group in
             var nextIndex = 0
             var running = 0
 
-            func startNextJob() {
-                guard nextIndex < jobs.count else { return }
-
+            func startNextJob(effectiveConcurrency: Int) {
+                guard running < effectiveConcurrency, nextIndex < jobs.count else { return }
                 var job = jobs[nextIndex]
                 job.status = .running
                 jobs[job.index] = job
@@ -37,20 +74,32 @@ final class GenerationCoordinator: Sendable {
                     await onUpdate?(job)
                     return await runner.run(job: job, request: request)
                 }
-
                 nextIndex += 1
                 running += 1
             }
 
-            while running < concurrency && nextIndex < jobs.count {
-                startNextJob()
+            var eff = await controller.effective
+            while running < eff && nextIndex < jobs.count {
+                startNextJob(effectiveConcurrency: eff)
             }
 
             while let completed = await group.next() {
                 running -= 1
                 jobs[completed.index] = completed
                 await onUpdate?(completed)
-                startNextJob()
+
+                if completed.hitRateLimitDuringRun {
+                    if let (old, new) = await controller.didHitRateLimit() {
+                        onConcurrencyAdjusted?(old, new)
+                    }
+                } else if completed.status == .succeeded {
+                    if let (old, new) = await controller.didSucceed() {
+                        onConcurrencyAdjusted?(old, new)
+                    }
+                }
+
+                eff = await controller.effective
+                startNextJob(effectiveConcurrency: eff)
             }
         }
 
@@ -70,30 +119,15 @@ final class CodexGenerationRunner: GenerationRunning {
         output.logs.append("ジョブ \(job.index + 1) を開始しました。")
 
         do {
-            try await client.start()
-            let threadID = try await client.startThread(model: request.model, reasoningEffort: request.reasoningEffort)
-            output.logs.append("Codex thread: \(threadID)")
-
-            let prompt = PromptFactory.prompt(for: request, jobIndex: job.index)
-            let referenceImagePath: String?
-            if let editSource = request.editSource {
-                referenceImagePath = editSource.compositeFilePath ?? editSource.filePath
-            } else {
-                referenceImagePath = request.attachedImagePath
-            }
-            let result = try await client.runTurn(
-                threadID: threadID,
-                prompt: prompt,
-                referenceImagePath: referenceImagePath
-            )
-
+            let (result, extraLogs, hitRateLimit) = try await runWithRetry(job: job, request: request)
+            output.hitRateLimitDuringRun = hitRateLimit
+            output.logs.append(contentsOf: extraLogs)
             output.logs.append(contentsOf: result.logs)
             guard let imageResult = result.imageResult else {
                 throw DraftCanvasError.missingGeneratedContent
             }
             output.imageData = imageResult.data
             output.revisedPrompt = imageResult.revisedPrompt
-
             output.status = .succeeded
             output.logs.append("ジョブ \(job.index + 1) が完了しました。")
         } catch {
@@ -103,6 +137,52 @@ final class CodexGenerationRunner: GenerationRunning {
         }
 
         return output
+    }
+
+    private func runWithRetry(
+        job: GenerationJob,
+        request: GenerationRequest,
+        maxAttempts: Int = 3
+    ) async throws -> (result: CodexTurnResult, logs: [String], hitRateLimit: Bool) {
+        var extraLogs: [String] = []
+        var lastError: Error = DraftCanvasError.missingGeneratedContent
+        var hitRateLimit = false
+
+        let referenceImagePath: String?
+        if let editSource = request.editSource {
+            referenceImagePath = editSource.compositeFilePath ?? editSource.filePath
+        } else {
+            referenceImagePath = request.attachedImagePath
+        }
+        let prompt = PromptFactory.prompt(for: request, jobIndex: job.index)
+
+        for attempt in 0..<maxAttempts {
+            do {
+                try await client.start()
+                let threadID = try await client.startThread(
+                    model: request.model,
+                    reasoningEffort: request.reasoningEffort
+                )
+                extraLogs.append("Codex thread: \(threadID)")
+                let result = try await client.runTurn(
+                    threadID: threadID,
+                    prompt: prompt,
+                    referenceImagePath: referenceImagePath
+                )
+                return (result, extraLogs, hitRateLimit)
+            } catch let error as DraftCanvasError {
+                if case .rateLimited(let retryAfter) = error, attempt < maxAttempts - 1 {
+                    hitRateLimit = true
+                    let delay = retryAfter ?? (pow(2.0, Double(attempt)) * 2.0 + Double.random(in: 0..<1))
+                    extraLogs.append("レート制限のため \(Int(delay.rounded())) 秒後に再試行します (\(attempt + 1)/\(maxAttempts - 1))")
+                    try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+                    lastError = error
+                } else {
+                    throw error
+                }
+            }
+        }
+        throw lastError
     }
 }
 

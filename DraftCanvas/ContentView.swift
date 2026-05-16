@@ -139,6 +139,27 @@ struct ContentView: View {
                 Text(dragDropMessage(projectName: project.name))
             }
         }
+        .confirmationDialog(
+            String(localized: "残量が少なくなっています"),
+            isPresented: .init(
+                get: { viewModel.pendingRateLimitConfirmation != nil },
+                set: { if !$0 { viewModel.pendingRateLimitConfirmation = nil } }
+            ),
+            titleVisibility: .visible
+        ) {
+            if let confirmation = viewModel.pendingRateLimitConfirmation {
+                Button(String(localized: "続行")) {
+                    confirmation.resume()
+                }
+            }
+            Button("キャンセル", role: .cancel) {
+                viewModel.pendingRateLimitConfirmation = nil
+            }
+        } message: {
+            if let confirmation = viewModel.pendingRateLimitConfirmation {
+                Text(String(localized: "残量が少なくなっています (残り \(confirmation.remainingPercent)%%)。生成を続行しますか？"))
+            }
+        }
         .sheet(item: $viewModel.exportRequest) { request in
             ExportOptionsSheet(
                 request: request,

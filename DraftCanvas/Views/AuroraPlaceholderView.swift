@@ -1,8 +1,6 @@
 import SwiftUI
 
 struct AuroraPlaceholderView: View {
-    @Environment(\.colorScheme) private var colorScheme
-
     private struct Blob {
         let color: Color
         let periodMult: Double
@@ -20,7 +18,7 @@ struct AuroraPlaceholderView: View {
     private static let basePeriod = 4.0
 
     var body: some View {
-        let animation = TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { context in
+        TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { context in
             let t = context.date.timeIntervalSinceReferenceDate
             GeometryReader { geo in
                 let minDim = min(geo.size.width, geo.size.height)
@@ -47,14 +45,5 @@ struct AuroraPlaceholderView: View {
             }
         }
         .drawingGroup()
-
-        if colorScheme == .light {
-            animation
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Color.black.opacity(0.12), lineWidth: 1))
-                .shadow(color: Color.black.opacity(0.10), radius: 6, x: 0, y: 2)
-        } else {
-            animation
-        }
     }
 }

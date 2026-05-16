@@ -62,10 +62,31 @@ extension ContentView {
             ZStack(alignment: .bottom) {
                 canvas
 
-                promptPanel(maxPromptHeight: geometry.size.height / 2)
-                    .padding(.leading, promptLeading)
-                    .padding(.trailing, promptStandardPad)
-                    .padding(.bottom, 18)
+                VStack(spacing: 8) {
+                    if viewModel.isGeneratingForSelected {
+                        HStack {
+                            Spacer()
+                            Button {
+                                viewModel.stopServer()
+                            } label: {
+                                Label(String(localized: "全停止"), systemImage: "stop.fill")
+                                    .font(.caption.weight(.medium))
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                            }
+                            .buttonStyle(.plain)
+                            .background(.ultraThinMaterial, in: Capsule())
+                            .overlay(Capsule().stroke(Color.primary.opacity(0.12), lineWidth: 1))
+                        }
+                        .frame(maxWidth: 780)
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    }
+                    promptPanel(maxPromptHeight: geometry.size.height / 2)
+                }
+                .padding(.leading, promptLeading)
+                .padding(.trailing, promptStandardPad)
+                .padding(.bottom, 18)
+                .animation(.easeInOut(duration: 0.2), value: viewModel.isGeneratingForSelected)
 
                 VStack(spacing: 8) {
                     if let errorMessage = viewModel.importError {
@@ -672,7 +693,7 @@ extension ContentView {
 
     @ViewBuilder
     func preview(for job: GenerationJob) -> some View {
-        JobPreviewView(job: job, onStop: viewModel.stopServer)
+        JobPreviewView(job: job)
     }
 
     var checkerboard: some View {
@@ -832,7 +853,6 @@ struct ItemThumbnailView: View {
 
 struct JobPreviewView: View {
     let job: GenerationJob
-    let onStop: () -> Void
     @State private var nsImage: NSImage?
 
     var body: some View {
@@ -853,7 +873,7 @@ struct JobPreviewView: View {
                         .padding(.horizontal, 12)
                 }
             } else {
-                GenerationProgressView(prompt: job.prompt, onStop: onStop)
+                GenerationProgressView(prompt: job.prompt)
             }
         }
         .task(id: job.imageData) {

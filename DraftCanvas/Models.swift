@@ -208,6 +208,7 @@ struct GenerationJob: Identifiable, Equatable {
     var revisedPrompt: String?
     var logs: [String]
     var errorMessage: String?
+    var hitRateLimitDuringRun: Bool
 
     init(
         id: UUID = UUID(),
@@ -218,7 +219,8 @@ struct GenerationJob: Identifiable, Equatable {
         imageData: Data? = nil,
         revisedPrompt: String? = nil,
         logs: [String] = [],
-        errorMessage: String? = nil
+        errorMessage: String? = nil,
+        hitRateLimitDuringRun: Bool = false
     ) {
         self.id = id
         self.index = index
@@ -229,6 +231,7 @@ struct GenerationJob: Identifiable, Equatable {
         self.revisedPrompt = revisedPrompt
         self.logs = logs
         self.errorMessage = errorMessage
+        self.hitRateLimitDuringRun = hitRateLimitDuringRun
     }
 }
 
@@ -1037,6 +1040,7 @@ enum DraftCanvasError: LocalizedError {
     case processNotRunning
     case processExited
     case rpcError(String)
+    case rateLimited(retryAfter: TimeInterval?)
     case missingThreadID
     case missingGeneratedContent
     case unsupportedImageResult(String)
@@ -1053,6 +1057,8 @@ enum DraftCanvasError: LocalizedError {
             return String(localized: "codex app-server が終了しました。")
         case .rpcError(let message):
             return message
+        case .rateLimited:
+            return String(localized: "レート制限に達しました。再試行中です。")
         case .missingThreadID:
             return String(localized: "thread/start のレスポンスから thread id を取得できませんでした。")
         case .missingGeneratedContent:
@@ -1080,6 +1086,15 @@ private extension JSONEncoder {
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         return encoder
     }
+}
+
+// MARK: - RateLimitConfirmation
+
+struct RateLimitConfirmation: Identifiable {
+    let id = UUID()
+    let remainingPercent: Int
+    let concurrency: Int
+    let resume: () -> Void
 }
 
 // MARK: - CompletionSoundOption

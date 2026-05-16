@@ -3,7 +3,7 @@ import Foundation
 import UserNotifications
 
 extension DraftCanvasViewModel {
-    func generate() {
+    func generate(skipRateLimitCheck: Bool = false) {
         guard canGenerate else { return }
         if currentInputs.model.isEmpty, let fallback = availableModels.first(where: \.isDefault)?.id ?? availableModels.first?.id {
             if let id = effectiveProjectID {
@@ -14,6 +14,7 @@ extension DraftCanvasViewModel {
         }
 
         let inputs = currentInputs
+        if !skipRateLimitCheck, checkRateLimitBeforeGenerate(inputs: inputs) { return }
         let promptText = inputs.prompt.trimmingCharacters(in: .whitespacesAndNewlines)
 
         let targetProjectID: UUID
@@ -43,6 +44,7 @@ extension DraftCanvasViewModel {
         )
 
         jobsByProject[targetProjectID] = []
+        lastRequestByProject[targetProjectID] = request
         generatingProjectIDs.insert(targetProjectID)
         logs.append("生成を開始しました。count=\(request.normalizedCount), concurrency=\(request.normalizedConcurrency)")
         if let editSource = inputs.editSource {
@@ -53,17 +55,11 @@ extension DraftCanvasViewModel {
             let results = await coordinator.run(request: request) { [weak self] job in
                 await MainActor.run {
                     guard let self else { return }
-                    self.upsert(job, into: targetProjectID)
+                    self.handleJobUpdate(job, into: targetProjectID, request: request)
                 }
             }
 
             await MainActor.run {
-                self.jobsByProject[targetProjectID] = results
-                if self.selectedProjectID == targetProjectID {
-                    let firstSucceeded = results.first(where: { $0.status == .succeeded })?.id ?? results.first?.id
-                    self.selectedJobID = firstSucceeded
-                }
-                self.persistSucceededJobs(results, request: request, projectID: targetProjectID)
                 self.generatingProjectIDs.remove(targetProjectID)
                 if self.generatingProjectIDs.isEmpty {
                     self.onAllJobsCompleted(results: results)
@@ -96,43 +92,59 @@ extension DraftCanvasViewModel {
         jobsByProject[projectID] = jobs
     }
 
-    func persistSucceededJobs(_ jobs: [GenerationJob], request: GenerationRequest, projectID: UUID) {
-        let succeededCount = jobs.filter { $0.status == .succeeded }.count
-        if succeededCount > 0 {
-            totalGeneratedImages += succeededCount
-            session5hCount += succeededCount
-            sessionWeeklyCount += succeededCount
-            pendingFiveHDelta += succeededCount
-            pendingWeeklyDelta += succeededCount
+    func handleJobUpdate(_ job: GenerationJob, into projectID: UUID, request: GenerationRequest) {
+        if job.status == .succeeded {
+            persistAndPromoteSucceededJob(job, request: request, projectID: projectID)
+        } else {
+            upsert(job, into: projectID)
         }
+    }
 
-        if succeededCount > 0, let idx = projects.firstIndex(where: { $0.id == projectID }) {
-            projects[idx].updatedAt = Date()
-        }
+    private func persistAndPromoteSucceededJob(_ job: GenerationJob, request: GenerationRequest, projectID: UUID) {
+        let actualRatio = job.imageData.flatMap { pixelAspectRatioFromImageData($0) }
+        let item = ProjectItem(
+            projectID: projectID,
+            prompt: job.prompt,
+            revisedPrompt: job.revisedPrompt,
+            aspectRatio: request.aspectRatio,
+            actualAspectRatio: actualRatio,
+            errorMessage: nil,
+            editedFromItemID: request.editSource?.projectItemID
+        )
+        do {
+            guard let imageData = job.imageData else { throw DraftCanvasError.missingGeneratedContent }
+            try projectStore.writeItemData(imageData, for: item)
+            items.append(item)
+            thumbnailStore.writeThumbnail(from: imageData, item: item)
 
-        for job in jobs where job.status == .succeeded {
-            let actualRatio = job.imageData.flatMap { pixelAspectRatioFromImageData($0) }
-            let item = ProjectItem(
-                projectID: projectID,
-                prompt: job.prompt,
-                revisedPrompt: job.revisedPrompt,
-                aspectRatio: request.aspectRatio,
-                actualAspectRatio: actualRatio,
-                errorMessage: job.errorMessage,
-                editedFromItemID: request.editSource?.projectItemID
-            )
+            totalGeneratedImages += 1
+            session5hCount += 1
+            sessionWeeklyCount += 1
+            pendingFiveHDelta += 1
+            pendingWeeklyDelta += 1
 
-            do {
-                guard let imageData = job.imageData else { throw DraftCanvasError.missingGeneratedContent }
-                try projectStore.writeItemData(imageData, for: item)
-                self.items.append(item)
-                thumbnailStore.writeThumbnail(from: imageData, item: item)
-            } catch {
-                logs.append("プロジェクトへの保存に失敗しました: \(error.localizedDescription)")
+            if let idx = projects.firstIndex(where: { $0.id == projectID }) {
+                projects[idx].updatedAt = Date()
             }
-        }
 
-        saveState()
+            if var jobs = jobsByProject[projectID] {
+                jobs.removeAll { $0.id == job.id }
+                jobsByProject[projectID] = jobs
+            }
+
+            if selectedJobID == job.id {
+                selectedItemID = item.id
+                selectedJobID = nil
+            }
+
+            saveState()
+        } catch {
+            logs.append("プロジェクトへの保存に失敗しました: \(error.localizedDescription)")
+            var failedJob = job
+            failedJob.status = .failed
+            failedJob.errorMessage = error.localizedDescription
+            upsert(failedJob, into: projectID)
+        }
     }
 
     func onAllJobsCompleted(results: [GenerationJob]) {
@@ -156,5 +168,79 @@ extension DraftCanvasViewModel {
             trigger: nil
         )
         UNUserNotificationCenter.current().add(request)
+    }
+
+    func retryFailedJobs(projectID: UUID) {
+        guard !isGenerating(for: projectID),
+              let request = lastRequestByProject[projectID] else { return }
+
+        var failedJobs = (jobsByProject[projectID] ?? []).filter { $0.status == .failed }
+        guard !failedJobs.isEmpty else { return }
+
+        for i in failedJobs.indices {
+            failedJobs[i].status = .queued
+            failedJobs[i].errorMessage = nil
+            failedJobs[i].logs = []
+            failedJobs[i].imageData = nil
+            failedJobs[i].hitRateLimitDuringRun = false
+        }
+        for job in failedJobs {
+            upsert(job, into: projectID)
+        }
+
+        generatingProjectIDs.insert(projectID)
+        logs.append("失敗ジョブを再試行します: \(failedJobs.count)件")
+
+        Task {
+            let retried = await coordinator.runSpecific(jobs: failedJobs, request: request) { [weak self] job in
+                await MainActor.run {
+                    guard let self else { return }
+                    self.handleJobUpdate(job, into: projectID, request: request)
+                }
+            }
+
+            await MainActor.run {
+                self.generatingProjectIDs.remove(projectID)
+                if self.generatingProjectIDs.isEmpty {
+                    self.onAllJobsCompleted(results: retried)
+                }
+                self.refreshAccountUsage()
+                self.logs.append("再試行完了。")
+            }
+        }
+    }
+
+    private func isGenerating(for projectID: UUID) -> Bool {
+        generatingProjectIDs.contains(projectID)
+    }
+
+    private func checkRateLimitBeforeGenerate(inputs: ProjectInputs) -> Bool {
+        guard accountUsageStatus.accountKind == .chatgpt else { return false }
+
+        let needsRefresh = accountUsageStatusFetchedAt.map {
+            Date().timeIntervalSince($0) > 30
+        } ?? true
+
+        if needsRefresh {
+            refreshAccountUsage()
+            return false
+        }
+
+        guard let remaining = accountUsageStatus.primaryUsageRemainingFraction else { return false }
+        let normalizedCount = min(max(inputs.count, 1), 24)
+        let normalizedConcurrency = min(max(inputs.concurrency, 1), normalizedCount)
+        let threshold = Double(normalizedConcurrency) * 0.05
+        guard remaining < threshold else { return false }
+
+        let percent = Int((remaining * 100).rounded())
+        pendingRateLimitConfirmation = RateLimitConfirmation(
+            remainingPercent: percent,
+            concurrency: normalizedConcurrency,
+            resume: { [weak self] in
+                self?.pendingRateLimitConfirmation = nil
+                self?.generate(skipRateLimitCheck: true)
+            }
+        )
+        return true
     }
 }

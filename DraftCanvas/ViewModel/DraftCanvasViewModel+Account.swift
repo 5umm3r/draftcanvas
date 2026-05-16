@@ -13,6 +13,7 @@ extension DraftCanvasViewModel {
                 let status = try await self.client.readAccountUsageStatus()
                 await MainActor.run {
                     self.accountUsageStatus = status
+                    self.accountUsageStatusFetchedAt = Date()
                     self.syncSessionWindows(from: status)
                     self.isRefreshingAccountUsage = false
                     self.logs.append("Codexアカウントと使用量を更新しました。")

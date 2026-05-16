@@ -19,14 +19,6 @@ struct GenerationDetailPopover: View {
                 DetailRow(label: "Error", value: errorMessage)
             }
 
-            Divider()
-
-            PopoverButton(systemImage: "square.and.arrow.up", title: String(localized: "エクスポート")) {
-                guard EntitlementGate.shared.requireUnlocked() else { return }
-                viewModel.exportSelected()
-            }
-            .disabled(job.status != .succeeded)
-
             Spacer()
         }
         .padding(18)
