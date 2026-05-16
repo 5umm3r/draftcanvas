@@ -143,7 +143,12 @@ final class DraftCanvasViewModel: ObservableObject {
 
     @Published var vectorizingItemIDs: Set<UUID> = []
     @Published var inpaintingTarget: ProjectItem? = nil
-    @Published var inpaintMode: InpaintMode = .edit
+    @Published var inpaintMode: InpaintMode = {
+        let raw = UserDefaults.standard.string(forKey: "draftCanvas.inpaintMode") ?? "edit"
+        return InpaintMode(rawValue: raw) ?? .edit
+    }() {
+        didSet { UserDefaults.standard.set(inpaintMode.rawValue, forKey: "draftCanvas.inpaintMode") }
+    }
     @Published var isEnhancingPrompt = false
     @Published var exportRequest: ExportRequest? = nil
     @Published var exportingProjectID: UUID? = nil

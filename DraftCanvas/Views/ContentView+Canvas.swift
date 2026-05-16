@@ -148,12 +148,12 @@ extension ContentView {
     @ViewBuilder
     func inpaintingEditorSheet(for item: ProjectItem) -> some View {
         if let nsImage = viewModel.cachedImage(for: item) {
-            let mode = viewModel.inpaintMode
             InpaintingMaskEditorSheet(
                 originalImage: nsImage,
-                mode: mode,
+                mode: $viewModel.inpaintMode,
+                initialStrokes: viewModel.projectStore.readStrokesData(id: item.id) ?? [],
                 onComplete: { strokes in
-                    if mode == .remove {
+                    if viewModel.inpaintMode == .remove {
                         viewModel.applyMaskRemoval(item: item, strokes: strokes)
                     } else {
                         viewModel.applyInpaintingMask(item: item, strokes: strokes)
@@ -568,7 +568,7 @@ extension ContentView {
             if viewModel.isSelectionMode {
                 viewModel.toggleMultiSelection(item)
             } else {
-                viewModel.selectedItemID = (viewModel.selectedItemID == item.id) ? nil : item.id
+                viewModel.selectedItemID = item.id
                 viewModel.selectedJobID = nil
             }
         }
@@ -683,19 +683,11 @@ extension ContentView {
                 }
                 CircularPromptActionButton(
                     systemImage: "paintbrush.pointed",
-                    tooltip: "マスクして編集",
+                    tooltip: "マスク編集",
                     costLevel: viewModel.itemActionCostLevel
                 ) {
                     guard EntitlementGate.shared.requireUnlocked() else { return }
-                    viewModel.inpaint(item: item)
-                }
-                CircularPromptActionButton(
-                    systemImage: "eraser",
-                    tooltip: "マスクして除去",
-                    costLevel: viewModel.itemActionCostLevel
-                ) {
-                    guard EntitlementGate.shared.requireUnlocked() else { return }
-                    viewModel.maskRemove(item: item)
+                    viewModel.openMaskEditor(item: item)
                 }
                 CircularPromptActionButton(
                     systemImage: "scissors",

@@ -3,7 +3,7 @@ import AppKit
 
 // MARK: - Mode
 
-enum InpaintMode {
+enum InpaintMode: String {
     case edit
     case remove
 }
@@ -12,12 +12,21 @@ enum InpaintMode {
 
 struct InpaintingMaskEditorSheet: View {
     let originalImage: NSImage
-    let mode: InpaintMode
+    @Binding var mode: InpaintMode
     let onComplete: ([MaskStroke]) -> Void
     let onCancel: () -> Void
 
-    @State private var strokes: [MaskStroke] = []
+    @State private var strokes: [MaskStroke]
     @State private var undoneStrokes: [MaskStroke] = []
+
+    init(originalImage: NSImage, mode: Binding<InpaintMode>, initialStrokes: [MaskStroke] = [],
+         onComplete: @escaping ([MaskStroke]) -> Void, onCancel: @escaping () -> Void) {
+        self.originalImage = originalImage
+        self._mode = mode
+        self._strokes = State(initialValue: initialStrokes)
+        self.onComplete = onComplete
+        self.onCancel = onCancel
+    }
     @State private var brushRadius: CGFloat = 20
     @State private var isEraser: Bool = false
     @State private var isConfirmingClear: Bool = false
@@ -48,46 +57,45 @@ struct InpaintingMaskEditorSheet: View {
     }
 
     private var toolbar: some View {
-        HStack(spacing: 16) {
-            Label("ブラシ", systemImage: "circle.fill")
-                .font(.caption)
+        HStack(spacing: 12) {
+            Image(systemName: "circle.fill")
                 .foregroundStyle(.secondary)
+                .font(.caption)
             Slider(value: $brushRadius, in: 5 ... 80, step: 1)
                 .frame(width: 120)
             Text("\(Int(brushRadius))px")
                 .font(.caption.monospacedDigit())
                 .frame(width: 36)
 
-            Divider().frame(height: 20)
-
             Toggle(isOn: $isEraser) {
-                Label("消しゴム", systemImage: "eraser")
-                    .font(.caption)
+                Image(systemName: "eraser")
             }
             .toggleStyle(.button)
             .buttonStyle(.bordered)
 
             Divider().frame(height: 20)
 
-            Button {
-                guard let last = strokes.last else { return }
-                undoneStrokes.append(last)
-                strokes.removeLast()
-            } label: {
-                Image(systemName: "arrow.uturn.backward")
-            }
-            .disabled(strokes.isEmpty)
-            .keyboardShortcut("z", modifiers: .command)
+            HStack(spacing: 4) {
+                Button {
+                    guard let last = strokes.last else { return }
+                    undoneStrokes.append(last)
+                    strokes.removeLast()
+                } label: {
+                    Image(systemName: "arrow.uturn.backward")
+                }
+                .disabled(strokes.isEmpty)
+                .keyboardShortcut("z", modifiers: .command)
 
-            Button {
-                guard let last = undoneStrokes.last else { return }
-                strokes.append(last)
-                undoneStrokes.removeLast()
-            } label: {
-                Image(systemName: "arrow.uturn.forward")
+                Button {
+                    guard let last = undoneStrokes.last else { return }
+                    strokes.append(last)
+                    undoneStrokes.removeLast()
+                } label: {
+                    Image(systemName: "arrow.uturn.forward")
+                }
+                .disabled(undoneStrokes.isEmpty)
+                .keyboardShortcut("z", modifiers: [.command, .shift])
             }
-            .disabled(undoneStrokes.isEmpty)
-            .keyboardShortcut("z", modifiers: [.command, .shift])
 
             Button {
                 isConfirmingClear = true
@@ -98,7 +106,17 @@ struct InpaintingMaskEditorSheet: View {
 
             Spacer()
 
+            Picker("", selection: $mode) {
+                Text("編集").tag(InpaintMode.edit)
+                Text("除去").tag(InpaintMode.remove)
+            }
+            .pickerStyle(.segmented)
+            .frame(width: 140)
+
+            Divider().frame(height: 20)
+
             Button("キャンセル", role: .cancel) { onCancel() }
+                .fixedSize()
                 .keyboardShortcut(.escape, modifiers: [])
 
             Button(mode == .remove ? LocalizedStringKey("除去") : LocalizedStringKey("完了")) { onComplete(strokes) }
@@ -192,12 +210,12 @@ final class MaskCanvasNSView: NSView {
     // MARK: - Stroke sync (called from updateNSView)
 
     func syncStrokes(_ newStrokes: [MaskStroke]) {
-        if newStrokes.count < committedStrokeCount {
-            committedStrokeCount = newStrokes.count
+        if committedStrokeCount == 0 && !newStrokes.isEmpty {
             rebuildMaskBuffer(from: newStrokes)
-        } else {
-            committedStrokeCount = newStrokes.count
+        } else if newStrokes.count < committedStrokeCount {
+            rebuildMaskBuffer(from: newStrokes)
         }
+        committedStrokeCount = newStrokes.count
     }
 
     // MARK: - Buffer management
@@ -312,8 +330,17 @@ final class MaskCanvasNSView: NSView {
     override func draw(_ dirtyRect: NSRect) {
         guard let ctx = NSGraphicsContext.current?.cgContext else { return }
 
-        ctx.setFillColor(NSColor.windowBackgroundColor.cgColor)
-        ctx.fill(bounds)
+        let tileSize: CGFloat = 12
+        let light = NSColor(white: 0.82, alpha: 1).cgColor
+        let dark = NSColor(white: 0.65, alpha: 1).cgColor
+        let cols = Int(ceil(bounds.width / tileSize))
+        let rows = Int(ceil(bounds.height / tileSize))
+        for row in 0 ..< rows {
+            for col in 0 ..< cols {
+                ctx.setFillColor((row + col) % 2 == 0 ? light : dark)
+                ctx.fill(CGRect(x: CGFloat(col) * tileSize, y: CGFloat(row) * tileSize, width: tileSize, height: tileSize))
+            }
+        }
 
         let r = imageRect
         guard r.width > 0, r.height > 0 else { return }

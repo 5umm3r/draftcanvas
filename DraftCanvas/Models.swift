@@ -635,9 +635,39 @@ final class ProjectStore: @unchecked Sendable {
         return url
     }
 
+    @discardableResult
+    func writePreviewData(_ data: Data, id: UUID) throws -> URL {
+        try FileManager.default.createDirectory(at: masksDirectory, withIntermediateDirectories: true)
+        let url = masksDirectory.appendingPathComponent("\(id.uuidString)_preview.png")
+        try data.write(to: url, options: .atomic)
+        return url
+    }
+
+    func previewURL(id: UUID) -> URL {
+        masksDirectory.appendingPathComponent("\(id.uuidString)_preview.png")
+    }
+
+    @discardableResult
+    func writeStrokesData(_ strokes: [MaskStroke], id: UUID) throws -> URL {
+        try FileManager.default.createDirectory(at: masksDirectory, withIntermediateDirectories: true)
+        let url = masksDirectory.appendingPathComponent("\(id.uuidString)_strokes.json")
+        let data = try JSONEncoder().encode(strokes)
+        try data.write(to: url, options: .atomic)
+        return url
+    }
+
+    func readStrokesData(id: UUID) -> [MaskStroke]? {
+        let url = masksDirectory.appendingPathComponent("\(id.uuidString)_strokes.json")
+        guard let data = try? Data(contentsOf: url) else { return nil }
+        return try? JSONDecoder().decode([MaskStroke].self, from: data)
+    }
+
     func cleanupMaskFiles(id: UUID) {
-        try? FileManager.default.removeItem(at: masksDirectory.appendingPathComponent("\(id.uuidString)_mask.png"))
-        try? FileManager.default.removeItem(at: masksDirectory.appendingPathComponent("\(id.uuidString)_composite.png"))
+        let base = id.uuidString
+        try? FileManager.default.removeItem(at: masksDirectory.appendingPathComponent("\(base)_mask.png"))
+        try? FileManager.default.removeItem(at: masksDirectory.appendingPathComponent("\(base)_composite.png"))
+        try? FileManager.default.removeItem(at: masksDirectory.appendingPathComponent("\(base)_preview.png"))
+        try? FileManager.default.removeItem(at: masksDirectory.appendingPathComponent("\(base)_strokes.json"))
     }
 
     init(rootDirectory: URL = ProjectStore.defaultRootDirectory()) {

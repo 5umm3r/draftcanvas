@@ -45,13 +45,7 @@ extension DraftCanvasViewModel {
         logs.append("アイテムを再編集対象にしました: \(fileURL.path)")
     }
 
-    func inpaint(item: ProjectItem) {
-        inpaintMode = .edit
-        inpaintingTarget = item
-    }
-
-    func maskRemove(item: ProjectItem) {
-        inpaintMode = .remove
+    func openMaskEditor(item: ProjectItem) {
         inpaintingTarget = item
     }
 
@@ -86,6 +80,12 @@ extension DraftCanvasViewModel {
                 let store = await MainActor.run { self.projectStore }
                 let maskURL = try store.writeMaskData(maskData, id: item.id)
                 let compositeURL = try store.writeCompositeData(compositeData, id: item.id)
+                try? store.writeStrokesData(strokes, id: item.id)
+                if let previewData = try? InpaintingMaskCompositor.renderPreview(
+                    originalImageData: originalData, maskData: maskData
+                ) {
+                    try? store.writePreviewData(previewData, id: item.id)
+                }
 
                 await MainActor.run {
                     var inputs = self.inputsByProject[id] ?? ProjectInputs()

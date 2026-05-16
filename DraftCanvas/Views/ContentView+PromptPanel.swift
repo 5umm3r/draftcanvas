@@ -104,6 +104,17 @@ extension ContentView {
                 HStack {
                     AttachedImageThumbnail(
                         filePath: attachedImage.filePath,
+                        overlayPath: viewModel.currentInputs.editSource.flatMap { src in
+                            guard src.isInpainting else { return nil }
+                            return viewModel.projectStore.previewURL(id: src.projectItemID).path
+                        },
+                        onTap: {
+                            guard let editSource = viewModel.currentInputs.editSource,
+                                  editSource.isInpainting,
+                                  let item = viewModel.items.first(where: { $0.id == editSource.projectItemID })
+                            else { return }
+                            viewModel.openMaskEditor(item: item)
+                        },
                         onRemove: {
                             if viewModel.currentInputs.editSource != nil {
                                 viewModel.cancelEditingHistoryItem()

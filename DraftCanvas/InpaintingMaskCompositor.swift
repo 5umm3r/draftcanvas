@@ -2,7 +2,7 @@ import Foundation
 import CoreGraphics
 import ImageIO
 
-struct MaskStroke: Equatable {
+struct MaskStroke: Equatable, Codable {
     let points: [CGPoint]
     let radius: CGFloat
     let isEraser: Bool
@@ -151,6 +151,64 @@ enum InpaintingMaskCompositor {
         guard let encoded = encodePNG(cgImage: resultImage) else {
             throw InpaintingCompositorError.encodeFailed
         }
+        return encoded
+    }
+
+    // MARK: - Preview (red overlay for thumbnail)
+
+    static func renderPreview(originalImageData: Data, maskData: Data) throws -> Data {
+        guard let originalCG = decodeCGImage(from: originalImageData) else {
+            throw InpaintingCompositorError.imageDecodeFailed
+        }
+        guard let maskCG = decodeCGImage(from: maskData) else {
+            throw InpaintingCompositorError.maskDecodeFailed
+        }
+
+        let width = originalCG.width
+        let height = originalCG.height
+
+        guard let ctx = CGContext(
+            data: nil,
+            width: width,
+            height: height,
+            bitsPerComponent: 8,
+            bytesPerRow: width * 4,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else { throw InpaintingCompositorError.compositeFailed }
+
+        ctx.draw(originalCG, in: CGRect(x: 0, y: 0, width: width, height: height))
+
+        guard let pixelData = ctx.data else { throw InpaintingCompositorError.compositeFailed }
+
+        guard let maskCtx = CGContext(
+            data: nil,
+            width: width,
+            height: height,
+            bitsPerComponent: 8,
+            bytesPerRow: width,
+            space: CGColorSpaceCreateDeviceGray(),
+            bitmapInfo: CGImageAlphaInfo.none.rawValue
+        ) else { throw InpaintingCompositorError.compositeFailed }
+
+        maskCtx.draw(maskCG, in: CGRect(x: 0, y: 0, width: width, height: height))
+
+        guard let maskPixelData = maskCtx.data else { throw InpaintingCompositorError.compositeFailed }
+
+        let pixels = pixelData.bindMemory(to: UInt8.self, capacity: width * height * 4)
+        let maskPixels = maskPixelData.bindMemory(to: UInt8.self, capacity: width * height)
+
+        for i in 0 ..< (width * height) {
+            if maskPixels[i] > 128 {
+                // 元ピクセルに赤50%オーバーレイ (エディタの赤マスクと同じ見た目)
+                pixels[i * 4 + 0] = UInt8((Int(pixels[i * 4 + 0]) + 255) / 2)
+                pixels[i * 4 + 1] = UInt8(Int(pixels[i * 4 + 1]) / 2)
+                pixels[i * 4 + 2] = UInt8(Int(pixels[i * 4 + 2]) / 2)
+            }
+        }
+
+        guard let resultImage = ctx.makeImage() else { throw InpaintingCompositorError.compositeFailed }
+        guard let encoded = encodePNG(cgImage: resultImage) else { throw InpaintingCompositorError.encodeFailed }
         return encoded
     }
 

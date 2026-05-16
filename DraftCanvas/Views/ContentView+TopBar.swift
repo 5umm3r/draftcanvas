@@ -74,6 +74,16 @@ extension ContentView {
             .onHover { isCompletionSoundMenuHovered = $0 }
             .help("完了通知サウンド: \(CompletionSoundOption(rawValue: viewModel.completionSound)?.displayName ?? viewModel.completionSound)")
 
+            Button {
+                viewModel.cycleAppearance()
+            } label: {
+                Image(systemName: AppAppearance(rawValue: viewModel.appAppearanceRaw)?.systemImage ?? "sun.max")
+                    .font(.body)
+                    .frame(width: 28, height: 28)
+            }
+            .buttonStyle(TopBarButtonStyle())
+            .help("テーマ切替")
+
             Spacer(minLength: 16)
 
             Button {
@@ -124,19 +134,6 @@ extension ContentView {
             .buttonStyle(TopBarButtonStyle())
             .help("アカウントと使用量を更新")
             .disabled(viewModel.isRefreshingAccountUsage)
-
-            Divider()
-                .frame(height: 22)
-
-            Button {
-                viewModel.cycleAppearance()
-            } label: {
-                Image(systemName: AppAppearance(rawValue: viewModel.appAppearanceRaw)?.systemImage ?? "sun.max")
-                    .font(.body)
-                    .frame(width: 28, height: 28)
-            }
-            .buttonStyle(TopBarButtonStyle())
-            .help("テーマ切替")
 
             Divider()
                 .frame(height: 20)

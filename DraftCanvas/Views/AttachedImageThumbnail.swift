@@ -3,30 +3,19 @@ import SwiftUI
 
 struct AttachedImageThumbnail: View {
     let filePath: String
+    var overlayPath: String? = nil
+    var onTap: (() -> Void)? = nil
     let onRemove: () -> Void
 
     var body: some View {
         HStack(alignment: .top, spacing: 4) {
             ZStack(alignment: .topTrailing) {
-                if let image = NSImage(contentsOfFile: filePath) {
-                    Image(nsImage: image)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(maxWidth: 80, maxHeight: 60)
-                        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                .stroke(Color.primary.opacity(0.10), lineWidth: 1)
-                        }
-                } else {
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .fill(Color.primary.opacity(0.06))
-                        .frame(width: 60, height: 60)
-                        .overlay {
-                            Image(systemName: "photo")
-                                .foregroundStyle(.secondary)
-                        }
-                }
+                thumbnailImage
+                    .onTapGesture { onTap?() }
+                    .onHover { hovering in
+                        guard onTap != nil else { return }
+                        if hovering { NSCursor.pointingHand.push() } else { NSCursor.pop() }
+                    }
 
                 Button(action: onRemove) {
                     Image(systemName: "xmark.circle.fill")
@@ -37,6 +26,30 @@ struct AttachedImageThumbnail: View {
                 .buttonStyle(.plain)
                 .offset(x: 6, y: -6)
             }
+        }
+    }
+
+    @ViewBuilder
+    private var thumbnailImage: some View {
+        let displayPath = overlayPath.flatMap { NSImage(contentsOfFile: $0) != nil ? $0 : nil } ?? filePath
+        if let image = NSImage(contentsOfFile: displayPath) {
+            Image(nsImage: image)
+                .resizable()
+                .scaledToFit()
+                .frame(maxWidth: 80, maxHeight: 60)
+                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .stroke(Color.primary.opacity(0.10), lineWidth: 1)
+                }
+        } else {
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .fill(Color.primary.opacity(0.06))
+                .frame(width: 60, height: 60)
+                .overlay {
+                    Image(systemName: "photo")
+                        .foregroundStyle(.secondary)
+                }
         }
     }
 }
