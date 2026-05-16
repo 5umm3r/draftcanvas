@@ -8,10 +8,10 @@ enum LicenseError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .invalidKey: "ライセンスキーが無効です"
-        case .activationLimitReached: "アクティベーション上限に達しました"
-        case .alreadyActivated: "このキーは既にアクティベート済みです"
-        case .network: "ネットワークエラーが発生しました"
+        case .invalidKey: L("ライセンスキーが無効です")
+        case .activationLimitReached: L("アクティベーション上限に達しました")
+        case .alreadyActivated: L("このキーは既にアクティベート済みです")
+        case .network: L("ネットワークエラーが発生しました")
         }
     }
 }

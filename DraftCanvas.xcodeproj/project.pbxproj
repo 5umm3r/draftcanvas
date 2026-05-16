@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		00EC24DDDC57BCEDDCF5E05F /* EntitlementGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349798D5BC976EBEF6AF7E34 /* EntitlementGate.swift */; };
+		8929853307644327AA3382FCE9D2E8BF /* PurchaseConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC8F5C3910A4BAA899F9F2C47B2440E /* PurchaseConfig.swift */; };
 		04766A478DD74934AA94F185 /* ImageResizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33A4DD507E0443E093B8B328 /* ImageResizer.swift */; };
 		06CD4B452FB74F27005BA6D5 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 06CD4B442FB74F27005BA6D5 /* Sparkle */; };
 		0793126E77CD1041375063C0 /* TrialExpiredView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 588B9107340E5F4424AC7842 /* TrialExpiredView.swift */; };
@@ -150,6 +151,7 @@
 		33A4DD507E0443E093B8B328 /* ImageResizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageResizer.swift; sourceTree = "<group>"; };
 		348EA8028E7876473A56C7EA /* MaterialExtractor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MaterialExtractor.swift; sourceTree = "<group>"; };
 		349798D5BC976EBEF6AF7E34 /* EntitlementGate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = EntitlementGate.swift; path = License/EntitlementGate.swift; sourceTree = "<group>"; };
+		AEC8F5C3910A4BAA899F9F2C47B2440E /* PurchaseConfig.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PurchaseConfig.swift; path = License/PurchaseConfig.swift; sourceTree = "<group>"; };
 		3503E3DE1E894D1BA41DB46C /* CanvasMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasMetrics.swift; sourceTree = "<group>"; };
 		364052427D804C5F964BCF75 /* CanvasThumbnailStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasThumbnailStore.swift; sourceTree = "<group>"; };
 		3A03337AB6A2A6AB4F968292 /* DraftCanvasViewModel+CanvasImport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+CanvasImport.swift"; path = "ViewModel/DraftCanvasViewModel+CanvasImport.swift"; sourceTree = "<group>"; };
@@ -390,6 +392,7 @@
 				CA930F33BC026AB401A560F4 /* LicenseStore.swift */,
 				349798D5BC976EBEF6AF7E34 /* EntitlementGate.swift */,
 				9C26379656AAE5325F4969BC /* LicenseClient.swift */,
+				AEC8F5C3910A4BAA899F9F2C47B2440E /* PurchaseConfig.swift */,
 			);
 			name = License;
 			sourceTree = "<group>";
@@ -628,6 +631,7 @@
 				0793126E77CD1041375063C0 /* TrialExpiredView.swift in Sources */,
 				BFF11A558C8E2D15B86965A9 /* LicenseClient.swift in Sources */,
 				B8850A9D39AE2CAE18000EC6 /* LicenseSheet.swift in Sources */,
+				8929853307644327AA3382FCE9D2E8BF /* PurchaseConfig.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
