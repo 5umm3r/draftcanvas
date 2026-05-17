@@ -873,7 +873,7 @@ struct JobPreviewView: View {
                         .padding(.horizontal, 12)
                 }
             } else {
-                GenerationProgressView(prompt: job.prompt)
+                GenerationProgressView(prompt: job.prompt, seed: job.index)
             }
         }
         .task(id: job.imageData) {

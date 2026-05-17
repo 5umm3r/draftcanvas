@@ -2,12 +2,13 @@ import SwiftUI
 
 struct GenerationProgressView: View {
     let prompt: String
+    let seed: Int
     @State private var isHovering = false
     @State private var showPromptOverlay = false
     @State private var promptDelayTask: Task<Void, Never>?
 
     var body: some View {
-        AuroraPlaceholderView()
+        AuroraPlaceholderView(seed: seed)
         .overlay(alignment: .bottom) {
             if showPromptOverlay && !prompt.isEmpty {
                 Text(prompt)

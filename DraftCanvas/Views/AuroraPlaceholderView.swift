@@ -1,3 +1,4 @@
+// TODO(a11y): Reduce Motion 未対応
 import SwiftUI
 
 struct AuroraPlaceholderView: View {
@@ -8,6 +9,13 @@ struct AuroraPlaceholderView: View {
         let sizeMult: Double
     }
 
+    private struct Variant {
+        let hueRotation: Double
+        let speedMult: Double
+        let blurMult: Double
+        let phaseOffset: Double
+    }
+
     private static let blobs: [Blob] = [
         Blob(color: Color(red: 1.00, green: 0.42, blue: 0.62), periodMult: 1.00, radiusMult: 0.32, sizeMult: 0.90), // pink
         Blob(color: Color(red: 0.77, green: 0.43, blue: 1.00), periodMult: 0.92, radiusMult: 0.38, sizeMult: 0.85), // purple
@@ -16,8 +24,27 @@ struct AuroraPlaceholderView: View {
         Blob(color: Color(red: 0.50, green: 0.91, blue: 0.36), periodMult: 1.05, radiusMult: 0.30, sizeMult: 0.86), // green
     ]
     private static let basePeriod = 4.0
+    private static let variants: [Variant] = [
+        Variant(hueRotation:   0, speedMult: 1.00, blurMult: 1.00, phaseOffset: 0),
+        Variant(hueRotation:  72, speedMult: 0.85, blurMult: 1.07, phaseOffset: .pi / 5),
+        Variant(hueRotation: 144, speedMult: 1.18, blurMult: 0.93, phaseOffset: 2 * .pi / 5),
+        Variant(hueRotation: 216, speedMult: 0.92, blurMult: 1.04, phaseOffset: 3 * .pi / 5),
+        Variant(hueRotation: 288, speedMult: 1.10, blurMult: 0.96, phaseOffset: 4 * .pi / 5),
+    ]
+
+    let seed: Int
+
+    init(seed: Int = 0) {
+        self.seed = seed
+    }
+
+    private var variant: Variant {
+        let i = ((seed % Self.variants.count) + Self.variants.count) % Self.variants.count
+        return Self.variants[i]
+    }
 
     var body: some View {
+        let v = variant
         TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { context in
             let t = context.date.timeIntervalSinceReferenceDate
             GeometryReader { geo in
@@ -26,8 +53,8 @@ struct AuroraPlaceholderView: View {
                     Color.black
                     ForEach(0..<5, id: \.self) { i in
                         let blob = Self.blobs[i]
-                        let phase = Double(i) * .pi * 2.0 / 5.0
-                        let angle = t * .pi * 2.0 / (Self.basePeriod * blob.periodMult) + phase
+                        let phase = Double(i) * .pi * 2.0 / 5.0 + v.phaseOffset
+                        let angle = t * .pi * 2.0 / (Self.basePeriod * blob.periodMult / v.speedMult) + phase
                         let blobSize = minDim * blob.sizeMult
                         RadialGradient(
                             colors: [blob.color.opacity(0.9), .clear],
@@ -41,7 +68,8 @@ struct AuroraPlaceholderView: View {
                         .blendMode(.plusLighter)
                     }
                 }
-                .blur(radius: 28)
+                .hueRotation(.degrees(v.hueRotation))
+                .blur(radius: 28 * v.blurMult)
             }
         }
         .drawingGroup()
