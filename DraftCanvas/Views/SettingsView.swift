@@ -16,6 +16,28 @@ struct SettingsView: View {
             }
             .pickerStyle(.menu)
 
+            LabeledContent("生成指示の言語") {
+                VStack(alignment: .trailing, spacing: 4) {
+                    Picker("生成指示の言語", selection: Binding(
+                        get: { viewModel.promptLanguageMode },
+                        set: { viewModel.promptLanguageMode = $0 }
+                    )) {
+                        ForEach(PromptLanguageMode.allCases) { mode in
+                            Text(mode.title).tag(mode)
+                        }
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.menu)
+
+                    Text(PromptLanguageMode.settingDescription)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.trailing)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: 260, alignment: .trailing)
+                }
+            }
+
             LabeledContent("保存先") {
                 HStack(spacing: 8) {
                     if let url = viewModel.preferredSaveFolder {
@@ -35,7 +57,7 @@ struct SettingsView: View {
             }
         }
         .padding()
-        .frame(width: 400)
+        .frame(width: 460)
         .alert("再起動が必要", isPresented: $l10n.pendingRestart) {
             Button("終了") { NSApp.terminate(nil) }
             Button("後で", role: .cancel) {}

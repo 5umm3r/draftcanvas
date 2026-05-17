@@ -19,6 +19,7 @@ extension DraftCanvasViewModel {
         let itemID = item.id
         let clientRef = client
         let availableModelsRef = availableModels
+        let promptLanguageModeRef = promptLanguageMode
 
         let task = Task { @MainActor in
             var running = job
@@ -33,7 +34,8 @@ extension DraftCanvasViewModel {
                         client: clientRef,
                         availableModels: availableModelsRef,
                         item: item,
-                        fileURL: fileURL
+                        fileURL: fileURL,
+                        promptLanguageMode: promptLanguageModeRef
                     )
                 }.value
 
@@ -127,15 +129,33 @@ extension DraftCanvasViewModel {
         client: CodexAppServerClient,
         availableModels: [CodexModel],
         item: ProjectItem,
-        fileURL: URL
+        fileURL: URL,
+        promptLanguageMode: PromptLanguageMode
     ) async throws -> Data {
         try await client.start()
         let model = selectFastLowCostModel(from: availableModels)
+        let description = item.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            ? "imported asset"
+            : item.prompt
+        let normalizedDescription: String?
+        if promptLanguageMode == .english {
+            normalizedDescription = try? await PromptLanguageNormalizer.normalizeUpscaleDescription(
+                description,
+                client: client,
+                model: model
+            )
+        } else {
+            normalizedDescription = nil
+        }
         let threadID = try await client.startThread(
             model: model.id,
             reasoningEffort: model.defaultReasoningEffort
         )
-        let prompt = PromptFactory.upscalePrompt(for: item)
+        let prompt = PromptFactory.upscalePrompt(
+            for: item,
+            languageMode: promptLanguageMode,
+            normalizedDescription: normalizedDescription
+        )
         let result = try await client.runTurn(
             threadID: threadID,
             prompt: prompt,

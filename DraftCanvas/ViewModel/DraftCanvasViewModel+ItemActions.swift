@@ -134,6 +134,7 @@ extension DraftCanvasViewModel {
         let itemPrompt = item.prompt
         let itemAspectRatio = item.aspectRatio
         let itemID = item.id
+        let promptLanguageModeRef = promptLanguageMode
 
         generatingProjectIDs.insert(projectID)
         logs.append("マスク除去を開始しました: \(item.id)")
@@ -182,11 +183,13 @@ extension DraftCanvasViewModel {
                     aspectRatio: itemAspectRatio,
                     editSource: editSource,
                     model: fastModel.id,
-                    reasoningEffort: "low"
+                    reasoningEffort: "low",
+                    promptLanguageMode: promptLanguageModeRef
                 )
+                let preparedRequest = await self.prepareRequestForGeneration(request)
 
-                let results = await removalCoordinator.run(request: request) { [weak self] job in
-                    await MainActor.run { self?.handleJobUpdate(job, into: projectID, request: request) }
+                let results = await removalCoordinator.run(request: preparedRequest) { [weak self] job in
+                    await MainActor.run { self?.handleJobUpdate(job, into: projectID, request: preparedRequest) }
                 }
 
                 await MainActor.run {

@@ -46,6 +46,40 @@ final class GenerationCoordinatorTests: XCTestCase {
         XCTAssertTrue(prompt.contains("portrait"))
     }
 
+    func testPromptUsesNormalizedEnglishBriefForGenerationWhenAvailable() {
+        let request = GenerationRequest(
+            prompt: "雨上がりの森に立つ小さな白い家",
+            count: 1,
+            concurrency: 1,
+            promptLanguageMode: .english,
+            normalizedPrompt: "A small white house standing in a forest after rain, with soft mist and wet leaves."
+        )
+
+        let prompt = PromptFactory.prompt(for: request, jobIndex: 0)
+
+        XCTAssertTrue(prompt.contains("Generation brief: A small white house standing in a forest after rain"))
+        XCTAssertFalse(prompt.contains("User prompt: 雨上がりの森"))
+    }
+
+    func testPromptEnhancerCanRequestEnglishOutput() {
+        let prompt = PromptEnhancer.buildPrompt(
+            userPrompt: "雨上がりの森に立つ小さな白い家",
+            languageMode: .english
+        )
+
+        XCTAssertTrue(prompt.contains("Output the enhanced prompt in English"))
+        XCTAssertFalse(prompt.contains("Maintain the same language as the input"))
+    }
+
+    func testPromptEnhancerCanPreserveInputLanguage() {
+        let prompt = PromptEnhancer.buildPrompt(
+            userPrompt: "雨上がりの森に立つ小さな白い家",
+            languageMode: .preserveInput
+        )
+
+        XCTAssertTrue(prompt.contains("Maintain the same language as the input"))
+    }
+
     func testPreferredSaveFolderStorePersistsSelectedFolder() throws {
         let defaults = UserDefaults(suiteName: "DraftCanvasTests-\(UUID().uuidString)")!
         let store = PreferredSaveFolderStore(userDefaults: defaults)

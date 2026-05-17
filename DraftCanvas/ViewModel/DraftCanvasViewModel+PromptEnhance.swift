@@ -19,7 +19,10 @@ extension DraftCanvasViewModel {
                 let model = Self.selectFastLowCostModel(from: availableModels)
                 logs.append("エンハンスモデル: \(model.displayName) (\(model.id))")
                 let threadID = try await client.startThread(model: model.id, reasoningEffort: "low")
-                let turnPrompt = PromptEnhancer.buildPrompt(userPrompt: promptText)
+                let turnPrompt = PromptEnhancer.buildPrompt(
+                    userPrompt: promptText,
+                    languageMode: promptLanguageMode
+                )
 
                 let result = try await withThrowingTaskGroup(of: CodexTurnResult.self) { group in
                     group.addTask {

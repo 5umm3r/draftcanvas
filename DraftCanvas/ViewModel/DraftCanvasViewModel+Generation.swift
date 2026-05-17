@@ -6,7 +6,7 @@ extension DraftCanvasViewModel {
     func generate(skipRateLimitCheck: Bool = false) {
         guard canGenerate else { return }
         if currentInputs.model.isEmpty, let fallback = availableModels.first(where: \.isDefault)?.id ?? availableModels.first?.id {
-            if let id = effectiveProjectID {
+            if let id = selectedProjectID {
                 inputsByProject[id]?.model = fallback
             } else {
                 draftInputs.model = fallback
@@ -18,7 +18,7 @@ extension DraftCanvasViewModel {
         let promptText = inputs.prompt.trimmingCharacters(in: .whitespacesAndNewlines)
 
         let targetProjectID: UUID
-        if let existing = effectiveProjectID, projects.contains(where: { $0.id == existing }) {
+        if let existing = selectedProjectID, projects.contains(where: { $0.id == existing }) {
             targetProjectID = existing
             if let idx = projects.firstIndex(where: { $0.id == existing }),
                projects[idx].isAutoNamed,
@@ -40,7 +40,8 @@ extension DraftCanvasViewModel {
             editSource: inputs.editSource,
             attachedImagePath: inputs.attachedImage?.filePath,
             model: inputs.model,
-            reasoningEffort: inputs.reasoningEffort
+            reasoningEffort: inputs.reasoningEffort,
+            promptLanguageMode: promptLanguageMode
         )
 
         jobsByProject[targetProjectID] = []
@@ -51,11 +52,23 @@ extension DraftCanvasViewModel {
             logs.append("アイテムを再編集します: \(editSource.filePath)")
         }
 
+        let placeholderJobs = (0..<request.normalizedCount).map { index in
+            GenerationJob(index: index, prompt: request.prompt, aspectRatio: request.aspectRatio)
+        }
+        for job in placeholderJobs {
+            upsert(job, into: targetProjectID)
+        }
+
         Task {
-            let results = await coordinator.run(request: request) { [weak self] job in
+            let preparedRequest = await prepareRequestForGeneration(request)
+            await MainActor.run {
+                self.lastRequestByProject[targetProjectID] = preparedRequest
+            }
+
+            let results = await coordinator.runSpecific(jobs: placeholderJobs, request: preparedRequest) { [weak self] job in
                 await MainActor.run {
                     guard let self else { return }
-                    self.handleJobUpdate(job, into: targetProjectID, request: request)
+                    self.handleJobUpdate(job, into: targetProjectID, request: preparedRequest)
                 }
             }
 
@@ -79,6 +92,29 @@ extension DraftCanvasViewModel {
                 self.logs.append("全ジョブが終了しました。")
                 self.refreshAccountUsage()
             }
+        }
+    }
+
+    func prepareRequestForGeneration(_ request: GenerationRequest) async -> GenerationRequest {
+        guard request.promptLanguageMode == .english else { return request }
+        guard request.normalizedGenerationBrief == nil else { return request }
+        guard !availableModels.isEmpty else { return request }
+
+        do {
+            let model = Self.selectFastLowCostModel(from: availableModels)
+            let normalized = try await PromptLanguageNormalizer.normalize(
+                request: request,
+                client: client,
+                model: model
+            )
+            guard !normalized.isEmpty else { return request }
+            var prepared = request
+            prepared.normalizedPrompt = normalized
+            logs.append("生成指示を英語に正規化しました。")
+            return prepared
+        } catch {
+            logs.append("生成指示の英語正規化に失敗したため元のプロンプトで続行します: \(error.localizedDescription)")
+            return request
         }
     }
 
@@ -192,10 +228,15 @@ extension DraftCanvasViewModel {
         logs.append("失敗ジョブを再試行します: \(failedJobs.count)件")
 
         Task {
-            let retried = await coordinator.runSpecific(jobs: failedJobs, request: request) { [weak self] job in
+            let preparedRequest = await prepareRequestForGeneration(request)
+            await MainActor.run {
+                self.lastRequestByProject[projectID] = preparedRequest
+            }
+
+            let retried = await coordinator.runSpecific(jobs: failedJobs, request: preparedRequest) { [weak self] job in
                 await MainActor.run {
                     guard let self else { return }
-                    self.handleJobUpdate(job, into: projectID, request: request)
+                    self.handleJobUpdate(job, into: projectID, request: preparedRequest)
                 }
             }
 

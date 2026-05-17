@@ -177,6 +177,10 @@ final class CodexGenerationRunner: GenerationRunning {
                     extraLogs.append("レート制限のため \(Int(delay.rounded())) 秒後に再試行します (\(attempt + 1)/\(maxAttempts - 1))")
                     try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
                     lastError = error
+                } else if case .threadIDCollision = error, attempt < maxAttempts - 1 {
+                    extraLogs.append("thread ID 衝突のため再試行します (\(attempt + 1)/\(maxAttempts - 1))")
+                    try await Task.sleep(nanoseconds: 500_000_000)
+                    lastError = error
                 } else {
                     throw error
                 }
@@ -189,13 +193,24 @@ final class CodexGenerationRunner: GenerationRunning {
 enum PromptFactory {
     static func prompt(for request: GenerationRequest, jobIndex: Int) -> String {
         if let editSource = request.editSource {
+            let userInstructionLines: [String]
+            if let normalizedBrief = request.normalizedGenerationBrief {
+                userInstructionLines = ["Generation brief: \(normalizedBrief)"]
+            } else {
+                userInstructionLines = [
+                    "Original prompt: \(editSource.originalPrompt)",
+                    "User edit request: \(request.prompt)"
+                ]
+            }
+
             if editSource.isInpainting && editSource.inpaintPurpose == .remove {
                 return [
                     "Edit the attached reference image for a local personal image creator app.",
                     "The reference image has transparent (alpha=0) regions indicating areas to be removed.",
                     "Use the image generation capability and return exactly one edited raster image result.",
                     "Remove the object in the transparent area, naturally fill with surrounding background.",
-                    "Original image description: \(editSource.originalPrompt)",
+                    request.normalizedGenerationBrief.map { "Generation brief: \($0)" }
+                        ?? "Original image description: \(editSource.originalPrompt)",
                     "Aspect ratio: \(request.aspectRatio.promptDescription).",
                     "Preserve all non-transparent parts of the image exactly as they are.",
                     "Return a fully opaque image with no transparency.",
@@ -203,40 +218,41 @@ enum PromptFactory {
                 ].joined(separator: "\n")
             }
             if editSource.isInpainting {
-                return [
+                return ([
                     "Edit the attached reference image for a local personal image creator app.",
                     "The reference image has transparent (alpha=0) regions indicating areas to be regenerated.",
                     "Use the image generation capability and return exactly one edited raster image result.",
                     "Fill in the transparent regions according to the following user instruction:",
-                    "User edit request: \(request.prompt)",
-                    "Original image description: \(editSource.originalPrompt)",
+                ] + userInstructionLines + [
                     "Aspect ratio: \(request.aspectRatio.promptDescription).",
                     "Variation number: \(jobIndex + 1).",
                     "Preserve all non-transparent parts of the image exactly as they are.",
                     "Only modify the transparent regions to match the user edit request.",
                     "Return a fully opaque image with no transparency.",
                     "Do not write code. Do not ask clarifying questions."
-                ].joined(separator: "\n")
+                ]).joined(separator: "\n")
             }
-            return [
+            return ([
                 "Edit the attached reference image for a local personal image creator app.",
                 "Use the image generation capability and return exactly one edited raster image result.",
-                "Original prompt: \(editSource.originalPrompt)",
-                "User edit request: \(request.prompt)",
+            ] + userInstructionLines + [
                 "Aspect ratio: \(request.aspectRatio.promptDescription).",
                 "Variation number: \(jobIndex + 1).",
                 "Preserve useful parts of the reference image unless the edit request says otherwise.",
                 "A normal opaque image is acceptable.",
                 "Do not write code. Do not ask clarifying questions."
-            ].joined(separator: "\n")
+            ]).joined(separator: "\n")
         }
+
+        let promptLine = request.normalizedGenerationBrief.map { "Generation brief: \($0)" }
+            ?? "User prompt: \(request.prompt)"
 
         if request.attachedImagePath != nil {
             return [
                 "Generate exactly one high-quality raster image for a local personal image creator app.",
                 "Use the attached reference image as visual guidance.",
                 "Use the image generation capability and return the generated image result.",
-                "User prompt: \(request.prompt)",
+                promptLine,
                 "Aspect ratio: \(request.aspectRatio.promptDescription).",
                 "Variation number: \(jobIndex + 1).",
                 "A normal opaque image is acceptable.",
@@ -247,7 +263,7 @@ enum PromptFactory {
         return [
             "Generate exactly one high-quality raster image for a local personal image creator app.",
             "Use the image generation capability and return the generated image result.",
-            "User prompt: \(request.prompt)",
+            promptLine,
             "Aspect ratio: \(request.aspectRatio.promptDescription).",
             "Variation number: \(jobIndex + 1).",
             "A normal opaque image is acceptable.",
@@ -255,16 +271,27 @@ enum PromptFactory {
         ].joined(separator: "\n")
     }
 
-    static func upscalePrompt(for item: ProjectItem) -> String {
-        let description = item.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    static func upscalePrompt(
+        for item: ProjectItem,
+        languageMode: PromptLanguageMode = .preserveInput,
+        normalizedDescription: String? = nil
+    ) -> String {
+        let fallbackDescription = item.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             ? "imported asset"
             : item.prompt
+        let normalized = normalizedDescription?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let description = languageMode == .english && normalized?.isEmpty == false
+            ? normalized!
+            : fallbackDescription
+        let descriptionLabel = languageMode == .english && normalized?.isEmpty == false
+            ? "Image brief"
+            : "Original image description"
         return [
             "Upscale the attached reference image to a significantly higher resolution.",
             "Preserve the original composition, subject, style, and color palette exactly.",
             "Enhance fine details: textures, edges, fine lines, small features.",
             "Do not add, remove, or alter any objects.",
-            "Original image description: \(description)",
+            "\(descriptionLabel): \(description)",
             "Aspect ratio: \(item.aspectRatio.promptDescription).",
             "A normal opaque image is acceptable.",
             "Do not write code. Do not ask clarifying questions."
@@ -273,12 +300,23 @@ enum PromptFactory {
 }
 
 enum PromptEnhancer {
-    static let systemInstruction: String = [
+    static let systemInstruction: String = systemInstruction(languageMode: .preserveInput)
+
+    static func systemInstruction(languageMode: PromptLanguageMode) -> String {
+        let languageRule: String
+        switch languageMode {
+        case .english:
+            languageRule = "- Output the enhanced prompt in English"
+        case .preserveInput:
+            languageRule = "- Maintain the same language as the input (Japanese stays Japanese, English stays English)"
+        }
+
+        return [
         "You are an expert prompt engineer for AI image generation.",
         "Enhance the user's prompt to produce higher quality image results.",
         "",
         "Rules:",
-        "- Maintain the same language as the input (Japanese stays Japanese, English stays English)",
+        languageRule,
         "- Add vivid details: composition, color palette, lighting, atmosphere, texture, perspective, artistic style",
         "- Keep the original intent and subject matter intact",
         "- Output ONLY the enhanced prompt text, nothing else",
@@ -286,10 +324,90 @@ enum PromptEnhancer {
         "- Aim for 2-4 sentences",
         "- Do not generate any images",
         "- Do not write any code",
-    ].joined(separator: "\n")
+        ].joined(separator: "\n")
+    }
 
-    static func buildPrompt(userPrompt: String) -> String {
-        [systemInstruction, "", "User's prompt:", userPrompt].joined(separator: "\n")
+    static func buildPrompt(userPrompt: String, languageMode: PromptLanguageMode = .preserveInput) -> String {
+        [systemInstruction(languageMode: languageMode), "", "User's prompt:", userPrompt].joined(separator: "\n")
     }
 }
 
+enum PromptLanguageNormalizer {
+    static func buildPrompt(for request: GenerationRequest) -> String {
+        var context = [
+            "User prompt: \(request.prompt)",
+            "Aspect ratio: \(request.aspectRatio.promptDescription)"
+        ]
+
+        if let editSource = request.editSource {
+            context.insert("Request type: image edit", at: 0)
+            context.append("Original image description: \(editSource.originalPrompt)")
+            if editSource.isInpainting {
+                context.append("Inpainting: transparent regions are the only edit target")
+            }
+            if editSource.inpaintPurpose == .remove {
+                context.append("Edit purpose: remove masked object and fill the background naturally")
+            }
+        } else if request.attachedImagePath != nil {
+            context.insert("Request type: generation with reference image", at: 0)
+        } else {
+            context.insert("Request type: text-to-image generation", at: 0)
+        }
+
+        return [
+            "You are preparing a stable English brief for AI image generation.",
+            "Rewrite the request below into clear English for an image generation model.",
+            "Keep the user's visual intent, subject, composition, style, colors, and constraints intact.",
+            "Do not add new subject matter that the user did not request.",
+            "Output ONLY the English image-generation brief, with no labels, markdown, quotes, or explanations.",
+            "",
+            "Request:",
+            context.joined(separator: "\n")
+        ].joined(separator: "\n")
+    }
+
+    static func buildPromptForUpscale(description: String) -> String {
+        [
+            "You are preparing a stable English brief for AI image upscaling.",
+            "Rewrite the image description below into concise English.",
+            "Preserve the original subject, composition, style, and color palette.",
+            "Output ONLY the English image description, with no labels, markdown, quotes, or explanations.",
+            "",
+            "Image description:",
+            description
+        ].joined(separator: "\n")
+    }
+
+    static func sanitize(_ text: String) -> String {
+        var output = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        while output.hasPrefix("\"") || output.hasPrefix("'") || output.hasPrefix("`") {
+            output = String(output.dropFirst()).trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        while output.hasSuffix("\"") || output.hasSuffix("'") || output.hasSuffix("`") {
+            output = String(output.dropLast()).trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        return output
+    }
+
+    static func normalize(
+        request: GenerationRequest,
+        client: CodexAppServerClient,
+        model: CodexModel
+    ) async throws -> String {
+        try await client.start()
+        let threadID = try await client.startThread(model: model.id, reasoningEffort: "low")
+        let result = try await client.runTurn(threadID: threadID, prompt: buildPrompt(for: request))
+        return sanitize(result.assistantText)
+    }
+
+    static func normalizeUpscaleDescription(
+        _ description: String,
+        client: CodexAppServerClient,
+        model: CodexModel
+    ) async throws -> String {
+        try await client.start()
+        let threadID = try await client.startThread(model: model.id, reasoningEffort: "low")
+        let result = try await client.runTurn(threadID: threadID, prompt: buildPromptForUpscale(description: description))
+        return sanitize(result.assistantText)
+    }
+}

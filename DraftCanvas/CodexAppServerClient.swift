@@ -237,6 +237,10 @@ final class CodexAppServerClient: @unchecked Sendable {
         let resultTask = Task<CodexTurnResult, Error> {
             try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<CodexTurnResult, Error>) in
                 queue.async {
+                    if let existing = self.turnWaiters[threadID] {
+                        self.emitLog("[警告] thread ID 衝突を検出: \(threadID)。先発 waiter を中断します。")
+                        existing.finish(throwing: DraftCanvasError.threadIDCollision(threadID))
+                    }
                     self.turnWaiters[threadID] = waiter
                     waiter.continuation = continuation
                 }
@@ -251,7 +255,7 @@ final class CodexAppServerClient: @unchecked Sendable {
             ]
         )
 
-        return try await withTimeout(seconds: 240) {
+        return try await withTimeout(seconds: 480) {
             try await resultTask.value
         }
     }

@@ -25,6 +25,11 @@ final class DraftCanvasViewModel: ObservableObject {
     var pendingWeeklyDelta = 0
     @AppStorage("completionSound") var completionSound: String = CompletionSoundOption.glass.rawValue
     @AppStorage("canvasSortOrder") var canvasSortOrderRaw: String = CanvasSortOrder.createdAtAscending.rawValue
+    @AppStorage("promptLanguageMode") var promptLanguageModeRaw: String = PromptLanguageMode.english.rawValue
+    var promptLanguageMode: PromptLanguageMode {
+        get { PromptLanguageMode(rawValue: promptLanguageModeRaw) ?? .english }
+        set { promptLanguageModeRaw = newValue.rawValue }
+    }
     var canvasSortOrder: CanvasSortOrder {
         get { CanvasSortOrder(rawValue: canvasSortOrderRaw) ?? .createdAtAscending }
         set {

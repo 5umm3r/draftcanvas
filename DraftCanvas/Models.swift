@@ -119,6 +119,26 @@ enum GenerationAspectRatio: String, CaseIterable, Identifiable, Codable {
     }
 }
 
+enum PromptLanguageMode: String, CaseIterable, Identifiable {
+    case english
+    case preserveInput
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .english:
+            return String(localized: "英語固定")
+        case .preserveInput:
+            return String(localized: "入力言語を維持")
+        }
+    }
+
+    static var settingDescription: String {
+        String(localized: "英語で生成指示を整えると画像生成のブレを抑えやすくなりますが、生成前に追加の処理を行うためトークン消費が増えます。")
+    }
+}
+
 struct GenerationRequest: Equatable {
     var prompt: String
     var count: Int
@@ -128,6 +148,8 @@ struct GenerationRequest: Equatable {
     var attachedImagePath: String? = nil
     var model: String = ""
     var reasoningEffort: String = "medium"
+    var promptLanguageMode: PromptLanguageMode = .english
+    var normalizedPrompt: String? = nil
 
     var normalizedCount: Int {
         min(max(count, 1), 24)
@@ -135,6 +157,12 @@ struct GenerationRequest: Equatable {
 
     var normalizedConcurrency: Int {
         min(max(concurrency, 1), normalizedCount)
+    }
+
+    var normalizedGenerationBrief: String? {
+        guard promptLanguageMode == .english else { return nil }
+        let trimmed = normalizedPrompt?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return trimmed.isEmpty ? nil : trimmed
     }
 }
 
@@ -1044,6 +1072,7 @@ enum DraftCanvasError: LocalizedError {
     case missingThreadID
     case missingGeneratedContent
     case unsupportedImageResult(String)
+    case threadIDCollision(String)
 
     var errorDescription: String? {
         switch self {
@@ -1065,6 +1094,8 @@ enum DraftCanvasError: LocalizedError {
             return String(localized: "生成結果を取得できませんでした。ログを確認してください。")
         case .unsupportedImageResult(let value):
             return String(localized: "未対応の画像結果形式です: \(value.prefix(64))")
+        case .threadIDCollision(let id):
+            return String(localized: "内部エラー: thread ID が重複しました (\(id))。")
         }
     }
 }
