@@ -19,7 +19,7 @@ extension DraftCanvasViewModel {
         let itemID = item.id
         let clientRef = client
         let availableModelsRef = availableModels
-        let promptLanguageModeRef = promptLanguageMode
+        let translateToEnglishRef = translateToEnglish
 
         let task = Task { @MainActor in
             var running = job
@@ -35,7 +35,7 @@ extension DraftCanvasViewModel {
                         availableModels: availableModelsRef,
                         item: item,
                         fileURL: fileURL,
-                        promptLanguageMode: promptLanguageModeRef
+                        translateToEnglish: translateToEnglishRef
                     )
                 }.value
 
@@ -130,7 +130,7 @@ extension DraftCanvasViewModel {
         availableModels: [CodexModel],
         item: ProjectItem,
         fileURL: URL,
-        promptLanguageMode: PromptLanguageMode
+        translateToEnglish: Bool
     ) async throws -> Data {
         try await client.start()
         let model = selectFastLowCostModel(from: availableModels)
@@ -138,7 +138,7 @@ extension DraftCanvasViewModel {
             ? "imported asset"
             : item.prompt
         let normalizedDescription: String?
-        if promptLanguageMode == .english {
+        if translateToEnglish {
             normalizedDescription = try? await PromptLanguageNormalizer.normalizeUpscaleDescription(
                 description,
                 client: client,
@@ -153,7 +153,7 @@ extension DraftCanvasViewModel {
         )
         let prompt = PromptFactory.upscalePrompt(
             for: item,
-            languageMode: promptLanguageMode,
+            translateToEnglish: translateToEnglish,
             normalizedDescription: normalizedDescription
         )
         let result = try await client.runTurn(

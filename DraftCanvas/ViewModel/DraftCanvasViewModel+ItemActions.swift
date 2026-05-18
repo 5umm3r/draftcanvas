@@ -134,7 +134,7 @@ extension DraftCanvasViewModel {
         let itemPrompt = item.prompt
         let itemAspectRatio = item.aspectRatio
         let itemID = item.id
-        let promptLanguageModeRef = promptLanguageMode
+        let translateToEnglishRef = translateToEnglish
 
         generatingProjectIDs.insert(projectID)
         logs.append("マスク除去を開始しました: \(item.id)")
@@ -184,7 +184,7 @@ extension DraftCanvasViewModel {
                     editSource: editSource,
                     model: fastModel.id,
                     reasoningEffort: "low",
-                    promptLanguageMode: promptLanguageModeRef
+                    translateToEnglish: translateToEnglishRef
                 )
                 let preparedRequest = await self.prepareRequestForGeneration(request)
 

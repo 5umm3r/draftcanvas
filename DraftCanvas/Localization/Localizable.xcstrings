@@ -769,66 +769,34 @@
         }
       }
     },
-    "英語で生成指示を整えると画像生成のブレを抑えやすくなりますが、生成前に追加の処理を行うためトークン消費が増えます。": {
+    "生成指示を英語に翻訳": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Translating prompts to English reduces generation variance, but adds preprocessing and increases token usage."
+            "value": "Translate prompts to English"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "英語で生成指示を整えると画像生成のブレを抑えやすくなりますが、生成前に追加の処理を行うためトークン消費が増えます。"
+            "value": "生成指示を英語に翻訳"
           }
         }
       }
     },
-    "英語固定": {
+    "オンにすると生成前に英語へ翻訳しブレを抑えますが、トークン消費が増えます。": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "English (fixed)"
+            "value": "When on, prompts are translated to English before generation to reduce variance, increasing token usage."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "英語固定"
-          }
-        }
-      }
-    },
-    "入力言語を維持": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Preserve input"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "入力言語を維持"
-          }
-        }
-      }
-    },
-    "生成指示の言語": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Prompt language"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "生成指示の言語"
+            "value": "オンにすると生成前に英語へ翻訳しブレを抑えますが、トークン消費が増えます。"
           }
         }
       }
@@ -4546,6 +4514,22 @@
         }
       }
     },
+    "再起動": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restart"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "再起動"
+          }
+        }
+      }
+    },
     "再起動が必要": {
       "localizations": {
         "en": {
@@ -4558,6 +4542,70 @@
           "stringUnit": {
             "state": "translated",
             "value": "再起動が必要"
+          }
+        }
+      }
+    },
+    "変更には再起動が必要です": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restart required to apply changes."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "変更には再起動が必要です"
+          }
+        }
+      }
+    },
+    "変更を反映するには Draft Canvas を再起動します": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Draft Canvas will restart to apply the language change."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "変更を反映するには Draft Canvas を再起動します"
+          }
+        }
+      }
+    },
+    "中断して再起動": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stop and Restart"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "中断して再起動"
+          }
+        }
+      }
+    },
+    "進行中の作業（生成・書き出し等）があります。中断して再起動すると、これらは破棄されます。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There are tasks in progress (generation, export, etc.). Stopping them to restart will discard any unfinished work."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "進行中の作業（生成・書き出し等）があります。中断して再起動すると、これらは破棄されます。"
           }
         }
       }

@@ -119,26 +119,6 @@ enum GenerationAspectRatio: String, CaseIterable, Identifiable, Codable {
     }
 }
 
-enum PromptLanguageMode: String, CaseIterable, Identifiable {
-    case english
-    case preserveInput
-
-    var id: String { rawValue }
-
-    var title: String {
-        switch self {
-        case .english:
-            return String(localized: "英語固定")
-        case .preserveInput:
-            return String(localized: "入力言語を維持")
-        }
-    }
-
-    static var settingDescription: String {
-        String(localized: "英語で生成指示を整えると画像生成のブレを抑えやすくなりますが、生成前に追加の処理を行うためトークン消費が増えます。")
-    }
-}
-
 struct GenerationRequest: Equatable {
     var prompt: String
     var count: Int
@@ -148,7 +128,7 @@ struct GenerationRequest: Equatable {
     var attachedImagePath: String? = nil
     var model: String = ""
     var reasoningEffort: String = "medium"
-    var promptLanguageMode: PromptLanguageMode = .english
+    var translateToEnglish: Bool = false
     var normalizedPrompt: String? = nil
 
     var normalizedCount: Int {
@@ -160,7 +140,7 @@ struct GenerationRequest: Equatable {
     }
 
     var normalizedGenerationBrief: String? {
-        guard promptLanguageMode == .english else { return nil }
+        guard translateToEnglish else { return nil }
         let trimmed = normalizedPrompt?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         return trimmed.isEmpty ? nil : trimmed
     }

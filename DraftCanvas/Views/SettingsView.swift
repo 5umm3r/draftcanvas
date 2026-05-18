@@ -11,34 +11,31 @@ struct SettingsView: View {
             GridRow {
                 Text("言語")
                     .gridColumnAlignment(.trailing)
-                Picker(selection: Binding(
-                    get: { l10n.current },
-                    set: { l10n.current = $0 }
-                )) {
-                    ForEach(LocalizationManager.AppLanguage.allCases) { lang in
-                        Text(lang.displayName).tag(lang)
-                    }
-                } label: { EmptyView() }
-                    .pickerStyle(.menu)
-                    .labelsHidden()
-                    .frame(width: 180, alignment: .leading)
-                    .gridColumnAlignment(.leading)
-            }
-            GridRow {
-                Text("生成指示の言語")
                 VStack(alignment: .leading, spacing: 4) {
                     Picker(selection: Binding(
-                        get: { viewModel.promptLanguageMode },
-                        set: { viewModel.promptLanguageMode = $0 }
+                        get: { l10n.current },
+                        set: { l10n.current = $0 }
                     )) {
-                        ForEach(PromptLanguageMode.allCases) { mode in
-                            Text(mode.title).tag(mode)
+                        ForEach(LocalizationManager.AppLanguage.allCases) { lang in
+                            Text(lang.displayName).tag(lang)
                         }
                     } label: { EmptyView() }
-                        .labelsHidden()
                         .pickerStyle(.menu)
+                        .labelsHidden()
                         .frame(width: 180, alignment: .leading)
-                    Text(PromptLanguageMode.settingDescription)
+                    Text("変更には再起動が必要です")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .gridColumnAlignment(.leading)
+            }
+            GridRow {
+                Text("生成指示を英語に翻訳")
+                VStack(alignment: .leading, spacing: 4) {
+                    Toggle(isOn: $viewModel.translateToEnglish) { EmptyView() }
+                        .labelsHidden()
+                        .toggleStyle(.switch)
+                    Text("オンにすると生成前に英語へ翻訳しブレを抑えますが、トークン消費が増えます。")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -68,10 +65,21 @@ struct SettingsView: View {
         .padding(24)
         .frame(width: 420)
         .alert("再起動が必要", isPresented: $l10n.pendingRestart) {
-            Button("終了") { NSApp.terminate(nil) }
+            if viewModel.hasInFlightWork {
+                Button("中断して再起動", role: .destructive) {
+                    viewModel.cancelInFlightWorkForRelaunch()
+                    l10n.relaunch()
+                }
+            } else {
+                Button("再起動") { l10n.relaunch() }
+            }
             Button("後で", role: .cancel) {}
         } message: {
-            Text("変更を反映するには Draft Canvas を再起動してください")
+            if viewModel.hasInFlightWork {
+                Text("進行中の作業（生成・書き出し等）があります。中断して再起動すると、これらは破棄されます。")
+            } else {
+                Text("変更を反映するには Draft Canvas を再起動します")
+            }
         }
     }
 }

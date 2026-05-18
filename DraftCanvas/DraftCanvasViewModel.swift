@@ -12,6 +12,7 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var generatingProjectIDs: Set<UUID> = []
     @Published var draftInputs: ProjectInputs = ProjectInputs()
     var lastRequestByProject: [UUID: GenerationRequest] = [:]
+    var generationTasks: [UUID: Task<Void, Never>] = [:]
 
     // MARK: - Global state
     @AppStorage("appAppearance") var appAppearanceRaw: String = "light"
@@ -25,11 +26,7 @@ final class DraftCanvasViewModel: ObservableObject {
     var pendingWeeklyDelta = 0
     @AppStorage("completionSound") var completionSound: String = CompletionSoundOption.glass.rawValue
     @AppStorage("canvasSortOrder") var canvasSortOrderRaw: String = CanvasSortOrder.createdAtAscending.rawValue
-    @AppStorage("promptLanguageMode") var promptLanguageModeRaw: String = PromptLanguageMode.english.rawValue
-    var promptLanguageMode: PromptLanguageMode {
-        get { PromptLanguageMode(rawValue: promptLanguageModeRaw) ?? .english }
-        set { promptLanguageModeRaw = newValue.rawValue }
-    }
+    @AppStorage("translateToEnglish") var translateToEnglish: Bool = false
     var canvasSortOrder: CanvasSortOrder {
         get { CanvasSortOrder(rawValue: canvasSortOrderRaw) ?? .createdAtAscending }
         set {
@@ -201,6 +198,7 @@ final class DraftCanvasViewModel: ObservableObject {
         projectStore: ProjectStore = ProjectStore(),
         preferredSaveFolderStore: PreferredSaveFolderStore = PreferredSaveFolderStore()
     ) {
+        DraftCanvasViewModel.migratePromptLanguageModeIfNeeded()
         DraftCanvasViewModel.migrateAppSupportDirectoryIfNeeded()
         let client = CodexAppServerClient()
         self.client = client
@@ -329,6 +327,17 @@ final class DraftCanvasViewModel: ObservableObject {
     }
     #endif
 
+    private static func migratePromptLanguageModeIfNeeded() {
+        let migrationKey = "draftcanvas.migration.promptLanguageModeToBool.v1"
+        let defaults = UserDefaults.standard
+        guard !defaults.bool(forKey: migrationKey) else { return }
+        defer { defaults.set(true, forKey: migrationKey) }
+        if let oldRaw = defaults.string(forKey: "promptLanguageMode") {
+            defaults.set(oldRaw == "english", forKey: "translateToEnglish")
+        }
+        defaults.removeObject(forKey: "promptLanguageMode")
+    }
+
     private static func migrateAppSupportDirectoryIfNeeded() {
         let migrationKey = "draftcanvas.migration.appSupportDirRenamed.v1"
         guard !UserDefaults.standard.bool(forKey: migrationKey) else { return }
@@ -341,5 +350,46 @@ final class DraftCanvasViewModel: ObservableObject {
 
         guard fm.fileExists(atPath: oldURL.path), !fm.fileExists(atPath: newURL.path) else { return }
         try? fm.moveItem(at: oldURL, to: newURL)
+    }
+
+    // MARK: - Relaunch support
+
+    var hasInFlightWork: Bool {
+        !generatingProjectIDs.isEmpty
+            || !vectorizingItemIDs.isEmpty
+            || !upscalingItemIDs.isEmpty
+            || isEnhancingPrompt
+            || importProgress != nil
+            || batchExportProgress != nil
+            || exportingProjectID != nil
+            || backgroundRemovalPreview != nil
+            || materialExtractionPreview != nil
+            || upscalePreview != nil
+            || inpaintingTarget != nil
+    }
+
+    func cancelInFlightWorkForRelaunch() {
+        for (_, t) in generationTasks { t.cancel() }
+        generationTasks.removeAll()
+        for (_, t) in vectorizationTasks { t.cancel() }
+        vectorizationTasks.removeAll()
+        for (_, t) in upscalingTasks { t.cancel() }
+        upscalingTasks.removeAll()
+        enhanceTask?.cancel()
+        enhanceTask = nil
+
+        generatingProjectIDs.removeAll()
+        vectorizingItemIDs.removeAll()
+        upscalingItemIDs.removeAll()
+        isEnhancingPrompt = false
+        importProgress = nil
+        batchExportProgress = nil
+        exportingProjectID = nil
+        backgroundRemovalPreview = nil
+        materialExtractionPreview = nil
+        upscalePreview = nil
+        inpaintingTarget = nil
+
+        saveState()
     }
 }

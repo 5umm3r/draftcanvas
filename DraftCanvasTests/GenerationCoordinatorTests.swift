@@ -51,7 +51,7 @@ final class GenerationCoordinatorTests: XCTestCase {
             prompt: "雨上がりの森に立つ小さな白い家",
             count: 1,
             concurrency: 1,
-            promptLanguageMode: .english,
+            translateToEnglish: true,
             normalizedPrompt: "A small white house standing in a forest after rain, with soft mist and wet leaves."
         )
 
@@ -64,7 +64,7 @@ final class GenerationCoordinatorTests: XCTestCase {
     func testPromptEnhancerCanRequestEnglishOutput() {
         let prompt = PromptEnhancer.buildPrompt(
             userPrompt: "雨上がりの森に立つ小さな白い家",
-            languageMode: .english
+            translateToEnglish: true
         )
 
         XCTAssertTrue(prompt.contains("Output the enhanced prompt in English"))
@@ -74,7 +74,7 @@ final class GenerationCoordinatorTests: XCTestCase {
     func testPromptEnhancerCanPreserveInputLanguage() {
         let prompt = PromptEnhancer.buildPrompt(
             userPrompt: "雨上がりの森に立つ小さな白い家",
-            languageMode: .preserveInput
+            translateToEnglish: false
         )
 
         XCTAssertTrue(prompt.contains("Maintain the same language as the input"))

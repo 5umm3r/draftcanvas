@@ -273,17 +273,17 @@ enum PromptFactory {
 
     static func upscalePrompt(
         for item: ProjectItem,
-        languageMode: PromptLanguageMode = .preserveInput,
+        translateToEnglish: Bool = false,
         normalizedDescription: String? = nil
     ) -> String {
         let fallbackDescription = item.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             ? "imported asset"
             : item.prompt
         let normalized = normalizedDescription?.trimmingCharacters(in: .whitespacesAndNewlines)
-        let description = languageMode == .english && normalized?.isEmpty == false
+        let description = translateToEnglish && normalized?.isEmpty == false
             ? normalized!
             : fallbackDescription
-        let descriptionLabel = languageMode == .english && normalized?.isEmpty == false
+        let descriptionLabel = translateToEnglish && normalized?.isEmpty == false
             ? "Image brief"
             : "Original image description"
         return [
@@ -300,16 +300,12 @@ enum PromptFactory {
 }
 
 enum PromptEnhancer {
-    static let systemInstruction: String = systemInstruction(languageMode: .preserveInput)
+    static let systemInstruction: String = systemInstruction(translateToEnglish: false)
 
-    static func systemInstruction(languageMode: PromptLanguageMode) -> String {
-        let languageRule: String
-        switch languageMode {
-        case .english:
-            languageRule = "- Output the enhanced prompt in English"
-        case .preserveInput:
-            languageRule = "- Maintain the same language as the input (Japanese stays Japanese, English stays English)"
-        }
+    static func systemInstruction(translateToEnglish: Bool) -> String {
+        let languageRule = translateToEnglish
+            ? "- Output the enhanced prompt in English"
+            : "- Maintain the same language as the input (Japanese stays Japanese, English stays English)"
 
         return [
         "You are an expert prompt engineer for AI image generation.",
@@ -327,8 +323,8 @@ enum PromptEnhancer {
         ].joined(separator: "\n")
     }
 
-    static func buildPrompt(userPrompt: String, languageMode: PromptLanguageMode = .preserveInput) -> String {
-        [systemInstruction(languageMode: languageMode), "", "User's prompt:", userPrompt].joined(separator: "\n")
+    static func buildPrompt(userPrompt: String, translateToEnglish: Bool = false) -> String {
+        [systemInstruction(translateToEnglish: translateToEnglish), "", "User's prompt:", userPrompt].joined(separator: "\n")
     }
 }
 

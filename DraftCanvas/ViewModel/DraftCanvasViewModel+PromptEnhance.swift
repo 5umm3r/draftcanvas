@@ -21,7 +21,7 @@ extension DraftCanvasViewModel {
                 let threadID = try await client.startThread(model: model.id, reasoningEffort: "low")
                 let turnPrompt = PromptEnhancer.buildPrompt(
                     userPrompt: promptText,
-                    languageMode: promptLanguageMode
+                    translateToEnglish: translateToEnglish
                 )
 
                 let result = try await withThrowingTaskGroup(of: CodexTurnResult.self) { group in

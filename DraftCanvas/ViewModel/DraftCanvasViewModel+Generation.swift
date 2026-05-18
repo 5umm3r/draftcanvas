@@ -41,7 +41,7 @@ extension DraftCanvasViewModel {
             attachedImagePath: inputs.attachedImage?.filePath,
             model: inputs.model,
             reasoningEffort: inputs.reasoningEffort,
-            promptLanguageMode: promptLanguageMode
+            translateToEnglish: translateToEnglish
         )
 
         jobsByProject[targetProjectID] = []
@@ -59,10 +59,23 @@ extension DraftCanvasViewModel {
             upsert(job, into: targetProjectID)
         }
 
-        Task {
+        let generationTask = Task { [weak self] in
+            guard let self else { return }
+            defer {
+                Task { @MainActor [weak self] in
+                    self?.generationTasks.removeValue(forKey: targetProjectID)
+                }
+            }
             let preparedRequest = await prepareRequestForGeneration(request)
             await MainActor.run {
                 self.lastRequestByProject[targetProjectID] = preparedRequest
+            }
+
+            guard !Task.isCancelled else {
+                await MainActor.run {
+                    _ = self.generatingProjectIDs.remove(targetProjectID)
+                }
+                return
             }
 
             let results = await coordinator.runSpecific(jobs: placeholderJobs, request: preparedRequest) { [weak self] job in
@@ -93,10 +106,11 @@ extension DraftCanvasViewModel {
                 self.refreshAccountUsage()
             }
         }
+        generationTasks[targetProjectID] = generationTask
     }
 
     func prepareRequestForGeneration(_ request: GenerationRequest) async -> GenerationRequest {
-        guard request.promptLanguageMode == .english else { return request }
+        guard request.translateToEnglish else { return request }
         guard request.normalizedGenerationBrief == nil else { return request }
         guard !availableModels.isEmpty else { return request }
 
@@ -227,10 +241,23 @@ extension DraftCanvasViewModel {
         generatingProjectIDs.insert(projectID)
         logs.append("失敗ジョブを再試行します: \(failedJobs.count)件")
 
-        Task {
+        let retryTask = Task { [weak self] in
+            guard let self else { return }
+            defer {
+                Task { @MainActor [weak self] in
+                    self?.generationTasks.removeValue(forKey: projectID)
+                }
+            }
             let preparedRequest = await prepareRequestForGeneration(request)
             await MainActor.run {
                 self.lastRequestByProject[projectID] = preparedRequest
+            }
+
+            guard !Task.isCancelled else {
+                await MainActor.run {
+                    _ = self.generatingProjectIDs.remove(projectID)
+                }
+                return
             }
 
             let retried = await coordinator.runSpecific(jobs: failedJobs, request: preparedRequest) { [weak self] job in
@@ -249,6 +276,7 @@ extension DraftCanvasViewModel {
                 self.logs.append("再試行完了。")
             }
         }
+        generationTasks[projectID] = retryTask
     }
 
     private func isGenerating(for projectID: UUID) -> Bool {

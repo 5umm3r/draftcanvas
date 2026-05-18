@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 @MainActor
@@ -53,6 +54,16 @@ final class LocalizationManager: ObservableObject {
         case .system:
             let code = Bundle.main.preferredLocalizations.first ?? "en"
             return Locale(identifier: code)
+        }
+    }
+
+    @MainActor
+    func relaunch() {
+        let url = Bundle.main.bundleURL
+        let config = NSWorkspace.OpenConfiguration()
+        config.createsNewApplicationInstance = true
+        NSWorkspace.shared.openApplication(at: url, configuration: config) { _, _ in
+            Task { @MainActor in NSApp.terminate(nil) }
         }
     }
 
