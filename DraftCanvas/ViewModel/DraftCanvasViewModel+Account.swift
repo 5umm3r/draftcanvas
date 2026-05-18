@@ -58,26 +58,9 @@ extension DraftCanvasViewModel {
         totalGeneratedImages = 0
     }
 
-    func logout() {
-        guard !isLoggingOut else { return }
-        isLoggingOut = true
-        Task {
-            do {
-                _ = try await client.sendRequest(method: "account/logout")
-                await MainActor.run {
-                    self.accountUsageStatus = .unavailable
-                    self.isLoggingOut = false
-                    self.logs.append("ログアウトしました。")
-                }
-                refreshAccountUsage()
-            } catch {
-                await MainActor.run {
-                    self.isLoggingOut = false
-                    self.errorToast = String(localized: "ログアウトに失敗しました")
-                    self.logs.append("ログアウト失敗: \(error.localizedDescription)")
-                }
-            }
-        }
+    func relaunchAndRefreshAccountUsage() {
+        client.stop()
+        prewarmAndRefresh()
     }
 
     func prewarmAndRefresh() {

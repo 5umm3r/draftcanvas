@@ -33,6 +33,16 @@ private extension View {
 }
 
 extension ContentView {
+    private var accountButtonSymbol: String {
+        if viewModel.accountUsageStatus.accountKind == .unauthenticated {
+            return "person.crop.circle.badge.minus"
+        } else if viewModel.accountUsagePrewarmFailed {
+            return "person.crop.circle.badge.exclamationmark"
+        } else {
+            return "person.crop.circle"
+        }
+    }
+
     var topStatusBar: some View {
         HStack(spacing: 12) {
             Button(action: toggleLogWindow) {
@@ -155,7 +165,7 @@ extension ContentView {
             Button {
                 isAccountPopoverPresented.toggle()
             } label: {
-                Image(systemName: "person.crop.circle")
+                Image(systemName: accountButtonSymbol)
                     .font(.body)
             }
             .buttonStyle(TopBarButtonStyle())
@@ -166,10 +176,9 @@ extension ContentView {
                     status: viewModel.accountUsageStatus,
                     isLoading: viewModel.isRefreshingAccountUsage,
                     hasFailed: viewModel.accountUsagePrewarmFailed,
-                    isLoggingOut: viewModel.isLoggingOut,
                     codexVersion: viewModel.codexVersion,
                     onRetry: viewModel.refreshAccountUsage,
-                    onLogout: viewModel.logout
+                    onRelaunchAndRetry: viewModel.relaunchAndRefreshAccountUsage
                 )
                 .environment(\.locale, l10n.locale)
                 .environmentObject(l10n)

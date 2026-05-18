@@ -4,13 +4,15 @@ struct AccountPopover: View {
     let status: CodexAccountUsageStatus
     let isLoading: Bool
     let hasFailed: Bool
-    let isLoggingOut: Bool
     let codexVersion: String
     let onRetry: () -> Void
-    let onLogout: () -> Void
+    let onRelaunchAndRetry: () -> Void
 
-    private var canLogout: Bool {
-        status.accountKind == .chatgpt
+    private var planDisplay: String {
+        if status.planLabel == "-" || status.planLabel.isEmpty {
+            return status.accountKind.japaneseLabel
+        }
+        return "\(status.accountKind.japaneseLabel) \(status.planLabel.capitalized)"
     }
 
     var body: some View {
@@ -21,6 +23,38 @@ struct AccountPopover: View {
                     ProgressView("読み込み中...")
                         .padding(.vertical, 16)
                     Spacer()
+                }
+            } else if status.accountKind == .unauthenticated {
+                HStack(spacing: 10) {
+                    Image(systemName: status.accountKind.systemImageName)
+                        .font(.system(size: 28))
+                        .foregroundStyle(.secondary)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("未ログイン")
+                            .font(.headline)
+                            .lineLimit(1)
+                        Text("Codex CLI で `codex login` を実行")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(2)
+                    }
+                    Spacer()
+                }
+                if hasFailed {
+                    Button("再試行", action: onRelaunchAndRetry)
+                        .padding(.top, 8)
+                }
+                Divider()
+                    .padding(.vertical, 10)
+                HStack {
+                    Text("Codex")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Text(codexVersion)
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                        .monospacedDigit()
                 }
             } else if hasFailed {
                 VStack(alignment: .leading, spacing: 8) {
@@ -38,41 +72,25 @@ struct AccountPopover: View {
                         Text(status.accountLabel)
                             .font(.headline)
                             .lineLimit(1)
-                        if status.planLabel != "-" {
-                            Text(status.planLabel)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(Color.secondary.opacity(0.15), in: RoundedRectangle(cornerRadius: 4))
-                        }
+                        Text(planDisplay)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
                     }
                     Spacer()
                 }
-
-                Text("Codex \(codexVersion)")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
-                    .padding(.top, 4)
-
-                if canLogout {
-                    Button(action: onLogout) {
-                        HStack(spacing: 6) {
-                            if isLoggingOut {
-                                ProgressView().controlSize(.small)
-                            } else {
-                                Image(systemName: "rectangle.portrait.and.arrow.right")
-                            }
-                            Text("ログアウト")
-                        }
-                        .foregroundStyle(.red)
-                        .font(.subheadline)
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(isLoggingOut)
-                    .padding(.top, 10)
+                Divider()
+                    .padding(.vertical, 10)
+                HStack {
+                    Text("Codex")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Text(codexVersion)
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                        .monospacedDigit()
                 }
-
             }
         }
         .padding(14)
