@@ -33,9 +33,11 @@ struct AuroraPlaceholderView: View {
     ]
 
     let seed: Int
+    let visibleBlobCount: Int
 
-    init(seed: Int = 0) {
+    init(seed: Int = 0, visibleBlobCount: Int = 5) {
         self.seed = seed
+        self.visibleBlobCount = max(1, min(visibleBlobCount, Self.blobs.count))
     }
 
     private var variant: Variant {
@@ -51,7 +53,7 @@ struct AuroraPlaceholderView: View {
                 let minDim = min(geo.size.width, geo.size.height)
                 ZStack {
                     Color.black
-                    ForEach(0..<5, id: \.self) { i in
+                    ForEach(0..<visibleBlobCount, id: \.self) { i in
                         let blob = Self.blobs[i]
                         let phase = Double(i) * .pi * 2.0 / 5.0 + v.phaseOffset
                         let angle = t * .pi * 2.0 / (Self.basePeriod * blob.periodMult / v.speedMult) + phase

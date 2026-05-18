@@ -392,4 +392,14 @@ final class DraftCanvasViewModel: ObservableObject {
 
         saveState()
     }
+
+    func prepareForRelaunch() async {
+        let tasksToAwait = Array(generationTasks.values)
+            + Array(vectorizationTasks.values)
+            + Array(upscalingTasks.values)
+        let enhance = enhanceTask
+        cancelInFlightWorkForRelaunch()
+        for task in tasksToAwait { await task.value }
+        await enhance?.value
+    }
 }

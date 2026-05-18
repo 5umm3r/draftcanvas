@@ -94,8 +94,10 @@ final class JSONRPCCodecTests: XCTestCase {
 
         XCTAssertEqual(status.accountLabel, "user@example.com")
         XCTAssertEqual(status.planLabel, "plus")
-        XCTAssertEqual(status.primaryUsageLabel, "5h 12%")
-        XCTAssertEqual(status.secondaryUsageLabel, "weekly 43%")
+        XCTAssertEqual(status.primaryUsagePrefix, "5h")
+        XCTAssertEqual(status.primaryUsagePercentLabel, "12%")
+        XCTAssertEqual(status.secondaryUsagePrefix, "weekly")
+        XCTAssertEqual(status.secondaryUsagePercentLabel, "43%")
         XCTAssertEqual(try XCTUnwrap(status.primaryUsageRemainingFraction), 0.12, accuracy: 0.001)
         XCTAssertEqual(try XCTUnwrap(status.secondaryUsageRemainingFraction), 0.43, accuracy: 0.001)
     }

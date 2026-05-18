@@ -550,7 +550,11 @@ extension ContentView {
             let accumulator = URLAccumulator(count: urlProviderCount)
             for (i, provider) in providers.enumerated() {
                 guard provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) else { continue }
-                provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier) { item, _ in
+                provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier) { item, error in
+                    guard error == nil else {
+                        _ = accumulator.skip()
+                        return
+                    }
                     let fileURL: URL?
                     if let u = item as? URL { fileURL = u }
                     else if let u = item as? NSURL { fileURL = u as URL }

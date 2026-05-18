@@ -206,6 +206,12 @@ enum GenerationJobStatus: String {
     }
 }
 
+enum CodexGenerationPhase: Equatable {
+    case queued
+    case reasoning
+    case imageGen
+}
+
 struct GenerationJob: Identifiable, Equatable {
     let id: UUID
     let index: Int
@@ -217,6 +223,8 @@ struct GenerationJob: Identifiable, Equatable {
     var logs: [String]
     var errorMessage: String?
     var hitRateLimitDuringRun: Bool
+    var isFreeAccountBlocked: Bool
+    var generationPhase: CodexGenerationPhase
 
     init(
         id: UUID = UUID(),
@@ -228,7 +236,9 @@ struct GenerationJob: Identifiable, Equatable {
         revisedPrompt: String? = nil,
         logs: [String] = [],
         errorMessage: String? = nil,
-        hitRateLimitDuringRun: Bool = false
+        hitRateLimitDuringRun: Bool = false,
+        isFreeAccountBlocked: Bool = false,
+        generationPhase: CodexGenerationPhase = .queued
     ) {
         self.id = id
         self.index = index
@@ -240,6 +250,8 @@ struct GenerationJob: Identifiable, Equatable {
         self.logs = logs
         self.errorMessage = errorMessage
         self.hitRateLimitDuringRun = hitRateLimitDuringRun
+        self.isFreeAccountBlocked = isFreeAccountBlocked
+        self.generationPhase = generationPhase
     }
 }
 
@@ -1046,7 +1058,9 @@ struct CodexAccountUsageStatus: Equatable {
     }
 
     var isChatGPTFreePlan: Bool {
-        accountKind == .chatgpt && planLabel.lowercased() == "free"
+        guard accountKind == .chatgpt else { return false }
+        let normalized = planLabel.lowercased().replacingOccurrences(of: " ", with: "").replacingOccurrences(of: "_", with: "").replacingOccurrences(of: "-", with: "")
+        return normalized == "free" || normalized == "freetier" || normalized == "freeplan"
     }
 
     var isUnsupportedAccountKind: Bool {
@@ -1067,6 +1081,7 @@ enum DraftCanvasError: LocalizedError {
     case processExited
     case rpcError(String)
     case rateLimited(retryAfter: TimeInterval?)
+    case freePlanNotEntitled(message: String)
     case missingThreadID
     case missingGeneratedContent
     case unsupportedImageResult(String)
@@ -1086,6 +1101,8 @@ enum DraftCanvasError: LocalizedError {
             return message
         case .rateLimited:
             return String(localized: "レート制限に達しました。再試行中です。")
+        case .freePlanNotEntitled:
+            return String(localized: "ChatGPT の有料プランが必要です。")
         case .missingThreadID:
             return String(localized: "thread/start のレスポンスから thread id を取得できませんでした。")
         case .missingGeneratedContent:

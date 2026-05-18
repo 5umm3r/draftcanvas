@@ -67,8 +67,10 @@ struct SettingsView: View {
         .alert("再起動が必要", isPresented: $l10n.pendingRestart) {
             if viewModel.hasInFlightWork {
                 Button("中断して再起動", role: .destructive) {
-                    viewModel.cancelInFlightWorkForRelaunch()
-                    l10n.relaunch()
+                    Task { @MainActor in
+                        await viewModel.prepareForRelaunch()
+                        l10n.relaunch()
+                    }
                 }
             } else {
                 Button("再起動") { l10n.relaunch() }

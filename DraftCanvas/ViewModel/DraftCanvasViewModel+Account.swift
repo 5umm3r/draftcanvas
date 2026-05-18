@@ -66,14 +66,25 @@ extension DraftCanvasViewModel {
     func prewarmAndRefresh() {
         accountUsagePrewarmFailed = false
         Task {
-            await refreshAvailableModels()
+            do {
+                try await client.start()
+            } catch {
+                await MainActor.run {
+                    self.accountUsagePrewarmFailed = true
+                    self.logs.append("codex app-server の起動に失敗しました: \(error.localizedDescription)")
+                }
+                return
+            }
+            let path = client.codexExecutablePath
+            await withTaskGroup(of: Void.self) { group in
+                group.addTask { await self.refreshAvailableModels() }
+                group.addTask {
+                    let v = await CodexAppServerClient.fetchVersion(executablePath: path)
+                    await MainActor.run { self.codexVersion = v ?? "--" }
+                }
+            }
+            refreshAccountUsage()
         }
-        Task.detached(priority: .background) { [weak self] in
-            let path = await MainActor.run { self?.client.codexExecutablePath ?? "" }
-            let version = await CodexAppServerClient.fetchVersion(executablePath: path)
-            await MainActor.run { self?.codexVersion = version ?? "--" }
-        }
-        refreshAccountUsage()
     }
 
     func refreshAvailableModels() async {

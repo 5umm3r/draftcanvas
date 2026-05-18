@@ -150,6 +150,9 @@ extension DraftCanvasViewModel {
         if job.status == .succeeded {
             persistAndPromoteSucceededJob(job, request: request, projectID: projectID)
         } else {
+            if job.isFreeAccountBlocked {
+                pendingFreeAccountBlock = true
+            }
             upsert(job, into: projectID)
         }
     }
