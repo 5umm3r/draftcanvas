@@ -1044,6 +1044,10 @@ struct CodexAccountUsageStatus: Equatable {
         if let value = value as? NSNumber { return value.doubleValue }
         return nil
     }
+
+    var isChatGPTFreePlan: Bool {
+        accountKind == .chatgpt && planLabel.lowercased() == "free"
+    }
 }
 
 // MARK: - Errors

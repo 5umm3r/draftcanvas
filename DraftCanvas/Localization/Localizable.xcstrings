@@ -1393,6 +1393,54 @@
         }
       }
     },
+    "画像生成には ChatGPT Plus 以上のプランが必要です": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Image generation requires ChatGPT Plus or higher"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画像生成には ChatGPT Plus 以上のプランが必要です"
+          }
+        }
+      }
+    },
+    "画像生成には ChatGPT Plus 以上のプランが必要です。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Image generation requires ChatGPT Plus or higher."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画像生成には ChatGPT Plus 以上のプランが必要です。"
+          }
+        }
+      }
+    },
+    "ChatGPT Free プランでは画像生成を利用できません": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Image generation is not available on ChatGPT Free"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ChatGPT Free プランでは画像生成を利用できません"
+          }
+        }
+      }
+    },
     "プロジェクト": {
       "localizations": {
         "en": {

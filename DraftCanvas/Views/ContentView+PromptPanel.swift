@@ -100,6 +100,22 @@ extension ContentView {
                 Divider()
             }
 
+            if !isCollapsed, viewModel.accountUsageStatus.isChatGPTFreePlan {
+                HStack(spacing: 6) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                    Text(String(localized: "ChatGPT Free プランでは画像生成を利用できません"))
+                        .font(.caption)
+                    Spacer()
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(.ultraThinMaterial)
+
+                Divider()
+            }
+
             if !isCollapsed, let attachedImage = viewModel.currentInputs.attachedImage {
                 HStack {
                     AttachedImageThumbnail(

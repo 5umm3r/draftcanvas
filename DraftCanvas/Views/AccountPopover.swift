@@ -76,8 +76,26 @@ struct AccountPopover: View {
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
+                        if status.isChatGPTFreePlan {
+                            HStack(spacing: 4) {
+                                Image(systemName: "exclamationmark.triangle")
+                                    .font(.caption)
+                                    .foregroundStyle(.orange)
+                                Text(String(localized: "画像生成には ChatGPT Plus 以上のプランが必要です"))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
                     }
                     Spacer()
+                    Button(action: onRelaunchAndRetry) {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 14))
+                            .foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.borderless)
+                    .disabled(isLoading)
+                    .help(String(localized: "アカウント情報を再取得"))
                 }
                 Divider()
                     .padding(.vertical, 10)

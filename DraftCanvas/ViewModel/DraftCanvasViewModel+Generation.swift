@@ -5,6 +5,10 @@ import UserNotifications
 extension DraftCanvasViewModel {
     func generate(skipRateLimitCheck: Bool = false) {
         guard canGenerate else { return }
+        if accountUsageStatus.isChatGPTFreePlan {
+            pendingFreeAccountBlock = true
+            return
+        }
         if currentInputs.model.isEmpty, let fallback = availableModels.first(where: \.isDefault)?.id ?? availableModels.first?.id {
             if let id = selectedProjectID {
                 inputsByProject[id]?.model = fallback

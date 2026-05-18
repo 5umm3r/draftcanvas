@@ -140,6 +140,15 @@ struct ContentView: View {
             }
         }
         .confirmationDialog(
+            String(localized: "ChatGPT Free プランでは画像生成を利用できません"),
+            isPresented: $viewModel.pendingFreeAccountBlock,
+            titleVisibility: .visible
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(String(localized: "画像生成には ChatGPT Plus 以上のプランが必要です。"))
+        }
+        .confirmationDialog(
             String(localized: "残量が少なくなっています"),
             isPresented: .init(
                 get: { viewModel.pendingRateLimitConfirmation != nil },

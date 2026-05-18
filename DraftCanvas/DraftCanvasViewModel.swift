@@ -138,6 +138,7 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var accountUsageStatus = CodexAccountUsageStatus.unavailable
     var accountUsageStatusFetchedAt: Date?
     @Published var pendingRateLimitConfirmation: RateLimitConfirmation?
+    @Published var pendingFreeAccountBlock = false
     @Published var isRefreshingAccountUsage = false
     @Published var preferredSaveFolder: URL?
     @Published var errorToast: String?
