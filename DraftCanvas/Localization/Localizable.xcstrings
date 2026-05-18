@@ -689,7 +689,7 @@
         }
       }
     },
-    "あと %lldd": {
+    "あと%lldd": {
       "localizations": {
         "en": {
           "stringUnit": {
@@ -700,28 +700,28 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "あと %lldd"
+            "value": "あと%lldd"
           }
         }
       }
     },
-    "あと %lldd %lldh": {
+    "あと%lldd%lldh": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "in %lldd %lldh"
+            "value": "in %lldd%lldh"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "あと %lldd %lldh"
+            "value": "あと%lldd%lldh"
           }
         }
       }
     },
-    "あと %lldh": {
+    "あと%lldh": {
       "localizations": {
         "en": {
           "stringUnit": {
@@ -732,12 +732,12 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "あと %lldh"
+            "value": "あと%lldh"
           }
         }
       }
     },
-    "あと %lldh%lldm": {
+    "あと%lldh%lldm": {
       "localizations": {
         "en": {
           "stringUnit": {
@@ -748,12 +748,12 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "あと %lldh%lldm"
+            "value": "あと%lldh%lldm"
           }
         }
       }
     },
-    "あと %lldm": {
+    "あと%lldm": {
       "localizations": {
         "en": {
           "stringUnit": {
@@ -764,7 +764,71 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "あと %lldm"
+            "value": "あと%lldm"
+          }
+        }
+      }
+    },
+    "英語で生成指示を整えると画像生成のブレを抑えやすくなりますが、生成前に追加の処理を行うためトークン消費が増えます。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Translating prompts to English reduces generation variance, but adds preprocessing and increases token usage."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "英語で生成指示を整えると画像生成のブレを抑えやすくなりますが、生成前に追加の処理を行うためトークン消費が増えます。"
+          }
+        }
+      }
+    },
+    "英語固定": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "English (fixed)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "英語固定"
+          }
+        }
+      }
+    },
+    "入力言語を維持": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preserve input"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "入力言語を維持"
+          }
+        }
+      }
+    },
+    "生成指示の言語": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prompt language"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "生成指示の言語"
           }
         }
       }

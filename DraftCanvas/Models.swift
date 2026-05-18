@@ -910,8 +910,10 @@ enum AccountKind: Equatable {
 struct CodexAccountUsageStatus: Equatable {
     var accountLabel: String
     var planLabel: String
-    var primaryUsageLabel: String
-    var secondaryUsageLabel: String
+    var primaryUsagePrefix: String
+    var primaryUsagePercentLabel: String
+    var secondaryUsagePrefix: String
+    var secondaryUsagePercentLabel: String
     var primaryUsageRemainingFraction: Double?
     var secondaryUsageRemainingFraction: Double?
     var accountEmail: String?
@@ -924,8 +926,10 @@ struct CodexAccountUsageStatus: Equatable {
     static let unavailable = CodexAccountUsageStatus(
         accountLabel: String(localized: "アカウント未取得"),
         planLabel: "-",
-        primaryUsageLabel: "5h -",
-        secondaryUsageLabel: "weekly -",
+        primaryUsagePrefix: "5h",
+        primaryUsagePercentLabel: "-",
+        secondaryUsagePrefix: "weekly",
+        secondaryUsagePercentLabel: "-",
         primaryUsageRemainingFraction: nil,
         secondaryUsageRemainingFraction: nil,
         accountEmail: nil,
@@ -975,8 +979,10 @@ struct CodexAccountUsageStatus: Equatable {
         return CodexAccountUsageStatus(
             accountLabel: accountLabel,
             planLabel: planLabel,
-            primaryUsageLabel: primaryUsage.label,
-            secondaryUsageLabel: secondaryUsage.label,
+            primaryUsagePrefix: primaryUsage.prefix,
+            primaryUsagePercentLabel: primaryUsage.percentLabel,
+            secondaryUsagePrefix: secondaryUsage.prefix,
+            secondaryUsagePercentLabel: secondaryUsage.percentLabel,
             primaryUsageRemainingFraction: primaryUsage.remainingFraction,
             secondaryUsageRemainingFraction: secondaryUsage.remainingFraction,
             accountEmail: accountEmail,
@@ -1005,14 +1011,14 @@ struct CodexAccountUsageStatus: Equatable {
     private static func usageStatus(
         prefix: String,
         window: [String: Any]?
-    ) -> (label: String, remainingFraction: Double?, resetText: String?, resetDate: Date?) {
+    ) -> (prefix: String, percentLabel: String, remainingFraction: Double?, resetText: String?, resetDate: Date?) {
         let resetDate = window.flatMap { parseResetDate(from: $0) }
         let resetText = resetDate.flatMap { formatRelativeReset(to: $0) }
         guard let usedPercent = numericValue(window?["usedPercent"]) else {
-            return ("\(prefix) -", nil, resetText, resetDate)
+            return (prefix, "-", nil, resetText, resetDate)
         }
         let remainingPercent = min(100, max(0, 100 - usedPercent))
-        return ("\(prefix) \(Int(remainingPercent.rounded()))%", remainingPercent / 100, resetText, resetDate)
+        return (prefix, "\(Int(remainingPercent.rounded()))%", remainingPercent / 100, resetText, resetDate)
     }
 
     private static func parseResetDate(from window: [String: Any]) -> Date? {
@@ -1045,11 +1051,11 @@ struct CodexAccountUsageStatus: Equatable {
         let totalMin = Int(diff / 60)
         let hours = totalMin / 60
         let mins = totalMin % 60
-        if hours < 1 { return String(localized: "あと \(totalMin)m") }
-        if hours < 24 { return mins > 0 ? String(localized: "あと \(hours)h\(mins)m") : String(localized: "あと \(hours)h") }
+        if hours < 1 { return String(localized: "あと\(totalMin)m") }
+        if hours < 24 { return mins > 0 ? String(localized: "あと\(hours)h\(mins)m") : String(localized: "あと\(hours)h") }
         let days = hours / 24
         let hrs = hours % 24
-        return hrs > 0 ? String(localized: "あと \(days)d \(hrs)h") : String(localized: "あと \(days)d")
+        return hrs > 0 ? String(localized: "あと\(days)d\(hrs)h") : String(localized: "あと\(days)d")
     }
 
     private static func numericValue(_ value: Any?) -> Double? {

@@ -5,40 +5,48 @@ struct SettingsView: View {
     @EnvironmentObject private var viewModel: DraftCanvasViewModel
 
     var body: some View {
-        Form {
-            Picker("言語", selection: Binding(
-                get: { l10n.current },
-                set: { l10n.current = $0 }
-            )) {
-                ForEach(LocalizationManager.AppLanguage.allCases) { lang in
-                    Text(lang.displayName).tag(lang)
-                }
+        Grid(alignment: .leadingFirstTextBaseline,
+             horizontalSpacing: 12,
+             verticalSpacing: 14) {
+            GridRow {
+                Text("言語")
+                    .gridColumnAlignment(.trailing)
+                Picker(selection: Binding(
+                    get: { l10n.current },
+                    set: { l10n.current = $0 }
+                )) {
+                    ForEach(LocalizationManager.AppLanguage.allCases) { lang in
+                        Text(lang.displayName).tag(lang)
+                    }
+                } label: { EmptyView() }
+                    .pickerStyle(.menu)
+                    .labelsHidden()
+                    .frame(width: 180, alignment: .leading)
+                    .gridColumnAlignment(.leading)
             }
-            .pickerStyle(.menu)
-
-            LabeledContent("生成指示の言語") {
-                VStack(alignment: .trailing, spacing: 4) {
-                    Picker("生成指示の言語", selection: Binding(
+            GridRow {
+                Text("生成指示の言語")
+                VStack(alignment: .leading, spacing: 4) {
+                    Picker(selection: Binding(
                         get: { viewModel.promptLanguageMode },
                         set: { viewModel.promptLanguageMode = $0 }
                     )) {
                         ForEach(PromptLanguageMode.allCases) { mode in
                             Text(mode.title).tag(mode)
                         }
-                    }
-                    .labelsHidden()
-                    .pickerStyle(.menu)
-
+                    } label: { EmptyView() }
+                        .labelsHidden()
+                        .pickerStyle(.menu)
+                        .frame(width: 180, alignment: .leading)
                     Text(PromptLanguageMode.settingDescription)
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.trailing)
                         .fixedSize(horizontal: false, vertical: true)
-                        .frame(maxWidth: 260, alignment: .trailing)
+                        .frame(maxWidth: 260, alignment: .leading)
                 }
             }
-
-            LabeledContent("保存先") {
+            GridRow {
+                Text("保存先")
                 HStack(spacing: 8) {
                     if let url = viewModel.preferredSaveFolder {
                         Image(systemName: "folder")
@@ -51,13 +59,14 @@ struct SettingsView: View {
                         Text("未選択")
                             .foregroundStyle(.secondary)
                     }
-                    Spacer()
+                    Spacer(minLength: 8)
                     Button("変更…") { viewModel.chooseSaveFolder() }
                 }
+                .frame(maxWidth: .infinity)
             }
         }
-        .padding()
-        .frame(width: 460)
+        .padding(24)
+        .frame(width: 420)
         .alert("再起動が必要", isPresented: $l10n.pendingRestart) {
             Button("終了") { NSApp.terminate(nil) }
             Button("後で", role: .cancel) {}

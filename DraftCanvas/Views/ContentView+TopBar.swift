@@ -35,29 +35,6 @@ private extension View {
 extension ContentView {
     var topStatusBar: some View {
         HStack(spacing: 12) {
-            Button {
-                isAccountPopoverPresented.toggle()
-            } label: {
-                Image(systemName: "person.crop.circle")
-                    .font(.body)
-            }
-            .buttonStyle(TopBarButtonStyle())
-            .help("アカウント")
-            .accessibilityLabel("アカウント")
-            .popover(isPresented: $isAccountPopoverPresented, arrowEdge: .bottom) {
-                AccountPopover(
-                    status: viewModel.accountUsageStatus,
-                    isLoading: viewModel.isRefreshingAccountUsage,
-                    hasFailed: viewModel.accountUsagePrewarmFailed,
-                    isLoggingOut: viewModel.isLoggingOut,
-                    codexVersion: viewModel.codexVersion,
-                    onRetry: viewModel.refreshAccountUsage,
-                    onLogout: viewModel.logout
-                )
-                .environment(\.locale, l10n.locale)
-                .environmentObject(l10n)
-            }
-
             Button(action: toggleLogWindow) {
                 Image(systemName: "doc.text.magnifyingglass")
                     .font(.body.weight(.semibold))
@@ -148,14 +125,14 @@ extension ContentView {
             }
 
             usagePill(
-                systemName: "clock",
-                label: viewModel.accountUsageStatus.primaryUsageLabel,
+                prefix: viewModel.accountUsageStatus.primaryUsagePrefix,
+                percentLabel: viewModel.accountUsageStatus.primaryUsagePercentLabel,
                 remainingFraction: viewModel.accountUsageStatus.primaryUsageRemainingFraction,
                 resetText: viewModel.accountUsageStatus.primaryResetText
             )
             usagePill(
-                systemName: "calendar",
-                label: viewModel.accountUsageStatus.secondaryUsageLabel,
+                prefix: viewModel.accountUsageStatus.secondaryUsagePrefix,
+                percentLabel: viewModel.accountUsageStatus.secondaryUsagePercentLabel,
                 remainingFraction: viewModel.accountUsageStatus.secondaryUsageRemainingFraction,
                 resetText: viewModel.accountUsageStatus.secondaryResetText
             )
@@ -174,6 +151,29 @@ extension ContentView {
             .buttonStyle(TopBarButtonStyle())
             .help("アカウントと使用量を更新")
             .disabled(viewModel.isRefreshingAccountUsage)
+
+            Button {
+                isAccountPopoverPresented.toggle()
+            } label: {
+                Image(systemName: "person.crop.circle")
+                    .font(.body)
+            }
+            .buttonStyle(TopBarButtonStyle())
+            .help("アカウント")
+            .accessibilityLabel("アカウント")
+            .popover(isPresented: $isAccountPopoverPresented, arrowEdge: .bottom) {
+                AccountPopover(
+                    status: viewModel.accountUsageStatus,
+                    isLoading: viewModel.isRefreshingAccountUsage,
+                    hasFailed: viewModel.accountUsagePrewarmFailed,
+                    isLoggingOut: viewModel.isLoggingOut,
+                    codexVersion: viewModel.codexVersion,
+                    onRetry: viewModel.refreshAccountUsage,
+                    onLogout: viewModel.logout
+                )
+                .environment(\.locale, l10n.locale)
+                .environmentObject(l10n)
+            }
         }
         .padding(.horizontal, 16)
         .frame(height: 44)
@@ -181,20 +181,15 @@ extension ContentView {
     }
 
     func usagePill(
-        systemName: String,
-        label: String,
+        prefix: String,
+        percentLabel: String,
         remainingFraction: Double?,
         resetText: String? = nil
     ) -> some View {
         HStack(spacing: 6) {
-            Image(systemName: systemName)
-                .font(.body.weight(.semibold))
-                .foregroundStyle(.secondary)
-
-            Text(label)
+            Text(prefix)
                 .font(.subheadline.weight(.semibold))
                 .lineLimit(1)
-                .monospacedDigit()
 
             HStack(spacing: 2) {
                 Image(systemName: "bolt.fill")
@@ -203,6 +198,11 @@ extension ContentView {
 
                 usageProgressBar(value: remainingFraction)
             }
+
+            Text(percentLabel)
+                .font(.subheadline.weight(.semibold))
+                .lineLimit(1)
+                .monospacedDigit()
 
             if let resetText {
                 Text(resetText)
