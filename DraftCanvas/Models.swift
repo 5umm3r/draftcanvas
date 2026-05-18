@@ -1048,6 +1048,14 @@ struct CodexAccountUsageStatus: Equatable {
     var isChatGPTFreePlan: Bool {
         accountKind == .chatgpt && planLabel.lowercased() == "free"
     }
+
+    var isUnsupportedAccountKind: Bool {
+        accountKind == .apiKey || accountKind == .amazonBedrock
+    }
+
+    var shouldShowUsagePills: Bool {
+        accountKind == .chatgpt
+    }
 }
 
 // MARK: - Errors

@@ -1393,6 +1393,22 @@
         }
       }
     },
+    "ChatGPT Plus 以上のサブスクリプションでログインしてください。API Key / Amazon Bedrock 構成は未サポートです。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Please sign in with a ChatGPT Plus subscription or higher. API Key and Amazon Bedrock configurations are not supported."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ChatGPT Plus 以上のサブスクリプションでログインしてください。API Key / Amazon Bedrock 構成は未サポートです。"
+          }
+        }
+      }
+    },
     "画像生成には ChatGPT Plus 以上のプランが必要です": {
       "localizations": {
         "en": {
@@ -1889,38 +1905,6 @@
         }
       }
     },
-    "ライセンス": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Licenses"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ライセンス"
-          }
-        }
-      }
-    },
-    "ライセンス…": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Licenses…"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ライセンス…"
-          }
-        }
-      }
-    },
     "ライセンスキーが無効です": {
       "localizations": {
         "en": {
@@ -1981,22 +1965,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "ライセンスを有効化"
-          }
-        }
-      }
-    },
-    "ライセンスを選択": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Select a License"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ライセンスを選択"
           }
         }
       }

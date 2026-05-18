@@ -134,18 +134,20 @@ extension ContentView {
                     .environmentObject(l10n)
             }
 
-            usagePill(
-                prefix: viewModel.accountUsageStatus.primaryUsagePrefix,
-                percentLabel: viewModel.accountUsageStatus.primaryUsagePercentLabel,
-                remainingFraction: viewModel.accountUsageStatus.primaryUsageRemainingFraction,
-                resetText: viewModel.accountUsageStatus.primaryResetText
-            )
-            usagePill(
-                prefix: viewModel.accountUsageStatus.secondaryUsagePrefix,
-                percentLabel: viewModel.accountUsageStatus.secondaryUsagePercentLabel,
-                remainingFraction: viewModel.accountUsageStatus.secondaryUsageRemainingFraction,
-                resetText: viewModel.accountUsageStatus.secondaryResetText
-            )
+            if viewModel.accountUsageStatus.shouldShowUsagePills {
+                usagePill(
+                    prefix: viewModel.accountUsageStatus.primaryUsagePrefix,
+                    percentLabel: viewModel.accountUsageStatus.primaryUsagePercentLabel,
+                    remainingFraction: viewModel.accountUsageStatus.primaryUsageRemainingFraction,
+                    resetText: viewModel.accountUsageStatus.primaryResetText
+                )
+                usagePill(
+                    prefix: viewModel.accountUsageStatus.secondaryUsagePrefix,
+                    percentLabel: viewModel.accountUsageStatus.secondaryUsagePercentLabel,
+                    remainingFraction: viewModel.accountUsageStatus.secondaryUsageRemainingFraction,
+                    resetText: viewModel.accountUsageStatus.secondaryResetText
+                )
+            }
 
             Button {
                 viewModel.refreshAccountUsage()

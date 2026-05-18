@@ -86,6 +86,16 @@ struct AccountPopover: View {
                                     .foregroundStyle(.secondary)
                             }
                         }
+                        if status.isUnsupportedAccountKind {
+                            HStack(spacing: 4) {
+                                Image(systemName: "exclamationmark.triangle")
+                                    .font(.caption)
+                                    .foregroundStyle(.orange)
+                                Text(String(localized: "ChatGPT Plus 以上のサブスクリプションでログインしてください。API Key / Amazon Bedrock 構成は未サポートです。"))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
                     }
                     Spacer()
                     Button(action: onRelaunchAndRetry) {

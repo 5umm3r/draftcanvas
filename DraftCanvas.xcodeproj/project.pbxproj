@@ -75,7 +75,6 @@
 		A132B80CE0D6480F8C6609F5 /* CodexCostBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A116412C44FA2816DEBF3 /* CodexCostBadge.swift */; };
 		A3DAEFEB78674462BD2D8682 /* ExportPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ADD5B15238E48BDAEF7A6B3 /* ExportPipeline.swift */; };
 		A48B5042A588CAFF7434D440 /* ContentView+Canvas.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82890750F849D5B99F15A383 /* ContentView+Canvas.swift */; };
-		A9A3281C38E943E6B2623E0A /* LicensesWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E9374D6D3BB41139F076FC8 /* LicensesWindow.swift */; };
 		AA0000010000000100000011 /* ImageUpscaler.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000010000000100000001 /* ImageUpscaler.swift */; };
 		AA0000010000000100000012 /* DraftCanvasViewModel+Upscale.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000010000000100000002 /* DraftCanvasViewModel+Upscale.swift */; };
 		AA0000010000000100000013 /* UpscalePreviewSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000010000000100000003 /* UpscalePreviewSheet.swift */; };
@@ -86,6 +85,7 @@
 		B8D9D407FB64ED096398E71A /* PopoverButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5EB180980BB2AAFC5E98E4A /* PopoverButton.swift */; };
 		BE3A138929BF42F98670599E /* CanvasMetricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A9FECC2E7F14E67952FB30D /* CanvasMetricsTests.swift */; };
 		BFF11A558C8E2D15B86965A9 /* LicenseClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C26379656AAE5325F4969BC /* LicenseClient.swift */; };
+		426C488F52914F25AB95605A /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 685A9AEED87C464187DCC749 /* Credits.rtf */; };
 		C041F91DE6E54E1E9E3C79AA /* Licenses in Resources */ = {isa = PBXBuildFile; fileRef = 8C80B9B1C9684E89AC961D4A /* Licenses */; };
 		C1F60926268CA8767E51619D /* DraftCanvasViewModel+CanvasImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A03337AB6A2A6AB4F968292 /* DraftCanvasViewModel+CanvasImport.swift */; };
 		C6F35265165A4602839E3964 /* ZipExportPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F0CA0CC3D334660A5FF5C5A /* ZipExportPipeline.swift */; };
@@ -99,7 +99,6 @@
 		DC6F3E3000000011A0000001 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC6F3E1100000011A0000001 /* SettingsView.swift */; };
 		E4918AF5DB014E73B4B35CA3 /* ExportOptionsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1464508B7D214B28B26A132A /* ExportOptionsSheet.swift */; };
 		E98965B897824860A68297C9 /* LocalizationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98263DF32F2140108D8FA3CF /* LocalizationManager.swift */; };
-		F2070E725C2A46D7B6CD90FE /* LicensesData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A97E335A454207ACB1DB6C /* LicensesData.swift */; };
 		F21946B70FE9D2F0BFA137A8 /* ContentView+PromptPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 203007036E5BBA27A915D7B5 /* ContentView+PromptPanel.swift */; };
 		F63D81346A0A345BF4D95B39 /* ItemDetailPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBBB7479702C367B6BF48DFA /* ItemDetailPopover.swift */; };
 		FD3EB434ED014DD8E37582F4 /* ProjectRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4029B2D187F5C59722CE9C73 /* ProjectRow.swift */; };
@@ -161,7 +160,6 @@
 		4029B2D187F5C59722CE9C73 /* ProjectRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ProjectRow.swift; path = Views/ProjectRow.swift; sourceTree = "<group>"; };
 		4394CD7957B6D4CF7275602C /* DraftCanvasViewModel+PromptEnhance.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+PromptEnhance.swift"; path = "ViewModel/DraftCanvasViewModel+PromptEnhance.swift"; sourceTree = "<group>"; };
 		463F16CE063D41F7BE7DEBD8 /* ImageEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageEncoder.swift; sourceTree = "<group>"; };
-		4E9374D6D3BB41139F076FC8 /* LicensesWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LicensesWindow.swift; path = Views/LicensesWindow.swift; sourceTree = "<group>"; };
 		519D0FA75CC744B6BE1E253B /* CanvasOriginalImageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasOriginalImageStore.swift; sourceTree = "<group>"; };
 		5831C49A57AB9C7A2D8B1C1D /* DraftCanvasViewModel+MaterialExtract.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+MaterialExtract.swift"; path = "ViewModel/DraftCanvasViewModel+MaterialExtract.swift"; sourceTree = "<group>"; };
 		588B9107340E5F4424AC7842 /* TrialExpiredView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TrialExpiredView.swift; path = Views/TrialExpiredView.swift; sourceTree = "<group>"; };
@@ -198,7 +196,7 @@
 		AEC8F5C3910A4BAA899F9F2C47B2440E /* PurchaseConfig.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PurchaseConfig.swift; path = License/PurchaseConfig.swift; sourceTree = "<group>"; };
 		B24862D0B74E492482C69B38F6415D7A /* CanvasRubberBandOverlay.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CanvasRubberBandOverlay.swift; path = Views/CanvasRubberBandOverlay.swift; sourceTree = "<group>"; };
 		B268164EA0D2A09163FB3A63 /* AccountPopover.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AccountPopover.swift; path = Views/AccountPopover.swift; sourceTree = "<group>"; };
-		B2A97E335A454207ACB1DB6C /* LicensesData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LicensesData.swift; path = Views/LicensesData.swift; sourceTree = "<group>"; };
+		685A9AEED87C464187DCC749 /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = "Credits.rtf"; path = "Resources/Credits.rtf"; sourceTree = "<group>"; };
 		B4EAD194EAC8422CB56493A8620C628D /* SVGRasterizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SVGRasterizerTests.swift; sourceTree = "<group>"; };
 		BC8ED8A8EABE4DC5A4C0E309 /* DraftCanvasViewModel+Computed.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Computed.swift"; path = "ViewModel/DraftCanvasViewModel+Computed.swift"; sourceTree = "<group>"; };
 		BD1F2A3B4C5D6E7F89012345 /* BackgroundRemovalPreviewSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BackgroundRemovalPreviewSheet.swift; path = Views/BackgroundRemovalPreviewSheet.swift; sourceTree = "<group>"; };
@@ -274,6 +272,7 @@
 				10A001012D00000100000001 /* InpaintingMaskCompositor.swift */,
 				10A001032D00000100000001 /* InpaintingMaskEditor.swift */,
 				DA1427245F8D423E91B73BB8 /* Export */,
+				685A9AEED87C464187DCC749 /* Credits.rtf */,
 				7119B2C4A2654E4E835B0B4D /* bin */,
 				8C80B9B1C9684E89AC961D4A /* Licenses */,
 				F67AEB01174F85EC294F17E2 /* ViewModel */,
@@ -358,8 +357,6 @@
 				203007036E5BBA27A915D7B5 /* ContentView+PromptPanel.swift */,
 				7478BE9ADE271121FBE887B5 /* MaterialExtractionSheet.swift */,
 				AA0000010000000100000003 /* UpscalePreviewSheet.swift */,
-				B2A97E335A454207ACB1DB6C /* LicensesData.swift */,
-				4E9374D6D3BB41139F076FC8 /* LicensesWindow.swift */,
 				588B9107340E5F4424AC7842 /* TrialExpiredView.swift */,
 				6F7D3A57833DEA080335B320 /* LicenseSheet.swift */,
 			);
@@ -515,6 +512,7 @@
 				07ADD4FFDF95499A9975EECA /* Localizable.xcstrings in Resources */,
 				DC6F3E2000000011A0000001 /* InfoPlist.xcstrings in Resources */,
 				C041F91DE6E54E1E9E3C79AA /* Licenses in Resources */,
+				426C488F52914F25AB95605A /* Credits.rtf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -631,8 +629,6 @@
 				AA0000010000000100000012 /* DraftCanvasViewModel+Upscale.swift in Sources */,
 				AA0000010000000100000013 /* UpscalePreviewSheet.swift in Sources */,
 				3EBD259BE36E47A89FD065CB179640B0 /* SVGRasterizer.swift in Sources */,
-				F2070E725C2A46D7B6CD90FE /* LicensesData.swift in Sources */,
-				A9A3281C38E943E6B2623E0A /* LicensesWindow.swift in Sources */,
 				341E6310A5448CF79EB57E1C /* SparkleUpdaterController.swift in Sources */,
 				71E1860A1767EA5E4033632D /* LicenseStore.swift in Sources */,
 				00EC24DDDC57BCEDDCF5E05F /* EntitlementGate.swift in Sources */,

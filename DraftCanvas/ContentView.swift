@@ -203,9 +203,6 @@ struct ContentView: View {
                 promptFocusTrigger = true
             }
         }
-        .onReceive(NotificationCenter.default.publisher(for: .openLicensesWindow)) { _ in
-            openWindow(id: "licenses")
-        }
     }
 }
 

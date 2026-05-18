@@ -40,22 +40,11 @@ struct DraftCanvasApp: App {
                 }
                 .disabled(!sparkleUpdater.canCheckForUpdates)
                 trialStatusMenuItem
-                Button("ライセンス…") {
-                    NotificationCenter.default.post(name: .openLicensesWindow, object: nil)
-                }
             }
         }
 
         WindowGroup("ログ", id: "logs") {
             LogWindow(viewModel: viewModel)
-        }
-        .windowStyle(.titleBar)
-        .defaultSize(width: 760, height: 520)
-
-        WindowGroup("ライセンス", id: "licenses") {
-            LicensesWindow()
-                .environmentObject(l10n)
-                .environment(\.locale, l10n.locale)
         }
         .windowStyle(.titleBar)
         .defaultSize(width: 760, height: 520)
@@ -69,9 +58,6 @@ struct DraftCanvasApp: App {
     }
 }
 
-extension Notification.Name {
-    static let openLicensesWindow = Notification.Name("openLicensesWindow")
-}
 
 private extension DraftCanvasApp {
     @ViewBuilder
