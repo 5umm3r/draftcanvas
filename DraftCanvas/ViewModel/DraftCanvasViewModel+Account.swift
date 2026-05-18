@@ -2,7 +2,7 @@ import Foundation
 
 extension DraftCanvasViewModel {
     func refreshAccountUsage() {
-        guard !isRefreshingAccountUsage else { return }
+        guard !isRefreshingAccountUsage, generatingProjectIDs.isEmpty else { return }
 
         isRefreshingAccountUsage = true
         accountUsagePrewarmFailed = false

@@ -11,6 +11,10 @@ struct FilteringSectionHeader: View {
     var body: some View {
         HStack(spacing: 0) {
             Text("フィルタリング")
+            Image(systemName: "line.3.horizontal.decrease.circle")
+                .font(.system(size: 10, weight: .medium))
+                .foregroundStyle(.secondary)
+                .padding(.leading, 4)
             Spacer()
             Button { showCreation = true } label: {
                 Image(systemName: "plus").font(.system(size: 11, weight: .medium))
@@ -41,7 +45,7 @@ struct FilteringProjectRow: View {
     @State private var showEdit = false
 
     var body: some View {
-        Label(filtering.name, systemImage: "line.3.horizontal.decrease.circle")
+        Text(filtering.name)
             .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(Rectangle())
             .contextMenu {
@@ -112,6 +116,10 @@ extension ContentView {
                 } header: {
                     HStack(spacing: 0) {
                         Text("お気に入り")
+                        Image(systemName: "star.fill")
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundStyle(.secondary)
+                            .padding(.leading, 4)
                         Spacer()
                         Button { viewModel.toggleSection("favorites") } label: {
                             Image(systemName: "chevron.down")

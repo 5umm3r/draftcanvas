@@ -150,7 +150,7 @@ extension ContentView {
             }
             .buttonStyle(TopBarButtonStyle())
             .help("アカウントと使用量を更新")
-            .disabled(viewModel.isRefreshingAccountUsage)
+            .disabled(viewModel.isRefreshingAccountUsage || !viewModel.generatingProjectIDs.isEmpty)
 
             Button {
                 isAccountPopoverPresented.toggle()
