@@ -117,21 +117,6 @@ enum CodexEventExtractor {
         return params["threadId"] as? String
     }
 
-    static func extractPhase(from message: [String: Any]) -> CodexGenerationPhase? {
-        guard
-            message["method"] as? String == "item/started",
-            let params = message["params"] as? [String: Any],
-            let item = params["item"] as? [String: Any],
-            let type = item["type"] as? String
-        else { return nil }
-
-        switch type {
-        case "reasoning": return .reasoning
-        case "imageGeneration": return .imageGen
-        default: return nil
-        }
-    }
-
     private static func decodeImageResult(_ result: String) -> Data? {
         if let comma = result.firstIndex(of: ","), result[..<comma].contains("base64") {
             return Data(base64Encoded: String(result[result.index(after: comma)...]))

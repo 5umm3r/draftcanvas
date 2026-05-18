@@ -206,12 +206,6 @@ enum GenerationJobStatus: String {
     }
 }
 
-enum CodexGenerationPhase: Equatable {
-    case queued
-    case reasoning
-    case imageGen
-}
-
 struct GenerationJob: Identifiable, Equatable {
     let id: UUID
     let index: Int
@@ -224,7 +218,6 @@ struct GenerationJob: Identifiable, Equatable {
     var errorMessage: String?
     var hitRateLimitDuringRun: Bool
     var isFreeAccountBlocked: Bool
-    var generationPhase: CodexGenerationPhase
 
     init(
         id: UUID = UUID(),
@@ -237,8 +230,7 @@ struct GenerationJob: Identifiable, Equatable {
         logs: [String] = [],
         errorMessage: String? = nil,
         hitRateLimitDuringRun: Bool = false,
-        isFreeAccountBlocked: Bool = false,
-        generationPhase: CodexGenerationPhase = .queued
+        isFreeAccountBlocked: Bool = false
     ) {
         self.id = id
         self.index = index
@@ -251,7 +243,6 @@ struct GenerationJob: Identifiable, Equatable {
         self.errorMessage = errorMessage
         self.hitRateLimitDuringRun = hitRateLimitDuringRun
         self.isFreeAccountBlocked = isFreeAccountBlocked
-        self.generationPhase = generationPhase
     }
 }
 

@@ -3,8 +3,7 @@ import Foundation
 protocol GenerationRunning: AnyObject, Sendable {
     func run(
         job: GenerationJob,
-        request: GenerationRequest,
-        onPhaseChanged: (@Sendable (UUID, CodexGenerationPhase) async -> Void)?
+        request: GenerationRequest
     ) async -> GenerationJob
 }
 
@@ -78,11 +77,7 @@ final class GenerationCoordinator: @unchecked Sendable {
                 let onUpdate = onUpdate
                 group.addTask {
                     await onUpdate?(capturedJob)
-                    return await runner.run(job: capturedJob, request: request) { id, phase in
-                        var updated = capturedJob
-                        updated.generationPhase = phase
-                        await onUpdate?(updated)
-                    }
+                    return await runner.run(job: capturedJob, request: request)
                 }
                 nextIndex += 1
                 running += 1
@@ -126,8 +121,7 @@ final class CodexGenerationRunner: GenerationRunning {
 
     func run(
         job: GenerationJob,
-        request: GenerationRequest,
-        onPhaseChanged: (@Sendable (UUID, CodexGenerationPhase) async -> Void)?
+        request: GenerationRequest
     ) async -> GenerationJob {
         var output = job
         output.logs.append("ジョブ \(job.index + 1) を開始しました。")
@@ -135,8 +129,7 @@ final class CodexGenerationRunner: GenerationRunning {
         do {
             let (result, extraLogs, hitRateLimit) = try await runWithRetry(
                 job: job,
-                request: request,
-                onPhaseChanged: onPhaseChanged
+                request: request
             )
             output.hitRateLimitDuringRun = hitRateLimit
             output.logs.append(contentsOf: extraLogs)
@@ -163,8 +156,7 @@ final class CodexGenerationRunner: GenerationRunning {
     private func runWithRetry(
         job: GenerationJob,
         request: GenerationRequest,
-        maxAttempts: Int = 3,
-        onPhaseChanged: (@Sendable (UUID, CodexGenerationPhase) async -> Void)? = nil
+        maxAttempts: Int = 3
     ) async throws -> (result: CodexTurnResult, logs: [String], hitRateLimit: Bool) {
         var extraLogs: [String] = []
         var lastError: Error = DraftCanvasError.missingGeneratedContent
@@ -189,10 +181,7 @@ final class CodexGenerationRunner: GenerationRunning {
                 let result = try await client.runTurn(
                     threadID: threadID,
                     prompt: prompt,
-                    referenceImagePath: referenceImagePath,
-                    onPhase: { phase in
-                        Task { await onPhaseChanged?(job.id, phase) }
-                    }
+                    referenceImagePath: referenceImagePath
                 )
                 return (result, extraLogs, hitRateLimit)
             } catch let error as DraftCanvasError {

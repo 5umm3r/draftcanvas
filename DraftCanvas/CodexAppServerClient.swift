@@ -234,11 +234,9 @@ final class CodexAppServerClient: @unchecked Sendable {
     func runTurn(
         threadID: String,
         prompt: String,
-        referenceImagePath: String? = nil,
-        onPhase: (@Sendable (CodexGenerationPhase) -> Void)? = nil
+        referenceImagePath: String? = nil
     ) async throws -> CodexTurnResult {
         let waiter = TurnWaiter(threadID: threadID)
-        waiter.onPhase = onPhase
 
         let resultTask = Task<CodexTurnResult, Error> {
             try await withTaskCancellationHandler {
@@ -583,7 +581,6 @@ struct ProcessTerminationResources {
 private final class TurnWaiter: @unchecked Sendable {
     let threadID: String
     var continuation: CheckedContinuation<CodexTurnResult, Error>?
-    var onPhase: (@Sendable (CodexGenerationPhase) -> Void)?
     private var imageResult: CodexImageResult?
     private var assistantText = ""
     private var logs: [String] = []
@@ -594,10 +591,6 @@ private final class TurnWaiter: @unchecked Sendable {
     }
 
     func consume(_ message: [String: Any]) {
-        if let phase = CodexEventExtractor.extractPhase(from: message) {
-            onPhase?(phase)
-        }
-
         if let result = CodexEventExtractor.extractImageResult(from: message) {
             imageResult = result
             logs.append("画像生成結果を受信しました: \(result.imageID)")
