@@ -12,7 +12,7 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var generatingProjectIDs: Set<UUID> = []
     @Published var draftInputs: ProjectInputs = ProjectInputs()
     var lastRequestByProject: [UUID: GenerationRequest] = [:]
-    var generationTasks: [UUID: Task<Void, Never>] = [:]
+    var generationTasks: [UUID: [UUID: Task<Void, Never>]] = [:]
 
     // MARK: - Global state
     @AppStorage("appAppearance") var appAppearanceRaw: String = "light"
@@ -362,7 +362,7 @@ final class DraftCanvasViewModel: ObservableObject {
     }
 
     func cancelInFlightWorkForRelaunch() {
-        for (_, t) in generationTasks { t.cancel() }
+        for (_, runMap) in generationTasks { for (_, t) in runMap { t.cancel() } }
         generationTasks.removeAll()
         for (_, t) in vectorizationTasks { t.cancel() }
         vectorizationTasks.removeAll()
@@ -387,7 +387,7 @@ final class DraftCanvasViewModel: ObservableObject {
     }
 
     func prepareForRelaunch() async {
-        let tasksToAwait = Array(generationTasks.values)
+        let tasksToAwait = generationTasks.values.flatMap { $0.values }
             + Array(vectorizationTasks.values)
             + Array(upscalingTasks.values)
         let enhance = enhanceTask

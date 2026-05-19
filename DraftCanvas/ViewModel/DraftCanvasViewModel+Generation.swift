@@ -49,7 +49,6 @@ extension DraftCanvasViewModel {
             translateToEnglish: translateToEnglish
         )
 
-        jobsByProject[targetProjectID] = []
         lastRequestByProject[targetProjectID] = request
         generatingProjectIDs.insert(targetProjectID)
         logs.append("生成を開始しました。count=\(request.normalizedCount), concurrency=\(request.normalizedConcurrency)")
@@ -64,13 +63,10 @@ extension DraftCanvasViewModel {
             upsert(job, into: targetProjectID)
         }
 
+        let runID = UUID()
+
         let generationTask = Task { [weak self] in
             guard let self else { return }
-            defer {
-                Task { @MainActor [weak self] in
-                    self?.generationTasks.removeValue(forKey: targetProjectID)
-                }
-            }
             let preparedRequest = await prepareRequestForGeneration(request)
             await MainActor.run {
                 self.lastRequestByProject[targetProjectID] = preparedRequest
@@ -78,7 +74,7 @@ extension DraftCanvasViewModel {
 
             guard !Task.isCancelled else {
                 await MainActor.run {
-                    _ = self.generatingProjectIDs.remove(targetProjectID)
+                    self.finishRun(runID: runID, projectID: targetProjectID)
                 }
                 return
             }
@@ -91,10 +87,7 @@ extension DraftCanvasViewModel {
             }
 
             await MainActor.run {
-                self.generatingProjectIDs.remove(targetProjectID)
-                if self.generatingProjectIDs.isEmpty {
-                    self.onAllJobsCompleted(results: results)
-                }
+                self.finishRun(runID: runID, projectID: targetProjectID, results: results)
                 if var inputs = self.inputsByProject[targetProjectID] {
                     if let editSource = inputs.editSource, editSource.isInpainting {
                         self.projectStore.cleanupMaskFiles(id: editSource.projectItemID)
@@ -111,7 +104,10 @@ extension DraftCanvasViewModel {
                 self.refreshAccountUsage()
             }
         }
-        generationTasks[targetProjectID] = generationTask
+        if generationTasks[targetProjectID] == nil {
+            generationTasks[targetProjectID] = [:]
+        }
+        generationTasks[targetProjectID]?[runID] = generationTask
     }
 
     func prepareRequestForGeneration(_ request: GenerationRequest) async -> GenerationRequest {
@@ -160,7 +156,7 @@ extension DraftCanvasViewModel {
 
     private func persistAndPromoteSucceededJob(_ job: GenerationJob, request: GenerationRequest, projectID: UUID) {
         let actualRatio = job.imageData.flatMap { pixelAspectRatioFromImageData($0) }
-        let item = ProjectItem(
+        var item = ProjectItem(
             projectID: projectID,
             prompt: job.prompt,
             revisedPrompt: job.revisedPrompt,
@@ -171,6 +167,10 @@ extension DraftCanvasViewModel {
         )
         do {
             guard let imageData = job.imageData else { throw DraftCanvasError.missingGeneratedContent }
+            if request.attachedImageKind == .sketch, let sketchPath = request.attachedImagePath {
+                let saved = try projectStore.saveSketchSource(from: sketchPath, itemID: item.id)
+                item.sketchSourcePath = saved.path
+            }
             try projectStore.writeItemData(imageData, for: item)
             items.append(item)
             thumbnailStore.writeThumbnail(from: imageData, item: item)
@@ -235,6 +235,7 @@ extension DraftCanvasViewModel {
             failedJobs[i].logs = []
             failedJobs[i].imageData = nil
             failedJobs[i].hitRateLimitDuringRun = false
+            failedJobs[i].failureKind = nil
         }
         for job in failedJobs {
             upsert(job, into: projectID)
@@ -243,13 +244,10 @@ extension DraftCanvasViewModel {
         generatingProjectIDs.insert(projectID)
         logs.append("失敗ジョブを再試行します: \(failedJobs.count)件")
 
+        let runID = UUID()
+
         let retryTask = Task { [weak self] in
             guard let self else { return }
-            defer {
-                Task { @MainActor [weak self] in
-                    self?.generationTasks.removeValue(forKey: projectID)
-                }
-            }
             let preparedRequest = await prepareRequestForGeneration(request)
             await MainActor.run {
                 self.lastRequestByProject[projectID] = preparedRequest
@@ -257,7 +255,7 @@ extension DraftCanvasViewModel {
 
             guard !Task.isCancelled else {
                 await MainActor.run {
-                    _ = self.generatingProjectIDs.remove(projectID)
+                    self.finishRun(runID: runID, projectID: projectID)
                 }
                 return
             }
@@ -270,15 +268,33 @@ extension DraftCanvasViewModel {
             }
 
             await MainActor.run {
-                self.generatingProjectIDs.remove(projectID)
-                if self.generatingProjectIDs.isEmpty {
-                    self.onAllJobsCompleted(results: retried)
-                }
+                self.finishRun(runID: runID, projectID: projectID, results: retried)
                 self.refreshAccountUsage()
                 self.logs.append("再試行完了。")
             }
         }
-        generationTasks[projectID] = retryTask
+        if generationTasks[projectID] == nil {
+            generationTasks[projectID] = [:]
+        }
+        generationTasks[projectID]?[runID] = retryTask
+    }
+
+    func cancelProjectRuns(projectID: UUID) {
+        let tasks = generationTasks[projectID] ?? [:]
+        for (_, task) in tasks { task.cancel() }
+        generationTasks[projectID] = nil
+        generatingProjectIDs.remove(projectID)
+    }
+
+    private func finishRun(runID: UUID, projectID: UUID, results: [GenerationJob]? = nil) {
+        generationTasks[projectID]?.removeValue(forKey: runID)
+        if generationTasks[projectID]?.isEmpty == true {
+            generationTasks.removeValue(forKey: projectID)
+            generatingProjectIDs.remove(projectID)
+        }
+        if generatingProjectIDs.isEmpty, let results {
+            onAllJobsCompleted(results: results)
+        }
     }
 
     private func isGenerating(for projectID: UUID) -> Bool {

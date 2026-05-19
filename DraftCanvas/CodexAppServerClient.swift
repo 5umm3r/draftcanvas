@@ -732,7 +732,7 @@ private func withTimeout<T: Sendable>(
         }
         group.addTask {
             try await Task.sleep(nanoseconds: seconds * 1_000_000_000)
-            throw DraftCanvasError.rpcError(String(localized: "Codex turn がタイムアウトしました。"))
+            throw DraftCanvasError.timeout
         }
 
         guard let result = try await group.next() else {

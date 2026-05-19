@@ -145,6 +145,12 @@ final class CodexGenerationRunner: GenerationRunning {
             output.status = .failed
             if case DraftCanvasError.freePlanNotEntitled = error {
                 output.isFreeAccountBlocked = true
+            } else if case DraftCanvasError.rateLimited = error {
+                output.failureKind = .rateLimited
+            } else if case DraftCanvasError.timeout = error {
+                output.failureKind = .timeout
+            } else {
+                output.failureKind = .other
             }
             output.errorMessage = error.localizedDescription
             output.logs.append("エラー: \(error.localizedDescription)")

@@ -67,9 +67,11 @@ extension ContentView {
                         HStack {
                             Spacer()
                             Button {
-                                viewModel.stopServer()
+                                if let pid = viewModel.effectiveProjectID ?? viewModel.selectedProjectID {
+                                    viewModel.cancelProjectRuns(projectID: pid)
+                                }
                             } label: {
-                                Label(String(localized: "全停止"), systemImage: "stop.fill")
+                                Label(String(localized: "停止"), systemImage: "stop.fill")
                                     .font(.caption.weight(.medium))
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 6)
@@ -887,14 +889,33 @@ struct JobPreviewView: View {
                     .scaledToFit()
             } else if job.status == .failed {
                 VStack(spacing: 8) {
-                    Image(systemName: "exclamationmark.triangle")
-                        .font(.system(size: 28))
-                        .foregroundStyle(.orange)
-                    Text(job.errorMessage ?? String(localized: "生成に失敗しました"))
-                        .font(.caption)
-                        .multilineTextAlignment(.center)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 12)
+                    switch job.failureKind {
+                    case .rateLimited:
+                        Image(systemName: "bolt.slash")
+                            .font(.system(size: 28))
+                            .foregroundStyle(.orange)
+                        Text(String(localized: "並列失敗"))
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(.primary)
+                    case .timeout:
+                        Image(systemName: "clock.badge.exclamationmark")
+                            .font(.system(size: 28))
+                            .foregroundStyle(.orange)
+                        Text(String(localized: "タイムアウト"))
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(.primary)
+                    default:
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.system(size: 28))
+                            .foregroundStyle(.orange)
+                    }
+                    if let message = job.errorMessage {
+                        Text(message)
+                            .font(.caption)
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 12)
+                    }
                 }
             } else {
                 GenerationProgressView(prompt: job.prompt, seed: job.index)

@@ -10,6 +10,25 @@ struct ItemDetailPopover: View {
             Color.clear.frame(width: 0, height: 0).onAppear {
                 os_signpost(.end, log: PopoverSignposter.log, name: "ItemDetailPopover")
             }
+
+            if let sketchPath = item.sketchSourcePath,
+               let nsImage = NSImage(contentsOfFile: sketchPath) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("ラフ")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Image(nsImage: nsImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(maxHeight: 120)
+                        .clipShape(RoundedRectangle(cornerRadius: 4))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 4)
+                                .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
+                        )
+                }
+            }
+
             DetailRow(label: "Created", value: item.createdAt.formatted(date: .abbreviated, time: .shortened))
 
             DetailRow(

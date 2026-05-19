@@ -78,7 +78,6 @@ extension DraftCanvasViewModel {
 
     var canGenerate: Bool {
         !currentInputs.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            && !isGeneratingForSelected
     }
 
     var preferredColorScheme: ColorScheme {

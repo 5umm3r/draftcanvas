@@ -187,6 +187,12 @@ struct GenerationEditSource: Equatable {
     }
 }
 
+enum GenerationFailureKind: String, Codable {
+    case rateLimited
+    case timeout
+    case other
+}
+
 enum GenerationJobStatus: String {
     case queued
     case running
@@ -219,6 +225,7 @@ struct GenerationJob: Identifiable, Equatable {
     var errorMessage: String?
     var hitRateLimitDuringRun: Bool
     var isFreeAccountBlocked: Bool
+    var failureKind: GenerationFailureKind?
 
     init(
         id: UUID = UUID(),
@@ -231,7 +238,8 @@ struct GenerationJob: Identifiable, Equatable {
         logs: [String] = [],
         errorMessage: String? = nil,
         hitRateLimitDuringRun: Bool = false,
-        isFreeAccountBlocked: Bool = false
+        isFreeAccountBlocked: Bool = false,
+        failureKind: GenerationFailureKind? = nil
     ) {
         self.id = id
         self.index = index
@@ -244,6 +252,7 @@ struct GenerationJob: Identifiable, Equatable {
         self.errorMessage = errorMessage
         self.hitRateLimitDuringRun = hitRateLimitDuringRun
         self.isFreeAccountBlocked = isFreeAccountBlocked
+        self.failureKind = failureKind
     }
 }
 
@@ -411,6 +420,7 @@ struct ProjectItem: Identifiable, Equatable {
     let isBackgroundRemoved: Bool
     let isImported: Bool
     var tags: [String]
+    var sketchSourcePath: String?
 
     init(
         id: UUID = UUID(),
@@ -425,7 +435,8 @@ struct ProjectItem: Identifiable, Equatable {
         hasSVG: Bool = false,
         isBackgroundRemoved: Bool = false,
         isImported: Bool = false,
-        tags: [String] = []
+        tags: [String] = [],
+        sketchSourcePath: String? = nil
     ) {
         self.id = id
         self.projectID = projectID
@@ -440,6 +451,7 @@ struct ProjectItem: Identifiable, Equatable {
         self.isBackgroundRemoved = isBackgroundRemoved
         self.isImported = isImported
         self.tags = tags
+        self.sketchSourcePath = sketchSourcePath
     }
 
     func fileURL(in rootDirectory: URL) -> URL {
@@ -462,6 +474,7 @@ extension ProjectItem: Codable {
         case isBackgroundRemoved
         case isImported
         case tags
+        case sketchSourcePath
     }
 
     init(from decoder: Decoder) throws {
@@ -479,6 +492,7 @@ extension ProjectItem: Codable {
         isBackgroundRemoved = try c.decodeIfPresent(Bool.self, forKey: .isBackgroundRemoved) ?? false
         isImported = try c.decodeIfPresent(Bool.self, forKey: .isImported) ?? false
         tags = try c.decodeIfPresent([String].self, forKey: .tags) ?? []
+        sketchSourcePath = try c.decodeIfPresent(String.self, forKey: .sketchSourcePath)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -496,6 +510,7 @@ extension ProjectItem: Codable {
         if isBackgroundRemoved { try c.encode(isBackgroundRemoved, forKey: .isBackgroundRemoved) }
         if isImported { try c.encode(isImported, forKey: .isImported) }
         if !tags.isEmpty { try c.encode(tags, forKey: .tags) }
+        try c.encodeIfPresent(sketchSourcePath, forKey: .sketchSourcePath)
     }
 }
 
@@ -705,12 +720,24 @@ final class ProjectStore: @unchecked Sendable {
         return try? JSONDecoder().decode([SketchStroke].self, from: data)
     }
 
+    @discardableResult
+    func saveSketchSource(from sourcePath: String, itemID: UUID) throws -> URL {
+        try FileManager.default.createDirectory(at: masksDirectory, withIntermediateDirectories: true)
+        let dst = masksDirectory.appendingPathComponent("\(itemID.uuidString)_sketch.png")
+        if FileManager.default.fileExists(atPath: dst.path) {
+            try FileManager.default.removeItem(at: dst)
+        }
+        try FileManager.default.copyItem(at: URL(fileURLWithPath: sourcePath), to: dst)
+        return dst
+    }
+
     func cleanupMaskFiles(id: UUID) {
         let base = id.uuidString
         try? FileManager.default.removeItem(at: masksDirectory.appendingPathComponent("\(base)_mask.png"))
         try? FileManager.default.removeItem(at: masksDirectory.appendingPathComponent("\(base)_composite.png"))
         try? FileManager.default.removeItem(at: masksDirectory.appendingPathComponent("\(base)_preview.png"))
         try? FileManager.default.removeItem(at: masksDirectory.appendingPathComponent("\(base)_strokes.json"))
+        try? FileManager.default.removeItem(at: masksDirectory.appendingPathComponent("\(base)_sketch.png"))
     }
 
     init(rootDirectory: URL = ProjectStore.defaultRootDirectory()) {
@@ -1101,6 +1128,7 @@ enum DraftCanvasError: LocalizedError {
     case processExited
     case rpcError(String)
     case rateLimited(retryAfter: TimeInterval?)
+    case timeout
     case freePlanNotEntitled(message: String)
     case missingThreadID
     case missingGeneratedContent
@@ -1121,6 +1149,8 @@ enum DraftCanvasError: LocalizedError {
             return message
         case .rateLimited:
             return String(localized: "レート制限に達しました。再試行中です。")
+        case .timeout:
+            return String(localized: "タイムアウトしました。")
         case .freePlanNotEntitled:
             return String(localized: "ChatGPT の有料プランが必要です。")
         case .missingThreadID:
