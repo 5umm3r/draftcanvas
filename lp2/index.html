@@ -113,6 +113,40 @@
     color: #888; background: #f3f3f3;
     padding: 2px 8px; border-radius: 4px; margin-top: 10px;
   }
+
+  /* ===== Pricing ===== */
+  .pricing { background: #fafafa; padding: 80px 48px; text-align: center; }
+  .pricing-inner { max-width: 480px; margin: 0 auto; }
+  .pricing-card {
+    background: #fff; border: 1.5px solid #e8e8e8;
+    border-radius: 16px; padding: 40px; margin-top: 40px;
+  }
+  .trial-badge {
+    background: #111; color: #fff;
+    font-size: 12px; font-weight: 700;
+    padding: 6px 16px; border-radius: 100px;
+    display: inline-block; margin-bottom: 24px;
+  }
+  .trial-heading { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
+  .trial-sub { font-size: 14px; color: #888; margin-bottom: 24px; line-height: 1.6; }
+  .pricing-divider { border: none; border-top: 1px solid #f0f0f0; margin: 24px 0; }
+  .price-row { display: flex; align-items: baseline; justify-content: center; gap: 8px; margin-bottom: 6px; }
+  .price-amount { font-size: 40px; font-weight: 800; letter-spacing: -0.03em; }
+  .price-label { font-size: 14px; color: #888; }
+  .price-note { font-size: 13px; color: #aaa; margin-bottom: 24px; }
+  .pricing-features { text-align: left; display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+  .pricing-features li {
+    list-style: none; font-size: 13px; color: #555;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .pricing-features li::before { content: "—"; color: #bbb; }
+  .refund-note { font-size: 12px; color: #aaa; margin-top: 14px; }
+
+  /* ===== FAQ ===== */
+  .faq { padding: 80px 48px; max-width: 640px; margin: 0 auto; }
+  .faq-item { border-bottom: 1px solid #f0f0f0; padding: 20px 0; }
+  .faq-q { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+  .faq-a { font-size: 14px; color: #777; line-height: 1.7; }
 </style>
 </head>
 <body>
@@ -253,6 +287,61 @@
       </div>
     </div>
 
+  </div>
+</section>
+
+<!-- Pricing -->
+<section class="pricing" id="pricing">
+  <div class="pricing-inner">
+    <p class="section-label">価格</p>
+    <h2 class="section-title">まず、試してみて。</h2>
+    <div class="pricing-card">
+      <span class="trial-badge">14日間 全機能無料</span>
+      <div class="trial-heading">クレジットカード不要</div>
+      <div class="trial-sub">試してみて、手放せなくなったら買う。<br>それだけでいい。</div>
+      <hr class="pricing-divider">
+      <div class="price-row">
+        <span class="price-amount">¥1,980</span>
+        <span class="price-label">買い切り</span>
+      </div>
+      <p class="price-note">v1.x アップデート無料 · 2台まで利用可</p>
+      <ul class="pricing-features">
+        <li>全機能ロック解除</li>
+        <li>v1.x アップデート永久無料</li>
+        <li>Mac 2台まで同時利用</li>
+        <li>30日間 全額返金保証</li>
+      </ul>
+      <a href="https://draftcanvas.lemonsqueezy.com/checkout/buy/2330d4a5-c212-4248-8053-07993e8522e4"
+         class="btn-primary" style="display:block;text-align:center;padding:14px;">無料で試す</a>
+      <p class="refund-note">気に入らなければ30日以内に返金。連絡するだけでいい。</p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq">
+  <p class="section-label">よくある質問</p>
+  <h2 class="section-title" style="margin-bottom:32px;">FAQ</h2>
+
+  <div class="faq-item">
+    <p class="faq-q">ChatGPT のアカウントが必要ですか？</p>
+    <p class="faq-a">画像の生成・編集機能には ChatGPT の有料プラン（Plus・Pro・Team 等）が必要です。背景除去・ベクター化・マテリアル抽出はオフラインで動作し、ChatGPT 不要です。</p>
+  </div>
+  <div class="faq-item">
+    <p class="faq-q">Codex CLI のインストールが必要ですか？</p>
+    <p class="faq-a">事前にターミナルから Codex CLI のインストールおよびログインが必要です。</p>
+  </div>
+  <div class="faq-item">
+    <p class="faq-q">サブスクリプションはありますか？</p>
+    <p class="faq-a">ありません。¥1,980 の一度の支払いで v1.x 系のアップデートをずっと受け取れます。</p>
+  </div>
+  <div class="faq-item">
+    <p class="faq-q">トライアル後に自動で課金されますか？</p>
+    <p class="faq-a">されません。14日間のトライアルはクレジットカード不要で、自動更新もありません。</p>
+  </div>
+  <div class="faq-item">
+    <p class="faq-q">Intel Mac でも使えますか？</p>
+    <p class="faq-a">はい。Apple Silicon・Intel Mac 両対応です。macOS 14 Sonoma 以降が必要です。</p>
   </div>
 </section>
 
