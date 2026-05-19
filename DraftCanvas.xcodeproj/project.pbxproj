@@ -93,6 +93,8 @@
 		C041F91DE6E54E1E9E3C79AA /* Licenses in Resources */ = {isa = PBXBuildFile; fileRef = 8C80B9B1C9684E89AC961D4A /* Licenses */; };
 		C1F60926268CA8767E51619D /* DraftCanvasViewModel+CanvasImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A03337AB6A2A6AB4F968292 /* DraftCanvasViewModel+CanvasImport.swift */; };
 		C6F35265165A4602839E3964 /* ZipExportPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F0CA0CC3D334660A5FF5C5A /* ZipExportPipeline.swift */; };
+		0FF4886636774FFE96D3D13B /* TIFFEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9009D01CC8F24B159CE585F6 /* TIFFEncoder.swift */; };
+		9DC87F84F4934145A38BC044 /* PDFEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2681B373E0F545648BF26839 /* PDFEncoder.swift */; };
 		CC5756457ADFECF7A3D2FE4A /* DraftCanvasViewModel+Projects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D6C2EE6CD1FA3D9302FB26F /* DraftCanvasViewModel+Projects.swift */; };
 		CE2A3B4C5D6E7F8901234567 /* BackgroundRemovalPreviewSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD1F2A3B4C5D6E7F89012345 /* BackgroundRemovalPreviewSheet.swift */; };
 		CEAF7E7A4A4541C89658D0A3 /* CanvasOriginalImageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 519D0FA75CC744B6BE1E253B /* CanvasOriginalImageStore.swift */; };
@@ -183,6 +185,8 @@
 		7405C554E560AA4D979076AC /* SparkleUpdaterController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SparkleUpdaterController.swift; path = Updater/SparkleUpdaterController.swift; sourceTree = "<group>"; };
 		7478BE9ADE271121FBE887B5 /* MaterialExtractionSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MaterialExtractionSheet.swift; path = Views/MaterialExtractionSheet.swift; sourceTree = "<group>"; };
 		7F0CA0CC3D334660A5FF5C5A /* ZipExportPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZipExportPipeline.swift; sourceTree = "<group>"; };
+		9009D01CC8F24B159CE585F6 /* TIFFEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TIFFEncoder.swift; sourceTree = "<group>"; };
+		2681B373E0F545648BF26839 /* PDFEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFEncoder.swift; sourceTree = "<group>"; };
 		7F69E3FAEA4A4B2AB9EFF224 /* BinaryRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BinaryRunner.swift; sourceTree = "<group>"; };
 		82890750F849D5B99F15A383 /* ContentView+Canvas.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "ContentView+Canvas.swift"; path = "Views/ContentView+Canvas.swift"; sourceTree = "<group>"; };
 		882F372486E669E60EAD25D8 /* AttachedImageThumbnail.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AttachedImageThumbnail.swift; path = Views/AttachedImageThumbnail.swift; sourceTree = "<group>"; };
@@ -397,6 +401,8 @@
 				F24932CE5F0543658FB9BBC0 /* ExportOptionsViewModel.swift */,
 				1464508B7D214B28B26A132A /* ExportOptionsSheet.swift */,
 				7F0CA0CC3D334660A5FF5C5A /* ZipExportPipeline.swift */,
+				9009D01CC8F24B159CE585F6 /* TIFFEncoder.swift */,
+				2681B373E0F545648BF26839 /* PDFEncoder.swift */,
 			);
 			path = Export;
 			sourceTree = "<group>";
@@ -593,6 +599,8 @@
 				6E8724CB3BE74D2F8546DADB /* ExportOptionsViewModel.swift in Sources */,
 				E4918AF5DB014E73B4B35CA3 /* ExportOptionsSheet.swift in Sources */,
 				C6F35265165A4602839E3964 /* ZipExportPipeline.swift in Sources */,
+				0FF4886636774FFE96D3D13B /* TIFFEncoder.swift in Sources */,
+				9DC87F84F4934145A38BC044 /* PDFEncoder.swift in Sources */,
 				D5ABAF85CFD1445EA725C71B /* DraftCanvasViewModel+Computed.swift in Sources */,
 				CC5756457ADFECF7A3D2FE4A /* DraftCanvasViewModel+Projects.swift in Sources */,
 				1B8FE23372C461DA5914694F /* DraftCanvasViewModel+Generation.swift in Sources */,

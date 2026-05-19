@@ -179,7 +179,8 @@ struct ContentView: View {
                         viewModel.performExport(request: request, settings: settings)
                     }
                 },
-                onCancel: { viewModel.exportRequest = nil }
+                onCancel: { viewModel.exportRequest = nil },
+                onChangeSaveFolder: { viewModel.chooseSaveFolder() }
             )
         }
         .alert("画像を削除しますか？", isPresented: .init(

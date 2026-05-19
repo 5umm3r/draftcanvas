@@ -5,17 +5,20 @@ struct ExportOptionsSheet: View {
     let saveFolderName: String?
     let onExport: (ExportSettings) -> Void
     let onCancel: () -> Void
+    let onChangeSaveFolder: (() -> Void)?
 
     init(
         request: ExportRequest,
         saveFolderName: String?,
         onExport: @escaping (ExportSettings) -> Void,
-        onCancel: @escaping () -> Void
+        onCancel: @escaping () -> Void,
+        onChangeSaveFolder: (() -> Void)? = nil
     ) {
         _vm = StateObject(wrappedValue: ExportOptionsViewModel(request: request))
         self.saveFolderName = saveFolderName
         self.onExport = onExport
         self.onCancel = onCancel
+        self.onChangeSaveFolder = onChangeSaveFolder
     }
 
     var body: some View {
@@ -59,7 +62,7 @@ struct ExportOptionsSheet: View {
                 }
             }
             .pickerStyle(.segmented)
-            .frame(width: 200)
+            .frame(width: 320)
             .disabled(vm.request.hasVectorSVG)
         }
         .padding(.horizontal, 18)
@@ -72,9 +75,11 @@ struct ExportOptionsSheet: View {
     @ViewBuilder
     private var formatCard: some View {
         switch vm.format {
-        case .png: pngCard
+        case .png:  pngCard
         case .jpeg: jpegCard
-        case .svg: svgCard
+        case .svg:  svgCard
+        case .tiff: tiffCard
+        case .pdf:  pdfCard
         }
     }
 
@@ -138,6 +143,52 @@ struct ExportOptionsSheet: View {
                         .foregroundStyle(.secondary)
                 }
             }
+        }
+    }
+
+    private var tiffCard: some View {
+        OptionCard {
+            VStack(alignment: .leading, spacing: 12) {
+                dpiRow
+                Text("LZW可逆圧縮・透過（アルファ）保持")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private var pdfCard: some View {
+        OptionCard {
+            VStack(alignment: .leading, spacing: 12) {
+                dpiRow
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("画像圧縮")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Picker("", selection: $vm.pdfCompression) {
+                        ForEach(PDFImageCompression.allCases, id: \.self) { c in
+                            Text(c.displayName).tag(c)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var dpiRow: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("解像度 (DPI)")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Picker("", selection: $vm.dpi) {
+                ForEach(ExportDPI.allCases, id: \.self) { d in
+                    Text(d.displayName).tag(d)
+                }
+            }
+            .pickerStyle(.menu)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
@@ -223,14 +274,24 @@ struct ExportOptionsSheet: View {
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             } else if let name = saveFolderName {
-                Label(name, systemImage: "folder")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                Button {
+                    onChangeSaveFolder?()
+                } label: {
+                    Label(name, systemImage: "folder")
+                        .font(.caption)
+                        .lineLimit(1)
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.secondary)
             } else {
-                Label("保存先が未設定です", systemImage: "folder.badge.questionmark")
-                    .font(.caption)
-                    .foregroundStyle(.orange)
+                Button {
+                    onChangeSaveFolder?()
+                } label: {
+                    Label("保存先を設定", systemImage: "folder.badge.plus")
+                        .font(.caption)
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(Color.accentColor)
             }
             Spacer()
             Button("キャンセル") {

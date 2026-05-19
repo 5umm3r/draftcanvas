@@ -24,7 +24,7 @@ struct SettingsView: View {
                     } label: { EmptyView() }
                         .pickerStyle(.menu)
                         .labelsHidden()
-                        .frame(width: 180, alignment: .leading)
+                        .frame(width: 220, alignment: .leading)
                     Text("変更には再起動が必要です")
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -41,7 +41,7 @@ struct SettingsView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
-                        .frame(maxWidth: 260, alignment: .leading)
+                        .frame(maxWidth: 340, alignment: .leading)
                 }
             }
             GridRow {
@@ -74,7 +74,7 @@ struct SettingsView: View {
         .padding(.horizontal, 24)
         .padding(.vertical, 10)
         } // VStack
-        .frame(width: 420)
+        .frame(width: 520)
         .sheet(isPresented: $showLicenses) { LicensesSheet() }
         .alert("再起動が必要", isPresented: $l10n.pendingRestart) {
             if viewModel.hasInFlightWork {

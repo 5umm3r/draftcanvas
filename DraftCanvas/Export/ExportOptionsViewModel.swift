@@ -15,6 +15,9 @@ final class ExportOptionsViewModel: ObservableObject {
     @Published var resizeEnabled: Bool
     @Published var widthText: String
     @Published var heightText: String
+    @Published var dpi: ExportDPI
+    @Published var tiffCompression: TIFFCompression
+    @Published var pdfCompression: PDFImageCompression
 
     private var isProgrammatic = false
 
@@ -44,6 +47,15 @@ final class ExportOptionsViewModel: ObservableObject {
         let storedH = ud.integer(forKey: ExportSettings.StorageKey.resizeHeight)
         self.widthText = storedW > 0 ? String(storedW) : (w > 0 ? String(w) : "")
         self.heightText = storedH > 0 ? String(storedH) : (h > 0 ? String(h) : "")
+
+        let dpiRaw = ud.integer(forKey: ExportSettings.StorageKey.dpi)
+        self.dpi = ExportDPI(rawValue: dpiRaw == 0 ? 300 : dpiRaw) ?? .dpi300
+
+        let tiffRaw = ud.string(forKey: ExportSettings.StorageKey.tiffCompression) ?? TIFFCompression.lzw.rawValue
+        self.tiffCompression = TIFFCompression(rawValue: tiffRaw) ?? .lzw
+
+        let pdfRaw = ud.string(forKey: ExportSettings.StorageKey.pdfCompression) ?? PDFImageCompression.lossless.rawValue
+        self.pdfCompression = PDFImageCompression(rawValue: pdfRaw) ?? .lossless
     }
 
     var widthInt: Int? { Int(widthText) }
@@ -69,7 +81,10 @@ final class ExportOptionsViewModel: ObservableObject {
             pngLevel: pngLevel,
             resizeEnabled: resizeEnabled,
             resizeWidth: widthInt ?? origW,
-            resizeHeight: heightInt ?? origH
+            resizeHeight: heightInt ?? origH,
+            dpi: dpi,
+            tiffCompression: tiffCompression,
+            pdfCompression: pdfCompression
         )
     }
 
@@ -98,5 +113,8 @@ final class ExportOptionsViewModel: ObservableObject {
         ud.set(resizeEnabled, forKey: ExportSettings.StorageKey.resizeEnabled)
         ud.set(widthInt ?? origW, forKey: ExportSettings.StorageKey.resizeWidth)
         ud.set(heightInt ?? origH, forKey: ExportSettings.StorageKey.resizeHeight)
+        ud.set(dpi.rawValue, forKey: ExportSettings.StorageKey.dpi)
+        ud.set(tiffCompression.rawValue, forKey: ExportSettings.StorageKey.tiffCompression)
+        ud.set(pdfCompression.rawValue, forKey: ExportSettings.StorageKey.pdfCompression)
     }
 }

@@ -5826,6 +5826,198 @@
         }
       }
     },
+    "72 dpi（画面）": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "72 dpi (Screen)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "72 dpi（画面）"
+          }
+        }
+      }
+    },
+    "150 dpi（簡易印刷）": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "150 dpi (Basic Print)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "150 dpi（簡易印刷）"
+          }
+        }
+      }
+    },
+    "300 dpi（高品質印刷）": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "300 dpi (High Quality)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "300 dpi（高品質印刷）"
+          }
+        }
+      }
+    },
+    "600 dpi（商業印刷）": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "600 dpi (Commercial)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "600 dpi（商業印刷）"
+          }
+        }
+      }
+    },
+    "LZW（推奨）": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LZW (Recommended)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LZW（推奨）"
+          }
+        }
+      }
+    },
+    "可逆（Flate）": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lossless (Flate)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "可逆（Flate）"
+          }
+        }
+      }
+    },
+    "JPEG 高品質": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "JPEG High Quality"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "JPEG 高品質"
+          }
+        }
+      }
+    },
+    "JPEG 中品質": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "JPEG Medium Quality"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "JPEG 中品質"
+          }
+        }
+      }
+    },
+    "解像度 (DPI)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resolution (DPI)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "解像度 (DPI)"
+          }
+        }
+      }
+    },
+    "画像圧縮": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Image Compression"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画像圧縮"
+          }
+        }
+      }
+    },
+    "LZW可逆圧縮・透過（アルファ）保持": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LZW Lossless · Alpha Preserved"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LZW可逆圧縮・透過（アルファ）保持"
+          }
+        }
+      }
+    },
+    "保存先を設定": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set Save Folder"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存先を設定"
+          }
+        }
+      }
+    },
   },
   "version": "1.0"
 }

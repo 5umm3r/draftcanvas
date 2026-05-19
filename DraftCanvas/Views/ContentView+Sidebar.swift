@@ -128,7 +128,7 @@ extension ContentView {
                 } header: {
                     HStack(spacing: 0) {
                         Text("お気に入り")
-                        Image(systemName: "star.fill")
+                        Image(systemName: "heart.fill")
                             .font(.system(size: 10, weight: .medium))
                             .foregroundStyle(.secondary)
                             .padding(.leading, 4)

@@ -41,6 +41,18 @@ enum ExportPipeline {
             } else {
                 output = try ImageEncoder.svgWrapping(pngData: processedPNG)
             }
+        case .tiff:
+            output = try TIFFEncoder.encode(
+                pngData: processedPNG,
+                dpi: settings.dpi,
+                compression: settings.tiffCompression
+            )
+        case .pdf:
+            output = try PDFEncoder.encode(
+                pngData: processedPNG,
+                dpi: settings.dpi,
+                compression: settings.pdfCompression
+            )
         }
 
         if settings.format == .png && settings.pngOptimize {
