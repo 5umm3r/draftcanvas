@@ -25,7 +25,8 @@
     backdrop-filter: blur(8px);
     z-index: 100;
   }
-  .nav-logo { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; color: #111; text-decoration: none; }
+  .nav-logo { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; color: #111; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+  .nav-logo img { width: 24px; height: 24px; border-radius: 6px; }
   .nav-links { display: flex; align-items: center; gap: 32px; }
   .nav-links a { font-size: 14px; color: #555; text-decoration: none; }
   .btn-primary {
@@ -193,7 +194,9 @@
 
 <!-- Nav -->
 <nav aria-label="メインナビゲーション">
-  <a href="./" class="nav-logo">DraftCanvas</a>
+  <a href="./" class="nav-logo">
+    <img src="assets/icon.png" alt="DraftCanvas">DraftCanvas
+  </a>
   <div class="nav-links">
     <a href="#features">機能</a>
     <a href="#pricing">価格</a>
