@@ -1729,6 +1729,38 @@
         }
       }
     },
+    "ラフ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sketch"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ラフ"
+          }
+        }
+      }
+    },
+    "ラフを描いて構図を指示": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Draw a sketch to guide composition"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ラフを描いて構図を指示"
+          }
+        }
+      }
+    },
     "マスクして編集モード": {
       "localizations": {
         "en": {

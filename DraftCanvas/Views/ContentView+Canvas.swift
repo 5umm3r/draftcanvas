@@ -788,17 +788,18 @@ extension ContentView {
                     viewModel.duplicateItem(item)
                 }
                 CircularPromptActionButton(
-                    systemImage: "square.and.arrow.up",
-                    tooltip: "エクスポート"
-                ) {
-                    guard EntitlementGate.shared.requireUnlocked() else { return }
-                    viewModel.exportItem(item)
-                }
-                CircularPromptActionButton(
                     systemImage: "trash",
                     tooltip: "削除"
                 ) {
                     confirmingDeleteItemID = item.id
+                }
+                CircularPromptActionButton(
+                    systemImage: "square.and.arrow.up",
+                    tooltip: "エクスポート",
+                    isAccent: true
+                ) {
+                    guard EntitlementGate.shared.requireUnlocked() else { return }
+                    viewModel.exportItem(item)
                 }
             }
             .padding(10)

@@ -20,10 +20,10 @@ struct ItemDetailPopover: View {
                     Image(nsImage: nsImage)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(maxHeight: 120)
-                        .clipShape(RoundedRectangle(cornerRadius: 4))
+                        .frame(width: 264, height: 200)
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
                         .overlay(
-                            RoundedRectangle(cornerRadius: 4)
+                            RoundedRectangle(cornerRadius: 6)
                                 .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
                         )
                 }
