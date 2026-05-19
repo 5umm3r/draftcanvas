@@ -64,6 +64,32 @@
   .hero-ctas { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; }
   .hero-note { font-size: 12px; color: #999; margin-top: 14px; line-height: 1.8; }
   .hero-annotation { font-size: 11px; color: #bbb; margin-top: 8px; }
+
+  /* ===== Screenshot ===== */
+  .screenshot-wrap { max-width: 960px; margin: 0 auto; padding: 0 32px 80px; }
+  .screenshot-wrap img {
+    width: 100%; border-radius: 12px;
+    border: 1px solid #e8e8e8;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+  }
+
+  /* ===== Steps ===== */
+  .steps { background: #fafafa; padding: 80px 48px; }
+  .steps-inner { max-width: 960px; margin: 0 auto; }
+  .section-label {
+    font-size: 11px; font-weight: 700; color: #999;
+    letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px;
+  }
+  .section-title {
+    font-size: clamp(24px, 3vw, 36px);
+    font-weight: 700; letter-spacing: -0.02em; margin-bottom: 48px;
+  }
+  .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+  .step { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; padding: 28px; }
+  .step-num { font-size: 11px; font-weight: 700; color: #bbb; letter-spacing: 0.08em; margin-bottom: 12px; }
+  .step img { width: 100%; border-radius: 8px; margin-bottom: 16px; aspect-ratio: 16/9; object-fit: cover; }
+  .step h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .step p { font-size: 13px; color: #777; line-height: 1.6; }
 </style>
 </head>
 <body>
@@ -91,6 +117,39 @@
   </div>
   <p class="hero-note">クレジットカード不要 · macOS 14+ · Apple Silicon / Intel 対応</p>
   <p class="hero-annotation">* 画像生成には ChatGPT 有料プラン（Plus・Pro・Team 等）のご契約と、プラン内の使用量が必要です。</p>
+</section>
+
+<!-- Screenshot -->
+<div class="screenshot-wrap">
+  <img src="assets/screenshot.png" alt="DraftCanvas アプリ画面" onerror="this.style.display='none'">
+</div>
+
+<!-- Steps -->
+<section class="steps">
+  <div class="steps-inner">
+    <div class="section-label">使い方</div>
+    <div class="section-title">3ステップで完成。</div>
+    <div class="steps-grid">
+      <div class="step">
+        <div class="step-num">STEP 01</div>
+        <img src="assets/step01.png" alt="Sketch で手書き">
+        <h3>ラフを描く</h3>
+        <p>Sketch で構図をざっくり手描き。テキストでも指示できる。</p>
+      </div>
+      <div class="step">
+        <div class="step-num">STEP 02</div>
+        <img src="assets/step02.png" alt="AI が画像を生成">
+        <h3>AI が生成</h3>
+        <p>ChatGPT の有料プランで画像生成。気に入るまで回せる。</p>
+      </div>
+      <div class="step">
+        <div class="step-num">STEP 03</div>
+        <img src="assets/step03.png" alt="編集して仕上げ">
+        <h3>編集して仕上げ</h3>
+        <p>背景除去・インペイント・ベクター化。完成したらそのまま書き出し。</p>
+      </div>
+    </div>
+  </div>
 </section>
 
 </main>
