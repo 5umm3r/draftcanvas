@@ -16,14 +16,6 @@ final class DraftCanvasViewModel: ObservableObject {
 
     // MARK: - Global state
     @AppStorage("appAppearance") var appAppearanceRaw: String = "light"
-    @AppStorage("totalGeneratedImages") var totalGeneratedImages: Int = 0
-    @AppStorage("session5hCount") var session5hCount: Int = 0
-    @AppStorage("sessionWeeklyCount") var sessionWeeklyCount: Int = 0
-    @AppStorage("session5hResetEpoch") var session5hResetEpoch: Double = 0
-    @AppStorage("sessionWeeklyResetEpoch") var sessionWeeklyResetEpoch: Double = 0
-    // syncSessionWindows のリセット時に直近生成分を保持するためのカウンタ（永続化不要）
-    var pendingFiveHDelta = 0
-    var pendingWeeklyDelta = 0
     @AppStorage("completionSound") var completionSound: String = CompletionSoundOption.glass.rawValue
     @AppStorage("canvasSortOrder") var canvasSortOrderRaw: String = CanvasSortOrder.createdAtAscending.rawValue
     @AppStorage("translateToEnglish") var translateToEnglish: Bool = false
@@ -148,6 +140,7 @@ final class DraftCanvasViewModel: ObservableObject {
 
     @Published var vectorizingItemIDs: Set<UUID> = []
     @Published var inpaintingTarget: ProjectItem? = nil
+    @Published var sketchEditorTarget: SketchEditorTarget? = nil
     @Published var inpaintMode: InpaintMode = {
         let raw = UserDefaults.standard.string(forKey: "draftCanvas.inpaintMode") ?? "edit"
         return InpaintMode(rawValue: raw) ?? .edit

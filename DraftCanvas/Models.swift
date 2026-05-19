@@ -126,6 +126,7 @@ struct GenerationRequest: Equatable {
     var aspectRatio: GenerationAspectRatio = .auto
     var editSource: GenerationEditSource? = nil
     var attachedImagePath: String? = nil
+    var attachedImageKind: AttachmentKind = .regular
     var model: String = ""
     var reasoningEffort: String = "medium"
     var translateToEnglish: Bool = false
@@ -252,11 +253,24 @@ struct AttachedImage: Equatable {
     let id: UUID
     let filePath: String
     let originalFileName: String?
+    var kind: AttachmentKind
+    var sketchStrokesFilePath: String?
+    var canvasPixelSize: CGSize?
 
-    init(id: UUID = UUID(), filePath: String, originalFileName: String? = nil) {
+    init(
+        id: UUID = UUID(),
+        filePath: String,
+        originalFileName: String? = nil,
+        kind: AttachmentKind = .regular,
+        sketchStrokesFilePath: String? = nil,
+        canvasPixelSize: CGSize? = nil
+    ) {
         self.id = id
         self.filePath = filePath
         self.originalFileName = originalFileName
+        self.kind = kind
+        self.sketchStrokesFilePath = sketchStrokesFilePath
+        self.canvasPixelSize = canvasPixelSize
     }
 }
 
@@ -674,6 +688,21 @@ final class ProjectStore: @unchecked Sendable {
         let url = masksDirectory.appendingPathComponent("\(id.uuidString)_strokes.json")
         guard let data = try? Data(contentsOf: url) else { return nil }
         return try? JSONDecoder().decode([MaskStroke].self, from: data)
+    }
+
+    @discardableResult
+    func writeSketchStrokesData(_ strokes: [SketchStroke], id: UUID) throws -> URL {
+        try FileManager.default.createDirectory(at: attachmentsDirectory, withIntermediateDirectories: true)
+        let url = attachmentsDirectory.appendingPathComponent("\(id.uuidString)_strokes.json")
+        let data = try JSONEncoder().encode(strokes)
+        try data.write(to: url, options: .atomic)
+        return url
+    }
+
+    func readSketchStrokesData(id: UUID) -> [SketchStroke]? {
+        let url = attachmentsDirectory.appendingPathComponent("\(id.uuidString)_strokes.json")
+        guard let data = try? Data(contentsOf: url) else { return nil }
+        return try? JSONDecoder().decode([SketchStroke].self, from: data)
     }
 
     func cleanupMaskFiles(id: UUID) {

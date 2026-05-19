@@ -125,6 +125,10 @@ extension ContentView {
                             return viewModel.projectStore.previewURL(id: src.projectItemID).path
                         },
                         onTap: {
+                            if attachedImage.kind == .sketch {
+                                viewModel.openSketchEditorForReedit(attachedImage)
+                                return
+                            }
                             guard let editSource = viewModel.currentInputs.editSource,
                                   editSource.isInpainting,
                                   let item = viewModel.items.first(where: { $0.id == editSource.projectItemID })
@@ -238,8 +242,8 @@ extension ContentView {
                 if isCollapsed {
                     HStack(spacing: 8) {
                         HStack(spacing: 4) {
-                            if viewModel.currentInputs.attachedImage != nil {
-                                Image(systemName: "paperclip")
+                            if let attached = viewModel.currentInputs.attachedImage {
+                                Image(systemName: attached.kind == .sketch ? "scribble.variable" : "paperclip")
                                     .font(.caption)
                                     .foregroundStyle(.tertiary)
                             }
@@ -416,24 +420,44 @@ extension ContentView {
                     Spacer()
 
                     Button {
-                        viewModel.pickAttachmentImage()
+                        viewModel.openSketchEditor()
                     } label: {
                         HStack(spacing: 4) {
-                            Image(systemName: "paperclip")
+                            Image(systemName: "scribble.variable")
                                 .font(.system(size: 15, weight: .medium))
-                            if viewModel.currentInputs.attachedImage != nil {
+                            if viewModel.currentInputs.attachedImage?.kind == .sketch {
                                 Circle()
                                     .fill(Color.accentColor)
                                     .frame(width: 6, height: 6)
                             }
                         }
                         .frame(width: 42, height: 42)
-                        .background(viewModel.currentInputs.attachedImage != nil ? Color.accentColor.opacity(0.12) : Color.primary.opacity(0.04))
+                        .background(viewModel.currentInputs.attachedImage?.kind == .sketch ? Color.accentColor.opacity(0.12) : Color.primary.opacity(0.04))
                         .clipShape(Circle())
                     }
                     .buttonStyle(.borderless)
                     .disabled(viewModel.currentInputs.editSource != nil)
-                    .help(viewModel.currentInputs.attachedImage != nil ? LocalizedStringKey("参照画像添付中") : LocalizedStringKey("参照画像を添付"))
+                    .help(LocalizedStringKey("ラフを描いて構図を指示"))
+
+                    Button {
+                        viewModel.pickAttachmentImage()
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "paperclip")
+                                .font(.system(size: 15, weight: .medium))
+                            if viewModel.currentInputs.attachedImage?.kind == .regular {
+                                Circle()
+                                    .fill(Color.accentColor)
+                                    .frame(width: 6, height: 6)
+                            }
+                        }
+                        .frame(width: 42, height: 42)
+                        .background(viewModel.currentInputs.attachedImage?.kind == .regular ? Color.accentColor.opacity(0.12) : Color.primary.opacity(0.04))
+                        .clipShape(Circle())
+                    }
+                    .buttonStyle(.borderless)
+                    .disabled(viewModel.currentInputs.editSource != nil)
+                    .help(viewModel.currentInputs.attachedImage?.kind == .regular ? LocalizedStringKey("参照画像添付中") : LocalizedStringKey("参照画像を添付"))
 
                     retryFailedJobsButton
 

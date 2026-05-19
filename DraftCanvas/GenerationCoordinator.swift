@@ -262,6 +262,21 @@ enum PromptFactory {
             ?? "User prompt: \(request.prompt)"
 
         if request.attachedImagePath != nil {
+            if request.attachedImageKind == .sketch {
+                return [
+                    "Generate exactly one high-quality raster image for a local personal image creator app.",
+                    "The attached image is a rough hand-drawn sketch used only as a compositional guide.",
+                    "Use the sketch to understand the intended layout, placement, and rough color regions of the scene.",
+                    "Do NOT reproduce the sketch literally. Do NOT carry over white areas as empty space or background.",
+                    "Generate a fully detailed, polished scene that matches the user's prompt, with composition guided by the sketch.",
+                    "Use the image generation capability and return the generated image result.",
+                    promptLine,
+                    "Aspect ratio: \(request.aspectRatio.promptDescription).",
+                    "Variation number: \(jobIndex + 1).",
+                    "A normal opaque image is acceptable.",
+                    "Do not write code. Do not ask clarifying questions."
+                ].joined(separator: "\n")
+            }
             return [
                 "Generate exactly one high-quality raster image for a local personal image creator app.",
                 "Use the attached reference image as visual guidance.",

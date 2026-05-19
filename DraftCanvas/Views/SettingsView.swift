@@ -3,8 +3,10 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject private var l10n: LocalizationManager
     @EnvironmentObject private var viewModel: DraftCanvasViewModel
+    @State private var showLicenses = false
 
     var body: some View {
+        VStack(spacing: 0) {
         Grid(alignment: .leadingFirstTextBaseline,
              horizontalSpacing: 12,
              verticalSpacing: 14) {
@@ -63,7 +65,17 @@ struct SettingsView: View {
             }
         }
         .padding(24)
+        Divider()
+        HStack {
+            Button("オープンソースライセンスを表示") { showLicenses = true }
+                .buttonStyle(.link)
+            Spacer()
+        }
+        .padding(.horizontal, 24)
+        .padding(.vertical, 10)
+        } // VStack
         .frame(width: 420)
+        .sheet(isPresented: $showLicenses) { LicensesSheet() }
         .alert("再起動が必要", isPresented: $l10n.pendingRestart) {
             if viewModel.hasInFlightWork {
                 Button("中断して再起動", role: .destructive) {

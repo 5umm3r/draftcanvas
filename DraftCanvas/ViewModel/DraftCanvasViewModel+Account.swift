@@ -14,7 +14,6 @@ extension DraftCanvasViewModel {
                 await MainActor.run {
                     self.accountUsageStatus = status
                     self.accountUsageStatusFetchedAt = Date()
-                    self.syncSessionWindows(from: status)
                     self.isRefreshingAccountUsage = false
                     self.logs.append("Codexアカウントと使用量を更新しました。")
                 }
@@ -27,35 +26,6 @@ extension DraftCanvasViewModel {
                 }
             }
         }
-    }
-
-    func syncSessionWindows(from status: CodexAccountUsageStatus) {
-        if let d = status.primaryResetDate {
-            let epoch = d.timeIntervalSince1970
-            if session5hResetEpoch == 0 {
-                session5hResetEpoch = epoch
-            } else if abs(epoch - session5hResetEpoch) > 1.0 {
-                session5hCount = pendingFiveHDelta
-                session5hResetEpoch = epoch
-            }
-            pendingFiveHDelta = 0
-        }
-        if let d = status.secondaryResetDate {
-            let epoch = d.timeIntervalSince1970
-            if sessionWeeklyResetEpoch == 0 {
-                sessionWeeklyResetEpoch = epoch
-            } else if abs(epoch - sessionWeeklyResetEpoch) > 1.0 {
-                sessionWeeklyCount = pendingWeeklyDelta
-                sessionWeeklyResetEpoch = epoch
-            }
-            pendingWeeklyDelta = 0
-        }
-    }
-
-    func resetAllCounters() {
-        session5hCount = 0
-        sessionWeeklyCount = 0
-        totalGeneratedImages = 0
     }
 
     func relaunchAndRefreshAccountUsage() {

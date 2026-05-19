@@ -273,22 +273,6 @@
         }
       }
     },
-    "5h・週次・累計すべて 0 になります。元に戻せません。": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "All counters (5h, weekly, total) will be reset to 0. This cannot be undone."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "5h・週次・累計すべて 0 になります。元に戻せません。"
-          }
-        }
-      }
-    },
     "APIキー": {
       "localizations": {
         "en": {
@@ -1137,22 +1121,6 @@
         }
       }
     },
-    "すべてのカウンタをリセットしますか？": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reset all counters?"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "すべてのカウンタをリセットしますか？"
-          }
-        }
-      }
-    },
     "すべての画像": {
       "localizations": {
         "en": {
@@ -1997,22 +1965,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "リサイズに失敗しました。"
-          }
-        }
-      }
-    },
-    "リセット": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reset"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "リセット"
           }
         }
       }
@@ -3153,22 +3105,6 @@
         }
       }
     },
-    "枚": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": ""
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "枚"
-          }
-        }
-      }
-    },
     "枚数": {
       "localizations": {
         "en": {
@@ -3373,22 +3309,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "生成時の参照画像を選択してください。"
-          }
-        }
-      }
-    },
-    "生成枚数の詳細": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Generation Count Details"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "生成枚数の詳細"
           }
         }
       }
@@ -3793,22 +3713,6 @@
         }
       }
     },
-    "累計": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Total"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "累計"
-          }
-        }
-      }
-    },
     "終了コード %lld: %@": {
       "localizations": {
         "en": {
@@ -4145,22 +4049,6 @@
         }
       }
     },
-    "週次": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Weekly"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "週次"
-          }
-        }
-      }
-    },
     "選択": {
       "localizations": {
         "en": {
@@ -4253,6 +4141,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "選択画像を一括削除"
+          }
+        }
+      }
+    },
+    "オープンソースライセンス": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open-Source Licenses"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "オープンソースライセンス"
+          }
+        }
+      }
+    },
+    "オープンソースライセンスを表示": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show open-source licenses"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "オープンソースライセンスを表示"
           }
         }
       }

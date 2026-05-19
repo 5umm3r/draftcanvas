@@ -112,28 +112,6 @@ extension ContentView {
 
             Spacer(minLength: 16)
 
-            Button {
-                showCountPopover.toggle()
-            } label: {
-                HStack(spacing: 4) {
-                    Image(systemName: "photo.stack")
-                        .font(.body.weight(.semibold))
-                    if viewModel.totalGeneratedImages > 0 {
-                        Text("\(viewModel.totalGeneratedImages)")
-                            .font(.subheadline.weight(.semibold))
-                            .monospacedDigit()
-                    }
-                }
-                .padding(.horizontal, viewModel.totalGeneratedImages > 0 ? 6 : 0)
-            }
-            .buttonStyle(TopBarButtonStyle())
-            .help("生成枚数の詳細")
-            .popover(isPresented: $showCountPopover, arrowEdge: .bottom) {
-                GenerationCountPopover(viewModel: viewModel)
-                    .environment(\.locale, l10n.locale)
-                    .environmentObject(l10n)
-            }
-
             if viewModel.accountUsageStatus.shouldShowUsagePills {
                 usagePill(
                     prefix: viewModel.accountUsageStatus.primaryUsagePrefix,

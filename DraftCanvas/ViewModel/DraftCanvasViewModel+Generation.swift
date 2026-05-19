@@ -43,6 +43,7 @@ extension DraftCanvasViewModel {
             aspectRatio: inputs.aspectRatio,
             editSource: inputs.editSource,
             attachedImagePath: inputs.attachedImage?.filePath,
+            attachedImageKind: inputs.attachedImage?.kind ?? .regular,
             model: inputs.model,
             reasoningEffort: inputs.reasoningEffort,
             translateToEnglish: translateToEnglish
@@ -173,12 +174,6 @@ extension DraftCanvasViewModel {
             try projectStore.writeItemData(imageData, for: item)
             items.append(item)
             thumbnailStore.writeThumbnail(from: imageData, item: item)
-
-            totalGeneratedImages += 1
-            session5hCount += 1
-            sessionWeeklyCount += 1
-            pendingFiveHDelta += 1
-            pendingWeeklyDelta += 1
 
             if let idx = projects.firstIndex(where: { $0.id == projectID }) {
                 projects[idx].updatedAt = Date()

@@ -148,6 +148,10 @@ extension ContentView {
                 inpaintingEditorSheet(for: item)
                     .environment(\.locale, l10n.locale)
             }
+            .sheet(item: $viewModel.sketchEditorTarget) { target in
+                sketchEditorSheet(for: target)
+                    .environment(\.locale, l10n.locale)
+            }
             .sheet(item: $viewModel.backgroundRemovalPreview) { preview in
                 BackgroundRemovalPreviewSheet(preview: preview, viewModel: viewModel)
                     .environment(\.locale, l10n.locale)
@@ -198,6 +202,26 @@ extension ContentView {
             Text("画像を読み込めませんでした")
                 .padding(40)
         }
+    }
+
+    @ViewBuilder
+    func sketchEditorSheet(for target: SketchEditorTarget) -> some View {
+        let initialStrokes = target.existingAttachment.map { viewModel.loadSketchStrokes(for: $0) } ?? []
+        SketchEditorSheet(
+            canvasPixelSize: target.canvasPixelSize,
+            initialStrokes: initialStrokes,
+            onComplete: { strokes in
+                viewModel.applySketch(
+                    strokes: strokes,
+                    canvasPixelSize: target.canvasPixelSize,
+                    existingID: target.existingAttachment?.id
+                )
+                viewModel.sketchEditorTarget = nil
+            },
+            onCancel: {
+                viewModel.sketchEditorTarget = nil
+            }
+        )
     }
 
     var canvas: some View {
