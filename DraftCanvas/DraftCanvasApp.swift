@@ -35,8 +35,10 @@ struct DraftCanvasApp: App {
         .commands {
             CommandGroup(replacing: .newItem) { }
             CommandGroup(after: .appInfo) {
-                Button("アップデートを確認…") {
+                Button {
                     sparkleUpdater.checkForUpdates()
+                } label: {
+                    Label("アップデートを確認…", systemImage: "square.and.arrow.down")
                 }
                 .disabled(!sparkleUpdater.canCheckForUpdates)
                 trialStatusMenuItem

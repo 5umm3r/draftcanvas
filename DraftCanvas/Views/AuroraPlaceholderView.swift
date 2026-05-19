@@ -1,4 +1,3 @@
-// TODO(a11y): Reduce Motion 未対応
 import SwiftUI
 
 struct AuroraPlaceholderView: View {
@@ -35,6 +34,9 @@ struct AuroraPlaceholderView: View {
     let seed: Int
     let visibleBlobCount: Int
 
+    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     init(seed: Int = 0, visibleBlobCount: Int = 5) {
         self.seed = seed
         self.visibleBlobCount = max(1, min(visibleBlobCount, Self.blobs.count))
@@ -47,33 +49,50 @@ struct AuroraPlaceholderView: View {
 
     var body: some View {
         let v = variant
-        TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { context in
-            let t = context.date.timeIntervalSinceReferenceDate
-            GeometryReader { geo in
-                let minDim = min(geo.size.width, geo.size.height)
-                ZStack {
-                    Color.black
-                    ForEach(0..<visibleBlobCount, id: \.self) { i in
-                        let blob = Self.blobs[i]
-                        let phase = Double(i) * .pi * 2.0 / 5.0 + v.phaseOffset
-                        let angle = t * .pi * 2.0 / (Self.basePeriod * blob.periodMult / v.speedMult) + phase
-                        let blobSize = minDim * blob.sizeMult
-                        RadialGradient(
-                            colors: [blob.color.opacity(0.9), .clear],
-                            center: .center,
-                            startRadius: 0,
-                            endRadius: blobSize / 2
-                        )
-                        .frame(width: blobSize, height: blobSize)
-                        .offset(x: cos(angle) * minDim * blob.radiusMult,
-                                y: sin(angle) * minDim * blob.radiusMult)
-                        .blendMode(.plusLighter)
-                    }
+        let isLight = colorScheme == .light
+        let bg: Color = isLight ? Color(red: 0.984, green: 0.984, blue: 0.992) : .black
+        let blobOpacity: Double = isLight ? 0.78 : 0.9
+        let blurBase: CGFloat = isLight ? 22 : 28
+        let blend: BlendMode = isLight ? .multiply : .plusLighter
+
+        Group {
+            if reduceMotion {
+                blobLayer(t: 0, v: v, bg: bg, blobOpacity: blobOpacity, blurBase: blurBase, blend: blend)
+                    .overlay(ProgressView().controlSize(.small))
+            } else {
+                TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { context in
+                    let t = context.date.timeIntervalSinceReferenceDate
+                    blobLayer(t: t, v: v, bg: bg, blobOpacity: blobOpacity, blurBase: blurBase, blend: blend)
                 }
-                .hueRotation(.degrees(v.hueRotation))
-                .blur(radius: 28 * v.blurMult)
             }
         }
         .drawingGroup()
+    }
+
+    private func blobLayer(t: Double, v: Variant, bg: Color, blobOpacity: Double, blurBase: CGFloat, blend: BlendMode) -> some View {
+        GeometryReader { geo in
+            let minDim = min(geo.size.width, geo.size.height)
+            ZStack {
+                bg
+                ForEach(0..<visibleBlobCount, id: \.self) { i in
+                    let blob = Self.blobs[i]
+                    let phase = Double(i) * .pi * 2.0 / 5.0 + v.phaseOffset
+                    let angle = t * .pi * 2.0 / (Self.basePeriod * blob.periodMult / v.speedMult) + phase
+                    let blobSize = minDim * blob.sizeMult
+                    RadialGradient(
+                        colors: [blob.color.opacity(blobOpacity), .clear],
+                        center: .center,
+                        startRadius: 0,
+                        endRadius: blobSize / 2
+                    )
+                    .frame(width: blobSize, height: blobSize)
+                    .offset(x: cos(angle) * minDim * blob.radiusMult,
+                            y: sin(angle) * minDim * blob.radiusMult)
+                    .blendMode(blend)
+                }
+            }
+            .hueRotation(.degrees(v.hueRotation))
+            .blur(radius: blurBase * v.blurMult)
+        }
     }
 }
