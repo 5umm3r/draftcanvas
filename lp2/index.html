@@ -89,7 +89,7 @@
   .step-num { font-size: 11px; font-weight: 700; color: #bbb; letter-spacing: 0.08em; margin-bottom: 12px; }
   .step img { width: 100%; border-radius: 8px; margin-bottom: 16px; aspect-ratio: 16/9; object-fit: cover; }
   .step h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
-  .step p { font-size: 13px; color: #777; line-height: 1.6; }
+  .step-desc { font-size: 13px; color: #777; line-height: 1.6; }
 </style>
 </head>
 <body>
@@ -120,33 +120,33 @@
 </section>
 
 <!-- Screenshot -->
-<div class="screenshot-wrap">
-  <img src="assets/screenshot.png" alt="DraftCanvas アプリ画面" onerror="this.style.display='none'">
-</div>
+<figure class="screenshot-wrap">
+  <img src="assets/screenshot.png" alt="DraftCanvas アプリ画面" loading="lazy" onerror="this.style.display='none'">
+</figure>
 
 <!-- Steps -->
 <section class="steps">
   <div class="steps-inner">
-    <div class="section-label">使い方</div>
-    <div class="section-title">3ステップで完成。</div>
+    <p class="section-label">使い方</p>
+    <h2 class="section-title">3ステップで完成。</h2>
     <div class="steps-grid">
       <div class="step">
         <div class="step-num">STEP 01</div>
-        <img src="assets/step01.png" alt="Sketch で手書き">
+        <img src="assets/step01.png" alt="Sketch で手書き" loading="lazy" onerror="this.style.display='none'">
         <h3>ラフを描く</h3>
-        <p>Sketch で構図をざっくり手描き。テキストでも指示できる。</p>
+        <p class="step-desc">Sketch で構図をざっくり手描き。テキストでも指示できる。</p>
       </div>
       <div class="step">
         <div class="step-num">STEP 02</div>
-        <img src="assets/step02.png" alt="AI が画像を生成">
+        <img src="assets/step02.png" alt="AI が画像を生成" loading="lazy" onerror="this.style.display='none'">
         <h3>AI が生成</h3>
-        <p>ChatGPT の有料プランで画像生成。気に入るまで回せる。</p>
+        <p class="step-desc">ChatGPT の有料プランで画像生成。気に入るまで回せる。</p>
       </div>
       <div class="step">
         <div class="step-num">STEP 03</div>
-        <img src="assets/step03.png" alt="編集して仕上げ">
+        <img src="assets/step03.png" alt="編集して仕上げ" loading="lazy" onerror="this.style.display='none'">
         <h3>編集して仕上げ</h3>
-        <p>背景除去・インペイント・ベクター化。完成したらそのまま書き出し。</p>
+        <p class="step-desc">背景除去・インペイント・ベクター化。完成したらそのまま書き出し。</p>
       </div>
     </div>
   </div>
