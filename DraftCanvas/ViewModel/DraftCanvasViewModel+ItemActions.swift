@@ -45,13 +45,7 @@ extension DraftCanvasViewModel {
         logs.append("アイテムを再編集対象にしました: \(fileURL.path)")
     }
 
-    func inpaint(item: ProjectItem) {
-        inpaintMode = .edit
-        inpaintingTarget = item
-    }
-
-    func maskRemove(item: ProjectItem) {
-        inpaintMode = .remove
+    func openMaskEditor(item: ProjectItem) {
         inpaintingTarget = item
     }
 
@@ -74,7 +68,7 @@ extension DraftCanvasViewModel {
                 let canvasSize = CGSize(width: pw, height: ph)
 
                 guard let maskData = InpaintingMaskCompositor.renderMask(from: strokes, canvasSize: canvasSize) else {
-                    await MainActor.run { self.errorToast = L("マスク画像の生成に失敗しました。") }
+                    await MainActor.run { self.errorToast = String(localized: "マスク画像の生成に失敗しました。") }
                     return
                 }
 
@@ -86,6 +80,12 @@ extension DraftCanvasViewModel {
                 let store = await MainActor.run { self.projectStore }
                 let maskURL = try store.writeMaskData(maskData, id: item.id)
                 let compositeURL = try store.writeCompositeData(compositeData, id: item.id)
+                try? store.writeStrokesData(strokes, id: item.id)
+                if let previewData = try? InpaintingMaskCompositor.renderPreview(
+                    originalImageData: originalData, maskData: maskData
+                ) {
+                    try? store.writePreviewData(previewData, id: item.id)
+                }
 
                 await MainActor.run {
                     var inputs = self.inputsByProject[id] ?? ProjectInputs()
@@ -114,7 +114,7 @@ extension DraftCanvasViewModel {
                 }
             } catch {
                 await MainActor.run {
-                    self.errorToast = L("マスクの処理に失敗しました: \(error.localizedDescription)")
+                    self.errorToast = String(localized: "マスクの処理に失敗しました: \(error.localizedDescription)")
                     self.logs.append("マスク編集処理エラー: \(error.localizedDescription)")
                 }
             }
@@ -134,6 +134,7 @@ extension DraftCanvasViewModel {
         let itemPrompt = item.prompt
         let itemAspectRatio = item.aspectRatio
         let itemID = item.id
+        let translateToEnglishRef = translateToEnglish
 
         generatingProjectIDs.insert(projectID)
         logs.append("マスク除去を開始しました: \(item.id)")
@@ -153,7 +154,7 @@ extension DraftCanvasViewModel {
 
                 guard let maskData = InpaintingMaskCompositor.renderMask(from: strokes, canvasSize: canvasSize) else {
                     await MainActor.run {
-                        self.errorToast = L("マスク画像の生成に失敗しました。")
+                        self.errorToast = String(localized: "マスク画像の生成に失敗しました。")
                         self.generatingProjectIDs.remove(projectID)
                     }
                     return
@@ -182,15 +183,16 @@ extension DraftCanvasViewModel {
                     aspectRatio: itemAspectRatio,
                     editSource: editSource,
                     model: fastModel.id,
-                    reasoningEffort: "low"
+                    reasoningEffort: "low",
+                    translateToEnglish: translateToEnglishRef
                 )
+                let preparedRequest = await self.prepareRequestForGeneration(request)
 
-                let results = await removalCoordinator.run(request: request) { [weak self] job in
-                    await MainActor.run { self?.upsert(job, into: projectID) }
+                let results = await removalCoordinator.run(request: preparedRequest) { [weak self] job in
+                    await MainActor.run { self?.handleJobUpdate(job, into: projectID, request: preparedRequest) }
                 }
 
                 await MainActor.run {
-                    self.persistSucceededJobs(results, request: request, projectID: projectID)
                     removalStore.cleanupMaskFiles(id: itemID)
                     self.generatingProjectIDs.remove(projectID)
                     if self.generatingProjectIDs.isEmpty {
@@ -201,7 +203,7 @@ extension DraftCanvasViewModel {
                 }
             } catch {
                 await MainActor.run {
-                    self.errorToast = L("マスク除去に失敗しました: \(error.localizedDescription)")
+                    self.errorToast = String(localized: "マスク除去に失敗しました: \(error.localizedDescription)")
                     self.logs.append("マスク除去エラー: \(error.localizedDescription)")
                     self.generatingProjectIDs.remove(projectID)
                 }
@@ -247,7 +249,7 @@ extension DraftCanvasViewModel {
                 failed.errorMessage = error.localizedDescription
                 upsert(failed, into: projectID)
                 let message = (error as? BackgroundRemovalError)?.localizedDescription
-                    ?? L("背景除去に失敗しました")
+                    ?? String(localized: "背景除去に失敗しました")
                 errorToast = message
                 logs.append("背景除去失敗: \(error.localizedDescription)")
             }
@@ -277,7 +279,7 @@ extension DraftCanvasViewModel {
             saveState()
             logs.append("背景除去保存完了: \(newItem.id)")
         } catch {
-            errorToast = L("背景除去結果の保存に失敗しました")
+            errorToast = String(localized: "背景除去結果の保存に失敗しました")
             logs.append("背景除去保存失敗: \(error.localizedDescription)")
         }
     }

@@ -58,9 +58,6 @@ extension DraftCanvasViewModel {
         }
     }
 
-    var preferredSaveFolderLabel: String {
-        preferredSaveFolder?.lastPathComponent ?? L("未選択")
-    }
 
     var isEditingHistoryItem: Bool {
         currentInputs.editSource != nil
@@ -81,7 +78,6 @@ extension DraftCanvasViewModel {
 
     var canGenerate: Bool {
         !currentInputs.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            && !isGeneratingForSelected
     }
 
     var preferredColorScheme: ColorScheme {

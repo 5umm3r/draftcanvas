@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+  (function() {
+    var saved = localStorage.getItem('dc_lang');
+    if (saved === 'ja') { location.replace('../'); return; }
+  })();
+</script>
+<meta name="description" content="Turn your ChatGPT paid plan into a full image creation workflow. Sketch, generate, remove backgrounds, and export — all on Mac. One-time purchase ¥1,980.">
+<title>Draft Canvas — AI Image Generation & Editing for Mac</title>
+<meta property="og:title" content="Draft Canvas — AI Image Generation & Editing for Mac">
+<meta property="og:description" content="Turn your ChatGPT paid plan into a full image creation workflow. Sketch, generate, remove backgrounds, and export — all on Mac. ¥1,980 one-time, 14-day free trial.">
+<meta property="og:image" content="https://spade3.com/lp2/assets/screenshot.png">
+<meta property="og:url" content="https://spade3.com/lp2/en/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="alternate" hreflang="ja" href="https://spade3.com/lp2/">
+<link rel="alternate" hreflang="en" href="https://spade3.com/lp2/en/">
+<link rel="alternate" hreflang="x-default" href="https://spade3.com/lp2/">
+<link rel="canonical" href="https://spade3.com/lp2/en/">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; background: #fff; color: #111; line-height: 1.6; }
+
+  /* ===== Nav ===== */
+  nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 48px;
+    border-bottom: 1px solid #f0f0f0;
+    position: sticky; top: 0;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(8px);
+    z-index: 100;
+  }
+  .nav-logo { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; color: #111; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+  .nav-logo img { width: 24px; height: 24px; border-radius: 6px; }
+  .nav-links { display: flex; align-items: center; gap: 32px; }
+  .nav-links a { font-size: 14px; color: #555; text-decoration: none; }
+  .btn-primary {
+    background: #111; color: #fff;
+    padding: 8px 20px; border-radius: 6px;
+    font-size: 14px; font-weight: 600;
+    text-decoration: none;
+    transition: opacity 0.15s;
+  }
+  .btn-primary:hover { opacity: 0.82; }
+  .btn-secondary {
+    border: 1.5px solid #ddd; color: #333;
+    padding: 8px 20px; border-radius: 6px;
+    font-size: 14px; font-weight: 500;
+    text-decoration: none;
+    transition: background 0.15s;
+  }
+  .btn-secondary:hover { background: #f5f5f5; }
+
+  /* ===== Hero ===== */
+  .hero {
+    text-align: center;
+    padding: 96px 48px 72px;
+    max-width: 800px; margin: 0 auto;
+  }
+  .hero-badge {
+    display: inline-block;
+    background: #f5f5f5; color: #555;
+    font-size: 12px; font-weight: 600;
+    padding: 4px 12px; border-radius: 100px;
+    margin-bottom: 24px; letter-spacing: 0.03em;
+  }
+  .hero h1 {
+    font-size: clamp(36px, 5vw, 58px);
+    font-weight: 800; letter-spacing: -0.03em; line-height: 1.15;
+    margin-bottom: 20px;
+  }
+  .hero-desc {
+    font-size: 17px; color: #666; line-height: 1.7;
+    max-width: 520px; margin: 0 auto 36px;
+  }
+  .hero-ctas { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; }
+  .hero-note { font-size: 12px; color: #999; margin-top: 14px; line-height: 1.8; }
+  .hero-annotation { font-size: 11px; color: #bbb; margin-top: 8px; }
+
+  /* ===== Screenshot ===== */
+  .screenshot-wrap { max-width: 960px; margin: 0 auto; padding: 0 32px 80px; }
+  .screenshot-wrap img {
+    width: 100%; border-radius: 12px;
+  }
+  .screenshot-note { font-size: 11px; color: #bbb; text-align: center; margin-top: 8px; }
+
+  /* ===== Steps ===== */
+  .steps { background: #fafafa; padding: 80px 48px; }
+  .steps-inner { max-width: 960px; margin: 0 auto; }
+  .section-label {
+    font-size: 11px; font-weight: 700; color: #999;
+    letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px;
+  }
+  .section-title {
+    font-size: clamp(24px, 3vw, 36px);
+    font-weight: 700; letter-spacing: -0.02em; margin-bottom: 48px;
+  }
+  .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+  .step { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; padding: 28px; }
+  .step-num { font-size: 11px; font-weight: 700; color: #bbb; letter-spacing: 0.08em; margin-bottom: 12px; }
+  .step img { width: 100%; border-radius: 8px; margin-bottom: 16px; aspect-ratio: 16/9; object-fit: cover; }
+  .step h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .step-desc { font-size: 13px; color: #777; line-height: 1.6; }
+
+  /* ===== Features ===== */
+  .features { padding: 80px 48px; max-width: 960px; margin: 0 auto; }
+  .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 48px; }
+  .feature-card { border: 1px solid #ebebeb; border-radius: 10px; overflow: hidden; }
+  .feature-card img {
+    width: 100%; aspect-ratio: 16/9; object-fit: cover;
+    border-bottom: 1px solid #ebebeb; display: block;
+  }
+  .feature-body { padding: 20px; }
+  .feature-icon {
+    width: 32px; height: 32px; background: #f3f3f3;
+    border-radius: 7px; margin-bottom: 12px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .feature-icon svg { width: 16px; height: 16px; stroke: #555; fill: none; stroke-width: 1.5; }
+  .feature-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 5px; }
+  .feature-desc { font-size: 13px; color: #777; line-height: 1.6; }
+
+  /* ===== Pricing ===== */
+  .pricing { background: #fafafa; padding: 80px 48px; text-align: center; }
+  .pricing-inner { max-width: 540px; margin: 0 auto; }
+  .pricing-card {
+    background: #fff; border: 1.5px solid #e8e8e8;
+    border-radius: 16px; padding: 40px; margin-top: 40px;
+  }
+  .trial-badge {
+    background: #111; color: #fff;
+    font-size: 12px; font-weight: 700;
+    padding: 6px 16px; border-radius: 100px;
+    display: inline-block; margin-bottom: 24px;
+  }
+  .trial-heading { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
+  .trial-sub { font-size: 14px; color: #888; margin-bottom: 24px; line-height: 1.6; }
+  .pricing-divider { border: none; border-top: 1px solid #f0f0f0; margin: 24px 0; }
+  .price-row { display: flex; align-items: baseline; justify-content: center; gap: 8px; margin-bottom: 6px; }
+  .price-amount { font-size: 40px; font-weight: 800; letter-spacing: -0.03em; }
+  .price-label { font-size: 14px; color: #888; }
+  .price-note { font-size: 13px; color: #aaa; margin-bottom: 24px; }
+  .pricing-features { text-align: left; display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+  .pricing-features li {
+    list-style: none; font-size: 13px; color: #555;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .pricing-features li::before { content: ""; display: inline-block; width: 12px; height: 1.5px; background: #bbb; flex-shrink: 0; }
+
+  /* ===== FAQ ===== */
+  .faq { padding: 80px 48px; max-width: 640px; margin: 0 auto; }
+  .faq-item { border-bottom: 1px solid #f0f0f0; padding: 20px 0; }
+  .faq-q { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+  .faq-a { font-size: 14px; color: #777; line-height: 1.7; }
+  .faq-title { margin-bottom: 32px; }
+
+  /* ===== Final CTA ===== */
+  .final-cta { text-align: center; padding: 80px 48px; border-top: 1px solid #f0f0f0; }
+  .final-cta h2 {
+    font-size: clamp(24px, 3vw, 36px);
+    font-weight: 800; letter-spacing: -0.02em; margin-bottom: 12px;
+  }
+  .final-cta p { font-size: 15px; color: #888; margin-bottom: 28px; }
+  .final-cta .btn-primary { padding: 14px 32px; font-size: 16px; }
+
+  /* ===== System Requirements ===== */
+  .system-req { padding: 80px 48px; }
+  .system-req-inner { max-width: 640px; margin: 0 auto; }
+  .system-req-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; list-style: none; }
+  .system-req-list li {
+    display: flex; align-items: baseline; gap: 16px;
+    padding: 14px 0; border-bottom: 1px solid #f0f0f0;
+    font-size: 14px; color: #333;
+  }
+  .system-req-list li span {
+    flex-shrink: 0; width: 80px;
+    font-size: 12px; color: #888; font-weight: 600; letter-spacing: 0.03em;
+  }
+
+  /* ===== Disclaimer ===== */
+  .disclaimer { background: #fafafa; padding: 80px 48px; }
+  .disclaimer-inner { max-width: 720px; margin: 0 auto; }
+  .disclaimer-list { list-style: none; }
+  .disclaimer-list li { padding: 20px 0; border-bottom: 1px solid #f0f0f0; }
+  .disclaimer-list li:last-child { border-bottom: none; }
+  .disclaimer-list h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+  .disclaimer-list p { font-size: 13px; color: #777; line-height: 1.7; }
+
+  /* ===== Footer ===== */
+  footer {
+    border-top: 1px solid #f0f0f0;
+    padding: 24px 48px;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 8px;
+  }
+  .footer-copy { font-size: 12px; color: #aaa; }
+  .footer-links { display: flex; gap: 24px; }
+  .footer-links a { font-size: 12px; color: #aaa; text-decoration: none; }
+  .footer-legal-note { font-size: 11px; color: #bbb; width: 100%; text-align: right; }
+
+  /* ===== Lang toggle ===== */
+  .lang-toggle {
+    background: transparent; border: 1px solid #ddd;
+    color: #555; font-size: 12px; font-weight: 600;
+    padding: 6px 12px; border-radius: 6px;
+    cursor: pointer; font-family: inherit;
+    transition: background 0.15s;
+  }
+  .lang-toggle:hover { background: #f5f5f5; }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 720px) {
+    nav { padding: 16px 24px; }
+    .nav-links a:not(.btn-primary) { display: none; }
+    .hero { padding: 64px 24px 48px; }
+    .screenshot-wrap { padding: 0 16px 60px; }
+    .steps { padding: 60px 24px; }
+    .steps-grid { grid-template-columns: 1fr; }
+    .features { padding: 60px 24px; }
+    .features-grid { grid-template-columns: 1fr; }
+    .pricing { padding: 60px 24px; }
+    .faq { padding: 60px 24px; }
+    .final-cta { padding: 60px 24px; }
+    footer { padding: 20px 24px; flex-direction: column; gap: 12px; text-align: center; }
+    .footer-legal-note { text-align: center; }
+    .system-req { padding: 60px 24px; }
+    .system-req-list { grid-template-columns: 1fr; }
+    .disclaimer { padding: 60px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav aria-label="Main navigation">
+  <a href="../" class="nav-logo">
+    <img src="../assets/icon.png" alt="Draft Canvas">Draft Canvas
+  </a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#pricing">Pricing</a>
+    <button type="button" class="lang-toggle" onclick="setLang('ja')" aria-label="日本語に切替">日本語</button>
+    <a href="https://github.com/5umm3r/draftcanvas-releases/releases/latest/download/DraftCanvas.dmg" class="btn-primary" onclick="if(window.__cfBeacon)window.__cfBeacon.track('download_click',{lp:'en',location:'nav'})">Try Free</a>
+  </div>
+</nav>
+
+<main>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-badge">macOS Native · ChatGPT Integration</div>
+  <h1>Get the image you want,<br>faster.</h1>
+  <p class="hero-desc">Put your ChatGPT paid plan to work<sup>*</sup>.<br>Sketch, inpaint, remove backgrounds, and export — all on Mac.</p>
+  <div class="hero-ctas">
+    <a href="https://github.com/5umm3r/draftcanvas-releases/releases/latest/download/DraftCanvas.dmg" class="btn-primary" onclick="if(window.__cfBeacon)window.__cfBeacon.track('download_click',{lp:'en',location:'hero'})">Try Free for 14 Days</a>
+    <a href="#features" class="btn-secondary">See Features</a>
+  </div>
+  <p class="hero-note">macOS 14+ · Apple Silicon / Intel</p>
+  <p class="hero-annotation">* Image generation requires a ChatGPT paid plan (Plus, Pro, Team, etc.) with available usage within your plan.</p>
+</section>
+
+<!-- Screenshot -->
+<figure class="screenshot-wrap">
+  <img src="../assets/screenshot.png" alt="Draft Canvas app screen" loading="lazy" onerror="this.style.display='none'">
+  <p class="screenshot-note">Japanese UI shown. English UI in upcoming version.</p>
+</figure>
+
+<!-- Steps -->
+<section class="steps">
+  <div class="steps-inner">
+    <p class="section-label">How it works</p>
+    <h2 class="section-title">Three steps to done.</h2>
+    <div class="steps-grid">
+      <div class="step">
+        <div class="step-num">STEP 01</div>
+        <img src="../assets/step01.png" alt="Sketch a rough" loading="lazy" onerror="this.style.display='none'">
+        <h3>Sketch a rough</h3>
+        <p class="step-desc">Draw your composition quickly. Or describe it in text — whichever works for you.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">STEP 02</div>
+        <img src="../assets/step02.png" alt="AI generates the image" loading="lazy" onerror="this.style.display='none'">
+        <h3>AI generates</h3>
+        <p class="step-desc">The app sends instructions to Codex, which generates images via ChatGPT. Iterate until it's right.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">STEP 03</div>
+        <img src="../assets/step03.png" alt="Edit and export" loading="lazy" onerror="this.style.display='none'">
+        <h3>Edit and export</h3>
+        <p class="step-desc">Remove backgrounds, inpaint, vectorize. Export when ready.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="features" id="features">
+  <p class="section-label">Features</p>
+  <h2 class="section-title">Image generation, made practical.</h2>
+  <div class="features-grid">
+
+    <div class="feature-card">
+      <img src="../assets/feature-generate.png" alt="AI generation screen" loading="lazy" onerror="this.style.display='none'">
+      <div class="feature-body">
+        <h3>AI Generation</h3>
+        <p class="feature-desc">Generate as much as your ChatGPT paid plan allows. Prompt completion delivers high-quality results.</p>
+      </div>
+    </div>
+
+    <div class="feature-card">
+      <img src="../assets/feature-sketch.png" alt="Sketch canvas" loading="lazy" onerror="this.style.display='none'">
+      <div class="feature-body">
+        <h3>Sketch</h3>
+        <p class="feature-desc">Hand your rough sketch directly to AI. Communicates layout and intent better than text alone.</p>
+      </div>
+    </div>
+
+    <div class="feature-card">
+      <img src="../assets/feature-bg-remove.png" alt="Background removal before and after" loading="lazy" onerror="this.style.display='none'">
+      <div class="feature-body">
+        <h3>Background Removal</h3>
+        <p class="feature-desc">Powered by Apple Vision Framework, fully offline. Your image never leaves the device. Fast and accurate.</p>
+      </div>
+    </div>
+
+    <div class="feature-card">
+      <img src="../assets/feature-vector.png" alt="SVG conversion result" loading="lazy" onerror="this.style.display='none'">
+      <div class="feature-body">
+        <h3>Vectorize</h3>
+        <p class="feature-desc">Convert raster images to SVG. Logos and diagrams stay sharp at any size.</p>
+      </div>
+    </div>
+
+    <div class="feature-card">
+      <img src="../assets/feature-inpaint.png" alt="Inpaint selection" loading="lazy" onerror="this.style.display='none'">
+      <div class="feature-body">
+        <h3>Inpaint</h3>
+        <p class="feature-desc">Select just the area you want to change and regenerate. Fine-tune details without redoing the whole image.</p>
+      </div>
+    </div>
+
+    <div class="feature-card">
+      <img src="../assets/feature-material.png" alt="Material extraction result" loading="lazy" onerror="this.style.display='none'">
+      <div class="feature-body">
+        <h3>Extract as Material</h3>
+        <p class="feature-desc">Isolate subjects, textures, and elements from images. Reuse them across your design workflow.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- Pricing -->
+<section class="pricing" id="pricing">
+  <div class="pricing-inner">
+    <p class="section-label">Pricing</p>
+    <h2 class="section-title">Start free.</h2>
+    <div class="pricing-card">
+      <span class="trial-badge">14-Day Full Access Trial</span>
+      <div class="trial-heading">No credit card required</div>
+      <div class="trial-sub">Try everything, decide later</div>
+      <hr class="pricing-divider">
+      <div class="price-row">
+        <span class="price-amount">¥1,980</span>
+        <span class="price-label">one-time (~$13 USD)</span>
+      </div>
+      <p class="price-note">Free updates through v1.x · Use on up to 2 Macs</p>
+      <ul class="pricing-features">
+        <li>All features unlocked</li>
+        <li>Free updates through v1.x</li>
+        <li>Use on up to 2 Macs simultaneously</li>
+        <li>30-day money-back guarantee</li>
+      </ul>
+      <a href="https://github.com/5umm3r/draftcanvas-releases/releases/latest/download/DraftCanvas.dmg"
+         class="btn-primary" style="display:block;text-align:center;padding:14px;"
+         onclick="if(window.__cfBeacon)window.__cfBeacon.track('download_click',{lp:'en',location:'pricing'})">Try Free</a>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq" id="faq">
+  <p class="section-label">FAQ</p>
+  <h2 class="section-title faq-title">FAQ</h2>
+
+  <div class="faq-item">
+    <p class="faq-q">Do I need a ChatGPT account?</p>
+    <p class="faq-a">Image generation and editing features require a ChatGPT paid plan (Plus, Pro, Team, etc.). Background removal, vectorization, and material extraction work offline and do not require ChatGPT.</p>
+  </div>
+  <div class="faq-item">
+    <p class="faq-q">Do I need to install Codex CLI?</p>
+    <p class="faq-a">Yes — Codex CLI must be installed and logged in via Terminal before using the app.</p>
+  </div>
+  <div class="faq-item">
+    <p class="faq-q">Is there a subscription?</p>
+    <p class="faq-a">No. A single payment of ¥1,980 covers all v1.x updates forever.</p>
+  </div>
+  <div class="faq-item">
+    <p class="faq-q">Will I be charged automatically after the trial?</p>
+    <p class="faq-a">No. The 14-day trial requires no credit card and does not auto-renew.</p>
+  </div>
+  <div class="faq-item">
+    <p class="faq-q">Does it work on Intel Macs?</p>
+    <p class="faq-a">Yes. Draft Canvas supports both Apple Silicon and Intel Macs running macOS 14 Sonoma or later.</p>
+  </div>
+</section>
+
+<!-- Final CTA -->
+<section class="final-cta">
+  <h2>Take 14 days. See if it fits.</h2>
+  <p>No credit card. Walk away if it's not for you.</p>
+  <a href="https://github.com/5umm3r/draftcanvas-releases/releases/latest/download/DraftCanvas.dmg"
+     class="btn-primary"
+     onclick="if(window.__cfBeacon)window.__cfBeacon.track('download_click',{lp:'en',location:'final_cta'})">Try Free</a>
+</section>
+
+<!-- System Requirements -->
+<section class="system-req">
+  <div class="system-req-inner">
+    <p class="section-label">Requirements</p>
+    <h2 class="section-title">System Requirements</h2>
+    <ul class="system-req-list">
+      <li><span>OS</span>macOS 14 Sonoma or later</li>
+      <li><span>Chip</span>Apple Silicon / Intel</li>
+      <li><span>Memory</span>8 GB RAM recommended</li>
+      <li><span>Disk</span>500 MB free space</li>
+    </ul>
+  </div>
+</section>
+
+<!-- Disclaimer -->
+<section class="disclaimer">
+  <div class="disclaimer-inner">
+    <p class="section-label">Disclaimer</p>
+    <h2 class="section-title">Before You Start</h2>
+    <ul class="disclaimer-list">
+      <li>
+        <h3>ChatGPT paid plan required</h3>
+        <p>Image generation and editing features require your own ChatGPT paid subscription (Plus, Pro, Team, etc.) with available usage. ChatGPT usage fees are charged separately by OpenAI and are not included in the Draft Canvas purchase price.</p>
+      </li>
+      <li>
+        <h3>Codex CLI setup required</h3>
+        <p>AI features require Codex CLI to be installed and authenticated via Terminal beforehand. Changes to Codex CLI behavior or availability are outside Draft Canvas's warranty.</p>
+      </li>
+      <li>
+        <h3>Trademarks</h3>
+        <p>ChatGPT and OpenAI are trademarks or registered trademarks of OpenAI, L.L.C. Apple, macOS, Mac, and Apple Silicon are trademarks or registered trademarks of Apple Inc. in the U.S. and other countries. All other product and service names are trademarks of their respective owners.</p>
+      </li>
+      <li>
+        <h3>AI-generated image rights and quality</h3>
+        <p>Copyright, usage rights, and liability for images generated with this app belong to the user who generated them. We make no guarantees regarding output quality, fitness for a specific purpose, or non-infringement of third-party rights. Review OpenAI's usage policies before any commercial use.</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+</main>
+
+<!-- Footer -->
+<footer>
+  <p class="footer-copy">© 2026 Draft Canvas</p>
+  <nav class="footer-links" aria-label="Footer navigation">
+    <a href="../privacy.html">Privacy (Japanese)</a>
+    <a href="../terms.html">Terms (Japanese)</a>
+    <a href="https://forms.gle/zizcXwMQaLAw4fux6">Contact</a>
+  </nav>
+  <p class="footer-legal-note">Legal documents currently available in Japanese only.</p>
+</footer>
+
+<script>
+  function setLang(lang) {
+    localStorage.setItem('dc_lang', lang);
+    if (lang === 'ja') location.assign('../');
+  }
+</script>
+<!-- Cloudflare Web Analytics -->
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "145787b162134eeeb534032a0a55c764"}'></script>
+<!-- End Cloudflare Web Analytics -->
+</body>
+</html>

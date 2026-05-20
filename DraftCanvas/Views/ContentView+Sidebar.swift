@@ -11,6 +11,10 @@ struct FilteringSectionHeader: View {
     var body: some View {
         HStack(spacing: 0) {
             Text("フィルタリング")
+            Image(systemName: "line.3.horizontal.decrease.circle")
+                .font(.system(size: 10, weight: .medium))
+                .foregroundStyle(.secondary)
+                .padding(.leading, 4)
             Spacer()
             Button { showCreation = true } label: {
                 Image(systemName: "plus").font(.system(size: 11, weight: .medium))
@@ -41,7 +45,7 @@ struct FilteringProjectRow: View {
     @State private var showEdit = false
 
     var body: some View {
-        Label(filtering.name, systemImage: "line.3.horizontal.decrease.circle")
+        Text(filtering.name)
             .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(Rectangle())
             .contextMenu {
@@ -59,11 +63,23 @@ struct FilteringProjectRow: View {
 // MARK: - All Images row
 
 struct AllImagesRow: View {
+    @ObservedObject var viewModel: DraftCanvasViewModel
     var body: some View {
-        Label("すべての画像", systemImage: "photo.on.rectangle.angled")
-            .font(.system(size: 13, weight: .semibold))
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .contentShape(Rectangle())
+        HStack {
+            Label("すべての画像", systemImage: "photo.on.rectangle.angled")
+                .font(.system(size: 13, weight: .semibold))
+            Spacer()
+            if viewModel.items.count > 0 {
+                Text("\(viewModel.items.count)")
+                    .font(.caption.monospacedDigit().weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 2)
+                    .background(Color.primary.opacity(0.08), in: Capsule())
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(Rectangle())
     }
 }
 
@@ -112,6 +128,10 @@ extension ContentView {
                 } header: {
                     HStack(spacing: 0) {
                         Text("お気に入り")
+                        Image(systemName: "heart.fill")
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundStyle(.secondary)
+                            .padding(.leading, 4)
                         Spacer()
                         Button { viewModel.toggleSection("favorites") } label: {
                             Image(systemName: "chevron.down")
@@ -136,7 +156,7 @@ extension ContentView {
                 }
 
                 Section {
-                    AllImagesRow()
+                    AllImagesRow(viewModel: viewModel)
                         .tag(SidebarSelection.allImages)
                 }
 

@@ -15,8 +15,11 @@ extension DraftCanvasViewModel {
 
         let task = Task {
             do {
+                try Task.checkCancellation()
                 let inputData = try Data(contentsOf: fileURL)
+                try Task.checkCancellation()
                 let result = try await ImageVectorizer.process(data: inputData)
+                try Task.checkCancellation()
 
                 await MainActor.run { [weak self] in
                     guard let self else { return }
@@ -41,7 +44,7 @@ extension DraftCanvasViewModel {
                         self.saveState()
                         self.logs.append("ベクター化完了: \(newItem.id)")
                     } catch {
-                        self.errorToast = L("ベクター化結果の保存に失敗しました")
+                        self.errorToast = String(localized: "ベクター化結果の保存に失敗しました")
                         self.logs.append("ベクター化結果の保存に失敗: \(error.localizedDescription)")
                     }
                 }
@@ -52,7 +55,7 @@ extension DraftCanvasViewModel {
                     self.vectorizationTasks.removeValue(forKey: itemID)
                     guard !(error is CancellationError) else { return }
                     let message = (error as? ImageVectorizationError)?.localizedDescription
-                        ?? L("ベクター化に失敗しました")
+                        ?? String(localized: "ベクター化に失敗しました")
                     self.errorToast = message
                     self.logs.append("ベクター化失敗: \(error.localizedDescription)")
                 }

@@ -2,7 +2,7 @@ import Foundation
 
 extension DraftCanvasViewModel {
     func refreshAccountUsage() {
-        guard !isRefreshingAccountUsage else { return }
+        guard !isRefreshingAccountUsage, generatingProjectIDs.isEmpty else { return }
 
         isRefreshingAccountUsage = true
         accountUsagePrewarmFailed = false
@@ -13,7 +13,7 @@ extension DraftCanvasViewModel {
                 let status = try await self.client.readAccountUsageStatus()
                 await MainActor.run {
                     self.accountUsageStatus = status
-                    self.syncSessionWindows(from: status)
+                    self.accountUsageStatusFetchedAt = Date()
                     self.isRefreshingAccountUsage = false
                     self.logs.append("Codexアカウントと使用量を更新しました。")
                 }
@@ -28,68 +28,33 @@ extension DraftCanvasViewModel {
         }
     }
 
-    func syncSessionWindows(from status: CodexAccountUsageStatus) {
-        if let d = status.primaryResetDate {
-            let epoch = d.timeIntervalSince1970
-            if session5hResetEpoch == 0 {
-                session5hResetEpoch = epoch
-            } else if abs(epoch - session5hResetEpoch) > 1.0 {
-                session5hCount = pendingFiveHDelta
-                session5hResetEpoch = epoch
-            }
-            pendingFiveHDelta = 0
-        }
-        if let d = status.secondaryResetDate {
-            let epoch = d.timeIntervalSince1970
-            if sessionWeeklyResetEpoch == 0 {
-                sessionWeeklyResetEpoch = epoch
-            } else if abs(epoch - sessionWeeklyResetEpoch) > 1.0 {
-                sessionWeeklyCount = pendingWeeklyDelta
-                sessionWeeklyResetEpoch = epoch
-            }
-            pendingWeeklyDelta = 0
-        }
-    }
-
-    func resetAllCounters() {
-        session5hCount = 0
-        sessionWeeklyCount = 0
-        totalGeneratedImages = 0
-    }
-
-    func logout() {
-        guard !isLoggingOut else { return }
-        isLoggingOut = true
-        Task {
-            do {
-                _ = try await client.sendRequest(method: "account/logout")
-                await MainActor.run {
-                    self.accountUsageStatus = .unavailable
-                    self.isLoggingOut = false
-                    self.logs.append("ログアウトしました。")
-                }
-                refreshAccountUsage()
-            } catch {
-                await MainActor.run {
-                    self.isLoggingOut = false
-                    self.errorToast = L("ログアウトに失敗しました")
-                    self.logs.append("ログアウト失敗: \(error.localizedDescription)")
-                }
-            }
-        }
+    func relaunchAndRefreshAccountUsage() {
+        client.stop()
+        prewarmAndRefresh()
     }
 
     func prewarmAndRefresh() {
         accountUsagePrewarmFailed = false
         Task {
-            await refreshAvailableModels()
+            do {
+                try await client.start()
+            } catch {
+                await MainActor.run {
+                    self.accountUsagePrewarmFailed = true
+                    self.logs.append("codex app-server の起動に失敗しました: \(error.localizedDescription)")
+                }
+                return
+            }
+            let path = client.codexExecutablePath
+            await withTaskGroup(of: Void.self) { group in
+                group.addTask { await self.refreshAvailableModels() }
+                group.addTask {
+                    let v = await CodexAppServerClient.fetchVersion(executablePath: path)
+                    await MainActor.run { self.codexVersion = v ?? "--" }
+                }
+            }
+            refreshAccountUsage()
         }
-        Task.detached(priority: .background) { [weak self] in
-            let path = await MainActor.run { self?.client.codexExecutablePath ?? "" }
-            let version = await CodexAppServerClient.fetchVersion(executablePath: path)
-            await MainActor.run { self?.codexVersion = version ?? "--" }
-        }
-        refreshAccountUsage()
     }
 
     func refreshAvailableModels() async {

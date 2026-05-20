@@ -12,7 +12,6 @@ struct ContentView: View {
     @State var renamingText = ""
     @State var confirmingDeleteProjectID: UUID?
     @State var isAccountPopoverPresented = false
-    @State var showCountPopover = false
     @State var promptIsFocused = false
     @State var promptTextHeight: CGFloat = 76
     @State var canvasZoom: CGFloat = 1.0
@@ -24,7 +23,7 @@ struct ContentView: View {
     @State var dragDropItemIDs: [UUID] = []
     @State var isDroppingOnProject: [UUID: Bool] = [:]
     @State var isConfirmingBatchDelete = false
-    @State var isCompletionSoundMenuHovered = false
+    @Environment(\.openSettings) var openSettings
     @State var cardFrames: [UUID: CGRect] = [:]
     @State var marqueeRect: CGRect? = nil
     @State var isDraggingMarquee: Bool = false
@@ -109,7 +108,7 @@ struct ContentView: View {
             Button("削除", role: .destructive) {
                 let ids = viewModel.selectedItemIDs
                 let failed = viewModel.deleteItems(ids: ids)
-                if failed > 0 { viewModel.errorToast = L("\(failed)件の削除に失敗しました") }
+                if failed > 0 { viewModel.errorToast = String(localized: "\(failed)件の削除に失敗しました") }
                 viewModel.isSelectionMode = false
             }
             Button("キャンセル", role: .cancel) {}
@@ -139,6 +138,36 @@ struct ContentView: View {
                 Text(dragDropMessage(projectName: project.name))
             }
         }
+        .confirmationDialog(
+            String(localized: "ChatGPT Free プランでは画像生成を利用できません"),
+            isPresented: $viewModel.pendingFreeAccountBlock,
+            titleVisibility: .visible
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(String(localized: "画像生成には ChatGPT Plus 以上のプランが必要です。"))
+        }
+        .confirmationDialog(
+            String(localized: "残量が少なくなっています"),
+            isPresented: .init(
+                get: { viewModel.pendingRateLimitConfirmation != nil },
+                set: { if !$0 { viewModel.pendingRateLimitConfirmation = nil } }
+            ),
+            titleVisibility: .visible
+        ) {
+            if let confirmation = viewModel.pendingRateLimitConfirmation {
+                Button(String(localized: "続行")) {
+                    confirmation.resume()
+                }
+            }
+            Button("キャンセル", role: .cancel) {
+                viewModel.pendingRateLimitConfirmation = nil
+            }
+        } message: {
+            if let confirmation = viewModel.pendingRateLimitConfirmation {
+                Text(String(localized: "残量が少なくなっています (残り \(confirmation.remainingPercent)%%)。生成を続行しますか？"))
+            }
+        }
         .sheet(item: $viewModel.exportRequest) { request in
             ExportOptionsSheet(
                 request: request,
@@ -150,7 +179,8 @@ struct ContentView: View {
                         viewModel.performExport(request: request, settings: settings)
                     }
                 },
-                onCancel: { viewModel.exportRequest = nil }
+                onCancel: { viewModel.exportRequest = nil },
+                onChangeSaveFolder: { viewModel.chooseSaveFolder() }
             )
         }
         .alert("画像を削除しますか？", isPresented: .init(
@@ -185,21 +215,21 @@ extension ContentView {
     }
 
     var dragDropDialogTitle: String {
-        dragDropCount > 1 ? L("\(dragDropCount)件を別プロジェクトへ") : L("アイテムを別プロジェクトへ")
+        dragDropCount > 1 ? String(localized: "\(dragDropCount)件を別プロジェクトへ") : String(localized: "アイテムを別プロジェクトへ")
     }
 
     var dragDropMoveLabel: String {
-        dragDropCount > 1 ? L("\(dragDropCount)件を移動") : L("移動")
+        dragDropCount > 1 ? String(localized: "\(dragDropCount)件を移動") : String(localized: "移動")
     }
 
     var dragDropCopyLabel: String {
-        dragDropCount > 1 ? L("\(dragDropCount)件をコピー") : L("コピー")
+        dragDropCount > 1 ? String(localized: "\(dragDropCount)件をコピー") : String(localized: "コピー")
     }
 
     func dragDropMessage(projectName: String) -> String {
         dragDropCount > 1
-            ? L("「\(projectName)」へ\(dragDropCount)件を移動またはコピーしますか？")
-            : L("「\(projectName)」へ移動またはコピーしますか？")
+            ? String(localized: "「\(projectName)」へ\(dragDropCount)件を移動またはコピーしますか？")
+            : String(localized: "「\(projectName)」へ移動またはコピーしますか？")
     }
 
     func performDragDropMove() {
@@ -207,7 +237,7 @@ extension ContentView {
         if !dragDropItemIDs.isEmpty {
             let ids = Set(dragDropItemIDs)
             let failed = viewModel.moveItems(ids: ids, targetProjectID: targetID)
-            if failed > 0 { viewModel.errorToast = L("\(failed)件の移動に失敗しました") }
+            if failed > 0 { viewModel.errorToast = String(localized: "\(failed)件の移動に失敗しました") }
             viewModel.isSelectionMode = false
         } else if let itemID = dragDropItemID,
                   let item = viewModel.items.first(where: { $0.id == itemID }) {
@@ -221,7 +251,7 @@ extension ContentView {
         if !dragDropItemIDs.isEmpty {
             let ids = Set(dragDropItemIDs)
             let failed = viewModel.copyItems(ids: ids, targetProjectID: targetID)
-            if failed > 0 { viewModel.errorToast = L("\(failed)件のコピーに失敗しました") }
+            if failed > 0 { viewModel.errorToast = String(localized: "\(failed)件のコピーに失敗しました") }
             viewModel.isSelectionMode = false
         } else if let itemID = dragDropItemID,
                   let item = viewModel.items.first(where: { $0.id == itemID }) {

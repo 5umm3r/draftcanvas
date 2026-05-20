@@ -1,38 +1,57 @@
 import SwiftUI
 
 private struct TopBarButtonStyle: ButtonStyle {
-    @State private var isHovered = false
-
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .opacity(isHovered || configuration.isPressed ? 1.0 : 0.55)
+        TopBarButtonLabel(configuration: configuration)
+    }
+    private struct TopBarButtonLabel: View {
+        let configuration: Configuration
+        @State private var isHovered = false
+        var body: some View {
+            configuration.label
+                .frame(minWidth: 28, minHeight: 28)
+                .contentShape(Rectangle())
+                .opacity(isHovered || configuration.isPressed ? 1.0 : 0.55)
+                .onHover { isHovered = $0 }
+        }
+    }
+}
+
+private struct TopBarMenuIconModifier: ViewModifier {
+    @State private var isHovered = false
+    func body(content: Content) -> some View {
+        content
+            .frame(width: 28, height: 28)
+            .contentShape(Rectangle())
+            .opacity(isHovered ? 1.0 : 0.55)
             .onHover { isHovered = $0 }
     }
 }
 
+private extension View {
+    func topBarMenuIconStyle() -> some View { modifier(TopBarMenuIconModifier()) }
+}
+
 extension ContentView {
+    private var accountButtonSymbol: String {
+        if viewModel.accountUsageStatus.accountKind == .unauthenticated {
+            return "person.crop.circle.badge.minus"
+        } else if viewModel.accountUsagePrewarmFailed {
+            return "person.crop.circle.badge.exclamationmark"
+        } else {
+            return "person.crop.circle"
+        }
+    }
+
     var topStatusBar: some View {
         HStack(spacing: 12) {
-            Button(action: viewModel.chooseSaveFolder) {
-                HStack(spacing: 4) {
-                    Image(systemName: "folder")
-                        .font(.body.weight(.semibold))
-                    Text("保存先")
-                        .font(.subheadline.weight(.semibold))
-                }
-            }
-            .buttonStyle(TopBarButtonStyle())
-            .help("保存先フォルダ: \(viewModel.preferredSaveFolderLabel)")
-
             Button(action: toggleLogWindow) {
-                HStack(spacing: 4) {
-                    Image(systemName: "doc.text.magnifyingglass")
-                        .font(.body.weight(.semibold))
-                    Text("ログ")
-                        .font(.subheadline.weight(.semibold))
-                }
+                Image(systemName: "doc.text.magnifyingglass")
+                    .font(.body.weight(.semibold))
             }
             .buttonStyle(TopBarButtonStyle())
+            .help("ログ")
+            .accessibilityLabel("ログ")
 
             Menu {
                 Button {
@@ -60,53 +79,53 @@ extension ContentView {
                     }
                 }
             } label: {
-                HStack(spacing: 4) {
-                    Image(systemName: viewModel.completionSound == CompletionSoundOption.off.rawValue
-                        ? "speaker.slash"
-                        : "speaker.wave.2")
-                        .font(.body.weight(.semibold))
-                    Text("完了音")
-                        .font(.subheadline.weight(.semibold))
-                }
+                Image(systemName: viewModel.completionSound == CompletionSoundOption.off.rawValue
+                    ? "speaker.slash"
+                    : "speaker.wave.2")
+                    .font(.body.weight(.semibold))
             }
             .menuStyle(.borderlessButton)
-            .opacity(isCompletionSoundMenuHovered ? 1.0 : 0.55)
-            .onHover { isCompletionSoundMenuHovered = $0 }
-            .help("完了通知サウンド: \(CompletionSoundOption(rawValue: viewModel.completionSound)?.displayName ?? viewModel.completionSound)")
+            .menuIndicator(.hidden)
+            .fixedSize()
+            .topBarMenuIconStyle()
+            .help("完了音")
+            .accessibilityLabel("完了音")
+
+            Button {
+                viewModel.cycleAppearance()
+            } label: {
+                Image(systemName: AppAppearance(rawValue: viewModel.appAppearanceRaw)?.systemImage ?? "sun.max")
+                    .font(.body)
+            }
+            .buttonStyle(TopBarButtonStyle())
+            .help("テーマ切替")
+
+            Button {
+                openSettings()
+            } label: {
+                Image(systemName: "gearshape")
+                    .font(.body)
+            }
+            .buttonStyle(TopBarButtonStyle())
+            .help("設定")
+            .accessibilityLabel("設定")
 
             Spacer(minLength: 16)
 
-            Button {
-                showCountPopover.toggle()
-            } label: {
-                HStack(spacing: 4) {
-                    Image(systemName: "photo.stack")
-                        .font(.body.weight(.semibold))
-                    Text("\(viewModel.totalGeneratedImages)")
-                        .font(.subheadline.weight(.semibold))
-                        .monospacedDigit()
-                }
+            if viewModel.accountUsageStatus.shouldShowUsagePills {
+                usagePill(
+                    prefix: viewModel.accountUsageStatus.primaryUsagePrefix,
+                    percentLabel: viewModel.accountUsageStatus.primaryUsagePercentLabel,
+                    remainingFraction: viewModel.accountUsageStatus.primaryUsageRemainingFraction,
+                    resetText: viewModel.accountUsageStatus.primaryResetText
+                )
+                usagePill(
+                    prefix: viewModel.accountUsageStatus.secondaryUsagePrefix,
+                    percentLabel: viewModel.accountUsageStatus.secondaryUsagePercentLabel,
+                    remainingFraction: viewModel.accountUsageStatus.secondaryUsageRemainingFraction,
+                    resetText: viewModel.accountUsageStatus.secondaryResetText
+                )
             }
-            .buttonStyle(.plain)
-            .help("生成枚数の詳細")
-            .popover(isPresented: $showCountPopover, arrowEdge: .bottom) {
-                GenerationCountPopover(viewModel: viewModel)
-                    .environment(\.locale, l10n.locale)
-                    .environmentObject(l10n)
-            }
-
-            usagePill(
-                systemName: "clock",
-                label: viewModel.accountUsageStatus.primaryUsageLabel,
-                remainingFraction: viewModel.accountUsageStatus.primaryUsageRemainingFraction,
-                resetText: viewModel.accountUsageStatus.primaryResetText
-            )
-            usagePill(
-                systemName: "calendar",
-                label: viewModel.accountUsageStatus.secondaryUsageLabel,
-                remainingFraction: viewModel.accountUsageStatus.secondaryUsageRemainingFraction,
-                resetText: viewModel.accountUsageStatus.secondaryResetText
-            )
 
             Button {
                 viewModel.refreshAccountUsage()
@@ -114,50 +133,32 @@ extension ContentView {
                 if viewModel.isRefreshingAccountUsage {
                     ProgressView()
                         .controlSize(.small)
-                        .frame(width: 28, height: 28)
                 } else {
                     Image(systemName: "arrow.clockwise")
                         .font(.body)
-                        .frame(width: 28, height: 28)
                 }
             }
             .buttonStyle(TopBarButtonStyle())
             .help("アカウントと使用量を更新")
-            .disabled(viewModel.isRefreshingAccountUsage)
-
-            Divider()
-                .frame(height: 22)
-
-            Button {
-                viewModel.cycleAppearance()
-            } label: {
-                Image(systemName: AppAppearance(rawValue: viewModel.appAppearanceRaw)?.systemImage ?? "sun.max")
-                    .font(.body)
-                    .frame(width: 28, height: 28)
-            }
-            .buttonStyle(TopBarButtonStyle())
-            .help("テーマ切替")
-
-            Divider()
-                .frame(height: 20)
+            .disabled(viewModel.isRefreshingAccountUsage || !viewModel.generatingProjectIDs.isEmpty)
 
             Button {
                 isAccountPopoverPresented.toggle()
             } label: {
-                Image(systemName: "gearshape")
+                Image(systemName: accountButtonSymbol)
                     .font(.body)
             }
             .buttonStyle(TopBarButtonStyle())
-            .accessibilityLabel(L("設定"))
+            .help("アカウント")
+            .accessibilityLabel("アカウント")
             .popover(isPresented: $isAccountPopoverPresented, arrowEdge: .bottom) {
                 AccountPopover(
                     status: viewModel.accountUsageStatus,
                     isLoading: viewModel.isRefreshingAccountUsage,
                     hasFailed: viewModel.accountUsagePrewarmFailed,
-                    isLoggingOut: viewModel.isLoggingOut,
                     codexVersion: viewModel.codexVersion,
                     onRetry: viewModel.refreshAccountUsage,
-                    onLogout: viewModel.logout
+                    onRelaunchAndRetry: viewModel.relaunchAndRefreshAccountUsage
                 )
                 .environment(\.locale, l10n.locale)
                 .environmentObject(l10n)
@@ -169,20 +170,15 @@ extension ContentView {
     }
 
     func usagePill(
-        systemName: String,
-        label: String,
+        prefix: String,
+        percentLabel: String,
         remainingFraction: Double?,
         resetText: String? = nil
     ) -> some View {
         HStack(spacing: 6) {
-            Image(systemName: systemName)
-                .font(.body.weight(.semibold))
-                .foregroundStyle(.secondary)
-
-            Text(label)
+            Text(prefix)
                 .font(.subheadline.weight(.semibold))
                 .lineLimit(1)
-                .monospacedDigit()
 
             HStack(spacing: 2) {
                 Image(systemName: "bolt.fill")
@@ -191,6 +187,11 @@ extension ContentView {
 
                 usageProgressBar(value: remainingFraction)
             }
+
+            Text(percentLabel)
+                .font(.subheadline.weight(.semibold))
+                .lineLimit(1)
+                .monospacedDigit()
 
             if let resetText {
                 Text(resetText)

@@ -1,18 +1,274 @@
 {
   "sourceLanguage": "ja",
   "strings": {
-    "5h・週次・累計すべて 0 になります。元に戻せません。": {
+    "[Import] フィルタリングプロジェクト選択中はスキップ": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "All counters (5h, weekly, total) will be reset to 0. This cannot be undone."
+            "value": "[Import] Skipped while filtering project is selected"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "5h・週次・累計すべて 0 になります。元に戻せません。"
+            "value": "[Import] フィルタリングプロジェクト選択中はスキップ"
+          }
+        }
+      }
+    },
+    "「%@」へ%lld件を移動またはコピーしますか？": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move or copy %@ items to \"%lld\"?"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "「%@」へ%lld件を移動またはコピーしますか？"
+          }
+        }
+      }
+    },
+    "「%@」へ移動またはコピーしますか？": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move or copy to \"%@\"?"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "「%@」へ移動またはコピーしますか？"
+          }
+        }
+      }
+    },
+    "%lld / %lld 個選択": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld / %lld selected"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld / %lld 個選択"
+          }
+        }
+      }
+    },
+    "%lld / %lld 枚処理中…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld / %lld processing…"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld / %lld 枚処理中…"
+          }
+        }
+      }
+    },
+    "%lld並列": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld parallel"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld並列"
+          }
+        }
+      }
+    },
+    "%lld件のコピーに失敗しました": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to copy %lld items"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld件のコピーに失敗しました"
+          }
+        }
+      }
+    },
+    "%lld件の削除に失敗しました": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to delete %lld items"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld件の削除に失敗しました"
+          }
+        }
+      }
+    },
+    "%lld件の画像を削除しますか？": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete %lld images?"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld件の画像を削除しますか？"
+          }
+        }
+      }
+    },
+    "%lld件の移動に失敗しました": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to move %lld items"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld件の移動に失敗しました"
+          }
+        }
+      }
+    },
+    "%lld件をコピー": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy %lld"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld件をコピー"
+          }
+        }
+      }
+    },
+    "%lld件を別プロジェクトへ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move %lld items to another project"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld件を別プロジェクトへ"
+          }
+        }
+      }
+    },
+    "%lld件を移動": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move %lld"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld件を移動"
+          }
+        }
+      }
+    },
+    "%lld個選択": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld selected"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld個選択"
+          }
+        }
+      }
+    },
+    "%lld枚": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld images"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld枚"
+          }
+        }
+      }
+    },
+    "%lld枚の画像を生成しました": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Generated %lld images"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld枚の画像を生成しました"
+          }
+        }
+      }
+    },
+    "%lld枚成功、%lld枚失敗": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld succeeded, %lld failed"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld枚成功、%lld枚失敗"
           }
         }
       }
@@ -33,6 +289,22 @@
         }
       }
     },
+    "batchItems は ZipExportPipeline で処理してください": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use ZipExportPipeline for batch items"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "batchItems は ZipExportPipeline で処理してください"
+          }
+        }
+      }
+    },
     "ChatGPT": {
       "localizations": {
         "en": {
@@ -45,6 +317,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "ChatGPT"
+          }
+        }
+      }
+    },
+    "codex app-server が終了しました。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "codex app-server has exited."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "codex app-server が終了しました。"
+          }
+        }
+      }
+    },
+    "codex app-server が起動していません。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "codex app-server is not running."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "codex app-server が起動していません。"
           }
         }
       }
@@ -97,6 +401,22 @@
         }
       }
     },
+    "Draft Canvas のすべての機能が使えるようになりました。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You now have access to all features of Draft Canvas."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Draft Canvas のすべての機能が使えるようになりました。"
+          }
+        }
+      }
+    },
     "Finderで表示": {
       "localizations": {
         "en": {
@@ -113,6 +433,22 @@
         }
       }
     },
+    "IO エラー: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IO error: %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IO エラー: %@"
+          }
+        }
+      }
+    },
     "JSON-RPCリクエストをJSONとしてエンコードできません。": {
       "localizations": {
         "en": {
@@ -125,6 +461,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "JSON-RPCリクエストをJSONとしてエンコードできません。"
+          }
+        }
+      }
+    },
+    "JSON行を解析できません: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to parse JSON line: %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "JSON行を解析できません: %@"
           }
         }
       }
@@ -161,70 +513,6 @@
         }
       }
     },
-    "[Import] フィルタリングプロジェクト選択中はスキップ": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "[Import] Skipped while filtering project is selected"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "[Import] フィルタリングプロジェクト選択中はスキップ"
-          }
-        }
-      }
-    },
-    "batchItems は ZipExportPipeline で処理してください": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Use ZipExportPipeline for batch items"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "batchItems は ZipExportPipeline で処理してください"
-          }
-        }
-      }
-    },
-    "codex app-server が終了しました。": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "codex app-server has exited."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "codex app-server が終了しました。"
-          }
-        }
-      }
-    },
-    "codex app-server が起動していません。": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "codex app-server is not running."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "codex app-server が起動していません。"
-          }
-        }
-      }
-    },
     "thread/start のレスポンスから thread id を取得できませんでした。": {
       "localizations": {
         "en": {
@@ -241,162 +529,18 @@
         }
       }
     },
-    "お気に入り": {
+    "ZIP作成に失敗しました: %@": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Favorites"
+            "value": "Failed to create ZIP: %@"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "お気に入り"
-          }
-        }
-      }
-    },
-    "お気に入りから外す": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Remove from Favorites"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "お気に入りから外す"
-          }
-        }
-      }
-    },
-    "お気に入りに追加": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Add to Favorites"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "お気に入りに追加"
-          }
-        }
-      }
-    },
-    "この操作は取り消せません。": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "This action cannot be undone."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "この操作は取り消せません。"
-          }
-        }
-      }
-    },
-    "この検索条件を保存": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Save This Search"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "この検索条件を保存"
-          }
-        }
-      }
-    },
-    "すべてのカウンタをリセットしますか？": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reset all counters?"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "すべてのカウンタをリセットしますか？"
-          }
-        }
-      }
-    },
-    "すべての画像": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "All Images"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "すべての画像"
-          }
-        }
-      }
-    },
-    "すべて解除": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Deselect All"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "すべて解除"
-          }
-        }
-      }
-    },
-    "すべて選択": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Select All"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "すべて選択"
-          }
-        }
-      }
-    },
-    "もうすぐ": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Soon"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "もうすぐ"
+            "value": "ZIP作成に失敗しました: %@"
           }
         }
       }
@@ -433,6 +577,38 @@
         }
       }
     },
+    "アイテムを別プロジェクトへ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move item to another project"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アイテムを別プロジェクトへ"
+          }
+        }
+      }
+    },
+    "アカウント": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Account"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アカウント"
+          }
+        }
+      }
+    },
     "アカウントと使用量を更新": {
       "localizations": {
         "en": {
@@ -465,6 +641,22 @@
         }
       }
     },
+    "アクティベーション上限に達しました": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activation limit reached."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アクティベーション上限に達しました"
+          }
+        }
+      }
+    },
     "アスペクト比": {
       "localizations": {
         "en": {
@@ -481,6 +673,118 @@
         }
       }
     },
+    "あと%lldd": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "in %lldd"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "あと%lldd"
+          }
+        }
+      }
+    },
+    "あと%lldd%lldh": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "in %lldd%lldh"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "あと%lldd%lldh"
+          }
+        }
+      }
+    },
+    "あと%lldh": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "in %lldh"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "あと%lldh"
+          }
+        }
+      }
+    },
+    "あと%lldh%lldm": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "in %lldh%lldm"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "あと%lldh%lldm"
+          }
+        }
+      }
+    },
+    "あと%lldm": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "in %lldm"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "あと%lldm"
+          }
+        }
+      }
+    },
+    "生成指示を英語に翻訳": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Translate prompts to English"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "生成指示を英語に翻訳"
+          }
+        }
+      }
+    },
+    "オンにすると生成前に英語へ翻訳しブレを抑えますが、トークン消費が増えます。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When on, prompts are translated to English before generation to reduce variance, increasing token usage."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "オンにすると生成前に英語へ翻訳しブレを抑えますが、トークン消費が増えます。"
+          }
+        }
+      }
+    },
     "インポート": {
       "localizations": {
         "en": {
@@ -493,6 +797,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "インポート"
+          }
+        }
+      }
+    },
+    "インポート失敗: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import failed: %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "インポート失敗: %@"
           }
         }
       }
@@ -609,6 +929,54 @@
         }
       }
     },
+    "お気に入り": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Favorites"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "お気に入り"
+          }
+        }
+      }
+    },
+    "お気に入りから外す": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove from Favorites"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "お気に入りから外す"
+          }
+        }
+      }
+    },
+    "お気に入りに追加": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add to Favorites"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "お気に入りに追加"
+          }
+        }
+      }
+    },
     "キャンセル": {
       "localizations": {
         "en": {
@@ -657,6 +1025,86 @@
         }
       }
     },
+    "コスト": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cost"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "コスト"
+          }
+        }
+      }
+    },
+    "このキーは既にアクティベート済みです": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This key is already activated."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このキーは既にアクティベート済みです"
+          }
+        }
+      }
+    },
+    "この操作は取り消せません。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This action cannot be undone."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "この操作は取り消せません。"
+          }
+        }
+      }
+    },
+    "この検索条件を保存": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save This Search"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "この検索条件を保存"
+          }
+        }
+      }
+    },
+    "コピー": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "コピー"
+          }
+        }
+      }
+    },
     "ストーリー": {
       "localizations": {
         "en": {
@@ -669,6 +1117,86 @@
           "stringUnit": {
             "state": "translated",
             "value": "ストーリー"
+          }
+        }
+      }
+    },
+    "すべての画像": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All Images"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "すべての画像"
+          }
+        }
+      }
+    },
+    "すべて解除": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deselect All"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "すべて解除"
+          }
+        }
+      }
+    },
+    "すべて選択": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select All"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "すべて選択"
+          }
+        }
+      }
+    },
+    "並列失敗": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parallel Limit"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "並列失敗"
+          }
+        }
+      }
+    },
+    "停止": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stop"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "停止"
           }
         }
       }
@@ -733,6 +1261,54 @@
           "stringUnit": {
             "state": "translated",
             "value": "テーマ切替"
+          }
+        }
+      }
+    },
+    "トライアル期間が終了しました": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trial Period Ended"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "トライアル期間が終了しました"
+          }
+        }
+      }
+    },
+    "ネットワークエラーが発生しました": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A network error occurred."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ネットワークエラーが発生しました"
+          }
+        }
+      }
+    },
+    "バイナリが見つかりません: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Binary not found: %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "バイナリが見つかりません: %@"
           }
         }
       }
@@ -817,6 +1393,70 @@
         }
       }
     },
+    "ChatGPT Plus 以上のサブスクリプションでログインしてください。API Key / Amazon Bedrock 構成は未サポートです。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Please sign in with a ChatGPT Plus subscription or higher. API Key and Amazon Bedrock configurations are not supported."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ChatGPT Plus 以上のサブスクリプションでログインしてください。API Key / Amazon Bedrock 構成は未サポートです。"
+          }
+        }
+      }
+    },
+    "画像生成には ChatGPT Plus 以上のプランが必要です": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Image generation requires ChatGPT Plus or higher"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画像生成には ChatGPT Plus 以上のプランが必要です"
+          }
+        }
+      }
+    },
+    "画像生成には ChatGPT Plus 以上のプランが必要です。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Image generation requires ChatGPT Plus or higher."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画像生成には ChatGPT Plus 以上のプランが必要です。"
+          }
+        }
+      }
+    },
+    "ChatGPT Free プランでは画像生成を利用できません": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Image generation is not available on ChatGPT Free"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ChatGPT Free プランでは画像生成を利用できません"
+          }
+        }
+      }
+    },
     "プロジェクト": {
       "localizations": {
         "en": {
@@ -881,38 +1521,6 @@
         }
       }
     },
-    "プロンプトをコピー": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Copy Prompt"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "プロンプトをコピー"
-          }
-        }
-      }
-    },
-    "プロンプトを入力して生成してください": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enter a prompt to generate"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "プロンプトを入力して生成してください"
-          }
-        }
-      }
-    },
     "プロンプトエンハンスがタイムアウトしました": {
       "localizations": {
         "en": {
@@ -941,6 +1549,54 @@
           "stringUnit": {
             "state": "translated",
             "value": "プロンプトエンハンスに失敗しました"
+          }
+        }
+      }
+    },
+    "プロンプトをエンハンス (詳細化)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enhance Prompt"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "プロンプトをエンハンス (詳細化)"
+          }
+        }
+      }
+    },
+    "プロンプトをコピー": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy Prompt"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "プロンプトをコピー"
+          }
+        }
+      }
+    },
+    "プロンプトを入力して生成してください": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter a prompt to generate"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "プロンプトを入力して生成してください"
           }
         }
       }
@@ -1073,6 +1729,38 @@
         }
       }
     },
+    "ラフ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sketch"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ラフ"
+          }
+        }
+      }
+    },
+    "ラフを描いて構図を指示": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Draw a sketch to guide composition"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ラフを描いて構図を指示"
+          }
+        }
+      }
+    },
     "マスクして編集モード": {
       "localizations": {
         "en": {
@@ -1101,6 +1789,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "マスクして除去"
+          }
+        }
+      }
+    },
+    "マスクの処理に失敗しました: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to process mask: %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "マスクの処理に失敗しました: %@"
           }
         }
       }
@@ -1185,6 +1889,38 @@
         }
       }
     },
+    "マスク除去に失敗しました: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mask removal failed: %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "マスク除去に失敗しました: %@"
+          }
+        }
+      }
+    },
+    "もうすぐ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Soon"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "もうすぐ"
+          }
+        }
+      }
+    },
     "モデル選択": {
       "localizations": {
         "en": {
@@ -1197,6 +1933,70 @@
           "stringUnit": {
             "state": "translated",
             "value": "モデル選択"
+          }
+        }
+      }
+    },
+    "ライセンスキーが無効です": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invalid license key."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ライセンスキーが無効です"
+          }
+        }
+      }
+    },
+    "ライセンスキーを持っている": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I have a license key"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ライセンスキーを持っている"
+          }
+        }
+      }
+    },
+    "ライセンスをお持ちでない方は": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Don't have a license?"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ライセンスをお持ちでない方は"
+          }
+        }
+      }
+    },
+    "ライセンスを有効化": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activate License"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ライセンスを有効化"
           }
         }
       }
@@ -1233,22 +2033,6 @@
         }
       }
     },
-    "リセット": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reset"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "リセット"
-          }
-        }
-      }
-    },
     "ログ": {
       "localizations": {
         "en": {
@@ -1261,22 +2045,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "ログ"
-          }
-        }
-      }
-    },
-    "ログはまだありません。": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No logs yet."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ログはまだありません。"
           }
         }
       }
@@ -1309,6 +2077,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "ログアウトに失敗しました"
+          }
+        }
+      }
+    },
+    "ログはまだありません。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No logs yet."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ログはまだありません。"
           }
         }
       }
@@ -1569,6 +2353,22 @@
         }
       }
     },
+    "保存 (%lld)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save (%lld)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存 (%lld)"
+          }
+        }
+      }
+    },
     "保存して移動": {
       "localizations": {
         "en": {
@@ -1761,6 +2561,54 @@
         }
       }
     },
+    "最大圧縮（ロッシー）": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Maximum compression (lossy)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最大圧縮（ロッシー）"
+          }
+        }
+      }
+    },
+    "最適化": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Optimize"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最適化"
+          }
+        }
+      }
+    },
+    "最高": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Best"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最高"
+          }
+        }
+      }
+    },
     "写真": {
       "localizations": {
         "en": {
@@ -1937,6 +2785,22 @@
         }
       }
     },
+    "変更…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change…"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "変更…"
+          }
+        }
+      }
+    },
     "名前を変更": {
       "localizations": {
         "en": {
@@ -2049,6 +2913,22 @@
         }
       }
     },
+    "引き続きご利用いただくには\nDraft Canvas をご購入ください。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To continue using Draft Canvas,\nplease purchase a license."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "引き続きご利用いただくには\nDraft Canvas をご購入ください。"
+          }
+        }
+      }
+    },
     "待機中": {
       "localizations": {
         "en": {
@@ -2061,6 +2941,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "待機中"
+          }
+        }
+      }
+    },
+    "後で": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Later"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "後で"
           }
         }
       }
@@ -2177,50 +3073,34 @@
         }
       }
     },
-    "最大圧縮（ロッシー）": {
+    "有効化する": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Maximum compression (lossy)"
+            "value": "Activate"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "最大圧縮（ロッシー）"
+            "value": "有効化する"
           }
         }
       }
     },
-    "最適化": {
+    "有効化完了": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Optimize"
+            "value": "License Activated"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "最適化"
-          }
-        }
-      }
-    },
-    "最高": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Best"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "最高"
+            "value": "有効化完了"
           }
         }
       }
@@ -2237,6 +3117,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "未ログイン"
+          }
+        }
+      }
+    },
+    "未対応の画像結果形式です: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unsupported image result format: %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未対応の画像結果形式です: %@"
           }
         }
       }
@@ -2269,22 +3165,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "条件を編集"
-          }
-        }
-      }
-    },
-    "枚": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": ""
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "枚"
           }
         }
       }
@@ -2497,22 +3377,6 @@
         }
       }
     },
-    "生成枚数の詳細": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Generation Count Details"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "生成枚数の詳細"
-          }
-        }
-      }
-    },
     "生成物を保存するときの既定フォルダを選択してください。": {
       "localizations": {
         "en": {
@@ -2557,6 +3421,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "生成結果を取得できませんでした。ログを確認してください。"
+          }
+        }
+      }
+    },
+    "画像エンコードに失敗しました。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to encode image."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画像エンコードに失敗しました。"
           }
         }
       }
@@ -2673,6 +3553,22 @@
         }
       }
     },
+    "画像ファイルを読み込めませんでした": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not load image file"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画像ファイルを読み込めませんでした"
+          }
+        }
+      }
+    },
     "画像をPNGに変換できませんでした": {
       "localizations": {
         "en": {
@@ -2737,34 +3633,18 @@
         }
       }
     },
-    "画像エンコードに失敗しました。": {
+    "画像を読み込めませんでした: %@": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Failed to encode image."
+            "value": "Could not load image: %@"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "画像エンコードに失敗しました。"
-          }
-        }
-      }
-    },
-    "画像ファイルを読み込めませんでした": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Could not load image file"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "画像ファイルを読み込めませんでした"
+            "value": "画像を読み込めませんでした: %@"
           }
         }
       }
@@ -2797,6 +3677,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "破棄"
+          }
+        }
+      }
+    },
+    "移動": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "移動"
           }
         }
       }
@@ -2849,6 +3745,22 @@
         }
       }
     },
+    "素材分解: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract materials: %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "素材分解: %@"
+          }
+        }
+      }
+    },
     "素材分解に失敗しました": {
       "localizations": {
         "en": {
@@ -2865,18 +3777,18 @@
         }
       }
     },
-    "累計": {
+    "終了コード %lld: %@": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Total"
+            "value": "Exit code %lld: %@"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "累計"
+            "value": "終了コード %lld: %@"
           }
         }
       }
@@ -2929,6 +3841,22 @@
         }
       }
     },
+    "背景除去: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove background: %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "背景除去: %@"
+          }
+        }
+      }
+    },
     "背景除去に失敗しました": {
       "localizations": {
         "en": {
@@ -2941,6 +3869,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "背景除去に失敗しました"
+          }
+        }
+      }
+    },
+    "背景除去に失敗しました: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Background removal failed: %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "背景除去に失敗しました: %@"
           }
         }
       }
@@ -2973,6 +3917,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "自動"
+          }
+        }
+      }
+    },
+    "自動的に確認": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check automatically"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自動的に確認"
+          }
+        }
+      }
+    },
+    "今すぐ確認": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check Now"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "今すぐ確認"
           }
         }
       }
@@ -3089,18 +4065,82 @@
         }
       }
     },
-    "週次": {
+    "賢さ": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Weekly"
+            "value": "Intelligence"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "週次"
+            "value": "賢さ"
+          }
+        }
+      }
+    },
+    "購入する": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buy"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "購入する"
+          }
+        }
+      }
+    },
+    "購入後に届いたライセンスキーを入力してください。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter the license key you received after purchase."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "購入後に届いたライセンスキーを入力してください。"
+          }
+        }
+      }
+    },
+    "輪郭検出に失敗しました: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contour detection failed: %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "輪郭検出に失敗しました: %@"
+          }
+        }
+      }
+    },
+    "速さ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Speed"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "速さ"
           }
         }
       }
@@ -3201,6 +4241,54 @@
         }
       }
     },
+    "オープンソースライセンス": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open-Source Licenses"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "オープンソースライセンス"
+          }
+        }
+      }
+    },
+    "オープンソースライセンスを表示": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show open-source licenses"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "オープンソースライセンスを表示"
+          }
+        }
+      }
+    },
+    "閉じる": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "閉じる"
+          }
+        }
+      }
+    },
     "除去": {
       "localizations": {
         "en": {
@@ -3222,7 +4310,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "High"
+            "value": "Height"
           }
         },
         "ja": {
@@ -3261,6 +4349,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "高解像度化"
+          }
+        }
+      }
+    },
+    "高解像度化: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Upscale: %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "高解像度化: %@"
           }
         }
       }
@@ -3345,710 +4449,1623 @@
         }
       }
     },
-    "%lld件の削除に失敗しました": {
+    "アップデート": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Failed to delete %lld items"
+            "value": "Updates"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld件の削除に失敗しました"
+            "value": "アップデート"
           }
         }
       }
     },
-    "%lld件の移動に失敗しました": {
+    "アップデートを確認…": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Failed to move %lld items"
+            "value": "Check for Updates…"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld件の移動に失敗しました"
+            "value": "アップデートを確認…"
           }
         }
       }
     },
-    "%lld件のコピーに失敗しました": {
+    "トライアル期限切れ": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Failed to copy %lld items"
+            "value": "Trial Expired"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld件のコピーに失敗しました"
+            "value": "トライアル期限切れ"
           }
         }
       }
     },
-    "あと %lldm": {
+    "トライアル: 残 %lld 日": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "in %lldm"
+            "value": "Trial: %lld days remaining"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "あと %lldm"
+            "value": "トライアル: 残 %lld 日"
           }
         }
       }
     },
-    "あと %lldh%lldm": {
+    "システム設定に従う": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "in %lldh%lldm"
+            "value": "Follow System Settings"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "あと %lldh%lldm"
+            "value": "システム設定に従う"
           }
         }
       }
     },
-    "あと %lldh": {
+    "言語": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "in %lldh"
+            "value": "Language"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "あと %lldh"
+            "value": "言語"
           }
         }
       }
     },
-    "あと %lldd %lldh": {
+    "一般": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "in %lldd %lldh"
+            "value": "General"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "あと %lldd %lldh"
+            "value": "一般"
           }
         }
       }
     },
-    "あと %lldd": {
+    "再起動": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "in %lldd"
+            "value": "Restart"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "あと %lldd"
+            "value": "再起動"
           }
         }
       }
     },
-    "JSON行を解析できません: %@": {
+    "再起動が必要": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Failed to parse JSON line: %@"
+            "value": "Restart Required"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "JSON行を解析できません: %@"
+            "value": "再起動が必要"
           }
         }
       }
     },
-    "未対応の画像結果形式です: %@": {
+    "変更には再起動が必要です": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Unsupported image result format: %@"
+            "value": "Restart required to apply changes."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "未対応の画像結果形式です: %@"
+            "value": "変更には再起動が必要です"
           }
         }
       }
     },
-    "インポート失敗: %@": {
+    "変更を反映するには Draft Canvas を再起動します": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Import failed: %@"
+            "value": "Draft Canvas will restart to apply the language change."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "インポート失敗: %@"
+            "value": "変更を反映するには Draft Canvas を再起動します"
           }
         }
       }
     },
-    "画像を読み込めませんでした: %@": {
+    "中断して再起動": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Could not load image: %@"
+            "value": "Stop and Restart"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "画像を読み込めませんでした: %@"
+            "value": "中断して再起動"
           }
         }
       }
     },
-    "%lld枚成功、%lld枚失敗": {
+    "進行中の作業（生成・書き出し等）があります。中断して再起動すると、これらは破棄されます。": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld succeeded, %lld failed"
+            "value": "There are tasks in progress (generation, export, etc.). Stopping them to restart will discard any unfinished work."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld枚成功、%lld枚失敗"
+            "value": "進行中の作業（生成・書き出し等）があります。中断して再起動すると、これらは破棄されます。"
           }
         }
       }
     },
-    "%lld枚の画像を生成しました": {
+    "変更を反映するには Draft Canvas を再起動してください": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Generated %lld images"
+            "value": "Please restart Draft Canvas to apply the language change."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld枚の画像を生成しました"
+            "value": "変更を反映するには Draft Canvas を再起動してください"
           }
         }
       }
     },
-    "マスクの処理に失敗しました: %@": {
+    "終了": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Failed to process mask: %@"
+            "value": "Quit"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "マスクの処理に失敗しました: %@"
+            "value": "終了"
           }
         }
       }
     },
-    "マスク除去に失敗しました: %@": {
+    "マスク編集": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mask removal failed: %@"
+            "value": "Mask Edit"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "マスク除去に失敗しました: %@"
+            "value": "マスク編集"
           }
         }
       }
     },
-    "背景除去に失敗しました: %@": {
+    "素材分解": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Background removal failed: %@"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "背景除去に失敗しました: %@"
+            "value": "Material Extraction"
           }
         }
       }
     },
-    "輪郭検出に失敗しました: %@": {
+    "エクスポート (%lld枚)": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Contour detection failed: %@"
+            "value": "Export (%lld images)"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "輪郭検出に失敗しました: %@"
+            "value": "エクスポート (%lld枚)"
           }
         }
       }
     },
-    "バイナリが見つかりません: %@": {
+    "オリジナル: %lld × %lld px": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Binary not found: %@"
+            "value": "Original: %lld × %lld px"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "バイナリが見つかりません: %@"
+            "value": "オリジナル: %lld × %lld px"
           }
         }
       }
     },
-    "終了コード %lld: %@": {
+    "中 (80)": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Exit code %lld: %@"
+            "value": "Medium (80)"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "終了コード %lld: %@"
+            "value": "中 (80)"
           }
         }
       }
     },
-    "IO エラー: %@": {
+    "低 (60)": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "IO error: %@"
+            "value": "Low (60)"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "IO エラー: %@"
+            "value": "低 (60)"
           }
         }
       }
     },
-    "ZIP作成に失敗しました: %@": {
+    "設定": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Failed to create ZIP: %@"
+            "value": "Settings"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "ZIP作成に失敗しました: %@"
+            "value": "設定"
           }
         }
       }
     },
-    "%lld件を別プロジェクトへ": {
+    "失敗のみ再試行 (%lld)": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Move %lld items to another project"
+            "value": "Retry Failed (%lld)"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld件を別プロジェクトへ"
+            "value": "失敗のみ再試行 (%lld)"
           }
         }
       }
     },
-    "アイテムを別プロジェクトへ": {
+    "失敗したジョブのみ再試行": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Move item to another project"
+            "value": "Retry only failed jobs"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "アイテムを別プロジェクトへ"
+            "value": "失敗したジョブのみ再試行"
           }
         }
       }
     },
-    "%lld件を移動": {
+    "残量が少なくなっています (残り %lld%%)。生成を続行しますか？": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Move %lld"
+            "value": "Usage is low (%lld%% remaining). Continue generating?"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld件を移動"
+            "value": "残量が少なくなっています (残り %lld%%)。生成を続行しますか？"
           }
         }
       }
     },
-    "移動": {
+    "続行": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Move"
+            "value": "Continue"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "移動"
+            "value": "続行"
           }
         }
       }
     },
-    "%lld件をコピー": {
+    "レート制限に達しました。再試行中です。": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Copy %lld"
+            "value": "Rate limit reached. Retrying..."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld件をコピー"
+            "value": "レート制限に達しました。再試行中です。"
           }
         }
       }
     },
-    "コピー": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Copy"
+
+    "Dialogue.Analyzing" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analyzing your answers…"
           }
         },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "コピー"
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AIが回答を分析しています…"
           }
         }
       }
     },
-    "「%@」へ%lld件を移動またはコピーしますか？": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Move or copy %lld items to \"%@\"?"
+    "Dialogue.Back" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back"
           }
         },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "「%@」へ%lld件を移動またはコピーしますか？"
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "戻る"
           }
         }
       }
     },
-    "「%@」へ移動またはコピーしますか？": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Move or copy to \"%@\"?"
+    "Dialogue.Button.help" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Build prompt through AI dialogue"
           }
         },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "「%@」へ移動またはコピーしますか？"
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AIと対話してプロンプトを作成"
           }
         }
       }
     },
-    "%lld件の画像を削除しますか？": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Delete %lld images?"
+    "Dialogue.Cancel" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
           }
         },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld件の画像を削除しますか？"
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キャンセル"
           }
         }
       }
     },
-    "高解像度化: %@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Upscale: %@"
+    "Dialogue.Category.composition" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Composition"
           }
         },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "高解像度化: %@"
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "構図"
           }
         }
       }
     },
-    "背景除去: %@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Remove background: %@"
+    "Dialogue.Category.mood" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mood"
           }
         },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "背景除去: %@"
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "雰囲気"
           }
         }
       }
     },
-    "素材分解: %@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Extract materials: %@"
+    "Dialogue.Category.palette" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Palette"
           }
         },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "素材分解: %@"
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "色調"
           }
         }
       }
     },
-    "保存 (%lld)": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Save (%lld)"
+    "Dialogue.Category.style" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Style"
           }
         },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "保存 (%lld)"
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スタイル"
           }
         }
       }
     },
-    "%lld個選択": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld selected"
+    "Dialogue.Category.subject" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subject"
           }
         },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld個選択"
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "被写体"
           }
         }
       }
     },
-    "%lld / %lld 個選択": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld / %lld selected"
+    "Dialogue.Confirm" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use This Prompt"
           }
         },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld / %lld 個選択"
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プロンプト欄に貼る"
           }
         }
       }
     },
-    "%lld枚": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld images"
+    "Dialogue.Error.analyzeTimeout" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analysis timed out"
           }
         },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld枚"
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分析がタイムアウトしました"
           }
         }
       }
     },
-    "%lld並列": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld parallel"
+    "Dialogue.Error.emptyResult" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Generated result was empty"
           }
         },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld並列"
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "生成結果が空でした"
           }
         }
       }
     },
-    "%lld / %lld 枚処理中…": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld / %lld processing…"
+    "Dialogue.Error.noResult" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed to get result"
           }
         },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld / %lld 枚処理中…"
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "結果を取得できませんでした"
           }
         }
       }
     },
-    "プロンプトをエンハンス (詳細化)": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enhance Prompt"
+    "Dialogue.Error.synthesizeTimeout" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prompt generation timed out"
           }
         },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "プロンプトをエンハンス (詳細化)"
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プロンプト生成がタイムアウトしました"
           }
         }
       }
     },
-    "コスト": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cost"
+    "Dialogue.FreeText.label" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Free text (optional)"
           }
         },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "コスト"
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自由記述（任意）"
           }
         }
       }
     },
-    "賢さ": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Intelligence"
+    "Dialogue.FreeText.placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Any additional details…"
           }
         },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "賢さ"
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "その他、補足があれば…"
           }
         }
       }
     },
-    "速さ": {
+    "Dialogue.Header.analyzing" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analyzing…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分析中…"
+          }
+        }
+      }
+    },
+    "Dialogue.Header.failed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "エラー"
+          }
+        }
+      }
+    },
+    "Dialogue.Header.result" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prompt Ready"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プロンプト完成"
+          }
+        }
+      }
+    },
+    "Dialogue.Header.synthesizing" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Generating prompt…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プロンプト生成中…"
+          }
+        }
+      }
+    },
+    "Dialogue.Next" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "次へ"
+          }
+        }
+      }
+    },
+    "Dialogue.Option.composition.aerialView" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aerial View"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "俯瞰"
+          }
+        }
+      }
+    },
+    "Dialogue.Option.composition.closeUp" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close-up"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クローズアップ"
+          }
+        }
+      }
+    },
+    "Dialogue.Option.composition.ruleOfThirds" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rule of Thirds"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "三分割法"
+          }
+        }
+      }
+    },
+    "Dialogue.Option.composition.symmetrical" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Symmetrical"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "シンメトリー"
+          }
+        }
+      }
+    },
+    "Dialogue.Option.composition.wideAngle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wide Angle"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "広角"
+          }
+        }
+      }
+    },
+    "Dialogue.Option.mood.dramatic" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dramatic"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラマチック"
+          }
+        }
+      }
+    },
+    "Dialogue.Option.mood.energetic" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Energetic"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "エネルギッシュ"
+          }
+        }
+      }
+    },
+    "Dialogue.Option.mood.joyful" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Joyful"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "明るい"
+          }
+        }
+      }
+    },
+    "Dialogue.Option.mood.melancholic" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Melancholic"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メランコリック"
+          }
+        }
+      }
+    },
+    "Dialogue.Option.mood.mysterious" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mysterious"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "神秘的"
+          }
+        }
+      }
+    },
+    "Dialogue.Option.mood.serene" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serene"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "穏やか"
+          }
+        }
+      }
+    },
+    "Dialogue.Option.palette.cool" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cool Tones"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "寒色系"
+          }
+        }
+      }
+    },
+    "Dialogue.Option.palette.dark" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dark"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ダーク"
+          }
+        }
+      }
+    },
+    "Dialogue.Option.palette.monochrome" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monochrome"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "モノクロ"
+          }
+        }
+      }
+    },
+    "Dialogue.Option.palette.pastel" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pastel"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "パステル"
+          }
+        }
+      }
+    },
+    "Dialogue.Option.palette.vibrant" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vibrant"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "鮮やか"
+          }
+        }
+      }
+    },
+    "Dialogue.Option.palette.warm" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warm Tones"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暖色系"
+          }
+        }
+      }
+    },
+    "Dialogue.Option.style.3dRender" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3D Render"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3D レンダー"
+          }
+        }
+      }
+    },
+    "Dialogue.Option.style.anime" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anime"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アニメ"
+          }
+        }
+      }
+    },
+    "Dialogue.Option.style.illustration" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Illustration"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "イラスト"
+          }
+        }
+      }
+    },
+    "Dialogue.Option.style.oilPainting" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oil Painting"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "油絵"
+          }
+        }
+      }
+    },
+    "Dialogue.Option.style.photorealistic" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photorealistic"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フォトリアル"
+          }
+        }
+      }
+    },
+    "Dialogue.Option.style.watercolor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Watercolor"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "水彩"
+          }
+        }
+      }
+    },
+    "Dialogue.Option.subject.abstract" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abstract"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "抽象"
+          }
+        }
+      }
+    },
+    "Dialogue.Option.subject.animal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Animal"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "動物"
+          }
+        }
+      }
+    },
+    "Dialogue.Option.subject.architecture" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Architecture"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "建築"
+          }
+        }
+      }
+    },
+    "Dialogue.Option.subject.landscape" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Landscape"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "風景"
+          }
+        }
+      }
+    },
+    "Dialogue.Option.subject.object" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Object"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "物体"
+          }
+        }
+      }
+    },
+    "Dialogue.Option.subject.person" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Person"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "人物"
+          }
+        }
+      }
+    },
+    "Dialogue.Question.composition" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What composition or angle?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "どんな構図・アングルですか？"
+          }
+        }
+      }
+    },
+    "Dialogue.Question.mood" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What mood or feeling?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "どんな雰囲気・感情ですか？"
+          }
+        }
+      }
+    },
+    "Dialogue.Question.palette" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What color palette?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "どんな色使いですか？"
+          }
+        }
+      }
+    },
+    "Dialogue.Question.style" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What visual style?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "どんな表現スタイルですか？"
+          }
+        }
+      }
+    },
+    "Dialogue.Question.subject" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What do you want to depict?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "何を描きたいですか？"
+          }
+        }
+      }
+    },
+    "Dialogue.Result.label" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Generated prompt (editable)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "生成プロンプト（編集可）"
+          }
+        }
+      }
+    },
+    "Dialogue.Retry" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retry"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再試行"
+          }
+        }
+      }
+    },
+    "Dialogue.Skip" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skip"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スキップ"
+          }
+        }
+      }
+    },
+    "Dialogue.Synthesizing" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Generating prompt…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プロンプトを生成しています…"
+          }
+        }
+      }
+    },
+
+    "Dialogue.Header.step" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Step %d of %d — %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ステップ %d / %d — %@"
+          }
+        }
+      }
+    },
+
+    "Dialogue.Header.aiFollowup" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Follow-up %d of %d"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "追加質問 %d / %d"
+          }
+        }
+      }
+    },
+
+    "Dialogue.AIFollowup.instruction" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type your answer and tap Next"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "テキストを入力して「次へ」を押してください"
+          }
+        }
+      }
+    },
+    "72 dpi（画面）": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Speed"
+            "value": "72 dpi (Screen)"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "速さ"
+            "value": "72 dpi（画面）"
           }
         }
       }
-    }
+    },
+    "150 dpi（簡易印刷）": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "150 dpi (Basic Print)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "150 dpi（簡易印刷）"
+          }
+        }
+      }
+    },
+    "300 dpi（高品質印刷）": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "300 dpi (High Quality)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "300 dpi（高品質印刷）"
+          }
+        }
+      }
+    },
+    "600 dpi（商業印刷）": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "600 dpi (Commercial)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "600 dpi（商業印刷）"
+          }
+        }
+      }
+    },
+    "LZW（推奨）": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LZW (Recommended)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LZW（推奨）"
+          }
+        }
+      }
+    },
+    "可逆（Flate）": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lossless (Flate)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "可逆（Flate）"
+          }
+        }
+      }
+    },
+    "JPEG 高品質": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "JPEG High Quality"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "JPEG 高品質"
+          }
+        }
+      }
+    },
+    "JPEG 中品質": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "JPEG Medium Quality"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "JPEG 中品質"
+          }
+        }
+      }
+    },
+    "解像度 (DPI)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resolution (DPI)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "解像度 (DPI)"
+          }
+        }
+      }
+    },
+    "画像圧縮": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Image Compression"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画像圧縮"
+          }
+        }
+      }
+    },
+    "LZW可逆圧縮・透過（アルファ）保持": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LZW Lossless · Alpha Preserved"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LZW可逆圧縮・透過（アルファ）保持"
+          }
+        }
+      }
+    },
+    "保存先を設定": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set Save Folder"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存先を設定"
+          }
+        }
+      }
+    },
   },
   "version": "1.0"
 }

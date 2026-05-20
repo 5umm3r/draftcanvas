@@ -68,17 +68,17 @@ enum GenerationAspectRatio: String, CaseIterable, Identifiable, Codable {
     var title: String {
         switch self {
         case .auto:
-            return L("自動")
+            return String(localized: "自動")
         case .square:
-            return L("正方形")
+            return String(localized: "正方形")
         case .portrait:
-            return L("ポートレート")
+            return String(localized: "ポートレート")
         case .story:
-            return L("ストーリー")
+            return String(localized: "ストーリー")
         case .landscape:
-            return L("横長")
+            return String(localized: "横長")
         case .wide:
-            return L("ワイドスクリーン")
+            return String(localized: "ワイドスクリーン")
         }
     }
 
@@ -100,7 +100,7 @@ enum GenerationAspectRatio: String, CaseIterable, Identifiable, Codable {
     }
 
     var displayLabel: String {
-        self == .auto ? L("自動") : value
+        self == .auto ? String(localized: "自動") : value
     }
 
     var promptDescription: String {
@@ -126,8 +126,11 @@ struct GenerationRequest: Equatable {
     var aspectRatio: GenerationAspectRatio = .auto
     var editSource: GenerationEditSource? = nil
     var attachedImagePath: String? = nil
+    var attachedImageKind: AttachmentKind = .regular
     var model: String = ""
     var reasoningEffort: String = "medium"
+    var translateToEnglish: Bool = false
+    var normalizedPrompt: String? = nil
 
     var normalizedCount: Int {
         min(max(count, 1), 24)
@@ -135,6 +138,12 @@ struct GenerationRequest: Equatable {
 
     var normalizedConcurrency: Int {
         min(max(concurrency, 1), normalizedCount)
+    }
+
+    var normalizedGenerationBrief: String? {
+        guard translateToEnglish else { return nil }
+        let trimmed = normalizedPrompt?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return trimmed.isEmpty ? nil : trimmed
     }
 }
 
@@ -178,6 +187,12 @@ struct GenerationEditSource: Equatable {
     }
 }
 
+enum GenerationFailureKind: String, Codable {
+    case rateLimited
+    case timeout
+    case other
+}
+
 enum GenerationJobStatus: String {
     case queued
     case running
@@ -187,13 +202,13 @@ enum GenerationJobStatus: String {
     var title: String {
         switch self {
         case .queued:
-            return L("待機中")
+            return String(localized: "待機中")
         case .running:
-            return L("生成中")
+            return String(localized: "生成中")
         case .succeeded:
-            return L("完了")
+            return String(localized: "完了")
         case .failed:
-            return L("失敗")
+            return String(localized: "失敗")
         }
     }
 }
@@ -208,6 +223,9 @@ struct GenerationJob: Identifiable, Equatable {
     var revisedPrompt: String?
     var logs: [String]
     var errorMessage: String?
+    var hitRateLimitDuringRun: Bool
+    var isFreeAccountBlocked: Bool
+    var failureKind: GenerationFailureKind?
 
     init(
         id: UUID = UUID(),
@@ -218,7 +236,10 @@ struct GenerationJob: Identifiable, Equatable {
         imageData: Data? = nil,
         revisedPrompt: String? = nil,
         logs: [String] = [],
-        errorMessage: String? = nil
+        errorMessage: String? = nil,
+        hitRateLimitDuringRun: Bool = false,
+        isFreeAccountBlocked: Bool = false,
+        failureKind: GenerationFailureKind? = nil
     ) {
         self.id = id
         self.index = index
@@ -229,6 +250,9 @@ struct GenerationJob: Identifiable, Equatable {
         self.revisedPrompt = revisedPrompt
         self.logs = logs
         self.errorMessage = errorMessage
+        self.hitRateLimitDuringRun = hitRateLimitDuringRun
+        self.isFreeAccountBlocked = isFreeAccountBlocked
+        self.failureKind = failureKind
     }
 }
 
@@ -238,11 +262,24 @@ struct AttachedImage: Equatable {
     let id: UUID
     let filePath: String
     let originalFileName: String?
+    var kind: AttachmentKind
+    var sketchStrokesFilePath: String?
+    var canvasPixelSize: CGSize?
 
-    init(id: UUID = UUID(), filePath: String, originalFileName: String? = nil) {
+    init(
+        id: UUID = UUID(),
+        filePath: String,
+        originalFileName: String? = nil,
+        kind: AttachmentKind = .regular,
+        sketchStrokesFilePath: String? = nil,
+        canvasPixelSize: CGSize? = nil
+    ) {
         self.id = id
         self.filePath = filePath
         self.originalFileName = originalFileName
+        self.kind = kind
+        self.sketchStrokesFilePath = sketchStrokesFilePath
+        self.canvasPixelSize = canvasPixelSize
     }
 }
 
@@ -267,8 +304,8 @@ enum CanvasSortOrder: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var label: String {
         switch self {
-        case .createdAtAscending: return L("作成日 古い順")
-        case .createdAtDescending: return L("作成日 新しい順")
+        case .createdAtAscending: return String(localized: "作成日 古い順")
+        case .createdAtDescending: return String(localized: "作成日 新しい順")
         }
     }
     var systemImage: String {
@@ -383,6 +420,7 @@ struct ProjectItem: Identifiable, Equatable {
     let isBackgroundRemoved: Bool
     let isImported: Bool
     var tags: [String]
+    var sketchSourcePath: String?
 
     init(
         id: UUID = UUID(),
@@ -397,7 +435,8 @@ struct ProjectItem: Identifiable, Equatable {
         hasSVG: Bool = false,
         isBackgroundRemoved: Bool = false,
         isImported: Bool = false,
-        tags: [String] = []
+        tags: [String] = [],
+        sketchSourcePath: String? = nil
     ) {
         self.id = id
         self.projectID = projectID
@@ -412,6 +451,7 @@ struct ProjectItem: Identifiable, Equatable {
         self.isBackgroundRemoved = isBackgroundRemoved
         self.isImported = isImported
         self.tags = tags
+        self.sketchSourcePath = sketchSourcePath
     }
 
     func fileURL(in rootDirectory: URL) -> URL {
@@ -434,6 +474,7 @@ extension ProjectItem: Codable {
         case isBackgroundRemoved
         case isImported
         case tags
+        case sketchSourcePath
     }
 
     init(from decoder: Decoder) throws {
@@ -451,6 +492,7 @@ extension ProjectItem: Codable {
         isBackgroundRemoved = try c.decodeIfPresent(Bool.self, forKey: .isBackgroundRemoved) ?? false
         isImported = try c.decodeIfPresent(Bool.self, forKey: .isImported) ?? false
         tags = try c.decodeIfPresent([String].self, forKey: .tags) ?? []
+        sketchSourcePath = try c.decodeIfPresent(String.self, forKey: .sketchSourcePath)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -468,6 +510,7 @@ extension ProjectItem: Codable {
         if isBackgroundRemoved { try c.encode(isBackgroundRemoved, forKey: .isBackgroundRemoved) }
         if isImported { try c.encode(isImported, forKey: .isImported) }
         if !tags.isEmpty { try c.encode(tags, forKey: .tags) }
+        try c.encodeIfPresent(sketchSourcePath, forKey: .sketchSourcePath)
     }
 }
 
@@ -635,9 +678,66 @@ final class ProjectStore: @unchecked Sendable {
         return url
     }
 
+    @discardableResult
+    func writePreviewData(_ data: Data, id: UUID) throws -> URL {
+        try FileManager.default.createDirectory(at: masksDirectory, withIntermediateDirectories: true)
+        let url = masksDirectory.appendingPathComponent("\(id.uuidString)_preview.png")
+        try data.write(to: url, options: .atomic)
+        return url
+    }
+
+    func previewURL(id: UUID) -> URL {
+        masksDirectory.appendingPathComponent("\(id.uuidString)_preview.png")
+    }
+
+    @discardableResult
+    func writeStrokesData(_ strokes: [MaskStroke], id: UUID) throws -> URL {
+        try FileManager.default.createDirectory(at: masksDirectory, withIntermediateDirectories: true)
+        let url = masksDirectory.appendingPathComponent("\(id.uuidString)_strokes.json")
+        let data = try JSONEncoder().encode(strokes)
+        try data.write(to: url, options: .atomic)
+        return url
+    }
+
+    func readStrokesData(id: UUID) -> [MaskStroke]? {
+        let url = masksDirectory.appendingPathComponent("\(id.uuidString)_strokes.json")
+        guard let data = try? Data(contentsOf: url) else { return nil }
+        return try? JSONDecoder().decode([MaskStroke].self, from: data)
+    }
+
+    @discardableResult
+    func writeSketchStrokesData(_ strokes: [SketchStroke], id: UUID) throws -> URL {
+        try FileManager.default.createDirectory(at: attachmentsDirectory, withIntermediateDirectories: true)
+        let url = attachmentsDirectory.appendingPathComponent("\(id.uuidString)_strokes.json")
+        let data = try JSONEncoder().encode(strokes)
+        try data.write(to: url, options: .atomic)
+        return url
+    }
+
+    func readSketchStrokesData(id: UUID) -> [SketchStroke]? {
+        let url = attachmentsDirectory.appendingPathComponent("\(id.uuidString)_strokes.json")
+        guard let data = try? Data(contentsOf: url) else { return nil }
+        return try? JSONDecoder().decode([SketchStroke].self, from: data)
+    }
+
+    @discardableResult
+    func saveSketchSource(from sourcePath: String, itemID: UUID) throws -> URL {
+        try FileManager.default.createDirectory(at: masksDirectory, withIntermediateDirectories: true)
+        let dst = masksDirectory.appendingPathComponent("\(itemID.uuidString)_sketch.png")
+        if FileManager.default.fileExists(atPath: dst.path) {
+            try FileManager.default.removeItem(at: dst)
+        }
+        try FileManager.default.copyItem(at: URL(fileURLWithPath: sourcePath), to: dst)
+        return dst
+    }
+
     func cleanupMaskFiles(id: UUID) {
-        try? FileManager.default.removeItem(at: masksDirectory.appendingPathComponent("\(id.uuidString)_mask.png"))
-        try? FileManager.default.removeItem(at: masksDirectory.appendingPathComponent("\(id.uuidString)_composite.png"))
+        let base = id.uuidString
+        try? FileManager.default.removeItem(at: masksDirectory.appendingPathComponent("\(base)_mask.png"))
+        try? FileManager.default.removeItem(at: masksDirectory.appendingPathComponent("\(base)_composite.png"))
+        try? FileManager.default.removeItem(at: masksDirectory.appendingPathComponent("\(base)_preview.png"))
+        try? FileManager.default.removeItem(at: masksDirectory.appendingPathComponent("\(base)_strokes.json"))
+        try? FileManager.default.removeItem(at: masksDirectory.appendingPathComponent("\(base)_sketch.png"))
     }
 
     init(rootDirectory: URL = ProjectStore.defaultRootDirectory()) {
@@ -762,7 +862,7 @@ enum ProjectNaming {
     static func defaultName() -> String {
         let f = DateFormatter()
         f.dateFormat = "yyyy-MM-dd HH:mm"
-        return L("新規プロジェクト ") + f.string(from: Date())
+        return String(localized: "新規プロジェクト ") + f.string(from: Date())
     }
 }
 
@@ -828,10 +928,10 @@ enum AccountKind: Equatable {
     var japaneseLabel: String {
         switch self {
         case .chatgpt: return "ChatGPT"
-        case .apiKey: return L("APIキー")
+        case .apiKey: return String(localized: "APIキー")
         case .amazonBedrock: return "Amazon Bedrock"
-        case .unauthenticated: return L("未ログイン")
-        case .unknown: return L("不明")
+        case .unauthenticated: return String(localized: "未ログイン")
+        case .unknown: return String(localized: "不明")
         }
     }
 
@@ -849,8 +949,10 @@ enum AccountKind: Equatable {
 struct CodexAccountUsageStatus: Equatable {
     var accountLabel: String
     var planLabel: String
-    var primaryUsageLabel: String
-    var secondaryUsageLabel: String
+    var primaryUsagePrefix: String
+    var primaryUsagePercentLabel: String
+    var secondaryUsagePrefix: String
+    var secondaryUsagePercentLabel: String
     var primaryUsageRemainingFraction: Double?
     var secondaryUsageRemainingFraction: Double?
     var accountEmail: String?
@@ -861,10 +963,12 @@ struct CodexAccountUsageStatus: Equatable {
     var secondaryResetDate: Date?
 
     static let unavailable = CodexAccountUsageStatus(
-        accountLabel: L("アカウント未取得"),
+        accountLabel: String(localized: "アカウント未取得"),
         planLabel: "-",
-        primaryUsageLabel: "5h -",
-        secondaryUsageLabel: "weekly -",
+        primaryUsagePrefix: "5h",
+        primaryUsagePercentLabel: "-",
+        secondaryUsagePrefix: "weekly",
+        secondaryUsagePercentLabel: "-",
         primaryUsageRemainingFraction: nil,
         secondaryUsageRemainingFraction: nil,
         accountEmail: nil,
@@ -905,7 +1009,7 @@ struct CodexAccountUsageStatus: Equatable {
         case .none:
             accountKind = .unauthenticated
             accountEmail = nil
-            accountLabel = L("未ログイン")
+            accountLabel = String(localized: "未ログイン")
         }
 
         let rateLimits = preferredRateLimits(from: rateLimitsResponse)
@@ -914,8 +1018,10 @@ struct CodexAccountUsageStatus: Equatable {
         return CodexAccountUsageStatus(
             accountLabel: accountLabel,
             planLabel: planLabel,
-            primaryUsageLabel: primaryUsage.label,
-            secondaryUsageLabel: secondaryUsage.label,
+            primaryUsagePrefix: primaryUsage.prefix,
+            primaryUsagePercentLabel: primaryUsage.percentLabel,
+            secondaryUsagePrefix: secondaryUsage.prefix,
+            secondaryUsagePercentLabel: secondaryUsage.percentLabel,
             primaryUsageRemainingFraction: primaryUsage.remainingFraction,
             secondaryUsageRemainingFraction: secondaryUsage.remainingFraction,
             accountEmail: accountEmail,
@@ -944,14 +1050,14 @@ struct CodexAccountUsageStatus: Equatable {
     private static func usageStatus(
         prefix: String,
         window: [String: Any]?
-    ) -> (label: String, remainingFraction: Double?, resetText: String?, resetDate: Date?) {
+    ) -> (prefix: String, percentLabel: String, remainingFraction: Double?, resetText: String?, resetDate: Date?) {
         let resetDate = window.flatMap { parseResetDate(from: $0) }
         let resetText = resetDate.flatMap { formatRelativeReset(to: $0) }
         guard let usedPercent = numericValue(window?["usedPercent"]) else {
-            return ("\(prefix) -", nil, resetText, resetDate)
+            return (prefix, "-", nil, resetText, resetDate)
         }
         let remainingPercent = min(100, max(0, 100 - usedPercent))
-        return ("\(prefix) \(Int(remainingPercent.rounded()))%", remainingPercent / 100, resetText, resetDate)
+        return (prefix, "\(Int(remainingPercent.rounded()))%", remainingPercent / 100, resetText, resetDate)
     }
 
     private static func parseResetDate(from window: [String: Any]) -> Date? {
@@ -980,15 +1086,15 @@ struct CodexAccountUsageStatus: Equatable {
     private static func formatRelativeReset(to target: Date) -> String? {
         // UTC差分秒で計算。タイムゾーン変換不要
         let diff = target.timeIntervalSince(Date())
-        if diff <= 60 { return L("もうすぐ") }
+        if diff <= 60 { return String(localized: "もうすぐ") }
         let totalMin = Int(diff / 60)
         let hours = totalMin / 60
         let mins = totalMin % 60
-        if hours < 1 { return L("あと \(totalMin)m") }
-        if hours < 24 { return mins > 0 ? L("あと \(hours)h\(mins)m") : L("あと \(hours)h") }
+        if hours < 1 { return String(localized: "あと\(totalMin)m") }
+        if hours < 24 { return mins > 0 ? String(localized: "あと\(hours)h\(mins)m") : String(localized: "あと\(hours)h") }
         let days = hours / 24
         let hrs = hours % 24
-        return hrs > 0 ? L("あと \(days)d \(hrs)h") : L("あと \(days)d")
+        return hrs > 0 ? String(localized: "あと\(days)d\(hrs)h") : String(localized: "あと\(days)d")
     }
 
     private static func numericValue(_ value: Any?) -> Double? {
@@ -996,6 +1102,20 @@ struct CodexAccountUsageStatus: Equatable {
         if let value = value as? Int { return Double(value) }
         if let value = value as? NSNumber { return value.doubleValue }
         return nil
+    }
+
+    var isChatGPTFreePlan: Bool {
+        guard accountKind == .chatgpt else { return false }
+        let normalized = planLabel.lowercased().replacingOccurrences(of: " ", with: "").replacingOccurrences(of: "_", with: "").replacingOccurrences(of: "-", with: "")
+        return normalized == "free" || normalized == "freetier" || normalized == "freeplan"
+    }
+
+    var isUnsupportedAccountKind: Bool {
+        accountKind == .apiKey || accountKind == .amazonBedrock
+    }
+
+    var shouldShowUsagePills: Bool {
+        accountKind == .chatgpt
     }
 }
 
@@ -1007,28 +1127,40 @@ enum DraftCanvasError: LocalizedError {
     case processNotRunning
     case processExited
     case rpcError(String)
+    case rateLimited(retryAfter: TimeInterval?)
+    case timeout
+    case freePlanNotEntitled(message: String)
     case missingThreadID
     case missingGeneratedContent
     case unsupportedImageResult(String)
+    case threadIDCollision(String)
 
     var errorDescription: String? {
         switch self {
         case .invalidJSONLine(let line):
-            return L("JSON行を解析できません: \(line)")
+            return String(localized: "JSON行を解析できません: \(line)")
         case .invalidRequest(let message):
             return message
         case .processNotRunning:
-            return L("codex app-server が起動していません。")
+            return String(localized: "codex app-server が起動していません。")
         case .processExited:
-            return L("codex app-server が終了しました。")
+            return String(localized: "codex app-server が終了しました。")
         case .rpcError(let message):
             return message
+        case .rateLimited:
+            return String(localized: "レート制限に達しました。再試行中です。")
+        case .timeout:
+            return String(localized: "タイムアウトしました。")
+        case .freePlanNotEntitled:
+            return String(localized: "ChatGPT の有料プランが必要です。")
         case .missingThreadID:
-            return L("thread/start のレスポンスから thread id を取得できませんでした。")
+            return String(localized: "thread/start のレスポンスから thread id を取得できませんでした。")
         case .missingGeneratedContent:
-            return L("生成結果を取得できませんでした。ログを確認してください。")
+            return String(localized: "生成結果を取得できませんでした。ログを確認してください。")
         case .unsupportedImageResult(let value):
-            return L("未対応の画像結果形式です: \(value.prefix(64))")
+            return String(localized: "未対応の画像結果形式です: \(value.prefix(64))")
+        case .threadIDCollision(let id):
+            return String(localized: "内部エラー: thread ID が重複しました (\(id))。")
         }
     }
 }
@@ -1052,6 +1184,15 @@ private extension JSONEncoder {
     }
 }
 
+// MARK: - RateLimitConfirmation
+
+struct RateLimitConfirmation: Identifiable {
+    let id = UUID()
+    let remainingPercent: Int
+    let concurrency: Int
+    let resume: () -> Void
+}
+
 // MARK: - CompletionSoundOption
 
 enum CompletionSoundOption: String, CaseIterable {
@@ -1073,7 +1214,7 @@ enum CompletionSoundOption: String, CaseIterable {
 
     var displayName: String {
         switch self {
-        case .off: return L("オフ")
+        case .off: return String(localized: "オフ")
         default: return rawValue
         }
     }

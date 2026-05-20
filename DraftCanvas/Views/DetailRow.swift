@@ -4,6 +4,7 @@ struct DetailRow: View {
     let label: String
     let value: String
     var trailing: AnyView? = nil
+    var lineLimit: Int? = 5
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -17,7 +18,7 @@ struct DetailRow: View {
             Text(value)
                 .font(.caption)
                 .textSelection(.enabled)
-                .lineLimit(5)
+                .lineLimit(lineLimit)
         }
     }
 }

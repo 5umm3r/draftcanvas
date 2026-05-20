@@ -100,10 +100,41 @@ extension ContentView {
                 Divider()
             }
 
+            if !isCollapsed, viewModel.accountUsageStatus.isChatGPTFreePlan {
+                HStack(spacing: 6) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                    Text(String(localized: "ChatGPT Free プランでは画像生成を利用できません"))
+                        .font(.caption)
+                    Spacer()
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(.ultraThinMaterial)
+
+                Divider()
+            }
+
             if !isCollapsed, let attachedImage = viewModel.currentInputs.attachedImage {
                 HStack {
                     AttachedImageThumbnail(
                         filePath: attachedImage.filePath,
+                        overlayPath: viewModel.currentInputs.editSource.flatMap { src in
+                            guard src.isInpainting else { return nil }
+                            return viewModel.projectStore.previewURL(id: src.projectItemID).path
+                        },
+                        onTap: {
+                            if attachedImage.kind == .sketch {
+                                viewModel.openSketchEditorForReedit(attachedImage)
+                                return
+                            }
+                            guard let editSource = viewModel.currentInputs.editSource,
+                                  editSource.isInpainting,
+                                  let item = viewModel.items.first(where: { $0.id == editSource.projectItemID })
+                            else { return }
+                            viewModel.openMaskEditor(item: item)
+                        },
                         onRemove: {
                             if viewModel.currentInputs.editSource != nil {
                                 viewModel.cancelEditingHistoryItem()
@@ -125,7 +156,7 @@ extension ContentView {
                     isFocused: $promptIsFocused,
                     dynamicHeight: $promptTextHeight,
                     maxHeight: maxH,
-                    onSubmit: viewModel.generate,
+                    onSubmit: { viewModel.generate() },
                     onSetupReplacer: { replacer in
                         viewModel.onReplacePromptText = replacer
                     },
@@ -164,6 +195,7 @@ extension ContentView {
                     let promptEmpty = prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                     let enhanceDisabled = promptEmpty || viewModel.isEnhancingPrompt
                     Button {
+                        guard EntitlementGate.shared.requireUnlocked() else { return }
                         viewModel.enhancePrompt()
                     } label: {
                         HStack(spacing: 3) {
@@ -210,8 +242,8 @@ extension ContentView {
                 if isCollapsed {
                     HStack(spacing: 8) {
                         HStack(spacing: 4) {
-                            if viewModel.currentInputs.attachedImage != nil {
-                                Image(systemName: "paperclip")
+                            if let attached = viewModel.currentInputs.attachedImage {
+                                Image(systemName: attached.kind == .sketch ? "scribble.variable" : "paperclip")
                                     .font(.caption)
                                     .foregroundStyle(.tertiary)
                             }
@@ -250,7 +282,7 @@ extension ContentView {
                             } label: {
                                 if let r = model.rating {
                                     Label(
-                                        "\(model.displayName)   \(L("コスト")):\(r.cost)  \(L("賢さ")):\(r.smart)  \(L("速さ")):\(r.speed)",
+                                        "\(model.displayName)   \(String(localized: "コスト")):\(r.cost)  \(String(localized: "賢さ")):\(r.smart)  \(String(localized: "速さ")):\(r.speed)",
                                         systemImage: viewModel.currentInputs.model == model.id ? "checkmark" : ""
                                     )
                                 } else {
@@ -337,7 +369,7 @@ extension ContentView {
                     .help("アスペクト比")
 
                     Menu {
-                        ForEach(1...4, id: \.self) { n in
+                        ForEach(1...8, id: \.self) { n in
                             Button {
                                 viewModel.binding(for: \.count).wrappedValue = n
                                 viewModel.binding(for: \.concurrency).wrappedValue = n
@@ -347,7 +379,7 @@ extension ContentView {
                         HStack(spacing: 5) {
                             Image(systemName: "square.stack")
                                 .font(.system(size: 13))
-                            Text(L("\(viewModel.currentInputs.count)枚"))
+                            Text("\(viewModel.currentInputs.count)枚")
                                 .font(.system(size: 13, weight: .medium))
                             Image(systemName: "chevron.down")
                                 .font(.system(size: 9, weight: .semibold))
@@ -370,7 +402,7 @@ extension ContentView {
                         HStack(spacing: 5) {
                             Image(systemName: "square.split.2x1")
                                 .font(.system(size: 13))
-                            Text(L("\(viewModel.currentInputs.concurrency)並列"))
+                            Text("\(viewModel.currentInputs.concurrency)並列")
                                 .font(.system(size: 13, weight: .medium))
                             Image(systemName: "chevron.down")
                                 .font(.system(size: 9, weight: .semibold))
@@ -388,24 +420,46 @@ extension ContentView {
                     Spacer()
 
                     Button {
-                        viewModel.pickAttachmentImage()
+                        viewModel.openSketchEditor()
                     } label: {
                         HStack(spacing: 4) {
-                            Image(systemName: "paperclip")
+                            Image(systemName: "scribble.variable")
                                 .font(.system(size: 15, weight: .medium))
-                            if viewModel.currentInputs.attachedImage != nil {
+                            if viewModel.currentInputs.attachedImage?.kind == .sketch {
                                 Circle()
                                     .fill(Color.accentColor)
                                     .frame(width: 6, height: 6)
                             }
                         }
                         .frame(width: 42, height: 42)
-                        .background(viewModel.currentInputs.attachedImage != nil ? Color.accentColor.opacity(0.12) : Color.primary.opacity(0.04))
+                        .background(viewModel.currentInputs.attachedImage?.kind == .sketch ? Color.accentColor.opacity(0.12) : Color.primary.opacity(0.04))
                         .clipShape(Circle())
                     }
                     .buttonStyle(.borderless)
                     .disabled(viewModel.currentInputs.editSource != nil)
-                    .help(viewModel.currentInputs.attachedImage != nil ? LocalizedStringKey("参照画像添付中") : LocalizedStringKey("参照画像を添付"))
+                    .help(LocalizedStringKey("ラフを描いて構図を指示"))
+
+                    Button {
+                        viewModel.pickAttachmentImage()
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "paperclip")
+                                .font(.system(size: 15, weight: .medium))
+                            if viewModel.currentInputs.attachedImage?.kind == .regular {
+                                Circle()
+                                    .fill(Color.accentColor)
+                                    .frame(width: 6, height: 6)
+                            }
+                        }
+                        .frame(width: 42, height: 42)
+                        .background(viewModel.currentInputs.attachedImage?.kind == .regular ? Color.accentColor.opacity(0.12) : Color.primary.opacity(0.04))
+                        .clipShape(Circle())
+                    }
+                    .buttonStyle(.borderless)
+                    .disabled(viewModel.currentInputs.editSource != nil)
+                    .help(viewModel.currentInputs.attachedImage?.kind == .regular ? LocalizedStringKey("参照画像添付中") : LocalizedStringKey("参照画像を添付"))
+
+                    retryFailedJobsButton
 
                     Button {
                         viewModel.generate()
@@ -520,7 +574,11 @@ extension ContentView {
             let accumulator = URLAccumulator(count: urlProviderCount)
             for (i, provider) in providers.enumerated() {
                 guard provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) else { continue }
-                provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier) { item, _ in
+                provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier) { item, error in
+                    guard error == nil else {
+                        _ = accumulator.skip()
+                        return
+                    }
                     let fileURL: URL?
                     if let u = item as? URL { fileURL = u }
                     else if let u = item as? NSURL { fileURL = u as URL }
@@ -567,11 +625,35 @@ extension ContentView {
 
     func reasoningLabel(_ effort: String) -> String {
         switch effort {
-        case "low": return L("低")
-        case "medium": return L("中")
-        case "high": return L("高")
-        case "xhigh": return L("最高")
+        case "low": return String(localized: "低")
+        case "medium": return String(localized: "中")
+        case "high": return String(localized: "高")
+        case "xhigh": return String(localized: "最高")
         default: return effort
+        }
+    }
+
+    @ViewBuilder
+    var retryFailedJobsButton: some View {
+        let failedJobs = viewModel.currentJobs.filter { $0.status == .failed }
+        if !failedJobs.isEmpty,
+           !viewModel.isGeneratingForSelected,
+           let projectID = viewModel.effectiveProjectID,
+           viewModel.lastRequestByProject[projectID] != nil {
+            Button {
+                viewModel.retryFailedJobs(projectID: projectID)
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "arrow.circlepath")
+                        .font(.system(size: 14, weight: .medium))
+                    Text(String(localized: "失敗のみ再試行 (\(failedJobs.count))"))
+                        .font(.system(size: 13))
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 8)
+            }
+            .buttonStyle(.bordered)
+            .help(String(localized: "失敗したジョブのみ再試行"))
         }
     }
 

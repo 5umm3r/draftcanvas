@@ -119,9 +119,9 @@ struct BackgroundRemovalPreviewSheet: View {
     private var modePickerHelp: String {
         let logoAvail = preview.session.logoMaskCI != nil
         let photoAvail = preview.session.photoMaskCI != nil
-        if logoAvail && photoAvail { return L("ロゴ: 色差ベース / 写真: AI検出") }
-        if logoAvail { return L("ロゴモードのみ利用可能") }
-        return L("写真モードのみ利用可能")
+        if logoAvail && photoAvail { return String(localized: "ロゴ: 色差ベース / 写真: AI検出") }
+        if logoAvail { return String(localized: "ロゴモードのみ利用可能") }
+        return String(localized: "写真モードのみ利用可能")
     }
 
     // MARK: - Real-time update

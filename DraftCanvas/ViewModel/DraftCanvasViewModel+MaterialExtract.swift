@@ -35,7 +35,7 @@ extension DraftCanvasViewModel {
                 failed.errorMessage = error.localizedDescription
                 upsert(failed, into: projectID)
                 let message = (error as? MaterialExtractionError)?.localizedDescription
-                    ?? L("素材分解に失敗しました")
+                    ?? String(localized: "素材分解に失敗しました")
                 errorToast = message
                 logs.append("素材分解失敗: \(error.localizedDescription)")
             }

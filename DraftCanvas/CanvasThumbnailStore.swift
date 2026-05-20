@@ -18,7 +18,7 @@ final class CanvasThumbnailStore: ObservableObject, @unchecked Sendable {
     }
 
     func thumbnailURL(for item: ProjectItem) -> URL {
-        let ext = item.isBackgroundRemoved ? "png" : "jpg"
+        let ext = (item.isBackgroundRemoved || item.hasSVG) ? "png" : "jpg"
         return thumbsDirectory.appendingPathComponent("\(item.id.uuidString).\(ext)")
     }
 
@@ -110,7 +110,7 @@ final class CanvasThumbnailStore: ObservableObject, @unchecked Sendable {
         guard let cg = CGImageSourceCreateThumbnailAtIndex(source, 0, opts as CFDictionary) else { return }
         let rep = NSBitmapImageRep(cgImage: cg)
         let data: Data?
-        if item.isBackgroundRemoved {
+        if item.isBackgroundRemoved || item.hasSVG {
             data = rep.representation(using: .png, properties: [:])
         } else {
             data = rep.representation(using: .jpeg, properties: [.compressionFactor: NSNumber(value: 0.85)])

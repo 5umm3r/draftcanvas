@@ -146,7 +146,7 @@ final class CodexAppServerClient: @unchecked Sendable {
     }
 
     func stop() {
-        queue.sync {
+        queue.async {
             ProcessTerminationResources.release(
                 process: self.process,
                 stdinHandle: self.stdinHandle,
@@ -231,28 +231,57 @@ final class CodexAppServerClient: @unchecked Sendable {
         }
     }
 
-    func runTurn(threadID: String, prompt: String, referenceImagePath: String? = nil) async throws -> CodexTurnResult {
+    func runTurn(
+        threadID: String,
+        prompt: String,
+        referenceImagePath: String? = nil
+    ) async throws -> CodexTurnResult {
         let waiter = TurnWaiter(threadID: threadID)
 
         let resultTask = Task<CodexTurnResult, Error> {
-            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<CodexTurnResult, Error>) in
-                queue.async {
-                    self.turnWaiters[threadID] = waiter
-                    waiter.continuation = continuation
+            try await withTaskCancellationHandler {
+                try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<CodexTurnResult, Error>) in
+                    self.queue.async {
+                        if let existing = self.turnWaiters[threadID] {
+                            self.emitLog("[警告] thread ID 衝突を検出: \(threadID)。先発 waiter を中断します。")
+                            existing.finish(throwing: DraftCanvasError.threadIDCollision(threadID))
+                        }
+                        self.turnWaiters[threadID] = waiter
+                        waiter.continuation = continuation
+                    }
+                }
+            } onCancel: {
+                self.queue.async {
+                    self.turnWaiters.removeValue(forKey: threadID)
+                    waiter.finish(throwing: CancellationError())
                 }
             }
         }
 
-        _ = try await sendRequest(
-            method: "turn/start",
-            params: [
-                "threadId": threadID,
-                "input": CodexTurnInputFactory.input(prompt: prompt, referenceImagePath: referenceImagePath)
-            ]
-        )
+        do {
+            _ = try await sendRequest(
+                method: "turn/start",
+                params: [
+                    "threadId": threadID,
+                    "input": CodexTurnInputFactory.input(prompt: prompt, referenceImagePath: referenceImagePath)
+                ]
+            )
+        } catch {
+            resultTask.cancel()
+            throw error
+        }
 
-        return try await withTimeout(seconds: 240) {
-            try await resultTask.value
+        do {
+            return try await withTimeout(seconds: 480) {
+                try await resultTask.value
+            }
+        } catch {
+            resultTask.cancel()
+            queue.async {
+                self.turnWaiters.removeValue(forKey: threadID)
+                waiter.finish(throwing: error)
+            }
+            throw error
         }
     }
 
@@ -289,7 +318,16 @@ final class CodexAppServerClient: @unchecked Sendable {
                 do {
                     let request = JSONRPCRequest(id: id, method: method, params: sendableParams.value)
                     let line = try JSONRPCCodec.encodeRequestLine(request)
+                    #if DEBUG
                     self.emitLog("-> \(String(data: line, encoding: .utf8)?.trimmingCharacters(in: .newlines) ?? method)")
+                    #else
+                    if var dict = try? JSONSerialization.jsonObject(with: line) as? [String: Any] {
+                        dict = redactSensitiveFields(in: dict)
+                        self.emitLog("-> \(self.compactJSONString(dict))")
+                    } else {
+                        self.emitLog("-> \(method)")
+                    }
+                    #endif
                     try stdinHandle.write(contentsOf: line)
                 } catch {
                     self.pending.removeValue(forKey: id)
@@ -301,6 +339,10 @@ final class CodexAppServerClient: @unchecked Sendable {
     }
 
     private func launchProcess() throws {
+        if codexExecutablePath.hasPrefix("/") {
+            try CodexExecutableValidator.validate(codexExecutablePath)
+        }
+
         let process = Process()
         let stdinPipe = Pipe()
         let stdoutPipe = Pipe()
@@ -346,13 +388,18 @@ final class CodexAppServerClient: @unchecked Sendable {
         self.stdinHandle = stdinPipe.fileHandleForWriting
         self.stdoutHandle = stdoutPipe.fileHandleForReading
         self.stderrHandle = stderrPipe.fileHandleForReading
-        emitLog("codex app-server を起動しました: \(launchConfiguration.executablePath) \(launchConfiguration.arguments.joined(separator: " "))")
+        let displayPath = launchConfiguration.executablePath.replacingOccurrences(of: NSHomeDirectory(), with: "~")
+        emitLog("codex app-server を起動しました: \(displayPath) \(launchConfiguration.arguments.joined(separator: " "))")
     }
 
     private func handleStdout(_ data: Data) {
         let messages = stdoutParser.append(data)
         for message in messages {
+            #if DEBUG
             emitLog("<- \(compactJSONString(message))")
+            #else
+            emitLog("<- \(compactJSONString(redactSensitiveFields(in: message)))")
+            #endif
             if let id = message["id"] as? Int {
                 handleResponse(message, id: id)
             } else {
@@ -367,8 +414,14 @@ final class CodexAppServerClient: @unchecked Sendable {
         }
 
         if let error = message["error"] as? [String: Any] {
-            let errorMessage = error["message"] as? String ?? compactJSONString(error)
-            continuation.resume(throwing: DraftCanvasError.rpcError(errorMessage))
+            if let rateLimitError = RateLimitClassifier.classify(error) {
+                continuation.resume(throwing: rateLimitError)
+            } else if let freePlanError = FreePlanClassifier.classify(error) {
+                continuation.resume(throwing: freePlanError)
+            } else {
+                let errorMessage = error["message"] as? String ?? compactJSONString(error)
+                continuation.resume(throwing: DraftCanvasError.rpcError(errorMessage))
+            }
             return
         }
 
@@ -405,7 +458,7 @@ final class CodexAppServerClient: @unchecked Sendable {
         stdoutHandle = nil
         stderrHandle = nil
         startupTask = nil
-        emitLog(L("codex app-server が終了しました。"))
+        emitLog(String(localized: "codex app-server が終了しました。"))
     }
 
     private func emitLog(_ message: String) {
@@ -573,6 +626,102 @@ private final class TurnWaiter: @unchecked Sendable {
     }
 }
 
+enum FreePlanClassifier {
+    private static let freePlanKeywords = ["free plan", "free tier", "upgrade", "not entitled", "requires a paid", "paid plan", "subscription required"]
+
+    static func classify(_ error: [String: Any]) -> DraftCanvasError? {
+        let message = (error["message"] as? String ?? "").lowercased()
+        guard freePlanKeywords.contains(where: { message.contains($0) }) else { return nil }
+        return .freePlanNotEntitled(message: error["message"] as? String ?? message)
+    }
+}
+
+enum RateLimitClassifier {
+    private static let rateLimitKeywords = ["rate_limit", "rate limit", "too many requests", "quota"]
+
+    static func classify(_ error: [String: Any]) -> DraftCanvasError? {
+        let isRateLimitCode: Bool
+        if let intCode = error["code"] as? Int {
+            isRateLimitCode = intCode == 429 || intCode == -32029
+        } else if let strCode = error["code"] as? String {
+            isRateLimitCode = strCode == "429"
+        } else {
+            isRateLimitCode = false
+        }
+
+        let message = (error["message"] as? String ?? "").lowercased()
+        let hasRateLimitKeyword = rateLimitKeywords.contains { message.contains($0) }
+
+        guard isRateLimitCode || hasRateLimitKeyword else { return nil }
+
+        let retryAfter: TimeInterval? = {
+            guard let data = error["data"] as? [String: Any] else { return nil }
+            if let ra = data["retry_after"] as? TimeInterval { return ra }
+            if let ra = data["retryAfter"] as? TimeInterval { return ra }
+            if let ra = data["retry_after"] as? Int { return TimeInterval(ra) }
+            if let ra = data["retryAfter"] as? Int { return TimeInterval(ra) }
+            return nil
+        }()
+
+        return .rateLimited(retryAfter: retryAfter)
+    }
+}
+
+enum CodexExecutableValidator {
+    private static let allowedPrefixes: [String] = {
+        let home = NSHomeDirectory()
+        return [
+            "/usr/local/",
+            "/opt/homebrew/",
+            "/usr/bin/",
+            "/bin/",
+            "\(home)/.codex/",
+            "\(home)/.nvm/",
+            "\(home)/.volta/",
+            "\(home)/Library/",
+            Bundle.main.bundlePath,
+        ]
+    }()
+
+    static func validate(_ path: String) throws {
+        guard path.hasPrefix("/") else {
+            throw DraftCanvasError.invalidRequest("codex executable path must be absolute: \(path)")
+        }
+
+        let fm = FileManager.default
+        guard fm.fileExists(atPath: path) else {
+            throw DraftCanvasError.invalidRequest("codex executable not found: \(path)")
+        }
+        guard fm.isExecutableFile(atPath: path) else {
+            throw DraftCanvasError.invalidRequest("codex executable is not executable: \(path)")
+        }
+
+        let resolvedPath = URL(fileURLWithPath: path).resolvingSymlinksInPath().path
+        let isAllowed = allowedPrefixes.contains { prefix in
+            resolvedPath.hasPrefix(prefix) || path.hasPrefix(prefix)
+        }
+        guard isAllowed else {
+            throw DraftCanvasError.invalidRequest("codex executable path is not in an allowed location: \(path)")
+        }
+    }
+}
+
+#if !DEBUG
+private func redactSensitiveFields(in dict: [String: Any]) -> [String: Any] {
+    let sensitiveKeys: Set<String> = ["prompt", "instructions", "input", "email", "apikey", "token", "refresh_token", "accesstoken", "authorization", "password"]
+    var redacted = dict
+    for key in dict.keys {
+        if sensitiveKeys.contains(key.lowercased()) {
+            let len = (dict[key] as? String)?.count ?? 0
+            redacted[key] = "[redacted len=\(len)]"
+        } else if let nested = dict[key] as? [String: Any] {
+            redacted[key] = redactSensitiveFields(in: nested)
+        }
+    }
+    return redacted
+}
+#endif
+
 private func withTimeout<T: Sendable>(
     seconds: UInt64,
     operation: @escaping @Sendable () async throws -> T
@@ -583,11 +732,11 @@ private func withTimeout<T: Sendable>(
         }
         group.addTask {
             try await Task.sleep(nanoseconds: seconds * 1_000_000_000)
-            throw DraftCanvasError.rpcError(L("Codex turn がタイムアウトしました。"))
+            throw DraftCanvasError.timeout
         }
 
         guard let result = try await group.next() else {
-            throw DraftCanvasError.rpcError(L("Codex turn の結果を取得できませんでした。"))
+            throw DraftCanvasError.rpcError(String(localized: "Codex turn の結果を取得できませんでした。"))
         }
         group.cancelAll()
         return result

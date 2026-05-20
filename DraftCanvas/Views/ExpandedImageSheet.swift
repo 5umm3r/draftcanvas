@@ -6,17 +6,17 @@ struct ExpandedImageSheet: View {
     @ObservedObject var viewModel: DraftCanvasViewModel
     let onDismiss: () -> Void
 
-    @State private var currentIndex: Int
+    @State private var currentItemID: ProjectItem.ID
     @State private var keyMonitor: Any?
 
     init(item: ProjectItem, items: [ProjectItem], viewModel: DraftCanvasViewModel, onDismiss: @escaping () -> Void) {
         self.items = items
         self.viewModel = viewModel
         self.onDismiss = onDismiss
-        self._currentIndex = State(initialValue: items.firstIndex(where: { $0.id == item.id }) ?? 0)
+        self._currentItemID = State(initialValue: item.id)
     }
 
-    private var currentItem: ProjectItem { items[currentIndex] }
+    private var currentItem: ProjectItem? { items.first(where: { $0.id == currentItemID }) }
 
     var body: some View {
         ZStack(alignment: .topLeading) {
@@ -24,34 +24,11 @@ struct ExpandedImageSheet: View {
                 .ignoresSafeArea()
                 .onTapGesture { onDismiss() }
 
-            imageContent(for: currentItem)
-                .padding(48)
-                .allowsHitTesting(false)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-            if items.count > 1 {
-                HStack {
-                    Button(action: goPrevious) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 18, weight: .semibold))
-                            .frame(width: 44, height: 44)
-                            .background(.ultraThinMaterial, in: Circle())
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.leading, 20)
-
-                    Spacer()
-
-                    Button(action: goNext) {
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 18, weight: .semibold))
-                            .frame(width: 44, height: 44)
-                            .background(.ultraThinMaterial, in: Circle())
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.trailing, 20)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            if let item = currentItem {
+                imageContent(for: item)
+                    .padding(48)
+                    .allowsHitTesting(false)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
 
             Button { onDismiss() } label: {
@@ -67,18 +44,42 @@ struct ExpandedImageSheet: View {
             if items.count > 1 {
                 VStack {
                     Spacer()
-                    Text("\(currentIndex + 1) / \(items.count)")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(.ultraThinMaterial, in: Capsule())
-                        .padding(.bottom, 20)
+                    HStack(spacing: 8) {
+                        Button(action: goPrevious) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 13, weight: .semibold))
+                                .frame(width: 28, height: 28)
+                                .background(.ultraThinMaterial, in: Circle())
+                        }
+                        .buttonStyle(.plain)
+
+                        let displayIndex = items.firstIndex(where: { $0.id == currentItemID }).map { $0 + 1 } ?? 0
+                        Text("\(displayIndex) / \(items.count)")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(.ultraThinMaterial, in: Capsule())
+
+                        Button(action: goNext) {
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 13, weight: .semibold))
+                                .frame(width: 28, height: 28)
+                                .background(.ultraThinMaterial, in: Circle())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.bottom, 20)
                 }
                 .frame(maxWidth: .infinity)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .onChange(of: items) { _ in
+            if !items.contains(where: { $0.id == currentItemID }) {
+                onDismiss()
+            }
+        }
         .onAppear {
             keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
                 switch event.keyCode {
@@ -113,10 +114,14 @@ struct ExpandedImageSheet: View {
     }
 
     private func goNext() {
-        currentIndex = (currentIndex + 1) % items.count
+        guard !items.isEmpty,
+              let idx = items.firstIndex(where: { $0.id == currentItemID }) else { return }
+        currentItemID = items[(idx + 1) % items.count].id
     }
 
     private func goPrevious() {
-        currentIndex = (currentIndex - 1 + items.count) % items.count
+        guard !items.isEmpty,
+              let idx = items.firstIndex(where: { $0.id == currentItemID }) else { return }
+        currentItemID = items[(idx - 1 + items.count) % items.count].id
     }
 }

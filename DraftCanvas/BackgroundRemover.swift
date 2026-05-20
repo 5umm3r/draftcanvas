@@ -12,12 +12,12 @@ enum BackgroundRemovalError: Error, LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .imageDecodeFailed:    return L("画像ファイルを読み込めませんでした")
-        case .noSubjectFound:       return L("画像から主体を検出できませんでした")
-        case .visionFailed(let e):  return L("背景除去に失敗しました: \(e.localizedDescription)")
-        case .maskGenerationFailed: return L("マスクの生成に失敗しました")
-        case .encodeFailed:         return L("結果画像の保存に失敗しました")
-        case .modeUnavailable:      return L("選択したモードのマスクを取得できませんでした")
+        case .imageDecodeFailed:    return String(localized: "画像ファイルを読み込めませんでした")
+        case .noSubjectFound:       return String(localized: "画像から主体を検出できませんでした")
+        case .visionFailed(let e):  return String(localized: "背景除去に失敗しました: \(e.localizedDescription)")
+        case .maskGenerationFailed: return String(localized: "マスクの生成に失敗しました")
+        case .encodeFailed:         return String(localized: "結果画像の保存に失敗しました")
+        case .modeUnavailable:      return String(localized: "選択したモードのマスクを取得できませんでした")
         }
     }
 }

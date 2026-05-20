@@ -5,6 +5,7 @@ struct CircularPromptActionButton: View {
     let tooltip: LocalizedStringKey
     var costLevel: Int? = nil
     var isDisabled: Bool = false
+    var isAccent: Bool = false
     let action: () -> Void
 
     @State private var isHovered = false
@@ -14,8 +15,14 @@ struct CircularPromptActionButton: View {
             ZStack(alignment: .bottomTrailing) {
                 Image(systemName: systemImage)
                     .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(isAccent ? Color.white : Color.primary)
                     .frame(width: 36, height: 36)
-                    .background(Color.primary.opacity(isHovered ? 0.12 : 0.06), in: Circle())
+                    .background(
+                        isAccent
+                            ? AnyShapeStyle(Color.accentColor.opacity(isHovered ? 0.85 : 1.0))
+                            : AnyShapeStyle(Color.primary.opacity(isHovered ? 0.12 : 0.06)),
+                        in: Circle()
+                    )
                 if let level = costLevel, level > 0 {
                     CodexCostBadge(level: level)
                         .offset(x: 4, y: 4)

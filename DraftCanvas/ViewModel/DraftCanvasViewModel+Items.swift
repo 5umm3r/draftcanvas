@@ -102,14 +102,14 @@ extension DraftCanvasViewModel {
             }
             saveState()
         } catch {
-            errorToast = L("アイテムの複製に失敗しました")
+            errorToast = String(localized: "アイテムの複製に失敗しました")
             logs.append("複製エラー: \(error.localizedDescription)")
         }
     }
 
     func copyItemToProject(_ item: ProjectItem, targetProjectID: UUID) {
         if !performCopy(item, targetProjectID: targetProjectID) {
-            errorToast = L("アイテムのコピーに失敗しました")
+            errorToast = String(localized: "アイテムのコピーに失敗しました")
         }
         saveState()
     }

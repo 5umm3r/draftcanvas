@@ -58,3 +58,8 @@ _build/
 
 # Claude Code local settings
 .claude/settings.local.json
+.superpowers/
+
+# LLVM coverage profiling
+*.profraw
+*.profdata

@@ -50,12 +50,45 @@ extension ContentView {
 
     var canvasArea: some View {
         GeometryReader { geometry in
+            let actionPanelVisible: Bool =
+                !viewModel.isSelectionMode
+                && viewModel.selectedItemID != nil
+                && viewModel.items.contains(where: { $0.id == viewModel.selectedItemID })
+            let actionPanelReservation: CGFloat = 96
+            let promptStandardPad: CGFloat = 24
+            let needShift = actionPanelVisible && geometry.size.width < (actionPanelReservation + 780 + promptStandardPad)
+            let promptLeading: CGFloat = needShift ? actionPanelReservation : promptStandardPad
+
             ZStack(alignment: .bottom) {
                 canvas
 
-                promptPanel(maxPromptHeight: geometry.size.height / 2)
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 18)
+                VStack(spacing: 8) {
+                    if viewModel.isGeneratingForSelected {
+                        HStack {
+                            Spacer()
+                            Button {
+                                if let pid = viewModel.effectiveProjectID ?? viewModel.selectedProjectID {
+                                    viewModel.cancelProjectRuns(projectID: pid)
+                                }
+                            } label: {
+                                Label(String(localized: "停止"), systemImage: "stop.fill")
+                                    .font(.caption.weight(.medium))
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                            }
+                            .buttonStyle(.plain)
+                            .background(.ultraThinMaterial, in: Capsule())
+                            .overlay(Capsule().stroke(Color.primary.opacity(0.12), lineWidth: 1))
+                        }
+                        .frame(maxWidth: 780)
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    }
+                    promptPanel(maxPromptHeight: geometry.size.height / 2)
+                }
+                .padding(.leading, promptLeading)
+                .padding(.trailing, promptStandardPad)
+                .padding(.bottom, 18)
+                .animation(.easeInOut(duration: 0.2), value: viewModel.isGeneratingForSelected)
 
                 VStack(spacing: 8) {
                     if let errorMessage = viewModel.importError {
@@ -89,7 +122,7 @@ extension ContentView {
                             ProgressView()
                                 .scaleEffect(0.7)
                                 .frame(width: 16, height: 16)
-                            Text(L("\(progress.done) / \(progress.total) 枚処理中…"))
+                            Text(String(localized: "\(progress.done) / \(progress.total) 枚処理中…"))
                                 .font(.subheadline.weight(.medium))
                         }
                         .padding(.horizontal, 16)
@@ -112,9 +145,13 @@ extension ContentView {
                 canvasActionPanel
                     .padding(.leading, 16)
             }
-            .animation(.easeInOut(duration: 0.2), value: viewModel.selectedItemID)
+            .animation(.easeInOut(duration: 0.1), value: viewModel.selectedItemID)
             .sheet(item: $viewModel.inpaintingTarget) { item in
                 inpaintingEditorSheet(for: item)
+                    .environment(\.locale, l10n.locale)
+            }
+            .sheet(item: $viewModel.sketchEditorTarget) { target in
+                sketchEditorSheet(for: target)
                     .environment(\.locale, l10n.locale)
             }
             .sheet(item: $viewModel.backgroundRemovalPreview) { preview in
@@ -148,12 +185,12 @@ extension ContentView {
     @ViewBuilder
     func inpaintingEditorSheet(for item: ProjectItem) -> some View {
         if let nsImage = viewModel.cachedImage(for: item) {
-            let mode = viewModel.inpaintMode
             InpaintingMaskEditorSheet(
                 originalImage: nsImage,
-                mode: mode,
+                mode: $viewModel.inpaintMode,
+                initialStrokes: viewModel.projectStore.readStrokesData(id: item.id) ?? [],
                 onComplete: { strokes in
-                    if mode == .remove {
+                    if viewModel.inpaintMode == .remove {
                         viewModel.applyMaskRemoval(item: item, strokes: strokes)
                     } else {
                         viewModel.applyInpaintingMask(item: item, strokes: strokes)
@@ -167,6 +204,26 @@ extension ContentView {
             Text("画像を読み込めませんでした")
                 .padding(40)
         }
+    }
+
+    @ViewBuilder
+    func sketchEditorSheet(for target: SketchEditorTarget) -> some View {
+        let initialStrokes = target.existingAttachment.map { viewModel.loadSketchStrokes(for: $0) } ?? []
+        SketchEditorSheet(
+            canvasPixelSize: target.canvasPixelSize,
+            initialStrokes: initialStrokes,
+            onComplete: { strokes in
+                viewModel.applySketch(
+                    strokes: strokes,
+                    canvasPixelSize: target.canvasPixelSize,
+                    existingID: target.existingAttachment?.id
+                )
+                viewModel.sketchEditorTarget = nil
+            },
+            onCancel: {
+                viewModel.sketchEditorTarget = nil
+            }
+        )
     }
 
     var canvas: some View {
@@ -390,6 +447,7 @@ extension ContentView {
 
                     if viewModel.isSelectionMode {
                         Button {
+                            guard EntitlementGate.shared.requireUnlocked() else { return }
                             viewModel.exportSelectedBatch()
                         } label: {
                             Image(systemName: "square.and.arrow.up.on.square")
@@ -536,6 +594,17 @@ extension ContentView {
                                 .padding(6)
                         }
                     }
+                    .overlay(alignment: .bottomLeading) {
+                        if item.hasSVG && !viewModel.vectorizingItemIDs.contains(item.id) {
+                            Text("SVG")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 5)
+                                .padding(.vertical, 2)
+                                .background(Color.primary.opacity(0.45), in: Capsule())
+                                .padding(6)
+                        }
+                    }
                     .overlay {
                         if viewModel.vectorizingItemIDs.contains(item.id) {
                             VectorizingOverlay {
@@ -556,7 +625,7 @@ extension ContentView {
             if viewModel.isSelectionMode {
                 viewModel.toggleMultiSelection(item)
             } else {
-                viewModel.selectedItemID = (viewModel.selectedItemID == item.id) ? nil : item.id
+                viewModel.selectedItemID = item.id
                 viewModel.selectedJobID = nil
             }
         }
@@ -650,7 +719,7 @@ extension ContentView {
 
     @ViewBuilder
     func preview(for job: GenerationJob) -> some View {
-        JobPreviewView(job: job, onStop: viewModel.stopServer)
+        JobPreviewView(job: job)
     }
 
     var checkerboard: some View {
@@ -671,17 +740,11 @@ extension ContentView {
                 }
                 CircularPromptActionButton(
                     systemImage: "paintbrush.pointed",
-                    tooltip: "マスクして編集",
+                    tooltip: "マスク編集",
                     costLevel: viewModel.itemActionCostLevel
                 ) {
-                    viewModel.inpaint(item: item)
-                }
-                CircularPromptActionButton(
-                    systemImage: "eraser",
-                    tooltip: "マスクして除去",
-                    costLevel: viewModel.itemActionCostLevel
-                ) {
-                    viewModel.maskRemove(item: item)
+                    guard EntitlementGate.shared.requireUnlocked() else { return }
+                    viewModel.openMaskEditor(item: item)
                 }
                 CircularPromptActionButton(
                     systemImage: "scissors",
@@ -697,19 +760,20 @@ extension ContentView {
                     viewModel.startMaterialExtraction(item: item)
                 }
                 CircularPromptActionButton(
-                    systemImage: "pencil.and.outline",
-                    tooltip: "ベクター化",
-                    isDisabled: item.hasSVG
-                ) {
-                    viewModel.vectorize(item: item)
-                }
-                CircularPromptActionButton(
                     systemImage: "arrow.down.left.and.arrow.up.right.rectangle",
                     tooltip: "高解像度化",
                     costLevel: viewModel.itemActionCostLevel,
                     isDisabled: viewModel.upscalingItemIDs.contains(item.id)
                 ) {
+                    guard EntitlementGate.shared.requireUnlocked() else { return }
                     viewModel.upscaleItem(item)
+                }
+                CircularPromptActionButton(
+                    systemImage: "pencil.and.outline",
+                    tooltip: "ベクター化",
+                    isDisabled: item.hasSVG
+                ) {
+                    viewModel.vectorize(item: item)
                 }
 
                 Rectangle()
@@ -724,22 +788,18 @@ extension ContentView {
                     viewModel.duplicateItem(item)
                 }
                 CircularPromptActionButton(
-                    systemImage: "square.and.arrow.up",
-                    tooltip: "エクスポート"
-                ) {
-                    viewModel.exportItem(item)
-                }
-                CircularPromptActionButton(
-                    systemImage: "folder",
-                    tooltip: "Finderで表示"
-                ) {
-                    viewModel.reveal(item: item)
-                }
-                CircularPromptActionButton(
                     systemImage: "trash",
                     tooltip: "削除"
                 ) {
                     confirmingDeleteItemID = item.id
+                }
+                CircularPromptActionButton(
+                    systemImage: "square.and.arrow.up",
+                    tooltip: "エクスポート",
+                    isAccent: true
+                ) {
+                    guard EntitlementGate.shared.requireUnlocked() else { return }
+                    viewModel.exportItem(item)
                 }
             }
             .padding(10)
@@ -820,7 +880,6 @@ struct ItemThumbnailView: View {
 
 struct JobPreviewView: View {
     let job: GenerationJob
-    let onStop: () -> Void
     @State private var nsImage: NSImage?
 
     var body: some View {
@@ -831,17 +890,36 @@ struct JobPreviewView: View {
                     .scaledToFit()
             } else if job.status == .failed {
                 VStack(spacing: 8) {
-                    Image(systemName: "exclamationmark.triangle")
-                        .font(.system(size: 28))
-                        .foregroundStyle(.orange)
-                    Text(job.errorMessage ?? L("生成に失敗しました"))
-                        .font(.caption)
-                        .multilineTextAlignment(.center)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 12)
+                    switch job.failureKind {
+                    case .rateLimited:
+                        Image(systemName: "bolt.slash")
+                            .font(.system(size: 28))
+                            .foregroundStyle(.orange)
+                        Text(String(localized: "並列失敗"))
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(.primary)
+                    case .timeout:
+                        Image(systemName: "clock.badge.exclamationmark")
+                            .font(.system(size: 28))
+                            .foregroundStyle(.orange)
+                        Text(String(localized: "タイムアウト"))
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(.primary)
+                    default:
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.system(size: 28))
+                            .foregroundStyle(.orange)
+                    }
+                    if let message = job.errorMessage {
+                        Text(message)
+                            .font(.caption)
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 12)
+                    }
                 }
             } else {
-                GenerationProgressView(onStop: onStop)
+                GenerationProgressView(prompt: job.prompt, seed: job.index)
             }
         }
         .task(id: job.imageData) {

@@ -41,6 +41,18 @@ enum ExportPipeline {
             } else {
                 output = try ImageEncoder.svgWrapping(pngData: processedPNG)
             }
+        case .tiff:
+            output = try TIFFEncoder.encode(
+                pngData: processedPNG,
+                dpi: settings.dpi,
+                compression: settings.tiffCompression
+            )
+        case .pdf:
+            output = try PDFEncoder.encode(
+                pngData: processedPNG,
+                dpi: settings.dpi,
+                compression: settings.pdfCompression
+            )
         }
 
         if settings.format == .png && settings.pngOptimize {
@@ -95,7 +107,7 @@ enum ExportPipeline {
         case .currentJob(let pngData, _):
             return pngData
         case .batchItems:
-            fatalError(L("batchItems は ZipExportPipeline で処理してください"))
+            fatalError(String(localized: "batchItems は ZipExportPipeline で処理してください"))
         }
     }
 }

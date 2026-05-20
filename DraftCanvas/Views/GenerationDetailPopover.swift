@@ -19,13 +19,6 @@ struct GenerationDetailPopover: View {
                 DetailRow(label: "Error", value: errorMessage)
             }
 
-            Divider()
-
-            PopoverButton(systemImage: "square.and.arrow.up", title: L("エクスポート")) {
-                viewModel.exportSelected()
-            }
-            .disabled(job.status != .succeeded)
-
             Spacer()
         }
         .padding(18)

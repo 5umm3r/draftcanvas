@@ -7,7 +7,7 @@ extension DraftCanvasViewModel {
         guard !upscalingItemIDs.contains(item.id) else { return }
         upscalingItemIDs.insert(item.id)
 
-        let label = item.prompt.prefix(30).isEmpty ? L("素材") : String(item.prompt.prefix(30))
+        let label = item.prompt.prefix(30).isEmpty ? String(localized: "素材") : String(item.prompt.prefix(30))
         let job = GenerationJob(
             index: jobsByProject[projectID]?.count ?? 0,
             prompt: "高解像度化: \(label)",
@@ -19,6 +19,7 @@ extension DraftCanvasViewModel {
         let itemID = item.id
         let clientRef = client
         let availableModelsRef = availableModels
+        let translateToEnglishRef = translateToEnglish
 
         let task = Task { @MainActor in
             var running = job
@@ -33,7 +34,8 @@ extension DraftCanvasViewModel {
                         client: clientRef,
                         availableModels: availableModelsRef,
                         item: item,
-                        fileURL: fileURL
+                        fileURL: fileURL,
+                        translateToEnglish: translateToEnglishRef
                     )
                 }.value
 
@@ -57,7 +59,7 @@ extension DraftCanvasViewModel {
                 failed.status = .failed
                 failed.errorMessage = error.localizedDescription
                 upsert(failed, into: projectID)
-                errorToast = L("高解像度化に失敗しました")
+                errorToast = String(localized: "高解像度化に失敗しました")
                 logs.append("高解像度化失敗: \(error.localizedDescription)")
             }
         }
@@ -99,7 +101,7 @@ extension DraftCanvasViewModel {
                 saveState()
                 logs.append("高解像度化: 新規アイテム追加 \(newItem.id)")
             } catch {
-                errorToast = L("高解像度化結果の保存に失敗しました")
+                errorToast = String(localized: "高解像度化結果の保存に失敗しました")
                 logs.append("高解像度化保存失敗: \(error.localizedDescription)")
             }
 
@@ -117,7 +119,7 @@ extension DraftCanvasViewModel {
                 saveState()
                 logs.append("高解像度化: 上書き完了 \(item.id)")
             } catch {
-                errorToast = L("高解像度化結果の上書きに失敗しました")
+                errorToast = String(localized: "高解像度化結果の上書きに失敗しました")
                 logs.append("高解像度化上書き失敗: \(error.localizedDescription)")
             }
         }
@@ -127,15 +129,33 @@ extension DraftCanvasViewModel {
         client: CodexAppServerClient,
         availableModels: [CodexModel],
         item: ProjectItem,
-        fileURL: URL
+        fileURL: URL,
+        translateToEnglish: Bool
     ) async throws -> Data {
         try await client.start()
         let model = selectFastLowCostModel(from: availableModels)
+        let description = item.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            ? "imported asset"
+            : item.prompt
+        let normalizedDescription: String?
+        if translateToEnglish {
+            normalizedDescription = try? await PromptLanguageNormalizer.normalizeUpscaleDescription(
+                description,
+                client: client,
+                model: model
+            )
+        } else {
+            normalizedDescription = nil
+        }
         let threadID = try await client.startThread(
             model: model.id,
             reasoningEffort: model.defaultReasoningEffort
         )
-        let prompt = PromptFactory.upscalePrompt(for: item)
+        let prompt = PromptFactory.upscalePrompt(
+            for: item,
+            translateToEnglish: translateToEnglish,
+            normalizedDescription: normalizedDescription
+        )
         let result = try await client.runTurn(
             threadID: threadID,
             prompt: prompt,

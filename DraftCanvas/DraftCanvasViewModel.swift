@@ -11,19 +11,14 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var jobsByProject: [UUID: [GenerationJob]] = [:]
     @Published var generatingProjectIDs: Set<UUID> = []
     @Published var draftInputs: ProjectInputs = ProjectInputs()
+    var lastRequestByProject: [UUID: GenerationRequest] = [:]
+    var generationTasks: [UUID: [UUID: Task<Void, Never>]] = [:]
 
     // MARK: - Global state
     @AppStorage("appAppearance") var appAppearanceRaw: String = "light"
-    @AppStorage("totalGeneratedImages") var totalGeneratedImages: Int = 0
-    @AppStorage("session5hCount") var session5hCount: Int = 0
-    @AppStorage("sessionWeeklyCount") var sessionWeeklyCount: Int = 0
-    @AppStorage("session5hResetEpoch") var session5hResetEpoch: Double = 0
-    @AppStorage("sessionWeeklyResetEpoch") var sessionWeeklyResetEpoch: Double = 0
-    // syncSessionWindows のリセット時に直近生成分を保持するためのカウンタ（永続化不要）
-    var pendingFiveHDelta = 0
-    var pendingWeeklyDelta = 0
     @AppStorage("completionSound") var completionSound: String = CompletionSoundOption.glass.rawValue
     @AppStorage("canvasSortOrder") var canvasSortOrderRaw: String = CanvasSortOrder.createdAtAscending.rawValue
+    @AppStorage("translateToEnglish") var translateToEnglish: Bool = false
     var canvasSortOrder: CanvasSortOrder {
         get { CanvasSortOrder(rawValue: canvasSortOrderRaw) ?? .createdAtAscending }
         set {
@@ -133,17 +128,25 @@ final class DraftCanvasViewModel: ObservableObject {
     private var logBuffer: [String] = []
     private var logFlushTask: Task<Void, Never>?
     @Published var accountUsageStatus = CodexAccountUsageStatus.unavailable
+    var accountUsageStatusFetchedAt: Date?
+    @Published var pendingRateLimitConfirmation: RateLimitConfirmation?
+    @Published var pendingFreeAccountBlock = false
     @Published var isRefreshingAccountUsage = false
     @Published var preferredSaveFolder: URL?
     @Published var errorToast: String?
     @Published var accountUsagePrewarmFailed = false
-    @Published var isLoggingOut = false
     @Published var codexVersion: String = "--"
     @Published var availableModels: [CodexModel] = []
 
     @Published var vectorizingItemIDs: Set<UUID> = []
     @Published var inpaintingTarget: ProjectItem? = nil
-    @Published var inpaintMode: InpaintMode = .edit
+    @Published var sketchEditorTarget: SketchEditorTarget? = nil
+    @Published var inpaintMode: InpaintMode = {
+        let raw = UserDefaults.standard.string(forKey: "draftCanvas.inpaintMode") ?? "edit"
+        return InpaintMode(rawValue: raw) ?? .edit
+    }() {
+        didSet { UserDefaults.standard.set(inpaintMode.rawValue, forKey: "draftCanvas.inpaintMode") }
+    }
     @Published var isEnhancingPrompt = false
     @Published var exportRequest: ExportRequest? = nil
     @Published var exportingProjectID: UUID? = nil
@@ -188,6 +191,7 @@ final class DraftCanvasViewModel: ObservableObject {
         projectStore: ProjectStore = ProjectStore(),
         preferredSaveFolderStore: PreferredSaveFolderStore = PreferredSaveFolderStore()
     ) {
+        DraftCanvasViewModel.migratePromptLanguageModeIfNeeded()
         DraftCanvasViewModel.migrateAppSupportDirectoryIfNeeded()
         let client = CodexAppServerClient()
         self.client = client
@@ -214,9 +218,15 @@ final class DraftCanvasViewModel: ObservableObject {
                 }
             }
         }
+        coordinator.onConcurrencyAdjusted = { [weak self] old, new in
+            Task { @MainActor [weak self] in
+                self?.logs.append("並列度を \(old) → \(new) に調整しました")
+            }
+        }
         projectStore.cleanupAllAttachments()
         loadProjects()
         preferredSaveFolder = preferredSaveFolderStore.load()
+            ?? FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
         prewarmAndRefresh()
     }
 
@@ -310,6 +320,17 @@ final class DraftCanvasViewModel: ObservableObject {
     }
     #endif
 
+    private static func migratePromptLanguageModeIfNeeded() {
+        let migrationKey = "draftcanvas.migration.promptLanguageModeToBool.v1"
+        let defaults = UserDefaults.standard
+        guard !defaults.bool(forKey: migrationKey) else { return }
+        defer { defaults.set(true, forKey: migrationKey) }
+        if let oldRaw = defaults.string(forKey: "promptLanguageMode") {
+            defaults.set(oldRaw == "english", forKey: "translateToEnglish")
+        }
+        defaults.removeObject(forKey: "promptLanguageMode")
+    }
+
     private static func migrateAppSupportDirectoryIfNeeded() {
         let migrationKey = "draftcanvas.migration.appSupportDirRenamed.v1"
         guard !UserDefaults.standard.bool(forKey: migrationKey) else { return }
@@ -322,5 +343,56 @@ final class DraftCanvasViewModel: ObservableObject {
 
         guard fm.fileExists(atPath: oldURL.path), !fm.fileExists(atPath: newURL.path) else { return }
         try? fm.moveItem(at: oldURL, to: newURL)
+    }
+
+    // MARK: - Relaunch support
+
+    var hasInFlightWork: Bool {
+        !generatingProjectIDs.isEmpty
+            || !vectorizingItemIDs.isEmpty
+            || !upscalingItemIDs.isEmpty
+            || isEnhancingPrompt
+            || importProgress != nil
+            || batchExportProgress != nil
+            || exportingProjectID != nil
+            || backgroundRemovalPreview != nil
+            || materialExtractionPreview != nil
+            || upscalePreview != nil
+            || inpaintingTarget != nil
+    }
+
+    func cancelInFlightWorkForRelaunch() {
+        for (_, runMap) in generationTasks { for (_, t) in runMap { t.cancel() } }
+        generationTasks.removeAll()
+        for (_, t) in vectorizationTasks { t.cancel() }
+        vectorizationTasks.removeAll()
+        for (_, t) in upscalingTasks { t.cancel() }
+        upscalingTasks.removeAll()
+        enhanceTask?.cancel()
+        enhanceTask = nil
+
+        generatingProjectIDs.removeAll()
+        vectorizingItemIDs.removeAll()
+        upscalingItemIDs.removeAll()
+        isEnhancingPrompt = false
+        importProgress = nil
+        batchExportProgress = nil
+        exportingProjectID = nil
+        backgroundRemovalPreview = nil
+        materialExtractionPreview = nil
+        upscalePreview = nil
+        inpaintingTarget = nil
+
+        saveState()
+    }
+
+    func prepareForRelaunch() async {
+        let tasksToAwait = generationTasks.values.flatMap { $0.values }
+            + Array(vectorizationTasks.values)
+            + Array(upscalingTasks.values)
+        let enhance = enhanceTask
+        cancelInFlightWorkForRelaunch()
+        for task in tasksToAwait { await task.value }
+        await enhance?.value
     }
 }

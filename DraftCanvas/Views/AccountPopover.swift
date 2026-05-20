@@ -1,18 +1,18 @@
 import SwiftUI
 
 struct AccountPopover: View {
-    @EnvironmentObject private var l10n: LocalizationManager
-
     let status: CodexAccountUsageStatus
     let isLoading: Bool
     let hasFailed: Bool
-    let isLoggingOut: Bool
     let codexVersion: String
     let onRetry: () -> Void
-    let onLogout: () -> Void
+    let onRelaunchAndRetry: () -> Void
 
-    private var canLogout: Bool {
-        status.accountKind == .chatgpt
+    private var planDisplay: String {
+        if status.planLabel == "-" || status.planLabel.isEmpty {
+            return status.accountKind.japaneseLabel
+        }
+        return "\(status.accountKind.japaneseLabel) \(status.planLabel.capitalized)"
     }
 
     var body: some View {
@@ -20,16 +20,48 @@ struct AccountPopover: View {
             if isLoading {
                 HStack {
                     Spacer()
-                    ProgressView(L("読み込み中..."))
+                    ProgressView("読み込み中...")
                         .padding(.vertical, 16)
                     Spacer()
                 }
+            } else if status.accountKind == .unauthenticated {
+                HStack(spacing: 10) {
+                    Image(systemName: status.accountKind.systemImageName)
+                        .font(.system(size: 28))
+                        .foregroundStyle(.secondary)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("未ログイン")
+                            .font(.headline)
+                            .lineLimit(1)
+                        Text("Codex CLI で `codex login` を実行")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(2)
+                    }
+                    Spacer()
+                }
+                if hasFailed {
+                    Button("再試行", action: onRelaunchAndRetry)
+                        .padding(.top, 8)
+                }
+                Divider()
+                    .padding(.vertical, 10)
+                HStack {
+                    Text("Codex")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Text(codexVersion)
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                        .monospacedDigit()
+                }
             } else if hasFailed {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(L("取得に失敗しました"))
+                    Text("取得に失敗しました")
                         .foregroundStyle(.secondary)
                         .font(.subheadline)
-                    Button(L("再試行"), action: onRetry)
+                    Button("再試行", action: onRetry)
                 }
             } else {
                 HStack(spacing: 10) {
@@ -40,59 +72,52 @@ struct AccountPopover: View {
                         Text(status.accountLabel)
                             .font(.headline)
                             .lineLimit(1)
-                        if status.planLabel != "-" {
-                            Text(status.planLabel)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(Color.secondary.opacity(0.15), in: RoundedRectangle(cornerRadius: 4))
+                        Text(planDisplay)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                        if status.isChatGPTFreePlan {
+                            HStack(spacing: 4) {
+                                Image(systemName: "exclamationmark.triangle")
+                                    .font(.caption)
+                                    .foregroundStyle(.orange)
+                                Text(String(localized: "画像生成には ChatGPT Plus 以上のプランが必要です"))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        if status.isUnsupportedAccountKind {
+                            HStack(spacing: 4) {
+                                Image(systemName: "exclamationmark.triangle")
+                                    .font(.caption)
+                                    .foregroundStyle(.orange)
+                                Text(String(localized: "ChatGPT Plus 以上のサブスクリプションでログインしてください。API Key / Amazon Bedrock 構成は未サポートです。"))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                     }
                     Spacer()
-                }
-
-                Text("Codex \(codexVersion)")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
-                    .padding(.top, 4)
-
-                if canLogout {
-                    Button(action: onLogout) {
-                        HStack(spacing: 6) {
-                            if isLoggingOut {
-                                ProgressView().controlSize(.small)
-                            } else {
-                                Image(systemName: "rectangle.portrait.and.arrow.right")
-                            }
-                            Text(L("ログアウト"))
-                        }
-                        .foregroundStyle(.red)
-                        .font(.subheadline)
+                    Button(action: onRelaunchAndRetry) {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 14))
+                            .foregroundStyle(.secondary)
                     }
-                    .buttonStyle(.plain)
-                    .disabled(isLoggingOut)
-                    .padding(.top, 10)
+                    .buttonStyle(.borderless)
+                    .disabled(isLoading)
+                    .help(String(localized: "アカウント情報を再取得"))
                 }
-
-                Divider().padding(.vertical, 12)
-
+                Divider()
+                    .padding(.vertical, 10)
                 HStack {
-                    Text(L("言語 / Language"))
-                        .font(.subheadline)
+                    Text("Codex")
+                        .font(.caption)
                         .foregroundStyle(.secondary)
                     Spacer()
-                    Picker("", selection: Binding(
-                        get: { l10n.current },
-                        set: { l10n.current = $0 }
-                    )) {
-                        ForEach(LocalizationManager.AppLanguage.allCases) { lang in
-                            Text(lang.displayName).tag(lang)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                    .labelsHidden()
-                    .fixedSize()
+                    Text(codexVersion)
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                        .monospacedDigit()
                 }
             }
         }
