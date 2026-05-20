@@ -245,7 +245,7 @@
     <a href="#features">Features</a>
     <a href="#pricing">Pricing</a>
     <button type="button" class="lang-toggle" onclick="setLang('ja')" aria-label="日本語に切替">日本語</button>
-    <a href="https://github.com/5umm3r/draftcanvas-releases/releases/latest/download/DraftCanvas.dmg" class="btn-primary">Try Free</a>
+    <a href="https://github.com/5umm3r/draftcanvas-releases/releases/latest/download/DraftCanvas.dmg" class="btn-primary" onclick="if(window.__cfBeacon)window.__cfBeacon.track('download_click',{lp:'en',location:'nav'})">Try Free</a>
   </div>
 </nav>
 
@@ -257,7 +257,7 @@
   <h1>Get the image you want,<br>faster.</h1>
   <p class="hero-desc">Put your ChatGPT paid plan to work<sup>*</sup>.<br>Sketch, inpaint, remove backgrounds, and export — all on Mac.</p>
   <div class="hero-ctas">
-    <a href="https://github.com/5umm3r/draftcanvas-releases/releases/latest/download/DraftCanvas.dmg" class="btn-primary">Try Free for 14 Days</a>
+    <a href="https://github.com/5umm3r/draftcanvas-releases/releases/latest/download/DraftCanvas.dmg" class="btn-primary" onclick="if(window.__cfBeacon)window.__cfBeacon.track('download_click',{lp:'en',location:'hero'})">Try Free for 14 Days</a>
     <a href="#features" class="btn-secondary">See Features</a>
   </div>
   <p class="hero-note">macOS 14+ · Apple Silicon / Intel</p>
@@ -377,7 +377,8 @@
         <li>30-day money-back guarantee</li>
       </ul>
       <a href="https://github.com/5umm3r/draftcanvas-releases/releases/latest/download/DraftCanvas.dmg"
-         class="btn-primary" style="display:block;text-align:center;padding:14px;">Try Free</a>
+         class="btn-primary" style="display:block;text-align:center;padding:14px;"
+         onclick="if(window.__cfBeacon)window.__cfBeacon.track('download_click',{lp:'en',location:'pricing'})">Try Free</a>
     </div>
   </div>
 </section>
@@ -414,7 +415,8 @@
   <h2>Take 14 days. See if it fits.</h2>
   <p>No credit card. Walk away if it's not for you.</p>
   <a href="https://github.com/5umm3r/draftcanvas-releases/releases/latest/download/DraftCanvas.dmg"
-     class="btn-primary">Try Free</a>
+     class="btn-primary"
+     onclick="if(window.__cfBeacon)window.__cfBeacon.track('download_click',{lp:'en',location:'final_cta'})">Try Free</a>
 </section>
 
 <!-- System Requirements -->
@@ -476,5 +478,8 @@
     if (lang === 'ja') location.assign('../');
   }
 </script>
+<!-- Cloudflare Web Analytics -->
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "145787b162134eeeb534032a0a55c764"}'></script>
+<!-- End Cloudflare Web Analytics -->
 </body>
 </html>

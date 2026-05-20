@@ -1,0 +1,36 @@
+name: DL Stats
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch download counts
+        run: |
+          mkdir -p _stats
+          DATE=$(date -u +%Y-%m-%d)
+          curl -s "https://api.github.com/repos/5umm3r/draftcanvas-releases/releases" \
+            | jq --arg date "$DATE" '
+              [.[] | {
+                tag: .tag_name,
+                published: .published_at,
+                assets: [.assets[] | {name, dl: .download_count}]
+              }] | {date: $date, releases: .}
+            ' > _stats/$DATE.json
+          cp _stats/$DATE.json _stats/latest.json
+
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add _stats/
+          git diff --staged --quiet || git commit -m "stats: $(date -u +%Y-%m-%d) DL集計更新"
+          git push

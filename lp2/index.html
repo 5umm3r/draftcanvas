@@ -244,7 +244,7 @@
     <a href="#features">機能</a>
     <a href="#pricing">価格</a>
     <button type="button" class="lang-toggle" onclick="setLang('en')" aria-label="Switch to English">EN</button>
-    <a href="https://github.com/5umm3r/draftcanvas-releases/releases/latest/download/DraftCanvas.dmg" class="btn-primary">無料で試す</a>
+    <a href="https://github.com/5umm3r/draftcanvas-releases/releases/latest/download/DraftCanvas.dmg" class="btn-primary" onclick="if(window.__cfBeacon)window.__cfBeacon.track('download_click',{lp:'ja',location:'nav'})">無料で試す</a>
   </div>
 </nav>
 
@@ -256,7 +256,7 @@
   <h1>思いどおりの画像を、<br>もっと速く。</h1>
   <p class="hero-desc">ChatGPT の有料プランで画像生成を使い倒す<sup>*</sup>。<br>ラフ・インペイント・背景除去・書き出しまで、全部 Mac で完結。</p>
   <div class="hero-ctas">
-    <a href="https://github.com/5umm3r/draftcanvas-releases/releases/latest/download/DraftCanvas.dmg" class="btn-primary">14日間 無料で試す</a>
+    <a href="https://github.com/5umm3r/draftcanvas-releases/releases/latest/download/DraftCanvas.dmg" class="btn-primary" onclick="if(window.__cfBeacon)window.__cfBeacon.track('download_click',{lp:'ja',location:'hero'})">14日間 無料で試す</a>
     <a href="#features" class="btn-secondary">機能を見る</a>
   </div>
   <p class="hero-note">macOS 14+ · Apple Silicon / Intel 対応</p>
@@ -375,7 +375,8 @@
         <li>30日間 全額返金保証</li>
       </ul>
       <a href="https://github.com/5umm3r/draftcanvas-releases/releases/latest/download/DraftCanvas.dmg"
-         class="btn-primary" style="display:block;text-align:center;padding:14px;">無料で試す</a>
+         class="btn-primary" style="display:block;text-align:center;padding:14px;"
+         onclick="if(window.__cfBeacon)window.__cfBeacon.track('download_click',{lp:'ja',location:'pricing'})">無料で試す</a>
     </div>
   </div>
 </section>
@@ -412,7 +413,8 @@
   <h2>まず、14日間使ってみて。</h2>
   <p>クレジットカード不要。気に入らなければ何もしなくていい。</p>
   <a href="https://github.com/5umm3r/draftcanvas-releases/releases/latest/download/DraftCanvas.dmg"
-     class="btn-primary">無料で試す</a>
+     class="btn-primary"
+     onclick="if(window.__cfBeacon)window.__cfBeacon.track('download_click',{lp:'ja',location:'final_cta'})">無料で試す</a>
 </section>
 
 <!-- System Requirements -->
@@ -473,5 +475,8 @@
     if (lang === 'en') location.assign('./en/');
   }
 </script>
+<!-- Cloudflare Web Analytics -->
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "145787b162134eeeb534032a0a55c764"}'></script>
+<!-- End Cloudflare Web Analytics -->
 </body>
 </html>
