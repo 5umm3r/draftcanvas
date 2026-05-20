@@ -34,6 +34,7 @@
 		10B001042D00000100000001 /* SketchCompositor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10B001032D00000100000001 /* SketchCompositor.swift */; };
 		10B001062D00000100000001 /* SketchEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10B001052D00000100000001 /* SketchEditor.swift */; };
 		10B001082D00000100000001 /* DraftCanvasViewModel+Sketch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10B001072D00000100000001 /* DraftCanvasViewModel+Sketch.swift */; };
+		CC0000010000000100000001 /* DraftCanvasViewModel+CanvasNavigation.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0000010000000100000002 /* DraftCanvasViewModel+CanvasNavigation.swift */; };
 		10A001062D00000100000001 /* CodexVersionFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A001052D00000100000001 /* CodexVersionFetcherTests.swift */; };
 		11E0B45D4D0F324989FCCD93 /* AttachedImageThumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 882F372486E669E60EAD25D8 /* AttachedImageThumbnail.swift */; };
 		1A4DA35B6990671B2B04CE17 /* GenerationProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDE4F73BDF7FFF820CD906D9 /* GenerationProgressView.swift */; };
@@ -150,6 +151,7 @@
 		10B001032D00000100000001 /* SketchCompositor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SketchCompositor.swift; sourceTree = "<group>"; };
 		10B001052D00000100000001 /* SketchEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SketchEditor.swift; sourceTree = "<group>"; };
 		10B001072D00000100000001 /* DraftCanvasViewModel+Sketch.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Sketch.swift"; path = "ViewModel/DraftCanvasViewModel+Sketch.swift"; sourceTree = "<group>"; };
+		CC0000010000000100000002 /* DraftCanvasViewModel+CanvasNavigation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+CanvasNavigation.swift"; path = "ViewModel/DraftCanvasViewModel+CanvasNavigation.swift"; sourceTree = "<group>"; };
 		10A001052D00000100000001 /* CodexVersionFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexVersionFetcherTests.swift; sourceTree = "<group>"; };
 		117AE1F8D5A65A54ADEDE469 /* ExportNaming.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ExportNaming.swift; sourceTree = "<group>"; };
 		134A116412C44FA2816DEBF3 /* CodexCostBadge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CodexCostBadge.swift; path = Views/CodexCostBadge.swift; sourceTree = "<group>"; };
@@ -435,6 +437,7 @@
 				3A03337AB6A2A6AB4F968292 /* DraftCanvasViewModel+CanvasImport.swift */,
 				5831C49A57AB9C7A2D8B1C1D /* DraftCanvasViewModel+MaterialExtract.swift */,
 				AA0000010000000100000002 /* DraftCanvasViewModel+Upscale.swift */,
+				CC0000010000000100000002 /* DraftCanvasViewModel+CanvasNavigation.swift */,
 			);
 			name = ViewModel;
 			sourceTree = "<group>";
@@ -590,6 +593,7 @@
 				10B001042D00000100000001 /* SketchCompositor.swift in Sources */,
 				10B001062D00000100000001 /* SketchEditor.swift in Sources */,
 				10B001082D00000100000001 /* DraftCanvasViewModel+Sketch.swift in Sources */,
+				CC0000010000000100000001 /* DraftCanvasViewModel+CanvasNavigation.swift in Sources */,
 				623D869631EA48939954B532 /* ExportSettings.swift in Sources */,
 				9C2F227923CA43959A7F3EA6 /* ExportRequest.swift in Sources */,
 				AD4934E858494D91AE6A39DA /* ImageEncoder.swift in Sources */,
