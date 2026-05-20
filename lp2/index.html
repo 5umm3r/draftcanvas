@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="ChatGPT の有料プランで画像生成を使い倒す。背景除去・Sketch・書き出しまで、全部 Mac で完結。買い切り ¥1,980。">
+<meta name="description" content="ChatGPT の有料プランで画像生成を使い倒す。背景除去・ラフ・書き出しまで、全部 Mac で完結。買い切り ¥1,980。">
 <title>DraftCanvas — AI 画像生成・編集 for Mac</title>
 <meta property="og:title" content="DraftCanvas — AI 画像生成・編集 for Mac">
-<meta property="og:description" content="ChatGPT の有料プランで画像生成を使い倒す。背景除去・Sketch・書き出しまで、全部 Mac で完結。¥1,980 買い切り、14日間無料トライアル。">
+<meta property="og:description" content="ChatGPT の有料プランで画像生成を使い倒す。背景除去・ラフ・書き出しまで、全部 Mac で完結。¥1,980 買い切り、14日間無料トライアル。">
 <meta property="og:image" content="https://spade3.com/lp2/assets/screenshot.png">
 <meta property="og:url" content="https://spade3.com/lp2/">
 <meta property="og:type" content="website">
@@ -113,11 +113,6 @@
   .feature-icon svg { width: 16px; height: 16px; stroke: #555; fill: none; stroke-width: 1.5; }
   .feature-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 5px; }
   .feature-desc { font-size: 13px; color: #777; line-height: 1.6; }
-  .feature-tag {
-    display: inline-block; font-size: 10px; font-weight: 600;
-    color: #888; background: #f3f3f3;
-    padding: 2px 8px; border-radius: 4px; margin-top: 10px;
-  }
 
   /* ===== Pricing ===== */
   .pricing { background: #fafafa; padding: 80px 48px; text-align: center; }
@@ -163,6 +158,29 @@
   .final-cta p { font-size: 15px; color: #888; margin-bottom: 28px; }
   .final-cta .btn-primary { padding: 14px 32px; font-size: 16px; }
 
+  /* ===== System Requirements ===== */
+  .system-req { padding: 80px 48px; }
+  .system-req-inner { max-width: 640px; margin: 0 auto; }
+  .system-req-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; list-style: none; }
+  .system-req-list li {
+    display: flex; align-items: baseline; gap: 16px;
+    padding: 14px 0; border-bottom: 1px solid #f0f0f0;
+    font-size: 14px; color: #333;
+  }
+  .system-req-list li span {
+    flex-shrink: 0; width: 80px;
+    font-size: 12px; color: #888; font-weight: 600; letter-spacing: 0.03em;
+  }
+
+  /* ===== Disclaimer ===== */
+  .disclaimer { background: #fafafa; padding: 80px 48px; }
+  .disclaimer-inner { max-width: 720px; margin: 0 auto; }
+  .disclaimer-list { list-style: none; }
+  .disclaimer-list li { padding: 20px 0; border-bottom: 1px solid #f0f0f0; }
+  .disclaimer-list li:last-child { border-bottom: none; }
+  .disclaimer-list h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+  .disclaimer-list p { font-size: 13px; color: #777; line-height: 1.7; }
+
   /* ===== Footer ===== */
   footer {
     border-top: 1px solid #f0f0f0;
@@ -187,6 +205,9 @@
     .faq { padding: 60px 24px; }
     .final-cta { padding: 60px 24px; }
     footer { padding: 20px 24px; flex-direction: column; gap: 12px; text-align: center; }
+    .system-req { padding: 60px 24px; }
+    .system-req-list { grid-template-columns: 1fr; }
+    .disclaimer { padding: 60px 24px; }
   }
 </style>
 </head>
@@ -210,12 +231,12 @@
 <section class="hero">
   <div class="hero-badge">macOS ネイティブ · ChatGPT 連携</div>
   <h1>思ったとおりの画像を、<br>もっと速く。</h1>
-  <p class="hero-desc">ChatGPT の有料プランで画像生成を使い倒す<sup>*</sup>。<br>背景除去・Sketch・書き出しまで、全部 Mac で完結。</p>
+  <p class="hero-desc">ChatGPT の有料プランで画像生成を使い倒す<sup>*</sup>。<br>背景除去・ラフ・書き出しまで、全部 Mac で完結。</p>
   <div class="hero-ctas">
     <a href="https://draftcanvas.lemonsqueezy.com/checkout/buy/2330d4a5-c212-4248-8053-07993e8522e4" class="btn-primary">14日間 無料で試す</a>
     <a href="#features" class="btn-secondary">機能を見る</a>
   </div>
-  <p class="hero-note">クレジットカード不要 · macOS 14+ · Apple Silicon / Intel 対応</p>
+  <p class="hero-note">macOS 14+ · Apple Silicon / Intel 対応</p>
   <p class="hero-annotation">* 画像生成には ChatGPT 有料プラン（Plus・Pro・Team 等）のご契約と、プラン内の使用量が必要です。</p>
 </section>
 
@@ -232,9 +253,9 @@
     <div class="steps-grid">
       <div class="step">
         <div class="step-num">STEP 01</div>
-        <img src="assets/step01.png" alt="Sketch で手書き" loading="lazy" onerror="this.style.display='none'">
+        <img src="assets/step01.png" alt="ラフで手書き" loading="lazy" onerror="this.style.display='none'">
         <h3>ラフを描く</h3>
-        <p class="step-desc">Sketch で構図をざっくり手描き。テキストでも指示できる。</p>
+        <p class="step-desc">ラフで構図をざっくり手描き。テキストでも指示できる。</p>
       </div>
       <div class="step">
         <div class="step-num">STEP 02</div>
@@ -263,16 +284,14 @@
       <div class="feature-body">
         <h3>AI 生成</h3>
         <p class="feature-desc">ChatGPT の有料プランで画像生成。プロンプト補完で意図した画像をすぐ引き出す。</p>
-        <span class="feature-tag">ChatGPT 連携</span>
       </div>
     </div>
 
     <div class="feature-card">
-      <img src="assets/feature-sketch.png" alt="Sketch 手書き画面" loading="lazy" onerror="this.style.display='none'">
+      <img src="assets/feature-sketch.png" alt="ラフ 手書き画面" loading="lazy" onerror="this.style.display='none'">
       <div class="feature-body">
-        <h3>Sketch</h3>
+        <h3>ラフ</h3>
         <p class="feature-desc">手書きラフをそのまま AI に渡す。「こんな感じ」をテキストより正確に伝えられる。</p>
-        <span class="feature-tag">Mac のみ</span>
       </div>
     </div>
 
@@ -281,7 +300,6 @@
       <div class="feature-body">
         <h3>背景除去</h3>
         <p class="feature-desc">Apple Vision Framework でオフライン処理。画像は端末から出ない。速くて精度が高い。</p>
-        <span class="feature-tag">オフライン</span>
       </div>
     </div>
 
@@ -290,7 +308,6 @@
       <div class="feature-body">
         <h3>ベクター化</h3>
         <p class="feature-desc">ラスター画像を SVG に変換。ロゴや図解は拡大しても劣化しない形で保存。</p>
-        <span class="feature-tag">Mac のみ</span>
       </div>
     </div>
 
@@ -299,16 +316,14 @@
       <div class="feature-body">
         <h3>インペイント</h3>
         <p class="feature-desc">気になる部分だけ選択して再生成。全体を作り直さずに細部を詰められる。</p>
-        <span class="feature-tag">Mac のみ</span>
       </div>
     </div>
 
     <div class="feature-card">
-      <img src="assets/feature-material.png" alt="マテリアル抽出結果" loading="lazy" onerror="this.style.display='none'">
+      <img src="assets/feature-material.png" alt="素材として分離結果" loading="lazy" onerror="this.style.display='none'">
       <div class="feature-body">
-        <h3>マテリアル抽出</h3>
+        <h3>素材として分離</h3>
         <p class="feature-desc">画像から素材・テクスチャを切り出す。デザイン素材の再利用がスムーズになる。</p>
-        <span class="feature-tag">オフライン</span>
       </div>
     </div>
 
@@ -319,11 +334,11 @@
 <section class="pricing" id="pricing">
   <div class="pricing-inner">
     <p class="section-label">価格</p>
-    <h2 class="section-title">まず、試してみて。</h2>
+    <h2 class="section-title">まずは、無料で始めてください。</h2>
     <div class="pricing-card">
       <span class="trial-badge">14日間 全機能無料</span>
       <div class="trial-heading">クレジットカード不要</div>
-      <div class="trial-sub">試してみて、手放せなくなったら買う。<br>それだけでいい。</div>
+      <div class="trial-sub">まずはお試しください</div>
       <hr class="pricing-divider">
       <div class="price-row">
         <span class="price-amount">¥1,980</span>
@@ -378,6 +393,46 @@
      class="btn-primary">無料で試す</a>
 </section>
 
+<!-- System Requirements -->
+<section class="system-req">
+  <div class="system-req-inner">
+    <p class="section-label">動作環境</p>
+    <h2 class="section-title">必要環境</h2>
+    <ul class="system-req-list">
+      <li><span>OS</span>macOS 14 Sonoma 以降</li>
+      <li><span>チップ</span>Apple Silicon / Intel</li>
+      <li><span>メモリ</span>8GB 以上推奨</li>
+      <li><span>ディスク</span>500MB 以上の空き容量</li>
+    </ul>
+  </div>
+</section>
+
+<!-- Disclaimer -->
+<section class="disclaimer">
+  <div class="disclaimer-inner">
+    <p class="section-label">免責事項</p>
+    <h2 class="section-title">ご利用にあたって</h2>
+    <ul class="disclaimer-list">
+      <li>
+        <h3>ChatGPT 有料プランが必要</h3>
+        <p>画像の生成・編集機能の利用には ChatGPT の有料プラン（Plus・Pro・Team 等）の契約と、プラン内の使用量が必要です。利用料金は DraftCanvas の購入代金とは別途、OpenAI に対してお支払いいただきます。</p>
+      </li>
+      <li>
+        <h3>Codex CLI の事前セットアップが必要</h3>
+        <p>AI 機能の動作には事前にターミナルから Codex CLI のインストールおよびログインが必要です。Codex CLI 自体の動作・仕様変更については DraftCanvas の保証範囲外です。</p>
+      </li>
+      <li>
+        <h3>商標について</h3>
+        <p>ChatGPT・OpenAI は OpenAI, L.L.C. の商標または登録商標です。Apple・macOS・Mac・Apple Silicon は Apple Inc. の米国およびその他の国における商標または登録商標です。その他記載のサービス名・製品名は各社の商標または登録商標です。</p>
+      </li>
+      <li>
+        <h3>AI 生成画像の権利と品質</h3>
+        <p>本アプリで生成された画像の著作権・利用権および利用に伴う責任は、生成したユーザーに帰属します。生成結果の品質・特定の用途への適合性・他者の権利を侵害しないことを当方は保証しません。商用利用前に OpenAI の利用規約をご確認ください。</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
 </main>
 
 <!-- Footer -->
@@ -386,7 +441,7 @@
   <nav class="footer-links" aria-label="フッターナビゲーション">
     <a href="privacy.html">プライバシーポリシー</a>
     <a href="terms.html">利用規約</a>
-    <a href="mailto:spade3yasui@gmail.com">お問い合わせ</a>
+    <a href="https://forms.gle/zizcXwMQaLAw4fux6">お問い合わせ</a>
   </nav>
 </footer>
 
