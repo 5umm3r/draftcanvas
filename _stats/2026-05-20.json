@@ -1,0 +1,19 @@
+{
+  "date": "2026-05-20",
+  "releases": [
+    {
+      "tag": "v1.0.0",
+      "published": "2026-05-20T06:33:53Z",
+      "assets": [
+        {
+          "name": "appcast.xml",
+          "dl": 1
+        },
+        {
+          "name": "DraftCanvas.dmg",
+          "dl": 2
+        }
+      ]
+    }
+  ]
+}
