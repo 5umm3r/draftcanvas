@@ -40,6 +40,8 @@ struct ContentView: View {
     @State var promptFocusTrigger: Bool = false
     @State var expandedItem: ProjectItem? = nil
     @State var confirmingDeleteItemID: UUID? = nil
+    @FocusState var canvasIsFocused: Bool
+    @State var canvasViewportWidth: CGFloat = 0
 
     var body: some View {
         let _ = l10n.locale  // l10n 変化で ContentView を再描画させる

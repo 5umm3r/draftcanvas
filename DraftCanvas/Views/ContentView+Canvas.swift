@@ -288,14 +288,28 @@ extension ContentView {
                         )
                     }
                     .coordinateSpace(name: "canvasViewport")
+                    .focusable(true)
+                    .focused($canvasIsFocused)
+                    .onKeyPress(.leftArrow)  { handleArrow(.left) }
+                    .onKeyPress(.rightArrow) { handleArrow(.right) }
+                    .onKeyPress(.upArrow)    { handleArrow(.up) }
+                    .onKeyPress(.downArrow)  { handleArrow(.down) }
+                    .onKeyPress(.space)      { handleSpace() }
                     .onTapGesture {
                         viewModel.selectedItemID = nil
                         viewModel.selectedJobID = nil
                     }
                     .background(
                         GeometryReader { geo in
-                            Color.clear.onAppear { canvasViewportHeight = geo.size.height }
-                                .onChange(of: geo.size.height) { _, h in canvasViewportHeight = h }
+                            Color.clear
+                                .onAppear {
+                                    canvasViewportHeight = geo.size.height
+                                    canvasViewportWidth = geo.size.width
+                                }
+                                .onChange(of: geo.size) { _, s in
+                                    canvasViewportHeight = s.height
+                                    canvasViewportWidth = s.width
+                                }
                         }
                     )
                     .overlay(
@@ -329,6 +343,7 @@ extension ContentView {
                             .onEnded {
                                 NSApp.keyWindow?.makeFirstResponder(nil)
                                 promptIsFocused = false
+                                canvasIsFocused = true
                             }
                     )
                     .onPreferenceChange(CardFramePreferenceKey.self) { frames in
@@ -350,6 +365,12 @@ extension ContentView {
                                     proxy.scrollTo(id, anchor: .center)
                                 }
                             }
+                        }
+                    }
+                    .onChange(of: viewModel.selectedItemID) { _, newID in
+                        guard let id = newID else { return }
+                        withAnimation(.easeInOut(duration: 0.18)) {
+                            proxy.scrollTo(id, anchor: .center)
                         }
                     }
                 }
@@ -509,6 +530,27 @@ extension ContentView {
         .onDrop(of: [.image, .fileURL], isTargeted: $isCanvasDropTargeted) { providers in
             handleCanvasDrop(providers)
         }
+    }
+
+    var canvasGridColumns: Int {
+        let minSide = CanvasCardLayout.baseSquareSide * canvasZoom
+        let spacing = CanvasCardLayout.spacing(zoom: canvasZoom)
+        let usable = max(0, canvasViewportWidth - 84 - 24)
+        return max(1, Int((usable + spacing) / (minSide + spacing)))
+    }
+
+    private func handleArrow(_ dir: CanvasMoveDirection) -> KeyPress.Result {
+        guard expandedItem == nil else { return .ignored }
+        viewModel.moveCanvasSelection(direction: dir, columns: canvasGridColumns)
+        return .handled
+    }
+
+    private func handleSpace() -> KeyPress.Result {
+        guard expandedItem == nil, let target = viewModel.canvasPreviewTarget else {
+            return .ignored
+        }
+        expandedItem = target
+        return .handled
     }
 
     var canvasEntries: [CanvasEntry] {
