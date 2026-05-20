@@ -174,7 +174,7 @@ struct PromptTextView: NSViewRepresentable {
 
     func updateNSView(_ scrollView: NSScrollView, context: Context) {
         guard let textView = scrollView.documentView as? NSTextView else { return }
-        if textView.string != text {
+        if !textView.hasMarkedText(), textView.string != text {
             textView.string = text
             context.coordinator.recalculateHeight(for: textView)
         }
@@ -187,8 +187,8 @@ struct PromptTextView: NSViewRepresentable {
         context.coordinator.maxHeight = maxHeight
         scrollView.hasVerticalScroller = dynamicHeight >= maxHeight
         if focusTrigger?.wrappedValue == true {
-            if let textView = scrollView.documentView as? FocusableTextView {
-                scrollView.window?.makeFirstResponder(textView)
+            if let tv = scrollView.documentView as? FocusableTextView, !tv.hasMarkedText() {
+                scrollView.window?.makeFirstResponder(tv)
             }
             let trigger = focusTrigger
             DispatchQueue.main.async { trigger?.wrappedValue = false }
@@ -230,8 +230,9 @@ struct PromptTextView: NSViewRepresentable {
 
         func textDidChange(_ notification: Notification) {
             guard let textView = notification.object as? NSTextView else { return }
-            text = textView.string
             recalculateHeight(for: textView)
+            if textView.hasMarkedText() { return }
+            text = textView.string
         }
 
         func recalculateHeight(for textView: NSTextView) {

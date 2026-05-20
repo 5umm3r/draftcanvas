@@ -1,29 +1,26 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script>
   (function() {
     var saved = localStorage.getItem('dc_lang');
-    if (saved === 'en') { location.replace('./en/'); return; }
-    if (saved === 'ja') return;
-    var lang = (navigator.language || 'ja').toLowerCase();
-    if (lang.indexOf('ja') !== 0 && lang.indexOf('en') === 0) location.replace('./en/');
+    if (saved === 'ja') { location.replace('../'); return; }
   })();
 </script>
-<meta name="description" content="ChatGPT の有料プランで画像生成を使い倒す。背景除去・ラフ・書き出しまで、全部 Mac で完結。買い切り ¥1,980。">
-<title>DraftCanvas — AI 画像生成・編集 for Mac</title>
-<meta property="og:title" content="DraftCanvas — AI 画像生成・編集 for Mac">
-<meta property="og:description" content="ChatGPT の有料プランで画像生成を使い倒す。背景除去・ラフ・書き出しまで、全部 Mac で完結。¥1,980 買い切り、14日間無料トライアル。">
+<meta name="description" content="Turn your ChatGPT paid plan into a full image creation workflow. Sketch, generate, remove backgrounds, and export — all on Mac. One-time purchase ¥1,980.">
+<title>DraftCanvas — AI Image Generation & Editing for Mac</title>
+<meta property="og:title" content="DraftCanvas — AI Image Generation & Editing for Mac">
+<meta property="og:description" content="Turn your ChatGPT paid plan into a full image creation workflow. Sketch, generate, remove backgrounds, and export — all on Mac. ¥1,980 one-time, 14-day free trial.">
 <meta property="og:image" content="https://spade3.com/lp2/assets/screenshot.png">
-<meta property="og:url" content="https://spade3.com/lp2/">
+<meta property="og:url" content="https://spade3.com/lp2/en/">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="alternate" hreflang="ja" href="https://spade3.com/lp2/">
 <link rel="alternate" hreflang="en" href="https://spade3.com/lp2/en/">
 <link rel="alternate" hreflang="x-default" href="https://spade3.com/lp2/">
-<link rel="canonical" href="https://spade3.com/lp2/">
+<link rel="canonical" href="https://spade3.com/lp2/en/">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; background: #fff; color: #111; line-height: 1.6; }
@@ -90,6 +87,7 @@
   .screenshot-wrap img {
     width: 100%; border-radius: 12px;
   }
+  .screenshot-note { font-size: 11px; color: #bbb; text-align: center; margin-top: 8px; }
 
   /* ===== Steps ===== */
   .steps { background: #fafafa; padding: 80px 48px; }
@@ -198,10 +196,12 @@
     border-top: 1px solid #f0f0f0;
     padding: 24px 48px;
     display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 8px;
   }
   .footer-copy { font-size: 12px; color: #aaa; }
   .footer-links { display: flex; gap: 24px; }
   .footer-links a { font-size: 12px; color: #aaa; text-decoration: none; }
+  .footer-legal-note { font-size: 11px; color: #bbb; width: 100%; text-align: right; }
 
   /* ===== Lang toggle ===== */
   .lang-toggle {
@@ -227,6 +227,7 @@
     .faq { padding: 60px 24px; }
     .final-cta { padding: 60px 24px; }
     footer { padding: 20px 24px; flex-direction: column; gap: 12px; text-align: center; }
+    .footer-legal-note { text-align: center; }
     .system-req { padding: 60px 24px; }
     .system-req-list { grid-template-columns: 1fr; }
     .disclaimer { padding: 60px 24px; }
@@ -236,15 +237,15 @@
 <body>
 
 <!-- Nav -->
-<nav aria-label="メインナビゲーション">
-  <a href="./" class="nav-logo">
-    <img src="assets/icon.png" alt="DraftCanvas">DraftCanvas
+<nav aria-label="Main navigation">
+  <a href="../" class="nav-logo">
+    <img src="../assets/icon.png" alt="DraftCanvas">DraftCanvas
   </a>
   <div class="nav-links">
-    <a href="#features">機能</a>
-    <a href="#pricing">価格</a>
-    <button type="button" class="lang-toggle" onclick="setLang('en')" aria-label="Switch to English">EN</button>
-    <a href="https://draftcanvas.lemonsqueezy.com/checkout/buy/2330d4a5-c212-4248-8053-07993e8522e4" class="btn-primary">無料で試す</a>
+    <a href="#features">Features</a>
+    <a href="#pricing">Pricing</a>
+    <button type="button" class="lang-toggle" onclick="setLang('ja')" aria-label="日本語に切替">日本語</button>
+    <a href="https://draftcanvas.lemonsqueezy.com/checkout/buy/2330d4a5-c212-4248-8053-07993e8522e4" class="btn-primary">Try Free</a>
   </div>
 </nav>
 
@@ -252,45 +253,46 @@
 
 <!-- Hero -->
 <section class="hero">
-  <div class="hero-badge">macOS ネイティブ · ChatGPT 連携</div>
-  <h1>思いどおりの画像を、<br>もっと速く。</h1>
-  <p class="hero-desc">ChatGPT の有料プランで画像生成を使い倒す<sup>*</sup>。<br>ラフ・インペイント・背景除去・書き出しまで、全部 Mac で完結。</p>
+  <div class="hero-badge">macOS Native · ChatGPT Integration</div>
+  <h1>Get the image you want,<br>faster.</h1>
+  <p class="hero-desc">Put your ChatGPT paid plan to work<sup>*</sup>.<br>Sketch, inpaint, remove backgrounds, and export — all on Mac.</p>
   <div class="hero-ctas">
-    <a href="https://draftcanvas.lemonsqueezy.com/checkout/buy/2330d4a5-c212-4248-8053-07993e8522e4" class="btn-primary">14日間 無料で試す</a>
-    <a href="#features" class="btn-secondary">機能を見る</a>
+    <a href="https://draftcanvas.lemonsqueezy.com/checkout/buy/2330d4a5-c212-4248-8053-07993e8522e4" class="btn-primary">Try Free for 14 Days</a>
+    <a href="#features" class="btn-secondary">See Features</a>
   </div>
-  <p class="hero-note">macOS 14+ · Apple Silicon / Intel 対応</p>
-  <p class="hero-annotation">* 画像生成には ChatGPT 有料プラン（Plus・Pro・Team 等）のご契約と、プラン内の使用量が必要です。</p>
+  <p class="hero-note">macOS 14+ · Apple Silicon / Intel</p>
+  <p class="hero-annotation">* Image generation requires a ChatGPT paid plan (Plus, Pro, Team, etc.) with available usage within your plan.</p>
 </section>
 
 <!-- Screenshot -->
 <figure class="screenshot-wrap">
-  <img src="assets/screenshot.png" alt="DraftCanvas アプリ画面" loading="lazy" onerror="this.style.display='none'">
+  <img src="../assets/screenshot.png" alt="DraftCanvas app screen" loading="lazy" onerror="this.style.display='none'">
+  <p class="screenshot-note">Japanese UI shown. English UI in upcoming version.</p>
 </figure>
 
 <!-- Steps -->
 <section class="steps">
   <div class="steps-inner">
-    <p class="section-label">使い方</p>
-    <h2 class="section-title">3ステップで完成。</h2>
+    <p class="section-label">How it works</p>
+    <h2 class="section-title">Three steps to done.</h2>
     <div class="steps-grid">
       <div class="step">
         <div class="step-num">STEP 01</div>
-        <img src="assets/step01.png" alt="ラフで手書き" loading="lazy" onerror="this.style.display='none'">
-        <h3>ラフを描く</h3>
-        <p class="step-desc">ラフで構図をざっくり手描き。もちろんテキストだけの指示でも。</p>
+        <img src="../assets/step01.png" alt="Sketch a rough" loading="lazy" onerror="this.style.display='none'">
+        <h3>Sketch a rough</h3>
+        <p class="step-desc">Draw your composition quickly. Or describe it in text — whichever works for you.</p>
       </div>
       <div class="step">
         <div class="step-num">STEP 02</div>
-        <img src="assets/step02.png" alt="AI が画像を生成" loading="lazy" onerror="this.style.display='none'">
-        <h3>AI が生成</h3>
-        <p class="step-desc">アプリがCodexに指示を送り、ChatGPTで画像生成。気に入るまで回せる。</p>
+        <img src="../assets/step02.png" alt="AI generates the image" loading="lazy" onerror="this.style.display='none'">
+        <h3>AI generates</h3>
+        <p class="step-desc">The app sends instructions to Codex, which generates images via ChatGPT. Iterate until it's right.</p>
       </div>
       <div class="step">
         <div class="step-num">STEP 03</div>
-        <img src="assets/step03.png" alt="編集して仕上げ" loading="lazy" onerror="this.style.display='none'">
-        <h3>編集して仕上げ</h3>
-        <p class="step-desc">背景除去・インペイント・ベクター化。完成したらそのまま書き出し。</p>
+        <img src="../assets/step03.png" alt="Edit and export" loading="lazy" onerror="this.style.display='none'">
+        <h3>Edit and export</h3>
+        <p class="step-desc">Remove backgrounds, inpaint, vectorize. Export when ready.</p>
       </div>
     </div>
   </div>
@@ -298,55 +300,55 @@
 
 <!-- Features -->
 <section class="features" id="features">
-  <p class="section-label">機能</p>
-  <h2 class="section-title">画像生成を、もっと便利に。</h2>
+  <p class="section-label">Features</p>
+  <h2 class="section-title">Image generation, made practical.</h2>
   <div class="features-grid">
 
     <div class="feature-card">
-      <img src="assets/feature-generate.png" alt="AI 生成画面" loading="lazy" onerror="this.style.display='none'">
+      <img src="../assets/feature-generate.png" alt="AI generation screen" loading="lazy" onerror="this.style.display='none'">
       <div class="feature-body">
-        <h3>AI 生成</h3>
-        <p class="feature-desc">お使いのChatGPT の有料プラン内であれば画像生成し放題。プロンプト補完で高品質画像を出力。</p>
+        <h3>AI Generation</h3>
+        <p class="feature-desc">Generate as much as your ChatGPT paid plan allows. Prompt completion delivers high-quality results.</p>
       </div>
     </div>
 
     <div class="feature-card">
-      <img src="assets/feature-sketch.png" alt="ラフ 手書き画面" loading="lazy" onerror="this.style.display='none'">
+      <img src="../assets/feature-sketch.png" alt="Sketch canvas" loading="lazy" onerror="this.style.display='none'">
       <div class="feature-body">
-        <h3>ラフ</h3>
-        <p class="feature-desc">手書きラフをそのまま AI に渡す。「こんな感じ」をテキストより正確に伝えられる。</p>
+        <h3>Sketch</h3>
+        <p class="feature-desc">Hand your rough sketch directly to AI. Communicates layout and intent better than text alone.</p>
       </div>
     </div>
 
     <div class="feature-card">
-      <img src="assets/feature-bg-remove.png" alt="背景除去 前後比較" loading="lazy" onerror="this.style.display='none'">
+      <img src="../assets/feature-bg-remove.png" alt="Background removal before and after" loading="lazy" onerror="this.style.display='none'">
       <div class="feature-body">
-        <h3>背景除去</h3>
-        <p class="feature-desc">Apple Vision Framework でオフライン処理。画像は端末から出ない。速くて精度が高い。</p>
+        <h3>Background Removal</h3>
+        <p class="feature-desc">Powered by Apple Vision Framework, fully offline. Your image never leaves the device. Fast and accurate.</p>
       </div>
     </div>
 
     <div class="feature-card">
-      <img src="assets/feature-vector.png" alt="SVG 変換結果" loading="lazy" onerror="this.style.display='none'">
+      <img src="../assets/feature-vector.png" alt="SVG conversion result" loading="lazy" onerror="this.style.display='none'">
       <div class="feature-body">
-        <h3>ベクター化</h3>
-        <p class="feature-desc">ラスター画像を SVG に変換。ロゴや図解は拡大しても劣化しない形で保存。</p>
+        <h3>Vectorize</h3>
+        <p class="feature-desc">Convert raster images to SVG. Logos and diagrams stay sharp at any size.</p>
       </div>
     </div>
 
     <div class="feature-card">
-      <img src="assets/feature-inpaint.png" alt="インペイント 選択中" loading="lazy" onerror="this.style.display='none'">
+      <img src="../assets/feature-inpaint.png" alt="Inpaint selection" loading="lazy" onerror="this.style.display='none'">
       <div class="feature-body">
-        <h3>インペイント</h3>
-        <p class="feature-desc">気になる部分だけ選択して再生成。全体を作り直さずに細部を詰められる。</p>
+        <h3>Inpaint</h3>
+        <p class="feature-desc">Select just the area you want to change and regenerate. Fine-tune details without redoing the whole image.</p>
       </div>
     </div>
 
     <div class="feature-card">
-      <img src="assets/feature-material.png" alt="素材として分離結果" loading="lazy" onerror="this.style.display='none'">
+      <img src="../assets/feature-material.png" alt="Material extraction result" loading="lazy" onerror="this.style.display='none'">
       <div class="feature-body">
-        <h3>素材として分離</h3>
-        <p class="feature-desc">画像から素材・テクスチャを切り出す。デザイン素材の再利用がスムーズになる。</p>
+        <h3>Extract as Material</h3>
+        <p class="feature-desc">Isolate subjects, textures, and elements from images. Reuse them across your design workflow.</p>
       </div>
     </div>
 
@@ -356,75 +358,75 @@
 <!-- Pricing -->
 <section class="pricing" id="pricing">
   <div class="pricing-inner">
-    <p class="section-label">価格</p>
-    <h2 class="section-title">まずは、無料で始めてください。</h2>
+    <p class="section-label">Pricing</p>
+    <h2 class="section-title">Start free.</h2>
     <div class="pricing-card">
-      <span class="trial-badge">14日間 全機能無料</span>
-      <div class="trial-heading">クレジットカード不要</div>
-      <div class="trial-sub">まずはお試しください</div>
+      <span class="trial-badge">14-Day Full Access Trial</span>
+      <div class="trial-heading">No credit card required</div>
+      <div class="trial-sub">Try everything, decide later</div>
       <hr class="pricing-divider">
       <div class="price-row">
         <span class="price-amount">¥1,980</span>
-        <span class="price-label">買い切り</span>
+        <span class="price-label">one-time (~$13 USD)</span>
       </div>
-      <p class="price-note">v1.x アップデート無料 · 2台まで利用可</p>
+      <p class="price-note">Free updates through v1.x · Use on up to 2 Macs</p>
       <ul class="pricing-features">
-        <li>全機能ロック解除</li>
-        <li>v1.x アップデート永久無料</li>
-        <li>Mac 2台まで同時利用</li>
-        <li>30日間 全額返金保証</li>
+        <li>All features unlocked</li>
+        <li>Free updates through v1.x</li>
+        <li>Use on up to 2 Macs simultaneously</li>
+        <li>30-day money-back guarantee</li>
       </ul>
       <a href="https://draftcanvas.lemonsqueezy.com/checkout/buy/2330d4a5-c212-4248-8053-07993e8522e4"
-         class="btn-primary" style="display:block;text-align:center;padding:14px;">無料で試す</a>
+         class="btn-primary" style="display:block;text-align:center;padding:14px;">Try Free</a>
     </div>
   </div>
 </section>
 
 <!-- FAQ -->
 <section class="faq" id="faq">
-  <p class="section-label">よくある質問</p>
+  <p class="section-label">FAQ</p>
   <h2 class="section-title faq-title">FAQ</h2>
 
   <div class="faq-item">
-    <p class="faq-q">ChatGPT のアカウントが必要ですか？</p>
-    <p class="faq-a">画像の生成・編集機能には ChatGPT の有料プラン（Plus・Pro・Team 等）が必要です。背景除去・ベクター化・マテリアル抽出はオフラインで動作し、ChatGPT 不要です。</p>
+    <p class="faq-q">Do I need a ChatGPT account?</p>
+    <p class="faq-a">Image generation and editing features require a ChatGPT paid plan (Plus, Pro, Team, etc.). Background removal, vectorization, and material extraction work offline and do not require ChatGPT.</p>
   </div>
   <div class="faq-item">
-    <p class="faq-q">Codex CLI のインストールが必要ですか？</p>
-    <p class="faq-a">事前にターミナルから Codex CLI のインストールおよびログインが必要です。</p>
+    <p class="faq-q">Do I need to install Codex CLI?</p>
+    <p class="faq-a">Yes — Codex CLI must be installed and logged in via Terminal before using the app.</p>
   </div>
   <div class="faq-item">
-    <p class="faq-q">サブスクリプションはありますか？</p>
-    <p class="faq-a">ありません。¥1,980 の一度の支払いで v1.x 系のアップデートをずっと受け取れます。</p>
+    <p class="faq-q">Is there a subscription?</p>
+    <p class="faq-a">No. A single payment of ¥1,980 covers all v1.x updates forever.</p>
   </div>
   <div class="faq-item">
-    <p class="faq-q">トライアル後に自動で課金されますか？</p>
-    <p class="faq-a">されません。14日間のトライアルはクレジットカード不要で、自動更新もありません。</p>
+    <p class="faq-q">Will I be charged automatically after the trial?</p>
+    <p class="faq-a">No. The 14-day trial requires no credit card and does not auto-renew.</p>
   </div>
   <div class="faq-item">
-    <p class="faq-q">Intel Mac でも使えますか？</p>
-    <p class="faq-a">はい。Apple Silicon・Intel Mac 両対応です。macOS 14 Sonoma 以降が必要です。</p>
+    <p class="faq-q">Does it work on Intel Macs?</p>
+    <p class="faq-a">Yes. DraftCanvas supports both Apple Silicon and Intel Macs running macOS 14 Sonoma or later.</p>
   </div>
 </section>
 
 <!-- Final CTA -->
 <section class="final-cta">
-  <h2>まず、14日間使ってみて。</h2>
-  <p>クレジットカード不要。気に入らなければ何もしなくていい。</p>
+  <h2>Take 14 days. See if it fits.</h2>
+  <p>No credit card. Walk away if it's not for you.</p>
   <a href="https://draftcanvas.lemonsqueezy.com/checkout/buy/2330d4a5-c212-4248-8053-07993e8522e4"
-     class="btn-primary">無料で試す</a>
+     class="btn-primary">Try Free</a>
 </section>
 
 <!-- System Requirements -->
 <section class="system-req">
   <div class="system-req-inner">
-    <p class="section-label">動作環境</p>
-    <h2 class="section-title">必要環境</h2>
+    <p class="section-label">Requirements</p>
+    <h2 class="section-title">System Requirements</h2>
     <ul class="system-req-list">
-      <li><span>OS</span>macOS 14 Sonoma 以降</li>
-      <li><span>チップ</span>Apple Silicon / Intel</li>
-      <li><span>メモリ</span>8GB 以上推奨</li>
-      <li><span>ディスク</span>500MB 以上の空き容量</li>
+      <li><span>OS</span>macOS 14 Sonoma or later</li>
+      <li><span>Chip</span>Apple Silicon / Intel</li>
+      <li><span>Memory</span>8 GB RAM recommended</li>
+      <li><span>Disk</span>500 MB free space</li>
     </ul>
   </div>
 </section>
@@ -432,24 +434,24 @@
 <!-- Disclaimer -->
 <section class="disclaimer">
   <div class="disclaimer-inner">
-    <p class="section-label">免責事項</p>
-    <h2 class="section-title">ご利用にあたって</h2>
+    <p class="section-label">Disclaimer</p>
+    <h2 class="section-title">Before You Start</h2>
     <ul class="disclaimer-list">
       <li>
-        <h3>ChatGPT 有料プランが必要</h3>
-        <p>画像の生成・編集機能の利用にはユーザーご自身の ChatGPT の有料プラン（Plus・Pro・Team 等）の契約と、プラン内の使用量が必要です。利用料金は DraftCanvas の購入代金とは別途、OpenAI に対してお支払いください。</p>
+        <h3>ChatGPT paid plan required</h3>
+        <p>Image generation and editing features require your own ChatGPT paid subscription (Plus, Pro, Team, etc.) with available usage. ChatGPT usage fees are charged separately by OpenAI and are not included in the DraftCanvas purchase price.</p>
       </li>
       <li>
-        <h3>Codex CLI の事前セットアップが必要</h3>
-        <p>AI 機能の動作には事前にターミナルから Codex CLI のインストールおよびログインが必要です。Codex CLI 自体の動作・仕様変更については DraftCanvas の保証範囲外です。</p>
+        <h3>Codex CLI setup required</h3>
+        <p>AI features require Codex CLI to be installed and authenticated via Terminal beforehand. Changes to Codex CLI behavior or availability are outside DraftCanvas's warranty.</p>
       </li>
       <li>
-        <h3>商標について</h3>
-        <p>ChatGPT・OpenAI は OpenAI, L.L.C. の商標または登録商標です。Apple・macOS・Mac・Apple Silicon は Apple Inc. の米国およびその他の国における商標または登録商標です。その他記載のサービス名・製品名は各社の商標または登録商標です。</p>
+        <h3>Trademarks</h3>
+        <p>ChatGPT and OpenAI are trademarks or registered trademarks of OpenAI, L.L.C. Apple, macOS, Mac, and Apple Silicon are trademarks or registered trademarks of Apple Inc. in the U.S. and other countries. All other product and service names are trademarks of their respective owners.</p>
       </li>
       <li>
-        <h3>AI 生成画像の権利と品質</h3>
-        <p>本アプリで生成された画像の著作権・利用権および利用に伴う責任は、生成したユーザーに帰属します。生成結果の品質・特定の用途への適合性・他者の権利を侵害しないことを当方は保証しません。商用利用前に OpenAI の利用規約をご確認ください。</p>
+        <h3>AI-generated image rights and quality</h3>
+        <p>Copyright, usage rights, and liability for images generated with this app belong to the user who generated them. We make no guarantees regarding output quality, fitness for a specific purpose, or non-infringement of third-party rights. Review OpenAI's usage policies before any commercial use.</p>
       </li>
     </ul>
   </div>
@@ -460,17 +462,18 @@
 <!-- Footer -->
 <footer>
   <p class="footer-copy">© 2026 DraftCanvas</p>
-  <nav class="footer-links" aria-label="フッターナビゲーション">
-    <a href="privacy.html">プライバシーポリシー</a>
-    <a href="terms.html">利用規約</a>
-    <a href="https://forms.gle/zizcXwMQaLAw4fux6">お問い合わせ</a>
+  <nav class="footer-links" aria-label="Footer navigation">
+    <a href="../privacy.html">Privacy (Japanese)</a>
+    <a href="../terms.html">Terms (Japanese)</a>
+    <a href="https://forms.gle/zizcXwMQaLAw4fux6">Contact</a>
   </nav>
+  <p class="footer-legal-note">Legal documents currently available in Japanese only.</p>
 </footer>
 
 <script>
   function setLang(lang) {
     localStorage.setItem('dc_lang', lang);
-    if (lang === 'en') location.assign('./en/');
+    if (lang === 'ja') location.assign('../');
   }
 </script>
 </body>
