@@ -83,6 +83,7 @@ struct ExpandedImageSheet: View {
         .onAppear {
             keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
                 switch event.keyCode {
+                case 49:  onDismiss(); return nil    // Space
                 case 123: goPrevious(); return nil  // ←
                 case 124: goNext(); return nil       // →
                 default: return event

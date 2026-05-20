@@ -289,6 +289,7 @@ extension ContentView {
                     }
                     .coordinateSpace(name: "canvasViewport")
                     .focusable(true)
+                    .focusEffectDisabled()
                     .focused($canvasIsFocused)
                     .onKeyPress(.leftArrow)  { handleArrow(.left) }
                     .onKeyPress(.rightArrow) { handleArrow(.right) }
