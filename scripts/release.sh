@@ -11,7 +11,7 @@ SCHEME="DraftCanvas"
 ARCHIVE="_build/DraftCanvas.xcarchive"
 EXPORT_DIR="_build/Export"
 EXPORT_OPTS="scripts/ExportOptions.plist"
-DMG_PATH="_build/DraftCanvas-${VERSION}.dmg"
+DMG_PATH="_build/DraftCanvas.dmg"
 NOTARY_PROFILE="DC_NOTARY"
 
 echo "==> Archive"
@@ -47,15 +47,15 @@ xcrun stapler staple "$EXPORT_DIR/DraftCanvas.app"
 rm "$EXPORT_DIR/DraftCanvas.zip"
 
 echo "==> Create DMG"
-brew list create-dmg &>/dev/null || brew install create-dmg
-create-dmg \
-  --volname "DraftCanvas" \
-  --window-size 720 400 \
-  --background "" \
-  --icon "DraftCanvas.app" 240 190 \
-  --app-drop-link 480 190 \
-  "$DMG_PATH" \
-  "$EXPORT_DIR/DraftCanvas.app"
+DMG_STAGING=$(mktemp -d)
+cp -R "$EXPORT_DIR/DraftCanvas.app" "$DMG_STAGING/"
+ln -s /Applications "$DMG_STAGING/Applications"
+hdiutil create \
+  -volname "DraftCanvas" \
+  -srcfolder "$DMG_STAGING" \
+  -ov -format UDZO \
+  "$DMG_PATH"
+rm -rf "$DMG_STAGING"
 
 echo "==> Sign + Notarize DMG"
 codesign --sign "$SIGN_IDENTITY" --timestamp "$DMG_PATH"
