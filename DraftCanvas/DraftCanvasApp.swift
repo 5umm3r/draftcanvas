@@ -55,6 +55,7 @@ struct DraftCanvasApp: App {
             SettingsView()
                 .environmentObject(l10n)
                 .environmentObject(viewModel)
+                .environmentObject(sparkleUpdater)
                 .environment(\.locale, l10n.locale)
         }
     }

@@ -3,7 +3,9 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject private var l10n: LocalizationManager
     @EnvironmentObject private var viewModel: DraftCanvasViewModel
+    @EnvironmentObject private var sparkleUpdater: SparkleUpdaterController
     @State private var showLicenses = false
+    @State private var automaticallyChecksForUpdates: Bool = true
 
     var body: some View {
         VStack(spacing: 0) {
@@ -63,6 +65,28 @@ struct SettingsView: View {
                 }
                 .frame(maxWidth: .infinity)
             }
+            Divider()
+                .gridCellUnsizedAxes(.horizontal)
+            GridRow {
+                Text("アップデート")
+                    .gridColumnAlignment(.trailing)
+                HStack {
+                    Toggle(isOn: $automaticallyChecksForUpdates) {
+                        Text("自動的に確認")
+                    }
+                    .toggleStyle(.switch)
+                    .onChange(of: automaticallyChecksForUpdates) { _, newValue in
+                        sparkleUpdater.updater.automaticallyChecksForUpdates = newValue
+                    }
+                    Spacer()
+                    Button("今すぐ確認") {
+                        sparkleUpdater.checkForUpdates()
+                    }
+                    .disabled(!sparkleUpdater.canCheckForUpdates)
+                }
+                .frame(maxWidth: .infinity)
+                .gridColumnAlignment(.leading)
+            }
         }
         .padding(24)
         Divider()
@@ -75,6 +99,10 @@ struct SettingsView: View {
         .padding(.vertical, 10)
         } // VStack
         .frame(width: 520)
+        .onAppear {
+            automaticallyChecksForUpdates =
+                sparkleUpdater.updater.automaticallyChecksForUpdates
+        }
         .sheet(isPresented: $showLicenses) { LicensesSheet() }
         .alert("再起動が必要", isPresented: $l10n.pendingRestart) {
             if viewModel.hasInFlightWork {

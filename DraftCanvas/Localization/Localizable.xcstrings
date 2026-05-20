@@ -3921,6 +3921,38 @@
         }
       }
     },
+    "自動的に確認": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check automatically"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自動的に確認"
+          }
+        }
+      }
+    },
+    "今すぐ確認": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check Now"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "今すぐ確認"
+          }
+        }
+      }
+    },
     "色の解析に失敗しました": {
       "localizations": {
         "en": {
@@ -4413,6 +4445,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "高速圧縮"
+          }
+        }
+      }
+    },
+    "アップデート": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Updates"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アップデート"
           }
         }
       }
