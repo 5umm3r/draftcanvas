@@ -34,6 +34,17 @@ struct DraftCanvasApp: App {
         .windowStyle(.titleBar)
         .commands {
             CommandGroup(replacing: .newItem) { }
+            CommandGroup(replacing: .appInfo) {
+                Button("Draft Canvas について") {
+                    let info = Bundle.main.infoDictionary
+                    let short = info?["CFBundleShortVersionString"] as? String ?? ""
+                    let build = info?["CFBundleVersion"] as? String ?? ""
+                    NSApplication.shared.orderFrontStandardAboutPanel(options: [
+                        .applicationVersion: short,
+                        .version: "build \(build)"
+                    ])
+                }
+            }
             CommandGroup(after: .appInfo) {
                 Button {
                     sparkleUpdater.checkForUpdates()

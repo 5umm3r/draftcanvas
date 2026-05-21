@@ -42,6 +42,13 @@ DRAFTCANVAS_LICENSE_OVERRIDE=reset open _build/Debug/DraftCanvas.app
 
 Release ビルドでは ENV変数は無視される。
 
+## About パネルのビルド番号
+
+メニュー → "Draft Canvas について" の表示形式: `Version 1.0.0 (build N)`
+
+- **Debug ビルド**: `CURRENT_PROJECT_VERSION=1` 固定 → `build 1` 表示
+- **Release ビルド** (`./scripts/release.sh`): `git rev-list --count HEAD` の値を注入 → `build 123` 等
+
 ## 注意
 
 - `SYMROOT` は常に `_build`、`OBJROOT` は常に `_build/obj`
