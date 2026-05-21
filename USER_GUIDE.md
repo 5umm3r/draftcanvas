@@ -37,7 +37,7 @@ npm install -g @openai/codex
 
 ### ステップ 2 — Draft Canvas をダウンロードする
 
-[無料トライアルをダウンロード](https://draftcanvas.lemonsqueezy.com/checkout/buy/2330d4a5-c212-4248-8053-07993e8522e4) から `.dmg` を入手し、アプリをアプリケーションフォルダにコピーします。
+[Draft Canvas をダウンロード](https://draftcanvas.spade3.com/download) から `.dmg` を入手し、アプリをアプリケーションフォルダにコピーします。購入は [こちら](https://buy.polar.sh/polar_cl_e0kuTw7J7RdVzmUVjPJs96OJACcY1VCFkIkpk2ZYgik) から。
 
 **トライアル:** 14日間、クレジットカード不要で全機能が使えます。
 
