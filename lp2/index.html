@@ -84,13 +84,39 @@
   }
   .hero-ctas { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; }
   .hero-note { font-size: 12px; color: #999; margin-top: 14px; line-height: 1.8; }
-  .hero-annotation { font-size: 11px; color: #bbb; margin-top: 8px; }
+
+  /* ===== Requirements Bar ===== */
+  .req-bar {
+    display: flex;
+    border: 1px solid #e8e8e8; border-radius: 10px;
+    overflow: hidden; max-width: 660px; margin: 32px auto 0;
+    text-align: left;
+  }
+  .req-bar-item {
+    flex: 1; padding: 16px 20px;
+    border-right: 1px solid #e8e8e8;
+  }
+  .req-bar-item:last-child { border-right: none; }
+  .req-bar-label { font-size: 10px; font-weight: 700; color: #999; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+  .req-bar-value { font-size: 13px; font-weight: 600; color: #111; line-height: 1.4; }
+  .req-bar-sub { font-size: 11px; color: #aaa; margin-top: 2px; line-height: 1.4; }
 
   /* ===== Screenshot ===== */
   .screenshot-wrap { max-width: 960px; margin: 0 auto; padding: 0 32px 80px; }
-  .screenshot-wrap img {
-    width: 100%; border-radius: 12px;
-  }
+  .screenshot-wrap img { width: 100%; border-radius: 12px; }
+
+  /* ===== Fit Check ===== */
+  .fit-check { padding: 64px 48px; background: #fafafa; }
+  .fit-check-inner { max-width: 760px; margin: 0 auto; }
+  .fit-check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 32px; }
+  .fit-card { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; padding: 28px; }
+  .fit-card-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
+  .fit-card-label.good { color: #111; }
+  .fit-card-label.bad { color: #bbb; }
+  .fit-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .fit-list li { font-size: 14px; color: #444; display: flex; align-items: flex-start; gap: 10px; line-height: 1.55; }
+  .fit-list li::before { content: ""; display: inline-block; width: 12px; height: 1.5px; background: #bbb; flex-shrink: 0; margin-top: 11px; }
+  .fit-list.bad li { color: #aaa; }
 
   /* ===== Steps ===== */
   .steps { background: #fafafa; padding: 80px 48px; }
@@ -119,14 +145,23 @@
     border-bottom: 1px solid #ebebeb; display: block;
   }
   .feature-body { padding: 20px; }
-  .feature-icon {
-    width: 32px; height: 32px; background: #f3f3f3;
-    border-radius: 7px; margin-bottom: 12px;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .feature-icon svg { width: 16px; height: 16px; stroke: #555; fill: none; stroke-width: 1.5; }
   .feature-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 5px; }
   .feature-desc { font-size: 13px; color: #777; line-height: 1.6; }
+
+  /* ===== System Requirements ===== */
+  .system-req { padding: 80px 48px; }
+  .system-req-inner { max-width: 640px; margin: 0 auto; }
+  .system-req-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; list-style: none; }
+  .system-req-list li {
+    display: flex; align-items: baseline; gap: 16px;
+    padding: 14px 0; border-bottom: 1px solid #f0f0f0;
+    font-size: 14px; color: #333;
+  }
+  .system-req-list li span {
+    flex-shrink: 0; width: 80px;
+    font-size: 12px; color: #888; font-weight: 600; letter-spacing: 0.03em;
+  }
+  .system-req-list li.full-row { grid-column: 1 / -1; }
 
   /* ===== Pricing ===== */
   .pricing { background: #fafafa; padding: 80px 48px; text-align: center; }
@@ -160,6 +195,8 @@
   .faq-item { border-bottom: 1px solid #f0f0f0; padding: 20px 0; }
   .faq-q { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
   .faq-a { font-size: 14px; color: #777; line-height: 1.7; }
+  .faq-a a { color: #555; }
+  .faq-a code { font-family: ui-monospace, monospace; font-size: 12px; background: #f5f5f5; padding: 2px 6px; border-radius: 4px; }
   .faq-title { margin-bottom: 32px; }
 
   /* ===== Final CTA ===== */
@@ -171,38 +208,26 @@
   .final-cta p { font-size: 15px; color: #888; margin-bottom: 28px; }
   .final-cta .btn-primary { padding: 14px 32px; font-size: 16px; }
 
-  /* ===== System Requirements ===== */
-  .system-req { padding: 80px 48px; }
-  .system-req-inner { max-width: 640px; margin: 0 auto; }
-  .system-req-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; list-style: none; }
-  .system-req-list li {
-    display: flex; align-items: baseline; gap: 16px;
-    padding: 14px 0; border-bottom: 1px solid #f0f0f0;
-    font-size: 14px; color: #333;
-  }
-  .system-req-list li span {
-    flex-shrink: 0; width: 80px;
-    font-size: 12px; color: #888; font-weight: 600; letter-spacing: 0.03em;
-  }
-
   /* ===== Disclaimer ===== */
-  .disclaimer { background: #fafafa; padding: 80px 48px; }
+  .disclaimer { background: #fafafa; padding: 48px; }
   .disclaimer-inner { max-width: 720px; margin: 0 auto; }
   .disclaimer-list { list-style: none; }
-  .disclaimer-list li { padding: 20px 0; border-bottom: 1px solid #f0f0f0; }
+  .disclaimer-list li { padding: 16px 0; border-bottom: 1px solid #f0f0f0; }
   .disclaimer-list li:last-child { border-bottom: none; }
-  .disclaimer-list h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
-  .disclaimer-list p { font-size: 13px; color: #777; line-height: 1.7; }
+  .disclaimer-list h3 { font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #555; }
+  .disclaimer-list p { font-size: 12px; color: #999; line-height: 1.7; }
 
   /* ===== Footer ===== */
   footer {
     border-top: 1px solid #f0f0f0;
     padding: 24px 48px;
-    display: flex; justify-content: space-between; align-items: center;
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
   }
+  .footer-main { display: flex; justify-content: space-between; align-items: center; width: 100%; }
   .footer-copy { font-size: 12px; color: #aaa; }
   .footer-links { display: flex; gap: 24px; }
   .footer-links a { font-size: 12px; color: #aaa; text-decoration: none; }
+  .footer-trademark { font-size: 11px; color: #ccc; text-align: center; line-height: 1.6; }
 
   /* ===== Lang toggle ===== */
   .lang-toggle {
@@ -219,18 +244,24 @@
     nav { padding: 16px 24px; }
     .nav-links a:not(.btn-primary) { display: none; }
     .hero { padding: 64px 24px 48px; }
+    .req-bar { flex-direction: column; }
+    .req-bar-item { border-right: none; border-bottom: 1px solid #e8e8e8; }
+    .req-bar-item:last-child { border-bottom: none; }
     .screenshot-wrap { padding: 0 16px 60px; }
+    .fit-check { padding: 48px 24px; }
+    .fit-check-grid { grid-template-columns: 1fr; }
     .steps { padding: 60px 24px; }
     .steps-grid { grid-template-columns: 1fr; }
     .features { padding: 60px 24px; }
     .features-grid { grid-template-columns: 1fr; }
+    .system-req { padding: 60px 24px; }
+    .system-req-list { grid-template-columns: 1fr; }
     .pricing { padding: 60px 24px; }
     .faq { padding: 60px 24px; }
     .final-cta { padding: 60px 24px; }
-    footer { padding: 20px 24px; flex-direction: column; gap: 12px; text-align: center; }
-    .system-req { padding: 60px 24px; }
-    .system-req-list { grid-template-columns: 1fr; }
-    .disclaimer { padding: 60px 24px; }
+    .disclaimer { padding: 40px 24px; }
+    footer { padding: 20px 24px; }
+    .footer-main { flex-direction: column; gap: 12px; text-align: center; }
   }
 </style>
 </head>
@@ -254,14 +285,30 @@
 <!-- Hero -->
 <section class="hero">
   <div class="hero-badge">macOS ネイティブ · ChatGPT 連携</div>
-  <h1>思いどおりの画像生成を、<br>ここに。</h1>
-  <p class="hero-desc">ChatGPT の有料プラン内で画像生成を使い倒す<sup>*</sup>。<br>ラフ・インペイント・背景除去・書き出しまで、全部 Mac で完結。</p>
+  <h1>ChatGPTの画像生成を、<br>Macの作業フローに。</h1>
+  <p class="hero-desc">ChatGPT の有料プラン内で画像生成を使い倒す。<br>ラフ・インペイント・背景除去・書き出しまで、全部 Mac で完結。</p>
   <div class="hero-ctas">
     <a href="https://github.com/5umm3r/draftcanvas-releases/releases/latest/download/DraftCanvas.dmg" class="btn-primary" onclick="if(window.__cfBeacon)window.__cfBeacon.track('download_click',{lp:'ja',location:'hero'})">無料ダウンロード</a>
     <a href="#features" class="btn-secondary">機能を見る</a>
   </div>
-  <p class="hero-note">macOS 14+ · Apple Silicon / Intel 対応</p>
-  <p class="hero-annotation">* 画像生成には ChatGPT 有料プラン（Plus・Pro・Team 等）のご契約と、プラン内の使用量が必要です。</p>
+  <p class="hero-note">14日間全機能無料 · クレジットカード不要</p>
+  <div class="req-bar">
+    <div class="req-bar-item">
+      <div class="req-bar-label">OS</div>
+      <div class="req-bar-value">macOS 14+</div>
+      <div class="req-bar-sub">Apple Silicon / Intel</div>
+    </div>
+    <div class="req-bar-item">
+      <div class="req-bar-label">必須ツール</div>
+      <div class="req-bar-value">Codex CLI</div>
+      <div class="req-bar-sub">事前インストール・ログイン必要</div>
+    </div>
+    <div class="req-bar-item">
+      <div class="req-bar-label">ChatGPT</div>
+      <div class="req-bar-value">有料プラン</div>
+      <div class="req-bar-sub">Plus / Pro / Team 等</div>
+    </div>
+  </div>
 </section>
 
 <!-- Screenshot -->
@@ -344,13 +391,29 @@
     </div>
 
     <div class="feature-card">
-      <img src="assets/feature-material.png" alt="素材として分離結果" loading="lazy" onerror="this.style.display='none'">
+      <img src="assets/feature-material.png" alt="素材を抽出した結果" loading="lazy" onerror="this.style.display='none'">
       <div class="feature-body">
-        <h3>素材として分離</h3>
-        <p class="feature-desc">画像から素材・テクスチャを切り出す。デザイン素材の再利用がスムーズになる。</p>
+        <h3>素材を抽出</h3>
+        <p class="feature-desc">画像内の複数オブジェクトを個別に認識・切り出し。PNG / SVG で再利用可能。</p>
       </div>
     </div>
 
+  </div>
+</section>
+
+<!-- System Requirements -->
+<section class="system-req">
+  <div class="system-req-inner">
+    <p class="section-label">動作環境</p>
+    <h2 class="section-title">必要環境</h2>
+    <ul class="system-req-list">
+      <li><span>OS</span>macOS 14 Sonoma 以降</li>
+      <li><span>チップ</span>Apple Silicon / Intel</li>
+      <li><span>メモリ</span>8GB 以上推奨</li>
+      <li><span>ディスク</span>500MB 以上の空き容量</li>
+      <li class="full-row"><span>必須ツール</span>Codex CLI（事前インストール・ログイン必要）</li>
+      <li class="full-row"><span>ChatGPT</span>有料プラン（Plus / Pro / Team 等）</li>
+    </ul>
   </div>
 </section>
 
@@ -389,11 +452,15 @@
 
   <div class="faq-item">
     <p class="faq-q">ChatGPT のアカウントが必要ですか？</p>
-    <p class="faq-a">画像の生成・編集機能には ChatGPT の有料プラン（Plus・Pro・Team 等）が必要です。背景除去・ベクター化・マテリアル抽出はオフラインで動作し、ChatGPT 不要です。</p>
+    <p class="faq-a">画像の生成・編集機能には ChatGPT の有料プラン（Plus・Pro・Team 等）が必要です。背景除去・ベクター化・オブジェクト切り出しはオフラインで動作し、ChatGPT 不要です。</p>
   </div>
   <div class="faq-item">
-    <p class="faq-q">Codex CLI のインストールが必要ですか？</p>
-    <p class="faq-a">事前にターミナルから Codex CLI のインストールおよびログインが必要です。</p>
+    <p class="faq-q">Codex CLI とは何ですか？インストール方法は？</p>
+    <p class="faq-a">OpenAI が提供するターミナル用 AI ツールです。Draft Canvas はこれを経由して ChatGPT に接続します。<code>npm install -g @openai/codex</code> でインストールし、<code>codex</code> コマンドでログインが必要です。詳しくは <a href="https://github.com/openai/codex" target="_blank" rel="noopener">Codex CLI 公式リポジトリ</a>をご参照ください。</p>
+  </div>
+  <div class="faq-item">
+    <p class="faq-q">画像生成に別途費用はかかりますか？</p>
+    <p class="faq-a">Draft Canvas 自体の費用は ¥1,980（買い切り）のみです。画像生成には ChatGPT の有料プランが必要ですが、プランの月額内で利用でき、追加の従量課金は発生しません。</p>
   </div>
   <div class="faq-item">
     <p class="faq-q">サブスクリプションはありますか？</p>
@@ -411,32 +478,17 @@
 
 <!-- Final CTA -->
 <section class="final-cta">
-  <h2>Chat GPTの使用量を余らせてませんか？</h2>
+  <h2>ChatGPTの使用量を、Macで使い切る。</h2>
   <p>快適な画像生成体験を、Draft Canvas で。</p>
   <a href="https://github.com/5umm3r/draftcanvas-releases/releases/latest/download/DraftCanvas.dmg"
      class="btn-primary"
      onclick="if(window.__cfBeacon)window.__cfBeacon.track('download_click',{lp:'ja',location:'final_cta'})">無料で試す</a>
 </section>
 
-<!-- System Requirements -->
-<section class="system-req">
-  <div class="system-req-inner">
-    <p class="section-label">動作環境</p>
-    <h2 class="section-title">必要環境</h2>
-    <ul class="system-req-list">
-      <li><span>OS</span>macOS 14 Sonoma 以降</li>
-      <li><span>チップ</span>Apple Silicon / Intel</li>
-      <li><span>メモリ</span>8GB 以上推奨</li>
-      <li><span>ディスク</span>500MB 以上の空き容量</li>
-    </ul>
-  </div>
-</section>
-
 <!-- Disclaimer -->
 <section class="disclaimer">
   <div class="disclaimer-inner">
     <p class="section-label">免責事項</p>
-    <h2 class="section-title">ご利用にあたって</h2>
     <ul class="disclaimer-list">
       <li>
         <h3>ChatGPT 有料プランが必要</h3>
@@ -445,10 +497,6 @@
       <li>
         <h3>Codex CLI の事前セットアップが必要</h3>
         <p>AI 機能の動作には事前にターミナルから Codex CLI のインストールおよびログインが必要です。Codex CLI 自体の動作・仕様変更については Draft Canvas の保証範囲外です。</p>
-      </li>
-      <li>
-        <h3>商標について</h3>
-        <p>ChatGPT・OpenAI は OpenAI, L.L.C. の商標または登録商標です。Apple・macOS・Mac・Apple Silicon は Apple Inc. の米国およびその他の国における商標または登録商標です。その他記載のサービス名・製品名は各社の商標または登録商標です。</p>
       </li>
       <li>
         <h3>AI 生成画像の権利と品質</h3>
@@ -462,12 +510,15 @@
 
 <!-- Footer -->
 <footer>
-  <p class="footer-copy">© 2026 Draft Canvas</p>
-  <nav class="footer-links" aria-label="フッターナビゲーション">
-    <a href="privacy.html">プライバシーポリシー</a>
-    <a href="terms.html">利用規約</a>
-    <a href="https://forms.gle/zizcXwMQaLAw4fux6">お問い合わせ</a>
-  </nav>
+  <div class="footer-main">
+    <p class="footer-copy">© 2026 Draft Canvas</p>
+    <nav class="footer-links" aria-label="フッターナビゲーション">
+      <a href="privacy.html">プライバシーポリシー</a>
+      <a href="terms.html">利用規約</a>
+      <a href="https://forms.gle/zizcXwMQaLAw4fux6">お問い合わせ</a>
+    </nav>
+  </div>
+  <p class="footer-trademark">ChatGPT・OpenAI は OpenAI, L.L.C. の商標または登録商標です。Apple・macOS は Apple Inc. の商標です。</p>
 </footer>
 
 <script>

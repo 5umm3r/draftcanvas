@@ -798,7 +798,7 @@ extension ContentView {
                 }
                 CircularPromptActionButton(
                     systemImage: "pointer.arrow.and.square.on.square.dashed",
-                    tooltip: "素材として分離"
+                    tooltip: "素材を抽出"
                 ) {
                     viewModel.startMaterialExtraction(item: item)
                 }
