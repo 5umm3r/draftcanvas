@@ -1,4 +1,5 @@
 import Foundation
+import CoreImage
 
 extension DraftCanvasViewModel {
 
@@ -13,6 +14,7 @@ extension DraftCanvasViewModel {
         upsert(job, into: projectID)
 
         let fileURL = projectStore.resolvedFileURL(for: item)
+        extractingItemID = item.id
 
         Task {
             var running = job
@@ -27,9 +29,11 @@ extension DraftCanvasViewModel {
                 succeeded.status = .succeeded
                 upsert(succeeded, into: projectID)
 
+                extractingItemID = nil
                 materialExtractionPreview = MaterialExtractionPreview(item: item, session: session)
                 logs.append("素材分解検出完了: \(session.instances.count) 個 (\(item.id))")
             } catch {
+                extractingItemID = nil
                 var failed = running
                 failed.status = .failed
                 failed.errorMessage = error.localizedDescription
@@ -45,12 +49,14 @@ extension DraftCanvasViewModel {
     func commitMaterialExtraction(
         originalItem: ProjectItem,
         session: MaterialExtractor.ExtractionSession,
-        selectedInstanceIDs: Set<UUID>
+        instances: [MaterialExtractor.DetectedInstance],
+        selectedInstanceIDs: Set<UUID>,
+        removeBackground: Bool = false
     ) {
         let projectID = selectedProjectID ?? originalItem.projectID
         materialExtractionPreview = nil
 
-        let chosen = session.instances.filter { selectedInstanceIDs.contains($0.id) }
+        let chosen = instances.filter { selectedInstanceIDs.contains($0.id) }
         guard !chosen.isEmpty else { return }
 
         let storeRef = projectStore
@@ -59,12 +65,30 @@ extension DraftCanvasViewModel {
         Task.detached(priority: .userInitiated) { [weak self] in
             guard let self else { return }
 
+            // session.ciCtx はメインスレッド作成の Metal CIContext のためバックグラウンドから共有すると GPU 競合でフリーズする
+            let renderCtx = CIContext(options: [
+                .workingColorSpace: session.sRGB,
+                .outputColorSpace: session.sRGB
+            ])
+
             var newItems: [ProjectItem] = []
 
             for inst in chosen {
                 do {
+                    let instToRender: MaterialExtractor.DetectedInstance
+                    if removeBackground {
+                        instToRender = MaterialExtractor.processUserInstance(session: session, instance: inst)
+                    } else {
+                        // 背景除去オフ: 全インスタンスをソリッド矩形マスクで矩形クロップ
+                        instToRender = MaterialExtractor.makeUserInstance(
+                            imageBBox: inst.imageBoundingBox,
+                            imagePixelSize: session.imagePixelSize,
+                            extent: session.extent
+                        )
+                    }
                     let png = try MaterialExtractor.renderInstancePNG(
-                        session: session, instance: inst, cropToBoundingBox: true
+                        session: session, instance: instToRender,
+                        cropToBoundingBox: true, ciCtx: renderCtx
                     )
                     let box = inst.imageBoundingBox
                     let actualRatio: CGFloat? = box.height > 0 ? box.width / box.height : nil
@@ -76,14 +100,14 @@ extension DraftCanvasViewModel {
                         aspectRatio: aspectRatio,
                         actualAspectRatio: actualRatio,
                         editedFromItemID: originalItem.id,
-                        isBackgroundRemoved: true
+                        isBackgroundRemoved: removeBackground
                     )
                     try storeRef.writeItemData(png, for: newItem)
                     thumbnailRef.writeThumbnail(from: png, item: newItem)
                     newItems.append(newItem)
                 } catch {
                     await MainActor.run { [weak self] in
-                        self?.logs.append("素材保存失敗 (idx=\(inst.visionInstanceIndex)): \(error.localizedDescription)")
+                        self?.logs.append("素材保存失敗 (id=\(inst.id)): \(error.localizedDescription)")
                     }
                 }
             }

@@ -81,14 +81,40 @@
   }
   .hero-ctas { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; }
   .hero-note { font-size: 12px; color: #999; margin-top: 14px; line-height: 1.8; }
-  .hero-annotation { font-size: 11px; color: #bbb; margin-top: 8px; }
+
+  /* ===== Requirements Bar ===== */
+  .req-bar {
+    display: flex;
+    border: 1px solid #e8e8e8; border-radius: 10px;
+    overflow: hidden; max-width: 660px; margin: 32px auto 0;
+    text-align: left;
+  }
+  .req-bar-item {
+    flex: 1; padding: 16px 20px;
+    border-right: 1px solid #e8e8e8;
+  }
+  .req-bar-item:last-child { border-right: none; }
+  .req-bar-label { font-size: 10px; font-weight: 700; color: #999; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+  .req-bar-value { font-size: 13px; font-weight: 600; color: #111; line-height: 1.4; }
+  .req-bar-sub { font-size: 11px; color: #aaa; margin-top: 2px; line-height: 1.4; }
 
   /* ===== Screenshot ===== */
   .screenshot-wrap { max-width: 960px; margin: 0 auto; padding: 0 32px 80px; }
-  .screenshot-wrap img {
-    width: 100%; border-radius: 12px;
-  }
+  .screenshot-wrap img { width: 100%; border-radius: 12px; }
   .screenshot-note { font-size: 11px; color: #bbb; text-align: center; margin-top: 8px; }
+
+  /* ===== Fit Check ===== */
+  .fit-check { padding: 64px 48px; background: #fafafa; }
+  .fit-check-inner { max-width: 760px; margin: 0 auto; }
+  .fit-check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 32px; }
+  .fit-card { background: #fff; border: 1px solid #e8e8e8; border-radius: 10px; padding: 28px; }
+  .fit-card-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
+  .fit-card-label.good { color: #111; }
+  .fit-card-label.bad { color: #bbb; }
+  .fit-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .fit-list li { font-size: 14px; color: #444; display: flex; align-items: flex-start; gap: 10px; line-height: 1.55; }
+  .fit-list li::before { content: ""; display: inline-block; width: 12px; height: 1.5px; background: #bbb; flex-shrink: 0; margin-top: 11px; }
+  .fit-list.bad li { color: #aaa; }
 
   /* ===== Steps ===== */
   .steps { background: #fafafa; padding: 80px 48px; }
@@ -117,14 +143,23 @@
     border-bottom: 1px solid #ebebeb; display: block;
   }
   .feature-body { padding: 20px; }
-  .feature-icon {
-    width: 32px; height: 32px; background: #f3f3f3;
-    border-radius: 7px; margin-bottom: 12px;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .feature-icon svg { width: 16px; height: 16px; stroke: #555; fill: none; stroke-width: 1.5; }
   .feature-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 5px; }
   .feature-desc { font-size: 13px; color: #777; line-height: 1.6; }
+
+  /* ===== System Requirements ===== */
+  .system-req { padding: 80px 48px; }
+  .system-req-inner { max-width: 640px; margin: 0 auto; }
+  .system-req-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; list-style: none; }
+  .system-req-list li {
+    display: flex; align-items: baseline; gap: 16px;
+    padding: 14px 0; border-bottom: 1px solid #f0f0f0;
+    font-size: 14px; color: #333;
+  }
+  .system-req-list li span {
+    flex-shrink: 0; width: 80px;
+    font-size: 12px; color: #888; font-weight: 600; letter-spacing: 0.03em;
+  }
+  .system-req-list li.full-row { grid-column: 1 / -1; }
 
   /* ===== Pricing ===== */
   .pricing { background: #fafafa; padding: 80px 48px; text-align: center; }
@@ -158,6 +193,8 @@
   .faq-item { border-bottom: 1px solid #f0f0f0; padding: 20px 0; }
   .faq-q { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
   .faq-a { font-size: 14px; color: #777; line-height: 1.7; }
+  .faq-a a { color: #555; }
+  .faq-a code { font-family: ui-monospace, monospace; font-size: 12px; background: #f5f5f5; padding: 2px 6px; border-radius: 4px; }
   .faq-title { margin-bottom: 32px; }
 
   /* ===== Final CTA ===== */
@@ -169,40 +206,26 @@
   .final-cta p { font-size: 15px; color: #888; margin-bottom: 28px; }
   .final-cta .btn-primary { padding: 14px 32px; font-size: 16px; }
 
-  /* ===== System Requirements ===== */
-  .system-req { padding: 80px 48px; }
-  .system-req-inner { max-width: 640px; margin: 0 auto; }
-  .system-req-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; list-style: none; }
-  .system-req-list li {
-    display: flex; align-items: baseline; gap: 16px;
-    padding: 14px 0; border-bottom: 1px solid #f0f0f0;
-    font-size: 14px; color: #333;
-  }
-  .system-req-list li span {
-    flex-shrink: 0; width: 80px;
-    font-size: 12px; color: #888; font-weight: 600; letter-spacing: 0.03em;
-  }
-
   /* ===== Disclaimer ===== */
-  .disclaimer { background: #fafafa; padding: 80px 48px; }
+  .disclaimer { background: #fafafa; padding: 48px; }
   .disclaimer-inner { max-width: 720px; margin: 0 auto; }
   .disclaimer-list { list-style: none; }
-  .disclaimer-list li { padding: 20px 0; border-bottom: 1px solid #f0f0f0; }
+  .disclaimer-list li { padding: 16px 0; border-bottom: 1px solid #f0f0f0; }
   .disclaimer-list li:last-child { border-bottom: none; }
-  .disclaimer-list h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
-  .disclaimer-list p { font-size: 13px; color: #777; line-height: 1.7; }
+  .disclaimer-list h3 { font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #555; }
+  .disclaimer-list p { font-size: 12px; color: #999; line-height: 1.7; }
 
   /* ===== Footer ===== */
   footer {
     border-top: 1px solid #f0f0f0;
     padding: 24px 48px;
-    display: flex; justify-content: space-between; align-items: center;
-    flex-wrap: wrap; gap: 8px;
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
   }
+  .footer-main { display: flex; justify-content: space-between; align-items: center; width: 100%; }
   .footer-copy { font-size: 12px; color: #aaa; }
   .footer-links { display: flex; gap: 24px; }
   .footer-links a { font-size: 12px; color: #aaa; text-decoration: none; }
-  .footer-legal-note { font-size: 11px; color: #bbb; width: 100%; text-align: right; }
+  .footer-trademark { font-size: 11px; color: #ccc; text-align: center; line-height: 1.6; }
 
   /* ===== Lang toggle ===== */
   .lang-toggle {
@@ -219,19 +242,24 @@
     nav { padding: 16px 24px; }
     .nav-links a:not(.btn-primary) { display: none; }
     .hero { padding: 64px 24px 48px; }
+    .req-bar { flex-direction: column; }
+    .req-bar-item { border-right: none; border-bottom: 1px solid #e8e8e8; }
+    .req-bar-item:last-child { border-bottom: none; }
     .screenshot-wrap { padding: 0 16px 60px; }
+    .fit-check { padding: 48px 24px; }
+    .fit-check-grid { grid-template-columns: 1fr; }
     .steps { padding: 60px 24px; }
     .steps-grid { grid-template-columns: 1fr; }
     .features { padding: 60px 24px; }
     .features-grid { grid-template-columns: 1fr; }
+    .system-req { padding: 60px 24px; }
+    .system-req-list { grid-template-columns: 1fr; }
     .pricing { padding: 60px 24px; }
     .faq { padding: 60px 24px; }
     .final-cta { padding: 60px 24px; }
-    footer { padding: 20px 24px; flex-direction: column; gap: 12px; text-align: center; }
-    .footer-legal-note { text-align: center; }
-    .system-req { padding: 60px 24px; }
-    .system-req-list { grid-template-columns: 1fr; }
-    .disclaimer { padding: 60px 24px; }
+    .disclaimer { padding: 40px 24px; }
+    footer { padding: 20px 24px; }
+    .footer-main { flex-direction: column; gap: 12px; text-align: center; }
   }
 </style>
 </head>
@@ -246,7 +274,7 @@
     <a href="#features">Features</a>
     <a href="#pricing">Pricing</a>
     <button type="button" class="lang-toggle" onclick="setLang('ja')" aria-label="日本語に切替">日本語</button>
-    <a href="https://github.com/5umm3r/draftcanvas-releases/releases/latest/download/DraftCanvas.dmg" class="btn-primary" onclick="if(window.__cfBeacon)window.__cfBeacon.track('download_click',{lp:'en',location:'nav'})">Try Free</a>
+    <a href="/download" class="btn-primary" onclick="if(window.__cfBeacon)window.__cfBeacon.track('download_click',{lp:'en',location:'nav'})">Try Free</a>
   </div>
 </nav>
 
@@ -255,14 +283,30 @@
 <!-- Hero -->
 <section class="hero">
   <div class="hero-badge">macOS Native · ChatGPT Integration</div>
-  <h1>Get the image you want,<br>faster.</h1>
-  <p class="hero-desc">Put your ChatGPT paid plan to work<sup>*</sup>.<br>Sketch, inpaint, remove backgrounds, and export — all on Mac.</p>
+  <h1>Put your ChatGPT plan<br>to work on Mac.</h1>
+  <p class="hero-desc">Use image generation within your ChatGPT paid plan.<br>Sketch, inpaint, remove backgrounds, and export — all on Mac.</p>
   <div class="hero-ctas">
-    <a href="https://github.com/5umm3r/draftcanvas-releases/releases/latest/download/DraftCanvas.dmg" class="btn-primary" onclick="if(window.__cfBeacon)window.__cfBeacon.track('download_click',{lp:'en',location:'hero'})">Try Free for 14 Days</a>
+    <a href="/download" class="btn-primary" onclick="if(window.__cfBeacon)window.__cfBeacon.track('download_click',{lp:'en',location:'hero'})">Try Free for 14 Days</a>
     <a href="#features" class="btn-secondary">See Features</a>
   </div>
-  <p class="hero-note">macOS 14+ · Apple Silicon / Intel</p>
-  <p class="hero-annotation">* Image generation requires a ChatGPT paid plan (Plus, Pro, Team, etc.) with available usage within your plan.</p>
+  <p class="hero-note">14-day full access · No credit card required</p>
+  <div class="req-bar">
+    <div class="req-bar-item">
+      <div class="req-bar-label">OS</div>
+      <div class="req-bar-value">macOS 14+</div>
+      <div class="req-bar-sub">Apple Silicon / Intel</div>
+    </div>
+    <div class="req-bar-item">
+      <div class="req-bar-label">Required tool</div>
+      <div class="req-bar-value">Codex CLI</div>
+      <div class="req-bar-sub">Install &amp; login via Terminal</div>
+    </div>
+    <div class="req-bar-item">
+      <div class="req-bar-label">ChatGPT</div>
+      <div class="req-bar-value">Paid plan</div>
+      <div class="req-bar-sub">Plus / Pro / Team, etc.</div>
+    </div>
+  </div>
 </section>
 
 <!-- Screenshot -->
@@ -348,11 +392,27 @@
     <div class="feature-card">
       <img src="../assets/feature-material.png" alt="Material extraction result" loading="lazy" onerror="this.style.display='none'">
       <div class="feature-body">
-        <h3>Extract as Material</h3>
-        <p class="feature-desc">Isolate subjects, textures, and elements from images. Reuse them across your design workflow.</p>
+        <h3>Extract Material</h3>
+        <p class="feature-desc">Recognize and extract individual objects from an image. Save each as PNG or SVG for reuse.</p>
       </div>
     </div>
 
+  </div>
+</section>
+
+<!-- System Requirements -->
+<section class="system-req">
+  <div class="system-req-inner">
+    <p class="section-label">Requirements</p>
+    <h2 class="section-title">System Requirements</h2>
+    <ul class="system-req-list">
+      <li><span>OS</span>macOS 14 Sonoma or later</li>
+      <li><span>Chip</span>Apple Silicon / Intel</li>
+      <li><span>Memory</span>8 GB RAM recommended</li>
+      <li><span>Disk</span>500 MB free space</li>
+      <li class="full-row"><span>Required</span>Codex CLI (install &amp; login via Terminal)</li>
+      <li class="full-row"><span>ChatGPT</span>Paid plan (Plus / Pro / Team, etc.)</li>
+    </ul>
   </div>
 </section>
 
@@ -377,9 +437,14 @@
         <li>Use on up to 2 Macs simultaneously</li>
         <li>30-day money-back guarantee</li>
       </ul>
-      <a href="https://github.com/5umm3r/draftcanvas-releases/releases/latest/download/DraftCanvas.dmg"
+      <a href="/download"
          class="btn-primary" style="display:block;text-align:center;padding:14px;"
          onclick="if(window.__cfBeacon)window.__cfBeacon.track('download_click',{lp:'en',location:'pricing'})">Try Free</a>
+      <a href="https://buy.polar.sh/polar_cl_e0kuTw7J7RdVzmUVjPJs96OJACcY1VCFkIkpk2ZYgik?metadata[source]=lp&metadata[locale]=en"
+         data-polar-checkout
+         data-polar-checkout-theme="light"
+         class="btn-secondary" style="display:block;text-align:center;padding:14px;margin-top:10px;"
+         onclick="if(window.__cfBeacon)window.__cfBeacon.track('purchase_click',{lp:'en',location:'pricing'})">Buy now — ¥1,980</a>
     </div>
   </div>
 </section>
@@ -391,11 +456,15 @@
 
   <div class="faq-item">
     <p class="faq-q">Do I need a ChatGPT account?</p>
-    <p class="faq-a">Image generation and editing features require a ChatGPT paid plan (Plus, Pro, Team, etc.). Background removal, vectorization, and material extraction work offline and do not require ChatGPT.</p>
+    <p class="faq-a">Image generation and editing features require a ChatGPT paid plan (Plus, Pro, Team, etc.). Background removal, vectorization, and object extraction work offline and do not require ChatGPT.</p>
   </div>
   <div class="faq-item">
-    <p class="faq-q">Do I need to install Codex CLI?</p>
-    <p class="faq-a">Yes — Codex CLI must be installed and logged in via Terminal before using the app.</p>
+    <p class="faq-q">What is Codex CLI and how do I install it?</p>
+    <p class="faq-a">Codex CLI is a terminal-based AI tool from OpenAI. Draft Canvas uses it to connect to ChatGPT. Install it with <code>npm install -g @openai/codex</code>, then run <code>codex</code> to log in. See the <a href="https://github.com/openai/codex" target="_blank" rel="noopener">Codex CLI repository</a> for details.</p>
+  </div>
+  <div class="faq-item">
+    <p class="faq-q">Are there extra fees for image generation?</p>
+    <p class="faq-a">Draft Canvas costs ¥1,980 (one-time). Image generation uses your existing ChatGPT paid plan — no additional per-image charges apply.</p>
   </div>
   <div class="faq-item">
     <p class="faq-q">Is there a subscription?</p>
@@ -413,32 +482,17 @@
 
 <!-- Final CTA -->
 <section class="final-cta">
-  <h2>Leaving your ChatGPT usage on the table?</h2>
+  <h2>Make the most of your ChatGPT plan, on Mac.</h2>
   <p>Draft Canvas puts your plan to work.</p>
-  <a href="https://github.com/5umm3r/draftcanvas-releases/releases/latest/download/DraftCanvas.dmg"
+  <a href="/download"
      class="btn-primary"
      onclick="if(window.__cfBeacon)window.__cfBeacon.track('download_click',{lp:'en',location:'final_cta'})">Try Free</a>
-</section>
-
-<!-- System Requirements -->
-<section class="system-req">
-  <div class="system-req-inner">
-    <p class="section-label">Requirements</p>
-    <h2 class="section-title">System Requirements</h2>
-    <ul class="system-req-list">
-      <li><span>OS</span>macOS 14 Sonoma or later</li>
-      <li><span>Chip</span>Apple Silicon / Intel</li>
-      <li><span>Memory</span>8 GB RAM recommended</li>
-      <li><span>Disk</span>500 MB free space</li>
-    </ul>
-  </div>
 </section>
 
 <!-- Disclaimer -->
 <section class="disclaimer">
   <div class="disclaimer-inner">
     <p class="section-label">Disclaimer</p>
-    <h2 class="section-title">Before You Start</h2>
     <ul class="disclaimer-list">
       <li>
         <h3>ChatGPT paid plan required</h3>
@@ -447,10 +501,6 @@
       <li>
         <h3>Codex CLI setup required</h3>
         <p>AI features require Codex CLI to be installed and authenticated via Terminal beforehand. Changes to Codex CLI behavior or availability are outside Draft Canvas's warranty.</p>
-      </li>
-      <li>
-        <h3>Trademarks</h3>
-        <p>ChatGPT and OpenAI are trademarks or registered trademarks of OpenAI, L.L.C. Apple, macOS, Mac, and Apple Silicon are trademarks or registered trademarks of Apple Inc. in the U.S. and other countries. All other product and service names are trademarks of their respective owners.</p>
       </li>
       <li>
         <h3>AI-generated image rights and quality</h3>
@@ -464,13 +514,15 @@
 
 <!-- Footer -->
 <footer>
-  <p class="footer-copy">© 2026 Draft Canvas</p>
-  <nav class="footer-links" aria-label="Footer navigation">
-    <a href="../privacy.html">Privacy (Japanese)</a>
-    <a href="../terms.html">Terms (Japanese)</a>
-    <a href="https://forms.gle/zizcXwMQaLAw4fux6">Contact</a>
-  </nav>
-  <p class="footer-legal-note">Legal documents currently available in Japanese only.</p>
+  <div class="footer-main">
+    <p class="footer-copy">© 2026 Draft Canvas</p>
+    <nav class="footer-links" aria-label="Footer navigation">
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+      <a href="https://forms.gle/zizcXwMQaLAw4fux6">Contact</a>
+    </nav>
+  </div>
+  <p class="footer-trademark">ChatGPT and OpenAI are trademarks or registered trademarks of OpenAI, L.L.C. Apple and macOS are trademarks of Apple Inc.</p>
 </footer>
 
 <script>
@@ -482,5 +534,6 @@
 <!-- Cloudflare Web Analytics -->
 <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "145787b162134eeeb534032a0a55c764"}'></script>
 <!-- End Cloudflare Web Analytics -->
+<script defer data-auto-init src="https://cdn.jsdelivr.net/npm/@polar-sh/checkout@0.1/dist/embed.global.js"></script>
 </body>
 </html>

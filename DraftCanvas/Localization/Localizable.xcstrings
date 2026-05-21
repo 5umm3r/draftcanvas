@@ -3713,18 +3713,18 @@
         }
       }
     },
-    "素材として分離": {
+    "素材を抽出": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Separate as Material"
+            "value": "Extract Material"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "素材として分離"
+            "value": "素材を抽出"
           }
         }
       }

@@ -149,3 +149,27 @@ brew install --cask sparkle
 
 **`DC_NOTARY` プロファイルエラー**
 → セットアップ手順 2 を再実施（App-specific password の有効期限切れの場合あり）。
+
+---
+
+## LP デプロイ (draftcanvas.spade3.com)
+
+LP の CTA は `/download` (相対パス) 経由でダウンロードを提供する。`/download` エンドポイントの実態:
+
+- `lp2/.htaccess` — Apache サーバ用 302 リダイレクト (GitHub Releases 最新 DMG へ)
+- `lp2/download/index.html` — 非 Apache サーバ向け JS + meta refresh フォールバック
+
+**LP 更新時の FTP アップロード対象ファイル:**
+
+```
+lp2/.htaccess
+lp2/download/index.html
+lp2/index.html
+lp2/en/index.html
+lp2/assets/      （画像変更時のみ）
+```
+
+アプリリリース時は `release.sh` のみ実行。LP 側のファイル変更は不要（リダイレクト先 URL が GitHub の固定 URL のため）。
+
+**DMG ファイル名を変更する場合:**
+`lp2/.htaccess` と `lp2/download/index.html` のリダイレクト先 URL を同時更新してから FTP アップロードすること。
