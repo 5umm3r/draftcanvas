@@ -7,17 +7,35 @@ if [ -z "$VERSION" ]; then
   exit 1
 fi
 
+# uncommitted 変更があるとビルド番号とコミット数が一致しないため中断
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  echo "Error: uncommitted changes detected. Commit or stash before releasing." >&2
+  exit 1
+fi
+
+BUILD_NUMBER=$(git rev-list --count HEAD)
+echo "==> Version: $VERSION  Build: $BUILD_NUMBER"
+
 SCHEME="DraftCanvas"
 ARCHIVE="_build/DraftCanvas.xcarchive"
 EXPORT_DIR="_build/Export"
 EXPORT_OPTS="scripts/ExportOptions.plist"
 DMG_PATH="_build/DraftCanvas.dmg"
+APPCAST_DIR="_build/appcast"
 NOTARY_PROFILE="DC_NOTARY"
+
+if ! command -v generate_appcast &>/dev/null; then
+  echo "Error: generate_appcast not found. Install via: brew install --cask sparkle" >&2
+  exit 1
+fi
 
 echo "==> Archive"
 xcodebuild -scheme "$SCHEME" -configuration Release \
   -destination 'generic/platform=macOS' \
-  -archivePath "$ARCHIVE" archive
+  -archivePath "$ARCHIVE" \
+  MARKETING_VERSION="$VERSION" \
+  CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
+  archive
 
 echo "==> Export"
 rm -rf "$EXPORT_DIR"
@@ -63,5 +81,17 @@ xcrun notarytool submit "$DMG_PATH" \
   --keychain-profile "$NOTARY_PROFILE" --wait
 xcrun stapler staple "$DMG_PATH"
 
-echo "==> Done: $DMG_PATH"
+echo "==> Generate appcast"
+rm -rf "$APPCAST_DIR"
+mkdir -p "$APPCAST_DIR"
+cp "$DMG_PATH" "$APPCAST_DIR/"
+generate_appcast "$APPCAST_DIR"
+
+echo "==> Done"
+echo "    DMG:     $DMG_PATH"
+echo "    appcast: $APPCAST_DIR/appcast.xml"
+echo ""
+echo "Next: upload to GitHub Releases v$VERSION (5umm3r/draftcanvas-releases):"
+echo "  - _build/DraftCanvas.dmg"
+echo "  - _build/appcast/appcast.xml"
 echo "    Verify: spctl -a -vvv -t install \"$DMG_PATH\""
