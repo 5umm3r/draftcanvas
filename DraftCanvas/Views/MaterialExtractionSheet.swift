@@ -1,6 +1,13 @@
 import SwiftUI
 import AppKit
 
+// MARK: - EditMode
+
+enum EditMode: String, CaseIterable {
+    case select = "選択"
+    case addRect = "追加"
+}
+
 struct MaterialExtractionPreview: Identifiable {
     let id = UUID()
     let item: ProjectItem
@@ -12,13 +19,22 @@ struct MaterialExtractionSheet: View {
     @ObservedObject var viewModel: DraftCanvasViewModel
 
     @State private var selectedInstanceIDs: Set<UUID> = []
+    @State private var editedInstances: [MaterialExtractor.DetectedInstance] = []
     @State private var isSaving: Bool = false
+    @State private var editMode: EditMode = .select
+    @State private var removeBackground: Bool = false
 
     var body: some View {
         VStack(spacing: 0) {
             MaterialOverlayCanvasView(
                 session: preview.session,
-                selectedInstanceIDs: $selectedInstanceIDs
+                instances: editedInstances,
+                selectedInstanceIDs: $selectedInstanceIDs,
+                editMode: editMode,
+                onAddInstance: { inst in
+                    editedInstances.append(inst)
+                    selectedInstanceIDs.insert(inst.id)
+                }
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(nsColor: .windowBackgroundColor))
@@ -30,18 +46,25 @@ struct MaterialExtractionSheet: View {
         }
         .frame(minWidth: 800, minHeight: 620)
         .onAppear {
-            selectedInstanceIDs = Set(preview.session.instances.map(\.id))
+            editedInstances = preview.session.instances
+            selectedInstanceIDs = Set(editedInstances.map(\.id))
+        }
+        .onDisappear {
+            isSaving = false
+        }
+        .onChange(of: viewModel.errorToast) { _, newValue in
+            if newValue != nil { isSaving = false }
         }
     }
 
     private var controlBar: some View {
         HStack(spacing: 16) {
-            Text("\(selectedInstanceIDs.count) / \(preview.session.instances.count) 個選択")
+            Text("\(selectedInstanceIDs.count) / \(editedInstances.count) 個選択")
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
 
             Button("すべて選択") {
-                selectedInstanceIDs = Set(preview.session.instances.map(\.id))
+                selectedInstanceIDs = Set(editedInstances.map(\.id))
             }
             .controlSize(.small)
 
@@ -50,7 +73,20 @@ struct MaterialExtractionSheet: View {
             }
             .controlSize(.small)
 
+            Picker("モード", selection: $editMode) {
+                ForEach(EditMode.allCases, id: \.self) { mode in
+                    Text(mode.rawValue).tag(mode)
+                }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .frame(width: 120)
+
             Spacer()
+
+            Toggle("背景除去", isOn: $removeBackground)
+                .toggleStyle(.switch)
+                .controlSize(.small)
 
             Button("キャンセル") {
                 viewModel.cancelMaterialExtraction()
@@ -62,7 +98,9 @@ struct MaterialExtractionSheet: View {
                 viewModel.commitMaterialExtraction(
                     originalItem: preview.item,
                     session: preview.session,
-                    selectedInstanceIDs: selectedInstanceIDs
+                    instances: editedInstances,
+                    selectedInstanceIDs: selectedInstanceIDs,
+                    removeBackground: removeBackground
                 )
             }
             .buttonStyle(.borderedProminent)
@@ -76,7 +114,10 @@ struct MaterialExtractionSheet: View {
 
 struct MaterialOverlayCanvasView: NSViewRepresentable {
     let session: MaterialExtractor.ExtractionSession
+    var instances: [MaterialExtractor.DetectedInstance]
     @Binding var selectedInstanceIDs: Set<UUID>
+    var editMode: EditMode
+    var onAddInstance: ((MaterialExtractor.DetectedInstance) -> Void)?
 
     func makeCoordinator() -> Coordinator { Coordinator(parent: self) }
 
@@ -88,7 +129,9 @@ struct MaterialOverlayCanvasView: NSViewRepresentable {
 
     func updateNSView(_ nsView: MaterialOverlayNSView, context: Context) {
         context.coordinator.parent = self
+        nsView.instances = instances
         nsView.selectedInstanceIDs = selectedInstanceIDs
+        nsView.editMode = editMode
         nsView.needsDisplay = true
     }
 
@@ -105,6 +148,16 @@ struct MaterialOverlayCanvasView: NSViewRepresentable {
                 parent.selectedInstanceIDs.insert(id)
             }
         }
+
+        @MainActor
+        func addUserInstance(imageBBox: CGRect) {
+            let inst = MaterialExtractor.makeUserInstance(
+                imageBBox: imageBBox,
+                imagePixelSize: parent.session.imagePixelSize,
+                extent: parent.session.extent
+            )
+            parent.onAddInstance?(inst)
+        }
     }
 }
 
@@ -112,8 +165,13 @@ struct MaterialOverlayCanvasView: NSViewRepresentable {
 
 final class MaterialOverlayNSView: NSView {
     let session: MaterialExtractor.ExtractionSession
+    var instances: [MaterialExtractor.DetectedInstance] = []
     var selectedInstanceIDs: Set<UUID> = []
     weak var coordinator: MaterialOverlayCanvasView.Coordinator?
+    var editMode: EditMode = .select
+
+    private var dragOrigin: CGPoint? = nil
+    private var currentDragRect: CGRect? = nil
 
     private var zoom: CGFloat = 1.0
     private var panOffset: CGPoint = .zero
@@ -192,7 +250,7 @@ final class MaterialOverlayNSView: NSView {
 
         ctx.draw(session.originalCG, in: r)
 
-        for (i, inst) in session.instances.enumerated() {
+        for (i, inst) in instances.enumerated() {
             let isSelected = selectedInstanceIDs.contains(inst.id)
             let color = Self.palette[i % Self.palette.count]
             let vr = viewRect(for: inst.imageBoundingBox)
@@ -213,6 +271,17 @@ final class MaterialOverlayNSView: NSView {
             ctx.stroke(vr)
             ctx.restoreGState()
         }
+
+        // 矩形追加モード: ドラッグ中の破線プレビュー
+        if editMode == .addRect, let dragRect = currentDragRect {
+            let vr = viewRect(for: dragRect)
+            ctx.saveGState()
+            ctx.setStrokeColor(NSColor.systemBlue.cgColor)
+            ctx.setLineWidth(1.5)
+            ctx.setLineDash(phase: 0, lengths: [4, 4])
+            ctx.stroke(vr)
+            ctx.restoreGState()
+        }
     }
 
     // MARK: - Mouse
@@ -220,15 +289,52 @@ final class MaterialOverlayNSView: NSView {
     override func mouseDown(with event: NSEvent) {
         let vp = convert(event.locationInWindow, from: nil)
         let ciPt = toCIImagePoint(vp)
-        if let hit = pickInstance(at: ciPt) {
-            coordinator?.toggle(hit.id)
+        switch editMode {
+        case .select:
+            if let hit = pickInstance(at: ciPt) {
+                coordinator?.toggle(hit.id)
+                needsDisplay = true
+            }
+        case .addRect:
+            dragOrigin = ciPt
+            currentDragRect = nil
+        }
+    }
+
+    override func mouseDragged(with event: NSEvent) {
+        if editMode == .addRect, let origin = dragOrigin {
+            let vp = convert(event.locationInWindow, from: nil)
+            var ciPt = toCIImagePoint(vp)
+            // 画像ピクセル範囲にクランプ
+            let s = session.imagePixelSize
+            ciPt.x = max(0, min(s.width, ciPt.x))
+            ciPt.y = max(0, min(s.height, ciPt.y))
+            let minX = min(origin.x, ciPt.x)
+            let minY = min(origin.y, ciPt.y)
+            let maxX = max(origin.x, ciPt.x)
+            let maxY = max(origin.y, ciPt.y)
+            currentDragRect = CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
+            needsDisplay = true
+        }
+    }
+
+    override func mouseUp(with event: NSEvent) {
+        if editMode == .addRect {
+            guard let rect = currentDragRect, rect.width > 5, rect.height > 5 else {
+                dragOrigin = nil
+                currentDragRect = nil
+                return
+            }
+            coordinator?.addUserInstance(imageBBox: rect)
+            dragOrigin = nil
+            currentDragRect = nil
             needsDisplay = true
         }
     }
 
     /// hit-test: imageBoundingBox（CIImage座標）でヒットしたインスタンスのうち面積最小を返す
     private func pickInstance(at ciPt: CGPoint) -> MaterialExtractor.DetectedInstance? {
-        let hits = session.instances.filter { $0.imageBoundingBox.contains(ciPt) }
+        let hits = instances.filter { $0.imageBoundingBox.contains(ciPt) }
         return hits.min(by: {
             $0.imageBoundingBox.width * $0.imageBoundingBox.height
             < $1.imageBoundingBox.width * $1.imageBoundingBox.height

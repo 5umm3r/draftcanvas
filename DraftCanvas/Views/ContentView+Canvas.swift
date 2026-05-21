@@ -657,6 +657,18 @@ extension ContentView {
                             VectorizingOverlay(label: "高解像度化中") {
                                 viewModel.cancelUpscale(itemID: item.id)
                             }
+                        } else if viewModel.extractingItemID == item.id {
+                            ZStack {
+                                Color.black.opacity(0.4)
+                                VStack(spacing: 6) {
+                                    ProgressView()
+                                        .controlSize(.small)
+                                        .colorScheme(.dark)
+                                    Text("素材を解析中…")
+                                        .font(.caption2.weight(.medium))
+                                        .foregroundStyle(.white)
+                                }
+                            }
                         }
                     }
                 }
