@@ -112,9 +112,26 @@ final class EntitlementGate: ObservableObject {
         }
     }
 
+    func deactivateLicense() async {
+        guard let key = LicenseStore.shared.licenseKey,
+              let instanceID = LicenseStore.shared.instanceID else { return }
+        try? await LicenseClient.deactivate(key: key, activationID: instanceID)
+        LicenseStore.shared.resetAll()
+        evaluate()
+    }
+
     private func backgroundValidate(key: String, instanceID: String) async {
-        guard let valid = try? await LicenseClient.validate(key: key, instanceID: instanceID) else { return }
-        if !valid {
+        do {
+            let valid = try await LicenseClient.validate(key: key, instanceID: instanceID)
+            if !valid {
+                LicenseStore.shared.licenseKey = nil
+                LicenseStore.shared.deleteItem(account: "instanceID")
+                evaluate()
+            }
+        } catch LicenseError.network {
+            // オフライン等のネットワークエラーは無視（誤って失効扱いにしない）
+        } catch {
+            // invalidKey / expired / revoked 等 → Keychain をクリアして再評価
             LicenseStore.shared.licenseKey = nil
             LicenseStore.shared.deleteItem(account: "instanceID")
             evaluate()
