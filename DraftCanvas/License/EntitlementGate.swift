@@ -112,6 +112,14 @@ final class EntitlementGate: ObservableObject {
         }
     }
 
+    func deactivateLicense() async {
+        guard let key = LicenseStore.shared.licenseKey,
+              let instanceID = LicenseStore.shared.instanceID else { return }
+        try? await LicenseClient.deactivate(key: key, activationID: instanceID)
+        LicenseStore.shared.resetAll()
+        evaluate()
+    }
+
     private func backgroundValidate(key: String, instanceID: String) async {
         guard let valid = try? await LicenseClient.validate(key: key, instanceID: instanceID) else { return }
         if !valid {

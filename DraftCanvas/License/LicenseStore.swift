@@ -16,6 +16,7 @@ final class LicenseStore: @unchecked Sendable {
         }
     }
 
+    // 実体は Polar の activation_id
     var instanceID: String? {
         get { readString(account: "instanceID") }
         set { if let v = newValue { writeString(v, account: "instanceID") } }
