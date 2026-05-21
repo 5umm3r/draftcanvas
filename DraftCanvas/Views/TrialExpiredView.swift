@@ -1,14 +1,14 @@
 import SwiftUI
 
 struct TrialExpiredView: View {
-    @StateObject private var gate = EntitlementGate.shared
+    @ObservedObject private var gate = EntitlementGate.shared
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         VStack(spacing: 24) {
-            Image(systemName: "lock.circle.fill")
-                .font(.system(size: 56))
-                .foregroundStyle(.secondary)
+            Image(systemName: "clock.badge.exclamationmark.fill")
+                .font(.system(size: 52))
+                .foregroundStyle(.orange)
 
             VStack(spacing: 8) {
                 Text(String(localized: "トライアル期間が終了しました"))
@@ -35,10 +35,6 @@ struct TrialExpiredView: View {
                     gate.showLicenseSheet = true
                 }
                 .foregroundStyle(.secondary)
-
-                Button(String(localized: "後で")) { dismiss() }
-                    .foregroundStyle(.tertiary)
-                    .font(.caption)
             }
         }
         .padding(40)
