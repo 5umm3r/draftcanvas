@@ -24,10 +24,23 @@ DMG_PATH="_build/DraftCanvas.dmg"
 APPCAST_DIR="_build/appcast"
 NOTARY_PROFILE="DC_NOTARY"
 
-if ! command -v generate_appcast &>/dev/null; then
+SPARKLE_KEY_FILE="${HOME}/.config/sparkle/ed_private_key"
+GENERATE_APPCAST="$(command -v generate_appcast 2>/dev/null \
+  || find /usr/local/Caskroom/sparkle /opt/homebrew/Caskroom/sparkle -name generate_appcast 2>/dev/null | sort -r | head -1 \
+  || true)"
+DOWNLOAD_URL_PREFIX="https://github.com/5umm3r/draftcanvas-releases/releases/latest/download/"
+
+if [ -z "$GENERATE_APPCAST" ]; then
   echo "Error: generate_appcast not found. Install via: brew install --cask sparkle" >&2
   exit 1
 fi
+if [ ! -f "$SPARKLE_KEY_FILE" ]; then
+  echo "Error: Sparkle private key not found at $SPARKLE_KEY_FILE" >&2
+  echo "       Save the Ed25519 private key (base64) to that file and chmod 600 it." >&2
+  exit 1
+fi
+# quarantine 解除（初回インストール後に必要）
+xattr -d com.apple.quarantine "$GENERATE_APPCAST" 2>/dev/null || true
 
 echo "==> Archive"
 xcodebuild -scheme "$SCHEME" -configuration Release \
@@ -85,13 +98,45 @@ echo "==> Generate appcast"
 rm -rf "$APPCAST_DIR"
 mkdir -p "$APPCAST_DIR"
 cp "$DMG_PATH" "$APPCAST_DIR/"
-generate_appcast "$APPCAST_DIR"
+"$GENERATE_APPCAST" \
+  --download-url-prefix "$DOWNLOAD_URL_PREFIX" \
+  "$APPCAST_DIR"
+
+# generate_appcast が --ed-key-file で署名しない場合の fallback:
+# sign_update で署名を取得して enclosure に注入
+SIGN_UPDATE="$(dirname "$GENERATE_APPCAST")/sign_update"
+xattr -d com.apple.quarantine "$SIGN_UPDATE" 2>/dev/null || true
+SIGNATURE=$(cat "$SPARKLE_KEY_FILE" | "$SIGN_UPDATE" "$APPCAST_DIR/DraftCanvas.dmg" | grep -o 'sparkle:edSignature="[^"]*"')
+if grep -q 'sparkle:edSignature' "$APPCAST_DIR/appcast.xml"; then
+  echo "    Signed by generate_appcast"
+elif [ -n "$SIGNATURE" ]; then
+  sed -i '' "s|<enclosure url=|<enclosure $SIGNATURE url=|" "$APPCAST_DIR/appcast.xml"
+  echo "    Signed via sign_update fallback"
+else
+  echo "Warning: EdDSA signature could not be generated. Check SPARKLE_KEY_FILE." >&2
+fi
+
+echo "==> Upload to GitHub Releases"
+RELEASES_REPO="5umm3r/draftcanvas-releases"
+TAG="v${VERSION}"
+if gh release view "$TAG" --repo "$RELEASES_REPO" &>/dev/null; then
+  echo "    Release $TAG exists — uploading assets (overwrite)"
+  gh release upload "$TAG" \
+    "$DMG_PATH" \
+    "$APPCAST_DIR/appcast.xml" \
+    --repo "$RELEASES_REPO" \
+    --clobber
+else
+  gh release create "$TAG" \
+    "$DMG_PATH" \
+    "$APPCAST_DIR/appcast.xml" \
+    --repo "$RELEASES_REPO" \
+    --title "DraftCanvas $VERSION" \
+    --latest
+fi
 
 echo "==> Done"
 echo "    DMG:     $DMG_PATH"
 echo "    appcast: $APPCAST_DIR/appcast.xml"
-echo ""
-echo "Next: upload to GitHub Releases v$VERSION (5umm3r/draftcanvas-releases):"
-echo "  - _build/DraftCanvas.dmg"
-echo "  - _build/appcast/appcast.xml"
-echo "    Verify: spctl -a -vvv -t install \"$DMG_PATH\""
+echo "    Release: https://github.com/$RELEASES_REPO/releases/tag/$TAG"
+echo "    Verify:  spctl -a -vvv -t install \"$DMG_PATH\""
