@@ -488,6 +488,26 @@ extension ContentView {
                         .disabled(viewModel.selectedItemIDs.isEmpty)
                         .help("選択画像を一括エクスポート")
 
+                        let shareURLs = viewModel.displayedItemsSnapshot
+                            .filter { viewModel.selectedItemIDs.contains($0.id) }
+                            .map { viewModel.projectStore.resolvedFileURL(for: $0) }
+                        ShareLink(items: shareURLs) {
+                            Image(systemName: "paperplane")
+                                .font(.system(size: 13, weight: .medium))
+                                .frame(width: 18, height: 18)
+                                .padding(8)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+                        }
+                        .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
+                        .disabled(viewModel.selectedItemIDs.isEmpty)
+                        .help("選択画像を一括共有")
+
                         Button {
                             isConfirmingBatchDelete = true
                         } label: {
@@ -848,6 +868,7 @@ extension ContentView {
                 ) {
                     confirmingDeleteItemID = item.id
                 }
+                CircularShareButton(urls: [viewModel.projectStore.resolvedFileURL(for: item)])
                 CircularPromptActionButton(
                     systemImage: "square.and.arrow.up",
                     tooltip: "エクスポート",

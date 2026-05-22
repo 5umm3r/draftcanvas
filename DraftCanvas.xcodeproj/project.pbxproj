@@ -70,6 +70,7 @@
 		7BE2D769348A44FB8F3CD718C1F337EF /* ExpandedImageSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 931EFDA997C949FD9E4D485A8C876F0D /* ExpandedImageSheet.swift */; };
 		810EF0171FB44986BA128E23 /* bin in Resources */ = {isa = PBXBuildFile; fileRef = 7119B2C4A2654E4E835B0B4D /* bin */; };
 		87F3707632A04A009F6F6A1EF5730A47 /* CircularPromptActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACF65D5F66CC46589243299381594A99 /* CircularPromptActionButton.swift */; };
+		B641D2BFDADD4C6189F5646957EB2007 /* CircularShareButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED927E3B459549A0B1B4F3AE89381572 /* CircularShareButton.swift */; };
 		8929853307644327AA3382FCE9D2E8BF /* PurchaseConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC8F5C3910A4BAA899F9F2C47B2440E /* PurchaseConfig.swift */; };
 		8DA0713CF211C4B39E9CAB75 /* ErrorToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 253503CE40171955E27036E3 /* ErrorToastView.swift */; };
 		9882CC1FE59BF70AAF7B2BD4 /* DraftCanvasViewModel+Attachments.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20BE642DC19692EDFE75D0AA /* DraftCanvasViewModel+Attachments.swift */; };
@@ -208,6 +209,7 @@
 		AA0000010000000100000002 /* DraftCanvasViewModel+Upscale.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Upscale.swift"; path = "ViewModel/DraftCanvasViewModel+Upscale.swift"; sourceTree = "<group>"; };
 		AA0000010000000100000003 /* UpscalePreviewSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = UpscalePreviewSheet.swift; path = Views/UpscalePreviewSheet.swift; sourceTree = "<group>"; };
 		ACF65D5F66CC46589243299381594A99 /* CircularPromptActionButton.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CircularPromptActionButton.swift; path = Views/CircularPromptActionButton.swift; sourceTree = "<group>"; };
+			ED927E3B459549A0B1B4F3AE89381572 /* CircularShareButton.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CircularShareButton.swift; path = Views/CircularShareButton.swift; sourceTree = "<group>"; };
 		AEC8F5C3910A4BAA899F9F2C47B2440E /* PurchaseConfig.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PurchaseConfig.swift; path = License/PurchaseConfig.swift; sourceTree = "<group>"; };
 		B24862D0B74E492482C69B38F6415D7A /* CanvasRubberBandOverlay.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CanvasRubberBandOverlay.swift; path = Views/CanvasRubberBandOverlay.swift; sourceTree = "<group>"; };
 		B268164EA0D2A09163FB3A63 /* AccountPopover.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AccountPopover.swift; path = Views/AccountPopover.swift; sourceTree = "<group>"; };
@@ -351,6 +353,7 @@
 				F9AAB73390054788B1EC621297303393 /* RightClickView.swift */,
 				931EFDA997C949FD9E4D485A8C876F0D /* ExpandedImageSheet.swift */,
 				ACF65D5F66CC46589243299381594A99 /* CircularPromptActionButton.swift */,
+					ED927E3B459549A0B1B4F3AE89381572 /* CircularShareButton.swift */,
 				053F5A416ED0C9A5453822CD /* DetailRow.swift */,
 				DC6F3E1100000011A0000001 /* SettingsView.swift */,
 				B268164EA0D2A09163FB3A63 /* AccountPopover.swift */,
@@ -628,6 +631,7 @@
 				1DB8CE4FC0FD4CF4BBF4E05B2D70E6E5 /* RightClickView.swift in Sources */,
 				7BE2D769348A44FB8F3CD718C1F337EF /* ExpandedImageSheet.swift in Sources */,
 				87F3707632A04A009F6F6A1EF5730A47 /* CircularPromptActionButton.swift in Sources */,
+				B641D2BFDADD4C6189F5646957EB2007 /* CircularShareButton.swift in Sources */,
 				22DC46FE87112CB30AC876F0 /* DetailRow.swift in Sources */,
 				DC6F3E3000000011A0000001 /* SettingsView.swift in Sources */,
 				74E51C345A4B59211EC0CBF4 /* AccountPopover.swift in Sources */,
