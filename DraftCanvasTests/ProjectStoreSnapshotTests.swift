@@ -3,8 +3,6 @@ import XCTest
 
 final class ProjectStoreSnapshotTests: XCTestCase {
 
-    private let fixedProjectID = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
-
     func testSnapshotEncodeDecodeRoundtrip() throws {
         let snapshot = ProjectStore.Snapshot()
 
@@ -39,5 +37,27 @@ final class ProjectStoreSnapshotTests: XCTestCase {
 
         XCTAssertEqual(snapshot.projects.count, 0)
         XCTAssertEqual(snapshot.sidebarSelection, .none)
+    }
+
+    func testLegacyKeyWithoutSidebarSelection() throws {
+        // sidebarSelection キーを持たない旧フォーマット
+        // selectedProjectID のみ持つ JSON でデコードすると legacy fallback パスが通り
+        // .project(id) になることを確認
+        let legacyJSON = """
+        {
+          "projects": [],
+          "items": [],
+          "filteringProjects": [],
+          "expandedSections": {},
+          "selectedProjectID": "00000000-0000-0000-0000-000000000001"
+        }
+        """.data(using: .utf8)!
+
+        let decoder = JSONDecoder()
+        let snapshot = try decoder.decode(ProjectStore.Snapshot.self, from: legacyJSON)
+
+        XCTAssertEqual(snapshot.projects.count, 0)
+        let expectedID = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
+        XCTAssertEqual(snapshot.sidebarSelection, .project(expectedID))
     }
 }
