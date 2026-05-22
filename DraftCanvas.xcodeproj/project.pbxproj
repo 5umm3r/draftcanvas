@@ -31,11 +31,9 @@
 		10A000FE2D00000100000001 /* ImageVectorizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A000FD2D00000100000001 /* ImageVectorizer.swift */; };
 		10A001002D00000100000001 /* ImageVectorizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A000FF2D00000100000001 /* ImageVectorizerTests.swift */; };
 		10A001022D00000100000001 /* InpaintingMaskCompositor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A001012D00000100000001 /* InpaintingMaskCompositor.swift */; };
-		10A001042D00000100000001 /* InpaintingMaskEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A001032D00000100000001 /* InpaintingMaskEditor.swift */; };
 		10A001062D00000100000001 /* CodexVersionFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A001052D00000100000001 /* CodexVersionFetcherTests.swift */; };
 		10B001022D00000100000001 /* SketchModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10B001012D00000100000001 /* SketchModels.swift */; };
 		10B001042D00000100000001 /* SketchCompositor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10B001032D00000100000001 /* SketchCompositor.swift */; };
-		10B001062D00000100000001 /* SketchEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10B001052D00000100000001 /* SketchEditor.swift */; };
 		10B001082D00000100000001 /* DraftCanvasViewModel+Sketch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10B001072D00000100000001 /* DraftCanvasViewModel+Sketch.swift */; };
 		11E0B45D4D0F324989FCCD93 /* AttachedImageThumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 882F372486E669E60EAD25D8 /* AttachedImageThumbnail.swift */; };
 		1483368FC84E89012DA1976D /* ProjectStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB8A29297366EC8F58149110 /* ProjectStore.swift */; };
@@ -48,22 +46,29 @@
 		26E6F65AF473C6C813DC6934 /* ProjectItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A8A17126868268F52D2F4C8 /* ProjectItem.swift */; };
 		2957DD69190A222EAAC2BAA6 /* GenerationRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FBE0B5D535E3CE41684238F /* GenerationRequest.swift */; };
 		295E01E20123CF8DBCD931ED /* GenerationAspectRatio.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3745A4BCE7A2386218A2D2 /* GenerationAspectRatio.swift */; };
+		29CD3AC449F31DA3620933A9 /* SketchCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED5AA59DD5375F249E537A35 /* SketchCanvasView.swift */; };
 		2B571993BFB992BB45A4CCC0 /* MaterialExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 348EA8028E7876473A56C7EA /* MaterialExtractor.swift */; };
+		2DD35EAB436D47F29CBC22DB /* CropEditorMathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50E763B96027AB7767F474F0 /* CropEditorMathTests.swift */; };
 		341E6310A5448CF79EB57E1C /* SparkleUpdaterController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7405C554E560AA4D979076AC /* SparkleUpdaterController.swift */; };
 		35B6FF2A15554A869FE5858A2194F80F /* CanvasRubberBandOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = B24862D0B74E492482C69B38F6415D7A /* CanvasRubberBandOverlay.swift */; };
 		372FA8FC0D6B415B8F59F697CCD2B39A /* CanvasAutoScroller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DC1F9813F6149588206DB57719B8174 /* CanvasAutoScroller.swift */; };
+		3E8C5F9F1E4E7F1D2A0D5198 /* InpaintMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8915BD226E7F28DDF71EF11 /* InpaintMode.swift */; };
 		3EBD259BE36E47A89FD065CB179640B0 /* SVGRasterizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE3EFA5CDD03465BACB7B5F557FDE24B /* SVGRasterizer.swift */; };
 		3d9b2ec6374d49069afecc8eb54c2178 /* CanvasScrollZoomCatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = b7e96c4970d44133991b9ff817e3cefd /* CanvasScrollZoomCatcher.swift */; };
 		41053AB1D53250B416E8AC4D /* CanvasSortOrder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 410F564BA7D206DD5EA2C662 /* CanvasSortOrder.swift */; };
 		426C488F52914F25AB95605A /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 685A9AEED87C464187DCC749 /* Credits.rtf */; };
+		4274C5BAB8A77FBE81F62719 /* CropCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 764CBF0897AE6463E97937A1 /* CropCanvasView.swift */; };
 		42BC49111A89D529A5ECD10A /* ContentView+Sidebar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C868E502BA17EA0D9D53C12 /* ContentView+Sidebar.swift */; };
 		44FDA0EF31DFAEFEFDAC52E0 /* DraftCanvasViewModel+PromptEnhance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4394CD7957B6D4CF7275602C /* DraftCanvasViewModel+PromptEnhance.swift */; };
 		4653D2A22708134F7A690ED0 /* CanvasZoomControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C4D7B04757247BD5489EBC7 /* CanvasZoomControl.swift */; };
 		4D6F1BB6EB066D7B383230A3 /* DraftCanvasError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71E877DFCDE496FC77BDFEDC /* DraftCanvasError.swift */; };
 		4FC05F8F2A7A7ED86B430F79 /* CompletionSoundOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D8A2AE8C81B31B43D4B0DA0 /* CompletionSoundOption.swift */; };
 		567A1648B15EE73ABFCECE9A /* ProjectStore+Snapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C11346DB4BD717A69D174D6 /* ProjectStore+Snapshot.swift */; };
+		568DDA711E19AA49E687928A /* SketchEditorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CAEC8E556219FAA54D86C83 /* SketchEditorSheet.swift */; };
+		5B3AE64AC494532FCD43031D /* MaskCanvasNSView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A305AE52AF529658214A7BB7 /* MaskCanvasNSView.swift */; };
 		5D142797DE754E1BAF92366C248B473D /* SVGRasterizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EAD194EAC8422CB56493A8620C628D /* SVGRasterizerTests.swift */; };
 		5E9444221134D8C65757F8C3 /* DraftCanvasViewModel+Vectorize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 091A3F916EF893CE97206E83 /* DraftCanvasViewModel+Vectorize.swift */; };
+		609AB8481AC5CA95EA27277E /* CropEditorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4CA3197F587FD6BE2275595 /* CropEditorSheet.swift */; };
 		60fbbabf84104a96aba9dcf0ae00bbb7 /* ImportSignposter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0b24c56e3df1460d8b338d4d618036f2 /* ImportSignposter.swift */; };
 		6159A61814EB3A5C13BFDB5E /* DraftCanvasViewModel+Items.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE02EE4CC52B71578EA2CEAA /* DraftCanvasViewModel+Items.swift */; };
 		6224F9A9C64D55B082901686 /* CodexModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C36E42E98D9C8D2D52F896B /* CodexModel.swift */; };
@@ -72,6 +77,7 @@
 		6674C4948F6E53B481C1DAA9 /* MaterialExtractionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7478BE9ADE271121FBE887B5 /* MaterialExtractionSheet.swift */; };
 		6C7D321C41B44E16A879562D /* PromptCopyButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = E824D7305F84430390074FD7 /* PromptCopyButton.swift */; };
 		6D5D1FA5364B40638154C18BA55ADB3F /* AuroraPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F4EB0EF2B144D698A6FF43FDBF0752B /* AuroraPlaceholderView.swift */; };
+		6E741A5F363C469469976EEF /* CropCanvasNSView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9D3BC93ABEDB39F1B691F5F /* CropCanvasNSView.swift */; };
 		6E8724CB3BE74D2F8546DADB /* ExportOptionsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F24932CE5F0543658FB9BBC0 /* ExportOptionsViewModel.swift */; };
 		6E955589E8B6F4A5A1DD7CB6 /* GenerationDetailPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2DA3047FC4CE3B239B0FA74 /* GenerationDetailPopover.swift */; };
 		71E1860A1767EA5E4033632D /* LicenseStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA930F33BC026AB401A560F4 /* LicenseStore.swift */; };
@@ -92,6 +98,7 @@
 		974D369AFE901A5535087602 /* RateLimitConfirmation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C61E0F55E7FD6835C52AF4 /* RateLimitConfirmation.swift */; };
 		9882CC1FE59BF70AAF7B2BD4 /* DraftCanvasViewModel+Attachments.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20BE642DC19692EDFE75D0AA /* DraftCanvasViewModel+Attachments.swift */; };
 		98D8CD9E43394E4BB9747CEC /* CanvasThumbnailStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 364052427D804C5F964BCF75 /* CanvasThumbnailStore.swift */; };
+		9C256DBEDD7083F2906FC926 /* InpaintingMaskEditorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DE742956FA4A4B9EEEC2668 /* InpaintingMaskEditorSheet.swift */; };
 		9C2F227923CA43959A7F3EA6 /* ExportRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73538C1E5F7C459699BDD022 /* ExportRequest.swift */; };
 		9DC87F84F4934145A38BC044 /* PDFEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2681B373E0F545648BF26839 /* PDFEncoder.swift */; };
 		A13017642482452211C4E9A0 /* LogWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFC23E9DED99669C4518E0C5 /* LogWindow.swift */; };
@@ -120,6 +127,8 @@
 		CE2A3B4C5D6E7F8901234567 /* BackgroundRemovalPreviewSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD1F2A3B4C5D6E7F89012345 /* BackgroundRemovalPreviewSheet.swift */; };
 		CEAF7E7A4A4541C89658D0A3 /* CanvasOriginalImageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 519D0FA75CC744B6BE1E253B /* CanvasOriginalImageStore.swift */; };
 		CF28FC7F2E556AA483D91D5E /* DraftCanvasViewModel+Export.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE038D36DC08113ECCE4458E /* DraftCanvasViewModel+Export.swift */; };
+		CFDD212C6E5DED28CF5BEB91 /* SketchCanvasNSView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0246151C54D843C015F794 /* SketchCanvasNSView.swift */; };
+		D23DD5E9928A6DCECCA6BED1 /* MaskCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB48D3298DA87D1CD7CE3B8 /* MaskCanvasView.swift */; };
 		D5ABAF85CFD1445EA725C71B /* DraftCanvasViewModel+Computed.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC8ED8A8EABE4DC5A4C0E309 /* DraftCanvasViewModel+Computed.swift */; };
 		D6FB5BC87C26930E84F03940 /* PreferredSaveFolderStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57EF848052CE479E6FC03AE1 /* PreferredSaveFolderStore.swift */; };
 		D9F69235C6DA480489596D0E /* CanvasMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3503E3DE1E894D1BA41DB46C /* CanvasMetrics.swift */; };
@@ -127,7 +136,6 @@
 		DC6F3E3000000011A0000001 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC6F3E1100000011A0000001 /* SettingsView.swift */; };
 		E4918AF5DB014E73B4B35CA3 /* ExportOptionsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1464508B7D214B28B26A132A /* ExportOptionsSheet.swift */; };
 		E98965B897824860A68297C9 /* LocalizationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98263DF32F2140108D8FA3CF /* LocalizationManager.swift */; };
-		EB4C159FD40A4E9EA3B1F572 /* CropEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6976A8522554A63AB279101 /* CropEditor.swift */; };
 		EF9CCE838BD41ACEA3D9AF49 /* SidebarSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE74581F38920044C475457E /* SidebarSelection.swift */; };
 		F21946B70FE9D2F0BFA137A8 /* ContentView+PromptPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 203007036E5BBA27A915D7B5 /* ContentView+PromptPanel.swift */; };
 		F63D81346A0A345BF4D95B39 /* ItemDetailPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBBB7479702C367B6BF48DFA /* ItemDetailPopover.swift */; };
@@ -173,11 +181,9 @@
 		10A000FD2D00000100000001 /* ImageVectorizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageVectorizer.swift; sourceTree = "<group>"; };
 		10A000FF2D00000100000001 /* ImageVectorizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageVectorizerTests.swift; sourceTree = "<group>"; };
 		10A001012D00000100000001 /* InpaintingMaskCompositor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InpaintingMaskCompositor.swift; sourceTree = "<group>"; };
-		10A001032D00000100000001 /* InpaintingMaskEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InpaintingMaskEditor.swift; sourceTree = "<group>"; };
 		10A001052D00000100000001 /* CodexVersionFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexVersionFetcherTests.swift; sourceTree = "<group>"; };
 		10B001012D00000100000001 /* SketchModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SketchModels.swift; sourceTree = "<group>"; };
 		10B001032D00000100000001 /* SketchCompositor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SketchCompositor.swift; sourceTree = "<group>"; };
-		10B001052D00000100000001 /* SketchEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SketchEditor.swift; sourceTree = "<group>"; };
 		10B001072D00000100000001 /* DraftCanvasViewModel+Sketch.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Sketch.swift"; path = "ViewModel/DraftCanvasViewModel+Sketch.swift"; sourceTree = "<group>"; };
 		117AE1F8D5A65A54ADEDE469 /* ExportNaming.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ExportNaming.swift; sourceTree = "<group>"; };
 		134A116412C44FA2816DEBF3 /* CodexCostBadge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CodexCostBadge.swift; path = Views/CodexCostBadge.swift; sourceTree = "<group>"; };
@@ -189,6 +195,7 @@
 		253503CE40171955E27036E3 /* ErrorToastView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ErrorToastView.swift; path = Views/ErrorToastView.swift; sourceTree = "<group>"; };
 		2681B373E0F545648BF26839 /* PDFEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFEncoder.swift; sourceTree = "<group>"; };
 		2C11346DB4BD717A69D174D6 /* ProjectStore+Snapshot.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "ProjectStore+Snapshot.swift"; path = "Stores/ProjectStore+Snapshot.swift"; sourceTree = "<group>"; };
+		2DE742956FA4A4B9EEEC2668 /* InpaintingMaskEditorSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = InpaintingMaskEditorSheet.swift; path = Editors/InpaintingMask/InpaintingMaskEditorSheet.swift; sourceTree = "<group>"; };
 		33A4DD507E0443E093B8B328 /* ImageResizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageResizer.swift; sourceTree = "<group>"; };
 		33DD37B331EAB5987497F15F /* ProjectNaming.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ProjectNaming.swift; path = Models/ProjectNaming.swift; sourceTree = "<group>"; };
 		348EA8028E7876473A56C7EA /* MaterialExtractor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MaterialExtractor.swift; sourceTree = "<group>"; };
@@ -199,11 +206,13 @@
 		3A03337AB6A2A6AB4F968292 /* DraftCanvasViewModel+CanvasImport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+CanvasImport.swift"; path = "ViewModel/DraftCanvasViewModel+CanvasImport.swift"; sourceTree = "<group>"; };
 		3ADD5B15238E48BDAEF7A6B3 /* ExportPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportPipeline.swift; sourceTree = "<group>"; };
 		3C4D7B04757247BD5489EBC7 /* CanvasZoomControl.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CanvasZoomControl.swift; path = Views/CanvasZoomControl.swift; sourceTree = "<group>"; };
+		3CAEC8E556219FAA54D86C83 /* SketchEditorSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SketchEditorSheet.swift; path = Editors/Sketch/SketchEditorSheet.swift; sourceTree = "<group>"; };
 		4029B2D187F5C59722CE9C73 /* ProjectRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ProjectRow.swift; path = Views/ProjectRow.swift; sourceTree = "<group>"; };
 		410F564BA7D206DD5EA2C662 /* CanvasSortOrder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CanvasSortOrder.swift; path = Models/CanvasSortOrder.swift; sourceTree = "<group>"; };
 		4394CD7957B6D4CF7275602C /* DraftCanvasViewModel+PromptEnhance.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+PromptEnhance.swift"; path = "ViewModel/DraftCanvasViewModel+PromptEnhance.swift"; sourceTree = "<group>"; };
 		45EED86A430FC00B17CEBA8A /* Project.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Project.swift; path = Models/Project.swift; sourceTree = "<group>"; };
 		463F16CE063D41F7BE7DEBD8 /* ImageEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageEncoder.swift; sourceTree = "<group>"; };
+		50E763B96027AB7767F474F0 /* CropEditorMathTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CropEditorMathTests.swift; sourceTree = "<group>"; };
 		519D0FA75CC744B6BE1E253B /* CanvasOriginalImageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasOriginalImageStore.swift; sourceTree = "<group>"; };
 		53B928C386A94B158778F073 /* CropParameters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropParameters.swift; sourceTree = "<group>"; };
 		57EF848052CE479E6FC03AE1 /* PreferredSaveFolderStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PreferredSaveFolderStore.swift; path = Models/PreferredSaveFolderStore.swift; sourceTree = "<group>"; };
@@ -212,6 +221,7 @@
 		592BD998B97EAC58E1514194 /* PromptTextView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptTextView.swift; path = Views/PromptTextView.swift; sourceTree = "<group>"; };
 		5C36E42E98D9C8D2D52F896B /* CodexModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CodexModel.swift; path = Models/CodexModel.swift; sourceTree = "<group>"; };
 		5DC1F9813F6149588206DB57719B8174 /* CanvasAutoScroller.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CanvasAutoScroller.swift; path = Views/CanvasAutoScroller.swift; sourceTree = "<group>"; };
+		5EB48D3298DA87D1CD7CE3B8 /* MaskCanvasView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MaskCanvasView.swift; path = Editors/InpaintingMask/MaskCanvasView.swift; sourceTree = "<group>"; };
 		5F4EB0EF2B144D698A6FF43FDBF0752B /* AuroraPlaceholderView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AuroraPlaceholderView.swift; path = Views/AuroraPlaceholderView.swift; sourceTree = "<group>"; };
 		5e64e8265c0548dab23dae9cd36602db /* TagEditorRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TagEditorRow.swift; path = Views/TagEditorRow.swift; sourceTree = "<group>"; };
 		645A49DEAC9C0E39B2762518 /* DraftCanvasViewModel+Generation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Generation.swift"; path = "ViewModel/DraftCanvasViewModel+Generation.swift"; sourceTree = "<group>"; };
@@ -225,6 +235,7 @@
 		73538C1E5F7C459699BDD022 /* ExportRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportRequest.swift; sourceTree = "<group>"; };
 		7405C554E560AA4D979076AC /* SparkleUpdaterController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SparkleUpdaterController.swift; path = Updater/SparkleUpdaterController.swift; sourceTree = "<group>"; };
 		7478BE9ADE271121FBE887B5 /* MaterialExtractionSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MaterialExtractionSheet.swift; path = Views/MaterialExtractionSheet.swift; sourceTree = "<group>"; };
+		764CBF0897AE6463E97937A1 /* CropCanvasView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CropCanvasView.swift; path = Editors/Crop/CropCanvasView.swift; sourceTree = "<group>"; };
 		7CA01B9DCA9B7DEAF2041149 /* GenerationJob.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GenerationJob.swift; path = Models/GenerationJob.swift; sourceTree = "<group>"; };
 		7F0CA0CC3D334660A5FF5C5A /* ZipExportPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZipExportPipeline.swift; sourceTree = "<group>"; };
 		7F69E3FAEA4A4B2AB9EFF224 /* BinaryRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BinaryRunner.swift; sourceTree = "<group>"; };
@@ -245,6 +256,8 @@
 		9F699822142103ADBE227AC1 /* DraftCanvasViewModel+Account.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Account.swift"; path = "ViewModel/DraftCanvasViewModel+Account.swift"; sourceTree = "<group>"; };
 		9F7B15E235EB9D21F7ABBB8A /* ProjectInputs.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ProjectInputs.swift; path = Models/ProjectInputs.swift; sourceTree = "<group>"; };
 		9FF7C5825340C2B5EBFBDCD7 /* ContentView+TopBar.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "ContentView+TopBar.swift"; path = "Views/ContentView+TopBar.swift"; sourceTree = "<group>"; };
+		A305AE52AF529658214A7BB7 /* MaskCanvasNSView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MaskCanvasNSView.swift; path = Editors/InpaintingMask/MaskCanvasNSView.swift; sourceTree = "<group>"; };
+		A9D3BC93ABEDB39F1B691F5F /* CropCanvasNSView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CropCanvasNSView.swift; path = Editors/Crop/CropCanvasNSView.swift; sourceTree = "<group>"; };
 		AA0000010000000100000001 /* ImageUpscaler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageUpscaler.swift; sourceTree = "<group>"; };
 		AA0000010000000100000002 /* DraftCanvasViewModel+Upscale.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Upscale.swift"; path = "ViewModel/DraftCanvasViewModel+Upscale.swift"; sourceTree = "<group>"; };
 		AA0000010000000100000003 /* UpscalePreviewSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = UpscalePreviewSheet.swift; path = Views/UpscalePreviewSheet.swift; sourceTree = "<group>"; };
@@ -253,14 +266,15 @@
 		B24862D0B74E492482C69B38F6415D7A /* CanvasRubberBandOverlay.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CanvasRubberBandOverlay.swift; path = Views/CanvasRubberBandOverlay.swift; sourceTree = "<group>"; };
 		B268164EA0D2A09163FB3A63 /* AccountPopover.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AccountPopover.swift; path = Views/AccountPopover.swift; sourceTree = "<group>"; };
 		B4721C0D18CB0E591F188DA0 /* AppAppearance.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AppAppearance.swift; path = Models/AppAppearance.swift; sourceTree = "<group>"; };
+		B4CA3197F587FD6BE2275595 /* CropEditorSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CropEditorSheet.swift; path = Editors/Crop/CropEditorSheet.swift; sourceTree = "<group>"; };
 		B4EAD194EAC8422CB56493A8620C628D /* SVGRasterizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SVGRasterizerTests.swift; sourceTree = "<group>"; };
 		BC8ED8A8EABE4DC5A4C0E309 /* DraftCanvasViewModel+Computed.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Computed.swift"; path = "ViewModel/DraftCanvasViewModel+Computed.swift"; sourceTree = "<group>"; };
 		BD1F2A3B4C5D6E7F89012345 /* BackgroundRemovalPreviewSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BackgroundRemovalPreviewSheet.swift; path = Views/BackgroundRemovalPreviewSheet.swift; sourceTree = "<group>"; };
 		BFC23E9DED99669C4518E0C5 /* LogWindow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LogWindow.swift; path = Views/LogWindow.swift; sourceTree = "<group>"; };
 		C2DA3047FC4CE3B239B0FA74 /* GenerationDetailPopover.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GenerationDetailPopover.swift; path = Views/GenerationDetailPopover.swift; sourceTree = "<group>"; };
-		C6976A8522554A63AB279101 /* CropEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropEditor.swift; sourceTree = "<group>"; };
 		CA930F33BC026AB401A560F4 /* LicenseStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LicenseStore.swift; path = License/LicenseStore.swift; sourceTree = "<group>"; };
 		CC0000010000000100000002 /* DraftCanvasViewModel+CanvasNavigation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+CanvasNavigation.swift"; path = "ViewModel/DraftCanvasViewModel+CanvasNavigation.swift"; sourceTree = "<group>"; };
+		CD0246151C54D843C015F794 /* SketchCanvasNSView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SketchCanvasNSView.swift; path = Editors/Sketch/SketchCanvasNSView.swift; sourceTree = "<group>"; };
 		CDE4F73BDF7FFF820CD906D9 /* GenerationProgressView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GenerationProgressView.swift; path = Views/GenerationProgressView.swift; sourceTree = "<group>"; };
 		DA755653AF12594D863F311F /* StatusBadge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = StatusBadge.swift; path = Views/StatusBadge.swift; sourceTree = "<group>"; };
 		DBBB7479702C367B6BF48DFA /* ItemDetailPopover.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ItemDetailPopover.swift; path = Views/ItemDetailPopover.swift; sourceTree = "<group>"; };
@@ -270,6 +284,8 @@
 		E1B7F76E0F94712837D48517 /* CodexTypes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CodexTypes.swift; path = Models/CodexTypes.swift; sourceTree = "<group>"; };
 		E5EB180980BB2AAFC5E98E4A /* PopoverButton.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PopoverButton.swift; path = Views/PopoverButton.swift; sourceTree = "<group>"; };
 		E824D7305F84430390074FD7 /* PromptCopyButton.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptCopyButton.swift; path = Views/PromptCopyButton.swift; sourceTree = "<group>"; };
+		E8915BD226E7F28DDF71EF11 /* InpaintMode.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = InpaintMode.swift; path = Editors/InpaintingMask/InpaintMode.swift; sourceTree = "<group>"; };
+		ED5AA59DD5375F249E537A35 /* SketchCanvasView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SketchCanvasView.swift; path = Editors/Sketch/SketchCanvasView.swift; sourceTree = "<group>"; };
 		ED927E3B459549A0B1B4F3AE89381572 /* CircularShareButton.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CircularShareButton.swift; path = Views/CircularShareButton.swift; sourceTree = "<group>"; };
 		EE02EE4CC52B71578EA2CEAA /* DraftCanvasViewModel+Items.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Items.swift"; path = "ViewModel/DraftCanvasViewModel+Items.swift"; sourceTree = "<group>"; };
 		EE3EFA5CDD03465BACB7B5F557FDE24B /* SVGRasterizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SVGRasterizer.swift; sourceTree = "<group>"; };
@@ -306,6 +322,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		034897F30795086A4CAD7D14 /* Crop */ = {
+			isa = PBXGroup;
+			children = (
+				B4CA3197F587FD6BE2275595 /* CropEditorSheet.swift */,
+				764CBF0897AE6463E97937A1 /* CropCanvasView.swift */,
+				A9D3BC93ABEDB39F1B691F5F /* CropCanvasNSView.swift */,
+			);
+			name = Crop;
+			sourceTree = "<group>";
+		};
 		10A000002D00000100000001 = {
 			isa = PBXGroup;
 			children = (
@@ -333,12 +359,9 @@
 				0b24c56e3df1460d8b338d4d618036f2 /* ImportSignposter.swift */,
 				10A000FD2D00000100000001 /* ImageVectorizer.swift */,
 				10A001012D00000100000001 /* InpaintingMaskCompositor.swift */,
-				10A001032D00000100000001 /* InpaintingMaskEditor.swift */,
 				53B928C386A94B158778F073 /* CropParameters.swift */,
-				C6976A8522554A63AB279101 /* CropEditor.swift */,
 				10B001012D00000100000001 /* SketchModels.swift */,
 				10B001032D00000100000001 /* SketchCompositor.swift */,
-				10B001052D00000100000001 /* SketchEditor.swift */,
 				10B001072D00000100000001 /* DraftCanvasViewModel+Sketch.swift */,
 				DA1427245F8D423E91B73BB8 /* Export */,
 				685A9AEED87C464187DCC749 /* Credits.rtf */,
@@ -356,6 +379,7 @@
 				DEB0889290B7C8B8515B1327 /* License */,
 				4D4C1CCDC315B9E1A68E1664 /* Models */,
 				EA8C8919B0D765B8B83C2EF0 /* Stores */,
+				529D998CB2EEA40FD576ABD8 /* Editors */,
 			);
 			path = DraftCanvas;
 			sourceTree = "<group>";
@@ -380,6 +404,7 @@
 				10A001052D00000100000001 /* CodexVersionFetcherTests.swift */,
 				B4EAD194EAC8422CB56493A8620C628D /* SVGRasterizerTests.swift */,
 				EF683B41EA36CD8006DA2CA5 /* ProjectStoreSnapshotTests.swift */,
+				50E763B96027AB7767F474F0 /* CropEditorMathTests.swift */,
 			);
 			path = DraftCanvasTests;
 			sourceTree = "<group>";
@@ -462,6 +487,27 @@
 			name = Views;
 			sourceTree = "<group>";
 		};
+		529D998CB2EEA40FD576ABD8 /* Editors */ = {
+			isa = PBXGroup;
+			children = (
+				034897F30795086A4CAD7D14 /* Crop */,
+				9ACBD98E07E97951DFE3AA1D /* Sketch */,
+				660B54C4FF7FE751C10C861D /* InpaintingMask */,
+			);
+			name = Editors;
+			sourceTree = "<group>";
+		};
+		660B54C4FF7FE751C10C861D /* InpaintingMask */ = {
+			isa = PBXGroup;
+			children = (
+				E8915BD226E7F28DDF71EF11 /* InpaintMode.swift */,
+				2DE742956FA4A4B9EEEC2668 /* InpaintingMaskEditorSheet.swift */,
+				5EB48D3298DA87D1CD7CE3B8 /* MaskCanvasView.swift */,
+				A305AE52AF529658214A7BB7 /* MaskCanvasNSView.swift */,
+			);
+			name = InpaintingMask;
+			sourceTree = "<group>";
+		};
 		71D9B64C22F34738AC6F6CB0 /* Localization */ = {
 			isa = PBXGroup;
 			children = (
@@ -470,6 +516,16 @@
 				98263DF32F2140108D8FA3CF /* LocalizationManager.swift */,
 			);
 			path = Localization;
+			sourceTree = "<group>";
+		};
+		9ACBD98E07E97951DFE3AA1D /* Sketch */ = {
+			isa = PBXGroup;
+			children = (
+				3CAEC8E556219FAA54D86C83 /* SketchEditorSheet.swift */,
+				ED5AA59DD5375F249E537A35 /* SketchCanvasView.swift */,
+				CD0246151C54D843C015F794 /* SketchCanvasNSView.swift */,
+			);
+			name = Sketch;
 			sourceTree = "<group>";
 		};
 		DA1427245F8D423E91B73BB8 /* Export */ = {
@@ -678,10 +734,8 @@
 				60fbbabf84104a96aba9dcf0ae00bbb7 /* ImportSignposter.swift in Sources */,
 				10A000FE2D00000100000001 /* ImageVectorizer.swift in Sources */,
 				10A001022D00000100000001 /* InpaintingMaskCompositor.swift in Sources */,
-				10A001042D00000100000001 /* InpaintingMaskEditor.swift in Sources */,
 				10B001022D00000100000001 /* SketchModels.swift in Sources */,
 				10B001042D00000100000001 /* SketchCompositor.swift in Sources */,
-				10B001062D00000100000001 /* SketchEditor.swift in Sources */,
 				10B001082D00000100000001 /* DraftCanvasViewModel+Sketch.swift in Sources */,
 				CC0000010000000100000001 /* DraftCanvasViewModel+CanvasNavigation.swift in Sources */,
 				623D869631EA48939954B532 /* ExportSettings.swift in Sources */,
@@ -756,7 +810,6 @@
 				dcc9736d94fa4aab89e1f3422f7b8c83 /* LicensesSheet.swift in Sources */,
 				8929853307644327AA3382FCE9D2E8BF /* PurchaseConfig.swift in Sources */,
 				7B90BC73E03D4FD3877B5FD0 /* CropParameters.swift in Sources */,
-				EB4C159FD40A4E9EA3B1F572 /* CropEditor.swift in Sources */,
 				89B5C2D828124C769107B60B /* DraftCanvasViewModel+Crop.swift in Sources */,
 				C1EADB333184138F3E8EDB5B /* AppAppearance.swift in Sources */,
 				6224F9A9C64D55B082901686 /* CodexModel.swift in Sources */,
@@ -779,6 +832,16 @@
 				4FC05F8F2A7A7ED86B430F79 /* CompletionSoundOption.swift in Sources */,
 				1483368FC84E89012DA1976D /* ProjectStore.swift in Sources */,
 				567A1648B15EE73ABFCECE9A /* ProjectStore+Snapshot.swift in Sources */,
+				609AB8481AC5CA95EA27277E /* CropEditorSheet.swift in Sources */,
+				4274C5BAB8A77FBE81F62719 /* CropCanvasView.swift in Sources */,
+				6E741A5F363C469469976EEF /* CropCanvasNSView.swift in Sources */,
+				568DDA711E19AA49E687928A /* SketchEditorSheet.swift in Sources */,
+				29CD3AC449F31DA3620933A9 /* SketchCanvasView.swift in Sources */,
+				CFDD212C6E5DED28CF5BEB91 /* SketchCanvasNSView.swift in Sources */,
+				3E8C5F9F1E4E7F1D2A0D5198 /* InpaintMode.swift in Sources */,
+				9C256DBEDD7083F2906FC926 /* InpaintingMaskEditorSheet.swift in Sources */,
+				D23DD5E9928A6DCECCA6BED1 /* MaskCanvasView.swift in Sources */,
+				5B3AE64AC494532FCD43031D /* MaskCanvasNSView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -794,6 +857,7 @@
 				10A001062D00000100000001 /* CodexVersionFetcherTests.swift in Sources */,
 				5D142797DE754E1BAF92366C248B473D /* SVGRasterizerTests.swift in Sources */,
 				F9000C7A096D9DC27C7EA911 /* ProjectStoreSnapshotTests.swift in Sources */,
+				2DD35EAB436D47F29CBC22DB /* CropEditorMathTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
