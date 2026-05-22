@@ -418,6 +418,7 @@ struct ProjectItem: Identifiable, Equatable {
     var editedFromItemID: UUID?
     let hasSVG: Bool
     let isBackgroundRemoved: Bool
+    let isCropped: Bool
     let isImported: Bool
     var tags: [String]
     var sketchSourcePath: String?
@@ -434,6 +435,7 @@ struct ProjectItem: Identifiable, Equatable {
         editedFromItemID: UUID? = nil,
         hasSVG: Bool = false,
         isBackgroundRemoved: Bool = false,
+        isCropped: Bool = false,
         isImported: Bool = false,
         tags: [String] = [],
         sketchSourcePath: String? = nil
@@ -449,6 +451,7 @@ struct ProjectItem: Identifiable, Equatable {
         self.editedFromItemID = editedFromItemID
         self.hasSVG = hasSVG
         self.isBackgroundRemoved = isBackgroundRemoved
+        self.isCropped = isCropped
         self.isImported = isImported
         self.tags = tags
         self.sketchSourcePath = sketchSourcePath
@@ -472,6 +475,7 @@ extension ProjectItem: Codable {
         case id, projectID, prompt, revisedPrompt, aspectRatio, actualAspectRatio, createdAt, errorMessage, editedFromItemID
         case hasSVG
         case isBackgroundRemoved
+        case isCropped
         case isImported
         case tags
         case sketchSourcePath
@@ -490,6 +494,7 @@ extension ProjectItem: Codable {
         editedFromItemID = try c.decodeIfPresent(UUID.self, forKey: .editedFromItemID)
         hasSVG = try c.decodeIfPresent(Bool.self, forKey: .hasSVG) ?? false
         isBackgroundRemoved = try c.decodeIfPresent(Bool.self, forKey: .isBackgroundRemoved) ?? false
+        isCropped = try c.decodeIfPresent(Bool.self, forKey: .isCropped) ?? false
         isImported = try c.decodeIfPresent(Bool.self, forKey: .isImported) ?? false
         tags = try c.decodeIfPresent([String].self, forKey: .tags) ?? []
         sketchSourcePath = try c.decodeIfPresent(String.self, forKey: .sketchSourcePath)
@@ -508,6 +513,7 @@ extension ProjectItem: Codable {
         try c.encodeIfPresent(editedFromItemID, forKey: .editedFromItemID)
         if hasSVG { try c.encode(hasSVG, forKey: .hasSVG) }
         if isBackgroundRemoved { try c.encode(isBackgroundRemoved, forKey: .isBackgroundRemoved) }
+        if isCropped { try c.encode(isCropped, forKey: .isCropped) }
         if isImported { try c.encode(isImported, forKey: .isImported) }
         if !tags.isEmpty { try c.encode(tags, forKey: .tags) }
         try c.encodeIfPresent(sketchSourcePath, forKey: .sketchSourcePath)
@@ -738,6 +744,28 @@ final class ProjectStore: @unchecked Sendable {
         try? FileManager.default.removeItem(at: masksDirectory.appendingPathComponent("\(base)_preview.png"))
         try? FileManager.default.removeItem(at: masksDirectory.appendingPathComponent("\(base)_strokes.json"))
         try? FileManager.default.removeItem(at: masksDirectory.appendingPathComponent("\(base)_sketch.png"))
+    }
+
+    private func cropParametersURL(id: UUID) -> URL {
+        attachmentsDirectory.appendingPathComponent("\(id.uuidString)_crop.json")
+    }
+
+    @discardableResult
+    func writeCropParameters(_ params: CropParameters, id: UUID) throws -> URL {
+        try FileManager.default.createDirectory(at: attachmentsDirectory, withIntermediateDirectories: true)
+        let url = cropParametersURL(id: id)
+        let data = try JSONEncoder().encode(params)
+        try data.write(to: url, options: .atomic)
+        return url
+    }
+
+    func readCropParameters(id: UUID) -> CropParameters? {
+        guard let data = try? Data(contentsOf: cropParametersURL(id: id)) else { return nil }
+        return try? JSONDecoder().decode(CropParameters.self, from: data)
+    }
+
+    func cleanupCropFiles(id: UUID) {
+        try? FileManager.default.removeItem(at: cropParametersURL(id: id))
     }
 
     init(rootDirectory: URL = ProjectStore.defaultRootDirectory()) {

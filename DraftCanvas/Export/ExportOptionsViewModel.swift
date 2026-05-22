@@ -45,8 +45,10 @@ final class ExportOptionsViewModel: ObservableObject {
 
         let storedW = ud.integer(forKey: ExportSettings.StorageKey.resizeWidth)
         let storedH = ud.integer(forKey: ExportSettings.StorageKey.resizeHeight)
-        self.widthText = storedW > 0 ? String(storedW) : (w > 0 ? String(w) : "")
-        self.heightText = storedH > 0 ? String(storedH) : (h > 0 ? String(h) : "")
+        // 保存済みサイズが現在の画像を超える場合は画像実寸にリセット（アップスケールを防ぐ）
+        let storedFits = w > 0 && h > 0 && storedW > 0 && storedH > 0 && storedW <= w && storedH <= h
+        self.widthText = storedFits ? String(storedW) : (w > 0 ? String(w) : "")
+        self.heightText = storedFits ? String(storedH) : (h > 0 ? String(h) : "")
 
         let dpiRaw = ud.integer(forKey: ExportSettings.StorageKey.dpi)
         self.dpi = ExportDPI(rawValue: dpiRaw == 0 ? 300 : dpiRaw) ?? .dpi300

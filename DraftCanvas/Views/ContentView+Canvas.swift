@@ -150,6 +150,10 @@ extension ContentView {
                 inpaintingEditorSheet(for: item)
                     .environment(\.locale, l10n.locale)
             }
+            .sheet(item: $viewModel.cropTarget) { item in
+                cropEditorSheet(for: item)
+                    .environment(\.locale, l10n.locale)
+            }
             .sheet(item: $viewModel.sketchEditorTarget) { target in
                 sketchEditorSheet(for: target)
                     .environment(\.locale, l10n.locale)
@@ -198,6 +202,29 @@ extension ContentView {
                 },
                 onCancel: {
                     viewModel.inpaintingTarget = nil
+                }
+            )
+        } else {
+            Text("画像を読み込めませんでした")
+                .padding(40)
+        }
+    }
+
+    @ViewBuilder
+    func cropEditorSheet(for item: ProjectItem) -> some View {
+        // isCropped アイテムの再編集は元画像を表示する
+        let sourceItem: ProjectItem = item.isCropped
+            ? (viewModel.items.first(where: { $0.id == item.editedFromItemID }) ?? item)
+            : item
+        if let nsImage = viewModel.cachedImage(for: sourceItem) {
+            CropEditorSheet(
+                sourceImage: nsImage,
+                initialParams: item.isCropped ? viewModel.projectStore.readCropParameters(id: item.id) : nil,
+                onComplete: { rect, template in
+                    viewModel.commitCrop(item: item, rect: rect, template: template)
+                },
+                onCancel: {
+                    viewModel.cropTarget = nil
                 }
             )
         } else {
@@ -827,6 +854,12 @@ extension ContentView {
                     isDisabled: item.isBackgroundRemoved
                 ) {
                     viewModel.startBackgroundRemoval(item: item)
+                }
+                CircularPromptActionButton(
+                    systemImage: "crop",
+                    tooltip: "トリミング"
+                ) {
+                    viewModel.openCropEditor(for: item)
                 }
                 CircularPromptActionButton(
                     systemImage: "pointer.arrow.and.square.on.square.dashed",

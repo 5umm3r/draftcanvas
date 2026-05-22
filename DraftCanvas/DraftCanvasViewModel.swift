@@ -167,6 +167,7 @@ final class DraftCanvasViewModel: ObservableObject {
             }
         }
     }
+    @Published var cropTarget: ProjectItem? = nil
     @Published var backgroundRemovalPreview: BackgroundRemovalPreview? = nil
     @Published var materialExtractionPreview: MaterialExtractionPreview? = nil
     @Published var extractingItemID: UUID? = nil
@@ -360,6 +361,7 @@ final class DraftCanvasViewModel: ObservableObject {
             || materialExtractionPreview != nil
             || upscalePreview != nil
             || inpaintingTarget != nil
+            || cropTarget != nil
     }
 
     func cancelInFlightWorkForRelaunch() {
@@ -383,6 +385,7 @@ final class DraftCanvasViewModel: ObservableObject {
         materialExtractionPreview = nil
         upscalePreview = nil
         inpaintingTarget = nil
+        cropTarget = nil
 
         saveState()
     }

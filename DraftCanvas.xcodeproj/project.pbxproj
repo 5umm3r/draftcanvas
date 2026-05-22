@@ -114,6 +114,9 @@
 		a2411cdce34e40e9b9c6aea86e09bfab /* FilteringProjectCreationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = b79086998a564de490b9a76dbc67c001 /* FilteringProjectCreationSheet.swift */; };
 		dffa5788acfc4dfdada1510b9c9aee33 /* DraftCanvasViewModel+FilteringProjects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 142b1b577a9b4336b315f08d800e5d6a /* DraftCanvasViewModel+FilteringProjects.swift */; };
 		f930d5d3164b439c85edb6c7ee4b9d7e /* TagEditorRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5e64e8265c0548dab23dae9cd36602db /* TagEditorRow.swift */; };
+		7B90BC73E03D4FD3877B5FD0 /* CropParameters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53B928C386A94B158778F073 /* CropParameters.swift */; };
+		EB4C159FD40A4E9EA3B1F572 /* CropEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6976A8522554A63AB279101 /* CropEditor.swift */; };
+		89B5C2D828124C769107B60B /* DraftCanvasViewModel+Crop.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A0184D75554ACCBBF6B1F2 /* DraftCanvasViewModel+Crop.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -236,6 +239,9 @@
 		FFF632FC9AA946138EEF8D01EA71C8FB /* libvtracer_ffi.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libvtracer_ffi.a; path = Vendor/vtracer/libvtracer_ffi.a; sourceTree = "<group>"; };
 		b79086998a564de490b9a76dbc67c001 /* FilteringProjectCreationSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FilteringProjectCreationSheet.swift; path = Views/FilteringProjectCreationSheet.swift; sourceTree = "<group>"; };
 		b7e96c4970d44133991b9ff817e3cefd /* CanvasScrollZoomCatcher.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CanvasScrollZoomCatcher.swift; path = Views/CanvasScrollZoomCatcher.swift; sourceTree = "<group>"; };
+		53B928C386A94B158778F073 /* CropParameters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropParameters.swift; sourceTree = "<group>"; };
+		C6976A8522554A63AB279101 /* CropEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropEditor.swift; sourceTree = "<group>"; };
+		F6A0184D75554ACCBBF6B1F2 /* DraftCanvasViewModel+Crop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Crop.swift"; path = "ViewModel/DraftCanvasViewModel+Crop.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -287,6 +293,8 @@
 				10A000FD2D00000100000001 /* ImageVectorizer.swift */,
 				10A001012D00000100000001 /* InpaintingMaskCompositor.swift */,
 				10A001032D00000100000001 /* InpaintingMaskEditor.swift */,
+				53B928C386A94B158778F073 /* CropParameters.swift */,
+				C6976A8522554A63AB279101 /* CropEditor.swift */,
 				10B001012D00000100000001 /* SketchModels.swift */,
 				10B001032D00000100000001 /* SketchCompositor.swift */,
 				10B001052D00000100000001 /* SketchEditor.swift */,
@@ -441,6 +449,7 @@
 				5831C49A57AB9C7A2D8B1C1D /* DraftCanvasViewModel+MaterialExtract.swift */,
 				AA0000010000000100000002 /* DraftCanvasViewModel+Upscale.swift */,
 				CC0000010000000100000002 /* DraftCanvasViewModel+CanvasNavigation.swift */,
+				F6A0184D75554ACCBBF6B1F2 /* DraftCanvasViewModel+Crop.swift */,
 			);
 			name = ViewModel;
 			sourceTree = "<group>";
@@ -668,6 +677,9 @@
 				B8850A9D39AE2CAE18000EC6 /* LicenseSheet.swift in Sources */,
 				dcc9736d94fa4aab89e1f3422f7b8c83 /* LicensesSheet.swift in Sources */,
 				8929853307644327AA3382FCE9D2E8BF /* PurchaseConfig.swift in Sources */,
+				7B90BC73E03D4FD3877B5FD0 /* CropParameters.swift in Sources */,
+				EB4C159FD40A4E9EA3B1F572 /* CropEditor.swift in Sources */,
+				89B5C2D828124C769107B60B /* DraftCanvasViewModel+Crop.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
