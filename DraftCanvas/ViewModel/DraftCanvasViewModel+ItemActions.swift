@@ -80,11 +80,11 @@ extension DraftCanvasViewModel {
                 let store = await MainActor.run { self.projectStore }
                 let maskURL = try store.writeMaskData(maskData, id: item.id)
                 let compositeURL = try store.writeCompositeData(compositeData, id: item.id)
-                try? store.writeStrokesData(strokes, id: item.id)
+                _ = try? store.writeStrokesData(strokes, id: item.id)
                 if let previewData = try? InpaintingMaskCompositor.renderPreview(
                     originalImageData: originalData, maskData: maskData
                 ) {
-                    try? store.writePreviewData(previewData, id: item.id)
+                    _ = try? store.writePreviewData(previewData, id: item.id)
                 }
 
                 await MainActor.run {

@@ -75,7 +75,7 @@ struct ExpandedImageSheet: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .onChange(of: items) { _ in
+        .onChange(of: items) { _, _ in
             if !items.contains(where: { $0.id == currentItemID }) {
                 onDismiss()
             }

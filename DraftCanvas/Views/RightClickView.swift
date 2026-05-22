@@ -32,6 +32,7 @@ private struct RightClickPopoverBridge<Content: View>: NSViewRepresentable {
         }
     }
 
+    @MainActor
     class Coordinator: NSObject, NSPopoverDelegate {
         private var popover: NSPopover?
 
@@ -51,9 +52,11 @@ private struct RightClickPopoverBridge<Content: View>: NSViewRepresentable {
     }
 
     class HandlerView: NSView {
-        var onTriggered: (() -> Void)?
+        var onTriggered: (@MainActor () -> Void)?
 
-        override func rightMouseDown(with event: NSEvent) { onTriggered?() }
+        override func rightMouseDown(with event: NSEvent) {
+            MainActor.assumeIsolated { onTriggered?() }
+        }
 
         override func hitTest(_ point: NSPoint) -> NSView? {
             guard let event = NSApp.currentEvent, event.type == .rightMouseDown else { return nil }
