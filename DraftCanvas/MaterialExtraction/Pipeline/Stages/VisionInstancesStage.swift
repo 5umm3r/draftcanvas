@@ -52,7 +52,7 @@ struct VisionInstancesStage: ExtractionStage {
                 ciCtx: ciCtxLocal,
                 imagePixelSize: input.imagePixelSize
             )
-            guard let normalizedBox = (try? bbStage.run(bbInput)) ?? nil else { continue }
+            guard let normalizedBox = try? bbStage.run(bbInput) else { continue }
 
             let imageBoundingBox = CGRect(
                 x: normalizedBox.minX * input.imagePixelSize.width,
