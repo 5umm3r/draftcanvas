@@ -45,6 +45,14 @@ extension ContentView {
                         }
                         .frame(maxWidth: 780)
                         .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    } else {
+                        HStack {
+                            Spacer()
+                            retryFailedJobsButton
+                            Spacer()
+                        }
+                        .frame(maxWidth: 780)
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
                     }
                     promptPanel(maxPromptHeight: geometry.size.height / 2)
                 }

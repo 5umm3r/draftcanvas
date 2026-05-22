@@ -138,6 +138,8 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var codexVersion: String = "--"
     @Published var availableModels: [CodexModel] = []
 
+    @Published var dismissedFailedJobIDs: Set<UUID> = []
+
     @Published var vectorizingItemIDs: Set<UUID> = []
     @Published var inpaintingTarget: ProjectItem? = nil
     @Published var sketchEditorTarget: SketchEditorTarget? = nil

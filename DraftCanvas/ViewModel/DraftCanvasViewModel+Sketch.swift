@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 
 struct SketchEditorTarget: Identifiable {
@@ -49,7 +50,7 @@ extension DraftCanvasViewModel {
                 projectStore.cleanupAttachment(id: existingID)
             }
 
-            let savedURL = try projectStore.writeAttachmentData(pngData, id: attachID)
+            let savedURL = try projectStore.writeAttachmentData(resizedForCodex(pngData), id: attachID)
             let strokesURL = try projectStore.writeSketchStrokesData(strokes, id: attachID)
 
             let attached = AttachedImage(
@@ -70,5 +71,22 @@ extension DraftCanvasViewModel {
 
     func loadSketchStrokes(for attached: AttachedImage) -> [SketchStroke] {
         projectStore.readSketchStrokesData(id: attached.id) ?? []
+    }
+
+    // 512px以下にダウンスケール → 4タイル(765tokens)→1タイル(255tokens)
+    private func resizedForCodex(_ data: Data, maxDimension: CGFloat = 512) -> Data {
+        guard let image = NSImage(data: data) else { return data }
+        let size = image.size
+        let scale = min(maxDimension / size.width, maxDimension / size.height, 1.0)
+        guard scale < 1.0 else { return data }
+        let newSize = CGSize(width: (size.width * scale).rounded(), height: (size.height * scale).rounded())
+        let resized = NSImage(size: newSize)
+        resized.lockFocus()
+        NSGraphicsContext.current?.imageInterpolation = .high
+        image.draw(in: NSRect(origin: .zero, size: newSize))
+        resized.unlockFocus()
+        guard let tiff = resized.tiffRepresentation,
+              let rep = NSBitmapImageRep(data: tiff) else { return data }
+        return rep.representation(using: .png, properties: [:]) ?? data
     }
 }

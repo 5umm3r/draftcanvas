@@ -5,6 +5,7 @@ import UserNotifications
 extension DraftCanvasViewModel {
     func generate(skipRateLimitCheck: Bool = false) {
         guard canGenerate else { return }
+        guard !isGeneratingForSelected else { return }
         if accountUsageStatus.isChatGPTFreePlan {
             pendingFreeAccountBlock = true
             return
@@ -228,6 +229,8 @@ extension DraftCanvasViewModel {
 
         var failedJobs = (jobsByProject[projectID] ?? []).filter { $0.status == .failed }
         guard !failedJobs.isEmpty else { return }
+
+        dismissedFailedJobIDs.subtract(failedJobs.map(\.id))
 
         for i in failedJobs.indices {
             failedJobs[i].status = .queued

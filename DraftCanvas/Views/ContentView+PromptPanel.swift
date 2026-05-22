@@ -459,8 +459,6 @@ extension ContentView {
                     .disabled(viewModel.currentInputs.editSource != nil)
                     .help(viewModel.currentInputs.attachedImage?.kind == .regular ? LocalizedStringKey("参照画像添付中") : LocalizedStringKey("参照画像を添付"))
 
-                    retryFailedJobsButton
-
                     Button {
                         viewModel.generate()
                     } label: {
@@ -479,7 +477,7 @@ extension ContentView {
                             .opacity(viewModel.selectedModelCostLevel > 0 ? 1 : 0)
                             .offset(x: 3, y: 3)
                     }
-                    .disabled(!viewModel.canGenerate)
+                    .disabled(!viewModel.canGenerate || viewModel.isGeneratingForSelected)
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
@@ -635,25 +633,42 @@ extension ContentView {
 
     @ViewBuilder
     var retryFailedJobsButton: some View {
-        let failedJobs = viewModel.currentJobs.filter { $0.status == .failed }
+        let failedJobs = viewModel.currentJobs.filter {
+            $0.status == .failed && !viewModel.dismissedFailedJobIDs.contains($0.id)
+        }
         if !failedJobs.isEmpty,
            !viewModel.isGeneratingForSelected,
            let projectID = viewModel.effectiveProjectID,
            viewModel.lastRequestByProject[projectID] != nil {
-            Button {
-                viewModel.retryFailedJobs(projectID: projectID)
-            } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "arrow.circlepath")
-                        .font(.system(size: 14, weight: .medium))
-                    Text(String(localized: "失敗のみ再試行 (\(failedJobs.count))"))
-                        .font(.system(size: 13))
+            HStack(spacing: 4) {
+                Button {
+                    viewModel.retryFailedJobs(projectID: projectID)
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "arrow.circlepath")
+                            .font(.system(size: 14, weight: .medium))
+                        Text(String(localized: "失敗のみ再試行 (\(failedJobs.count))"))
+                            .font(.system(size: 13))
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
                 }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 8)
+                .buttonStyle(.bordered)
+                .help(String(localized: "失敗したジョブのみ再試行"))
+
+                Button {
+                    let ids = viewModel.currentJobs
+                        .filter { $0.status == .failed }
+                        .map(\.id)
+                    viewModel.dismissedFailedJobIDs.formUnion(ids)
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 11, weight: .medium))
+                        .padding(6)
+                }
+                .buttonStyle(.borderless)
+                .help(String(localized: "閉じる"))
             }
-            .buttonStyle(.bordered)
-            .help(String(localized: "失敗したジョブのみ再試行"))
         }
     }
 
