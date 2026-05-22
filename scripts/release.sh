@@ -13,6 +13,12 @@ if ! git diff --quiet || ! git diff --cached --quiet; then
   exit 1
 fi
 
+echo "==> Bump version in project"
+NEXT_BUILD=$(($(git rev-list --count HEAD) + 1))
+sed -i '' "s/MARKETING_VERSION = [0-9][0-9.]*;/MARKETING_VERSION = ${VERSION};/g" DraftCanvas.xcodeproj/project.pbxproj
+sed -i '' "s/CURRENT_PROJECT_VERSION = [0-9]*;/CURRENT_PROJECT_VERSION = ${NEXT_BUILD};/g" DraftCanvas.xcodeproj/project.pbxproj
+git add DraftCanvas.xcodeproj/project.pbxproj
+git commit -m "chore: bump version to ${VERSION}"
 BUILD_NUMBER=$(git rev-list --count HEAD)
 echo "==> Version: $VERSION  Build: $BUILD_NUMBER"
 
