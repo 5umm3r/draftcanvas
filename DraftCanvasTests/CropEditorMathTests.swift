@@ -57,7 +57,7 @@ final class CropEditorMathTests: XCTestCase {
     }
 
     func testLargestInscribed_16x9InSquare() {
-        // 16:9 ratio inside a 900x900 square → height-constrained
+        // 16:9 ratio inside a 900x900 square → width-constrained
         let rect = CGRect(x: 0, y: 0, width: 900, height: 900)
         let result = CropEditorSheet.largestInscribed(ratio: 16.0 / 9.0, in: rect)
         // candidateH = 900 / (16/9) = 506.25 ≤ 900 → width-constrained path
