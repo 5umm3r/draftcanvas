@@ -36,7 +36,7 @@ struct FilteringProjectCreationSheet: View {
                 TextField("例: 猫 夕日", text: $searchQuery)
                     .textFieldStyle(.roundedBorder)
                 if !searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    Text("該当カード: \(matchCount)枚")
+                    Text(String(format: String(localized: "該当カード: %lld枚"), matchCount))
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }

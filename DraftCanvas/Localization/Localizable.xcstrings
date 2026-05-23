@@ -6162,6 +6162,86 @@
         }
       }
     },
+    "該当カード: %lld枚": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld matching cards"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "該当カード: %lld枚"
+          }
+        }
+      }
+    },
+    "このMacのアクティベーションが解除されます。別のMacで使用する際に再入力が必要です。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This Mac will be deactivated. You will need to re-enter your license key to use it on another Mac."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このMacのアクティベーションが解除されます。別のMacで使用する際に再入力が必要です。"
+          }
+        }
+      }
+    },
+    "このMacのライセンスを解除": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deactivate on This Mac"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このMacのライセンスを解除"
+          }
+        }
+      }
+    },
+    "共有": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "共有"
+          }
+        }
+      }
+    },
+    "ライセンス認証済み": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "License Activated"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ライセンス認証済み"
+          }
+        }
+      }
+    },
     "画像全体にリセット": {
       "localizations": {
         "en": {
