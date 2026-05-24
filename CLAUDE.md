@@ -145,3 +145,7 @@ xcodebuild -scheme DraftCanvas -destination 'platform=macOS' SYMROOT=_build OBJR
 - SYMROOT は常に `_build`、OBJROOT は常に `_build/obj` 固定
 - `-derivedDataPath` は使わない
 - 上記以外の場所にビルド成果物を作った場合は即削除する
+
+## 本番リリース
+
+詳細は `_docs/release.md` を参照
