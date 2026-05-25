@@ -62,7 +62,7 @@ struct ExportOptionsSheet: View {
                 }
             }
             .pickerStyle(.segmented)
-            .frame(width: 320)
+            .frame(width: 380)
             .disabled(vm.request.hasVectorSVG)
         }
         .padding(.horizontal, 18)
@@ -80,6 +80,7 @@ struct ExportOptionsSheet: View {
         case .svg:  svgCard
         case .tiff: tiffCard
         case .pdf:  pdfCard
+        case .webp: webpCard
         }
     }
 
@@ -151,6 +152,25 @@ struct ExportOptionsSheet: View {
             VStack(alignment: .leading, spacing: 12) {
                 dpiRow
                 Text("LZW可逆圧縮・透過（アルファ）保持")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private var webpCard: some View {
+        OptionCard {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("品質")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Picker("", selection: $vm.webpQuality) {
+                    ForEach(WebPQualityPreset.allCases, id: \.self) { preset in
+                        Text(preset.displayName).tag(preset)
+                    }
+                }
+                .pickerStyle(.segmented)
+                Text("透過（アルファチャンネル）を保持します")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

@@ -52,6 +52,7 @@ extension DraftCanvasViewModel {
 
         lastRequestByProject[targetProjectID] = request
         generatingProjectIDs.insert(targetProjectID)
+        activityTracker.begin()
         logs.append("生成を開始しました。count=\(request.normalizedCount), concurrency=\(request.normalizedConcurrency)")
         if let editSource = inputs.editSource {
             logs.append("アイテムを再編集します: \(editSource.filePath)")
@@ -245,6 +246,7 @@ extension DraftCanvasViewModel {
         }
 
         generatingProjectIDs.insert(projectID)
+        activityTracker.begin()
         logs.append("失敗ジョブを再試行します: \(failedJobs.count)件")
 
         let runID = UUID()
@@ -286,7 +288,9 @@ extension DraftCanvasViewModel {
         let tasks = generationTasks[projectID] ?? [:]
         for (_, task) in tasks { task.cancel() }
         generationTasks[projectID] = nil
-        generatingProjectIDs.remove(projectID)
+        if generatingProjectIDs.remove(projectID) != nil {
+            activityTracker.end()
+        }
     }
 
     private func finishRun(runID: UUID, projectID: UUID, results: [GenerationJob]? = nil) {
@@ -294,6 +298,7 @@ extension DraftCanvasViewModel {
         if generationTasks[projectID]?.isEmpty == true {
             generationTasks.removeValue(forKey: projectID)
             generatingProjectIDs.remove(projectID)
+            activityTracker.end()
         }
         if generatingProjectIDs.isEmpty, let results {
             onAllJobsCompleted(results: results)

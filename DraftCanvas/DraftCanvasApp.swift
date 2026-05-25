@@ -2,6 +2,7 @@ import SwiftUI
 
 @main
 struct DraftCanvasApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var viewModel = DraftCanvasViewModel()
 
     init() {
@@ -18,6 +19,7 @@ struct DraftCanvasApp: App {
                 .environment(\.locale, l10n.locale)
                 .environmentObject(l10n)
                 .onAppear {
+                    appDelegate.viewModel = viewModel
                     viewModel.requestNotificationPermission()
                     EntitlementGate.shared.evaluate()
                     if let warning = EntitlementGate.shared.consumeTrialWarning() {

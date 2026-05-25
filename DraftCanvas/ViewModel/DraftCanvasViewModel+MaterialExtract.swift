@@ -16,7 +16,7 @@ extension DraftCanvasViewModel {
         let fileURL = projectStore.resolvedFileURL(for: item)
         extractingItemID = item.id
 
-        Task {
+        materialExtractionTask = Task {
             var running = job
             running.status = .running
             upsert(running, into: projectID)
@@ -30,10 +30,12 @@ extension DraftCanvasViewModel {
                 upsert(succeeded, into: projectID)
 
                 extractingItemID = nil
+                materialExtractionTask = nil
                 materialExtractionPreview = MaterialExtractionPreview(item: item, session: session)
                 logs.append("素材分解検出完了: \(session.instances.count) 個 (\(item.id))")
             } catch {
                 extractingItemID = nil
+                materialExtractionTask = nil
                 var failed = running
                 failed.status = .failed
                 failed.errorMessage = error.localizedDescription
@@ -125,6 +127,8 @@ extension DraftCanvasViewModel {
     }
 
     func cancelMaterialExtraction() {
+        materialExtractionTask?.cancel()
+        materialExtractionTask = nil
         materialExtractionPreview = nil
     }
 }

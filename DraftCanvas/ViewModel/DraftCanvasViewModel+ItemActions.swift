@@ -137,9 +137,13 @@ extension DraftCanvasViewModel {
         let translateToEnglishRef = translateToEnglish
 
         generatingProjectIDs.insert(projectID)
+        activityTracker.begin()
         logs.append("マスク除去を開始しました: \(item.id)")
 
-        Task.detached(priority: .userInitiated) {
+        let removalRunID = UUID()
+        if generationTasks[projectID] == nil { generationTasks[projectID] = [:] }
+
+        let removalTask = Task.detached(priority: .userInitiated) {
             do {
                 let originalData = try Data(contentsOf: fileURL)
                 let imgSource = CGImageSourceCreateWithData(originalData as CFData, nil)
@@ -156,6 +160,8 @@ extension DraftCanvasViewModel {
                     await MainActor.run {
                         self.errorToast = String(localized: "マスク画像の生成に失敗しました。")
                         self.generatingProjectIDs.remove(projectID)
+                        self.activityTracker.end()
+                        self.generationTasks[projectID]?.removeValue(forKey: removalRunID)
                     }
                     return
                 }
@@ -195,6 +201,8 @@ extension DraftCanvasViewModel {
                 await MainActor.run {
                     removalStore.cleanupMaskFiles(id: itemID)
                     self.generatingProjectIDs.remove(projectID)
+                    self.activityTracker.end()
+                    self.generationTasks[projectID]?.removeValue(forKey: removalRunID)
                     if self.generatingProjectIDs.isEmpty {
                         self.onAllJobsCompleted(results: results)
                     }
@@ -206,9 +214,12 @@ extension DraftCanvasViewModel {
                     self.errorToast = String(localized: "マスク除去に失敗しました: \(error.localizedDescription)")
                     self.logs.append("マスク除去エラー: \(error.localizedDescription)")
                     self.generatingProjectIDs.remove(projectID)
+                    self.activityTracker.end()
+                    self.generationTasks[projectID]?.removeValue(forKey: removalRunID)
                 }
             }
         }
+        generationTasks[projectID]?[removalRunID] = removalTask
     }
 
     func startBackgroundRemoval(item: ProjectItem) {
