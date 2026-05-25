@@ -200,6 +200,19 @@ struct ContentView: View {
         } message: {
             Text("この操作は取り消せません。")
         }
+        .alert(
+            String(localized: "進行中のタスクがあります"),
+            isPresented: $viewModel.terminationRequested
+        ) {
+            Button(String(localized: "終了する"), role: .destructive) {
+                viewModel.confirmTermination()
+            }
+            Button(String(localized: "続行"), role: .cancel) {
+                viewModel.cancelTermination()
+            }
+        } message: {
+            Text("画像の生成またはエクスポートが進行中です。中断してアプリを終了しますか？")
+        }
         .onChange(of: viewModel.focusPromptTrigger) { _, _ in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
                 promptFocusTrigger = true

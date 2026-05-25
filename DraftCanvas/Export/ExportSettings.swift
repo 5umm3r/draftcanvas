@@ -2,7 +2,7 @@ import Foundation
 import UniformTypeIdentifiers
 
 enum ExportFormat: String, CaseIterable, Codable {
-    case png, jpeg, svg, tiff, pdf
+    case png, jpeg, webp, svg, tiff, pdf
 
     var displayName: String {
         switch self {
@@ -11,6 +11,7 @@ enum ExportFormat: String, CaseIterable, Codable {
         case .svg: return "SVG"
         case .tiff: return "TIFF"
         case .pdf: return "PDF"
+        case .webp: return "WebP"
         }
     }
 
@@ -21,6 +22,7 @@ enum ExportFormat: String, CaseIterable, Codable {
         case .svg: return "svg"
         case .tiff: return "tiff"
         case .pdf: return "pdf"
+        case .webp: return "webp"
         }
     }
 
@@ -31,6 +33,7 @@ enum ExportFormat: String, CaseIterable, Codable {
         case .svg: return .svg
         case .tiff: return .tiff
         case .pdf: return .pdf
+        case .webp: return .webP
         }
     }
 }
@@ -65,6 +68,20 @@ enum PNGOptimizationLevel: Int, CaseIterable, Codable {
     var isLossy: Bool { self == .max }
 }
 
+enum WebPQualityPreset: Int, CaseIterable, Codable {
+    case high90 = 90
+    case mid75 = 75
+    case low50 = 50
+
+    var displayName: String {
+        switch self {
+        case .high90: return String(localized: "高 (90)")
+        case .mid75:  return String(localized: "中 (75)")
+        case .low50:  return String(localized: "低 (50)")
+        }
+    }
+}
+
 struct ExportSettings: Equatable {
     var format: ExportFormat
     var jpegQuality: JPEGQualityPreset
@@ -76,6 +93,7 @@ struct ExportSettings: Equatable {
     var dpi: ExportDPI
     var tiffCompression: TIFFCompression
     var pdfCompression: PDFImageCompression
+    var webpQuality: WebPQualityPreset
 }
 
 enum ExportDPI: Int, CaseIterable, Codable {
@@ -145,5 +163,6 @@ extension ExportSettings {
         static let dpi = "exportDPI"
         static let tiffCompression = "exportTIFFCompression"
         static let pdfCompression = "exportPDFCompression"
+        static let webpQuality = "exportWebPQuality"
     }
 }

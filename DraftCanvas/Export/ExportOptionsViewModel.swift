@@ -18,6 +18,7 @@ final class ExportOptionsViewModel: ObservableObject {
     @Published var dpi: ExportDPI
     @Published var tiffCompression: TIFFCompression
     @Published var pdfCompression: PDFImageCompression
+    @Published var webpQuality: WebPQualityPreset
 
     private var isProgrammatic = false
 
@@ -58,6 +59,9 @@ final class ExportOptionsViewModel: ObservableObject {
 
         let pdfRaw = ud.string(forKey: ExportSettings.StorageKey.pdfCompression) ?? PDFImageCompression.lossless.rawValue
         self.pdfCompression = PDFImageCompression(rawValue: pdfRaw) ?? .lossless
+
+        let webpRaw = ud.integer(forKey: ExportSettings.StorageKey.webpQuality)
+        self.webpQuality = WebPQualityPreset(rawValue: webpRaw == 0 ? 75 : webpRaw) ?? .mid75
     }
 
     var widthInt: Int? { Int(widthText) }
@@ -86,7 +90,8 @@ final class ExportOptionsViewModel: ObservableObject {
             resizeHeight: heightInt ?? origH,
             dpi: dpi,
             tiffCompression: tiffCompression,
-            pdfCompression: pdfCompression
+            pdfCompression: pdfCompression,
+            webpQuality: webpQuality
         )
     }
 
@@ -118,5 +123,6 @@ final class ExportOptionsViewModel: ObservableObject {
         ud.set(dpi.rawValue, forKey: ExportSettings.StorageKey.dpi)
         ud.set(tiffCompression.rawValue, forKey: ExportSettings.StorageKey.tiffCompression)
         ud.set(pdfCompression.rawValue, forKey: ExportSettings.StorageKey.pdfCompression)
+        ud.set(webpQuality.rawValue, forKey: ExportSettings.StorageKey.webpQuality)
     }
 }

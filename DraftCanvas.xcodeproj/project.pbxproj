@@ -115,6 +115,7 @@
 		9C256DBEDD7083F2906FC926 /* InpaintingMaskEditorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DE742956FA4A4B9EEEC2668 /* InpaintingMaskEditorSheet.swift */; };
 		9C2F227923CA43959A7F3EA6 /* ExportRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73538C1E5F7C459699BDD022 /* ExportRequest.swift */; };
 		9DC87F84F4934145A38BC044 /* PDFEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2681B373E0F545648BF26839 /* PDFEncoder.swift */; };
+		9EB0001157424A9AB3CCDE01 /* WebPEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAF001157424A9AB3CCDE01 /* WebPEncoder.swift */; };
 		9F70EA7E76D78C0535ACDB72 /* ContentView+CanvasCards.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDECA478DBFEA25658D3D545 /* ContentView+CanvasCards.swift */; };
 		A13017642482452211C4E9A0 /* LogWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFC23E9DED99669C4518E0C5 /* LogWindow.swift */; };
 		A132B80CE0D6480F8C6609F5 /* CodexCostBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 134A116412C44FA2816DEBF3 /* CodexCostBadge.swift */; };
@@ -153,6 +154,8 @@
 		D6FB5BC87C26930E84F03940 /* PreferredSaveFolderStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57EF848052CE479E6FC03AE1 /* PreferredSaveFolderStore.swift */; };
 		D7D83B66CC1485732BB3648F /* MaterialExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC26547B4F04C2DD19122DF /* MaterialExtractor.swift */; };
 		D9F69235C6DA480489596D0E /* CanvasMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3503E3DE1E894D1BA41DB46C /* CanvasMetrics.swift */; };
+		AA0003000000010000001A /* ActivityTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001000000010000001A /* ActivityTracker.swift */; };
+		AA0004000000010000001A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002000000010000001A /* AppDelegate.swift */; };
 		DC6F3E2000000011A0000001 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = DC6F3E1000000011A0000001 /* InfoPlist.xcstrings */; };
 		DC6F3E3000000011A0000001 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC6F3E1100000011A0000001 /* SettingsView.swift */; };
 		E4918AF5DB014E73B4B35CA3 /* ExportOptionsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1464508B7D214B28B26A132A /* ExportOptionsSheet.swift */; };
@@ -226,11 +229,14 @@
 		349798D5BC976EBEF6AF7E34 /* EntitlementGate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = EntitlementGate.swift; path = License/EntitlementGate.swift; sourceTree = "<group>"; };
 		34A23EB51599F57C42F3F031 /* FilteringProject.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FilteringProject.swift; path = Models/FilteringProject.swift; sourceTree = "<group>"; };
 		3503E3DE1E894D1BA41DB46C /* CanvasMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasMetrics.swift; sourceTree = "<group>"; };
+		AA0001000000010000001A /* ActivityTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityTracker.swift; sourceTree = "<group>"; };
+		AA0002000000010000001A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		357714227336B4F6EEE2A50E /* BoundingBoxStage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BoundingBoxStage.swift; path = MaterialExtraction/Pipeline/Stages/BoundingBoxStage.swift; sourceTree = "<group>"; };
 		364052427D804C5F964BCF75 /* CanvasThumbnailStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasThumbnailStore.swift; sourceTree = "<group>"; };
 		3761092DED294A9BC3AA5453 /* CanvasCardLayout.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CanvasCardLayout.swift; path = Views/Canvas/CanvasCardLayout.swift; sourceTree = "<group>"; };
 		3A03337AB6A2A6AB4F968292 /* DraftCanvasViewModel+CanvasImport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+CanvasImport.swift"; path = "ViewModel/DraftCanvasViewModel+CanvasImport.swift"; sourceTree = "<group>"; };
 		3ADD5B15238E48BDAEF7A6B3 /* ExportPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportPipeline.swift; sourceTree = "<group>"; };
+		9EAF001157424A9AB3CCDE01 /* WebPEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebPEncoder.swift; sourceTree = "<group>"; };
 		3C4D7B04757247BD5489EBC7 /* CanvasZoomControl.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CanvasZoomControl.swift; path = Views/CanvasZoomControl.swift; sourceTree = "<group>"; };
 		3CAEC8E556219FAA54D86C83 /* SketchEditorSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SketchEditorSheet.swift; path = Editors/Sketch/SketchEditorSheet.swift; sourceTree = "<group>"; };
 		4029B2D187F5C59722CE9C73 /* ProjectRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ProjectRow.swift; path = Views/ProjectRow.swift; sourceTree = "<group>"; };
@@ -398,6 +404,8 @@
 				10A0003E2D00000100000001 /* DraftCanvasViewModel.swift */,
 				10A000F92D00000100000001 /* BackgroundRemover.swift */,
 				3503E3DE1E894D1BA41DB46C /* CanvasMetrics.swift */,
+				AA0001000000010000001A /* ActivityTracker.swift */,
+				AA0002000000010000001A /* AppDelegate.swift */,
 				364052427D804C5F964BCF75 /* CanvasThumbnailStore.swift */,
 				519D0FA75CC744B6BE1E253B /* CanvasOriginalImageStore.swift */,
 				0b24c56e3df1460d8b338d4d618036f2 /* ImportSignposter.swift */,
@@ -622,6 +630,7 @@
 				7F0CA0CC3D334660A5FF5C5A /* ZipExportPipeline.swift */,
 				9009D01CC8F24B159CE585F6 /* TIFFEncoder.swift */,
 				2681B373E0F545648BF26839 /* PDFEncoder.swift */,
+				9EAF001157424A9AB3CCDE01 /* WebPEncoder.swift */,
 			);
 			path = Export;
 			sourceTree = "<group>";
@@ -836,6 +845,8 @@
 				10A000342D00000100000001 /* DraftCanvasViewModel.swift in Sources */,
 				10A000FA2D00000100000001 /* BackgroundRemover.swift in Sources */,
 				D9F69235C6DA480489596D0E /* CanvasMetrics.swift in Sources */,
+				AA0003000000010000001A /* ActivityTracker.swift in Sources */,
+				AA0004000000010000001A /* AppDelegate.swift in Sources */,
 				98D8CD9E43394E4BB9747CEC /* CanvasThumbnailStore.swift in Sources */,
 				CEAF7E7A4A4541C89658D0A3 /* CanvasOriginalImageStore.swift in Sources */,
 				60fbbabf84104a96aba9dcf0ae00bbb7 /* ImportSignposter.swift in Sources */,
@@ -856,6 +867,7 @@
 				C6F35265165A4602839E3964 /* ZipExportPipeline.swift in Sources */,
 				0FF4886636774FFE96D3D13B /* TIFFEncoder.swift in Sources */,
 				9DC87F84F4934145A38BC044 /* PDFEncoder.swift in Sources */,
+				9EB0001157424A9AB3CCDE01 /* WebPEncoder.swift in Sources */,
 				D5ABAF85CFD1445EA725C71B /* DraftCanvasViewModel+Computed.swift in Sources */,
 				CC5756457ADFECF7A3D2FE4A /* DraftCanvasViewModel+Projects.swift in Sources */,
 				1B8FE23372C461DA5914694F /* DraftCanvasViewModel+Generation.swift in Sources */,

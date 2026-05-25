@@ -60,6 +60,29 @@ chmod +x "$BIN_DIR/pngquant"
 echo "  ok: $BIN_DIR/pngquant"
 file "$BIN_DIR/pngquant"
 
+# ── cwebp ─────────────────────────────────────────────────────────────────────
+CWEBP_VERSION="1.5.0"
+echo ""
+echo "==> cwebp v${CWEBP_VERSION} ダウンロード中..."
+
+curl -sSL -o "$TMP/libwebp-arm.tar.gz" \
+  "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-${CWEBP_VERSION}-mac-arm64.tar.gz"
+curl -sSL -o "$TMP/libwebp-x86.tar.gz" \
+  "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-${CWEBP_VERSION}-mac-x86-64.tar.gz"
+
+tar -xzf "$TMP/libwebp-arm.tar.gz" -C "$TMP"
+tar -xzf "$TMP/libwebp-x86.tar.gz" -C "$TMP"
+
+lipo -create \
+  "$TMP/libwebp-${CWEBP_VERSION}-mac-arm64/bin/cwebp" \
+  "$TMP/libwebp-${CWEBP_VERSION}-mac-x86-64/bin/cwebp" \
+  -output "$BIN_DIR/cwebp"
+chmod +x "$BIN_DIR/cwebp"
+file "$BIN_DIR/cwebp" | grep -q "universal binary" \
+  || { echo "ERROR: cwebp Universal Binary 化失敗"; exit 1; }
+echo "  ok: $BIN_DIR/cwebp"
+file "$BIN_DIR/cwebp"
+
 # ── LICENSES ──────────────────────────────────────────────────────────────────
 cat > "$BIN_DIR/LICENSES.txt" <<EOF
 oxipng v${OXI_VERSION} - MIT License
@@ -67,6 +90,9 @@ https://github.com/shssoichiro/oxipng
 
 pngquant - GPL v3 (binary only, subprocess invocation — no linking)
 https://pngquant.org/
+
+cwebp v${CWEBP_VERSION} - BSD 3-Clause License
+https://chromium.googlesource.com/webm/libwebp/
 EOF
 
 touch "$BIN_DIR/.gitkeep"

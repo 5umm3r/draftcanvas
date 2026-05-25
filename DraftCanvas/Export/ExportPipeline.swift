@@ -53,6 +53,11 @@ enum ExportPipeline {
                 dpi: settings.dpi,
                 compression: settings.pdfCompression
             )
+        case .webp:
+            output = try await WebPEncoder.encode(
+                pngData: processedPNG,
+                quality: settings.webpQuality.rawValue
+            )
         }
 
         if settings.format == .png && settings.pngOptimize {

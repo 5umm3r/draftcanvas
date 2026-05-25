@@ -5,31 +5,32 @@ final class LicenseStore: @unchecked Sendable {
     static let shared = LicenseStore()
     private let service = Bundle.main.bundleIdentifier ?? "com.spade3.DraftCanvas"
     private let formatter = ISO8601DateFormatter()
+    private let defaults = UserDefaults.standard
 
     private init() {}
 
     var licenseKey: String? {
-        get { readString(account: "licenseKey") }
+        get { readKeychainString(account: "licenseKey") }
         set {
-            if let v = newValue { writeString(v, account: "licenseKey") }
+            if let v = newValue { writeKeychainString(v, account: "licenseKey") }
             else { deleteItem(account: "licenseKey") }
         }
     }
 
     // 実体は Polar の activation_id
     var instanceID: String? {
-        get { readString(account: "instanceID") }
-        set { if let v = newValue { writeString(v, account: "instanceID") } }
+        get { readKeychainString(account: "instanceID") }
+        set { if let v = newValue { writeKeychainString(v, account: "instanceID") } }
     }
 
     var trialStartDate: Date? {
-        get { readDate(account: "trialStartDate") }
-        set { if let v = newValue { writeDate(v, account: "trialStartDate") } }
+        get { readDefaultsDate(key: "trialStartDate") }
+        set { if let v = newValue { defaults.set(formatter.string(from: v), forKey: "trialStartDate") } }
     }
 
     private var lastSeenDate: Date? {
-        get { readDate(account: "lastSeenDate") }
-        set { if let v = newValue { writeDate(v, account: "lastSeenDate") } }
+        get { readDefaultsDate(key: "lastSeenDate") }
+        set { if let v = newValue { defaults.set(formatter.string(from: v), forKey: "lastSeenDate") } }
     }
 
     func loadOrInitTrial() -> Date {
@@ -46,16 +47,12 @@ final class LicenseStore: @unchecked Sendable {
         return false
     }
 
-    private func readDate(account: String) -> Date? {
-        guard let s = readString(account: account) else { return nil }
+    private func readDefaultsDate(key: String) -> Date? {
+        guard let s = defaults.string(forKey: key) else { return nil }
         return formatter.date(from: s)
     }
 
-    private func writeDate(_ date: Date, account: String) {
-        writeString(formatter.string(from: date), account: account)
-    }
-
-    private func readString(account: String) -> String? {
+    private func readKeychainString(account: String) -> String? {
         let query: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,
             kSecAttrService: service,
@@ -72,8 +69,8 @@ final class LicenseStore: @unchecked Sendable {
     func resetAll() {
         deleteItem(account: "licenseKey")
         deleteItem(account: "instanceID")
-        deleteItem(account: "trialStartDate")
-        deleteItem(account: "lastSeenDate")
+        defaults.removeObject(forKey: "trialStartDate")
+        defaults.removeObject(forKey: "lastSeenDate")
     }
 
     func deleteItem(account: String) {
@@ -85,7 +82,7 @@ final class LicenseStore: @unchecked Sendable {
         SecItemDelete(query as CFDictionary)
     }
 
-    private func writeString(_ value: String, account: String) {
+    private func writeKeychainString(_ value: String, account: String) {
         guard let data = value.data(using: .utf8) else { return }
         let query: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,

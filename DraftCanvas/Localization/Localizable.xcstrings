@@ -6257,6 +6257,54 @@
           }
         }
       }
+    },
+    "進行中のタスクがあります": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tasks in Progress"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "進行中のタスクがあります"
+          }
+        }
+      }
+    },
+    "画像の生成またはエクスポートが進行中です。中断してアプリを終了しますか？": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Image generation or export is in progress. Cancel and quit the app?"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画像の生成またはエクスポートが進行中です。中断してアプリを終了しますか？"
+          }
+        }
+      }
+    },
+    "終了する": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quit"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "終了する"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

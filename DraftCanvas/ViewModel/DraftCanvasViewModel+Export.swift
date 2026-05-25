@@ -70,7 +70,11 @@ extension DraftCanvasViewModel {
 
         Task { @MainActor [weak self] in
             guard let self else { return }
-            defer { self.exportingProjectID = nil }
+            activityTracker.begin()
+            defer {
+                self.activityTracker.end()
+                self.exportingProjectID = nil
+            }
             do {
                 try await ExportPipeline.run(
                     request: request,
@@ -136,6 +140,11 @@ extension DraftCanvasViewModel {
         let store = projectStore
         Task { @MainActor [weak self] in
             guard let self else { return }
+            activityTracker.begin()
+            defer {
+                self.activityTracker.end()
+                self.batchExportProgress = nil
+            }
             do {
                 try await ZipExportPipeline.run(
                     entries: entries,
@@ -151,13 +160,11 @@ extension DraftCanvasViewModel {
                         Task { @MainActor [weak self] in self?.logs.append(msg) }
                     }
                 )
-                self.batchExportProgress = nil
                 self.clearMultiSelection()
                 self.isSelectionMode = false
                 self.logs.append("一括エクスポートしました: \(zipURL.lastPathComponent) (\(entries.count)枚)")
                 NSWorkspace.shared.activateFileViewerSelecting([zipURL])
             } catch {
-                self.batchExportProgress = nil
                 self.logs.append("一括エクスポートに失敗しました: \(error.localizedDescription)")
                 self.errorToast = String(localized: "一括エクスポートに失敗しました")
             }

@@ -10,6 +10,7 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var inputsByProject: [UUID: ProjectInputs] = [:]
     @Published var jobsByProject: [UUID: [GenerationJob]] = [:]
     @Published var generatingProjectIDs: Set<UUID> = []
+    @Published var terminationRequested = false
     @Published var draftInputs: ProjectInputs = ProjectInputs()
     var lastRequestByProject: [UUID: GenerationRequest] = [:]
     var generationTasks: [UUID: [UUID: Task<Void, Never>]] = [:]
@@ -187,6 +188,8 @@ final class DraftCanvasViewModel: ObservableObject {
     var upscalingItemIDs: Set<UUID> = []
     var upscalingTasks: [UUID: Task<Void, Never>] = [:]
     var enhanceTask: Task<Void, Never>?
+    var materialExtractionTask: Task<Void, Never>?
+    let activityTracker = ActivityTracker()
     var onReplacePromptText: ((String) -> Void)?
     let thumbnailStore: CanvasThumbnailStore
     let originalImageStore: CanvasOriginalImageStore
@@ -351,6 +354,23 @@ final class DraftCanvasViewModel: ObservableObject {
 
     // MARK: - Relaunch support
 
+    var hasProtectedInFlightWork: Bool {
+        !generatingProjectIDs.isEmpty
+            || exportingProjectID != nil
+            || batchExportProgress != nil
+    }
+
+    func confirmTermination() {
+        cancelInFlightWorkForRelaunch()
+        terminationRequested = false
+        NSApplication.shared.reply(toApplicationShouldTerminate: true)
+    }
+
+    func cancelTermination() {
+        terminationRequested = false
+        NSApplication.shared.reply(toApplicationShouldTerminate: false)
+    }
+
     var hasInFlightWork: Bool {
         !generatingProjectIDs.isEmpty
             || !vectorizingItemIDs.isEmpty
@@ -367,6 +387,7 @@ final class DraftCanvasViewModel: ObservableObject {
     }
 
     func cancelInFlightWorkForRelaunch() {
+        activityTracker.endAll()
         for (_, runMap) in generationTasks { for (_, t) in runMap { t.cancel() } }
         generationTasks.removeAll()
         for (_, t) in vectorizationTasks { t.cancel() }
@@ -375,6 +396,8 @@ final class DraftCanvasViewModel: ObservableObject {
         upscalingTasks.removeAll()
         enhanceTask?.cancel()
         enhanceTask = nil
+        materialExtractionTask?.cancel()
+        materialExtractionTask = nil
 
         generatingProjectIDs.removeAll()
         vectorizingItemIDs.removeAll()
