@@ -122,6 +122,21 @@ else
   echo "Warning: EdDSA signature could not be generated. Check SPARKLE_KEY_FILE." >&2
 fi
 
+echo "==> Inject release notes into appcast"
+NOTES=$(sed -n "/^## \[${VERSION}\]/,/^## \[/{/^## \[${VERSION}\]/d;/^## \[/d;p;}" CHANGELOG.md 2>/dev/null || true)
+if [ -n "$NOTES" ]; then
+  HTML_NOTES=$(echo "$NOTES" | sed \
+    -e 's|^### \(.*\)|</ul><h3>\1</h3><ul>|' \
+    -e 's|^- \(.*\)|<li>\1</li>|' \
+    -e '/^[[:space:]]*$/d' | tr -d '\n')
+  HTML_NOTES="${HTML_NOTES#</ul>}"
+  HTML_NOTES="<ul>${HTML_NOTES}</ul>"
+  sed -i '' "s|</item>|<description><![CDATA[${HTML_NOTES}]]></description></item>|" "$APPCAST_DIR/appcast.xml"
+  echo "    Release notes injected (${VERSION})"
+else
+  echo "    No release notes found in CHANGELOG.md for ${VERSION}, skipping"
+fi
+
 echo "==> Upload to GitHub Releases"
 RELEASES_REPO="5umm3r/draftcanvas-releases"
 TAG="v${VERSION}"
