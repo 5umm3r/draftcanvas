@@ -125,3 +125,80 @@ enum CodexEventExtractor {
     }
 }
 
+enum CodexLogFormatter {
+    static let defaultThreadInstructions = """
+    You are Draft Canvas's focused image-generation helper.
+    Use the current request and provided localImage attachments only.
+    Do not inspect unrelated local files, list directories, search the filesystem, or run shell commands unless the user explicitly asks for that in the current request.
+    Return only the requested image generation result or prompt text; avoid implementation commentary.
+    """
+
+    static func outbound(method: String, params: [String: Any]?) -> String {
+        switch method {
+        case "thread/start":
+            let model = params?["model"] as? String
+            let config = params?["config"] as? [String: Any]
+            let effort = config?["model_reasoning_effort"] as? String
+            return ["-> thread/start", model.map { "model=\($0)" }, effort.map { "reasoning=\($0)" }]
+                .compactMap { $0 }
+                .joined(separator: " ")
+        case "turn/start":
+            let thread = params?["threadId"] as? String
+            let inputCount = (params?["input"] as? [[String: Any]])?.count
+            return ["-> turn/start", thread.map { "thread=\($0)" }, inputCount.map { "input=\($0)" }]
+                .compactMap { $0 }
+                .joined(separator: " ")
+        default:
+            return "-> \(method)"
+        }
+    }
+
+    static func inbound(_ message: [String: Any]) -> String? {
+        if let error = message["error"] as? [String: Any] {
+            let rawMessage = error["message"] as? String ?? "unknown error"
+            return "<- error: \(shorten(rawMessage, maxLength: 180))"
+        }
+
+        guard let method = message["method"] as? String else {
+            return nil
+        }
+
+        switch method {
+        case "rawResponseItem/completed":
+            return rawResponseItemSummary(message)
+        case "turn/completed":
+            return "<- Codex turn が完了しました。"
+        case "account/rateLimits/updated":
+            return "<- Codex使用量を受信しました。"
+        default:
+            return nil
+        }
+    }
+
+    private static func rawResponseItemSummary(_ message: [String: Any]) -> String? {
+        guard
+            let params = message["params"] as? [String: Any],
+            let item = params["item"] as? [String: Any],
+            let type = item["type"] as? String
+        else {
+            return nil
+        }
+
+        switch type {
+        case "image_generation_call":
+            let id = item["id"] as? String ?? "unknown"
+            return "<- 画像生成結果を受信しました: \(id)"
+        case "message":
+            guard item["role"] as? String == "assistant" else { return nil }
+            return "<- assistant応答を受信しました。"
+        default:
+            return nil
+        }
+    }
+
+    private static func shorten(_ text: String, maxLength: Int) -> String {
+        guard text.count > maxLength else { return text }
+        let end = text.index(text.startIndex, offsetBy: maxLength)
+        return String(text[..<end]) + "..."
+    }
+}

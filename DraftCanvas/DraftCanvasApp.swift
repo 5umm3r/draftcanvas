@@ -12,12 +12,19 @@ struct DraftCanvasApp: App {
     @StateObject private var sparkleUpdater = SparkleUpdaterController()
     @StateObject private var gate = EntitlementGate.shared
 
+    @Environment(\.scenePhase) private var scenePhase
+
     var body: some Scene {
         WindowGroup {
             ContentView(viewModel: viewModel)
                 .preferredColorScheme(viewModel.preferredColorScheme)
                 .environment(\.locale, l10n.locale)
                 .environmentObject(l10n)
+                .onChange(of: scenePhase) { _, newPhase in
+                    if newPhase == .active {
+                        viewModel.refreshAccountUsageIfStale()
+                    }
+                }
                 .onAppear {
                     appDelegate.viewModel = viewModel
                     viewModel.requestNotificationPermission()
