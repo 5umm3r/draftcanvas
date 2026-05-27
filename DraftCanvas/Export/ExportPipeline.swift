@@ -62,16 +62,26 @@ enum ExportPipeline {
 
         if settings.format == .png && settings.pngOptimize {
             do {
-                let tmp = FileManager.default.temporaryDirectory
-                    .appendingPathComponent("export-\(UUID().uuidString).png")
-                try output.write(to: tmp, options: .atomic)
-                defer { try? FileManager.default.removeItem(at: tmp) }
+                let tmpDir = FileManager.default.temporaryDirectory
+                let losslessPath = tmpDir.appendingPathComponent("export-lossless-\(UUID().uuidString).png")
+                try output.write(to: losslessPath, options: .atomic)
+                defer { try? FileManager.default.removeItem(at: losslessPath) }
+
+                _ = try await BinaryRunner.run(
+                    binary: "oxipng",
+                    arguments: ["-o", "2", "--strip", "safe", losslessPath.path],
+                    timeout: 120
+                )
 
                 if settings.pngLevel.isLossy {
-                    // pngquant（ロッシー）→ oxipng（ロスレス）の順
-                    let quantOut = tmp.deletingLastPathComponent()
-                        .appendingPathComponent("quant-\(UUID().uuidString).png")
+                    // pngquant（ロッシー）→ oxipng（ロスレス）の順で別パスを生成し、小さい方を採用
+                    let lossyBase = tmpDir.appendingPathComponent("export-lossy-\(UUID().uuidString).png")
+                    try output.write(to: lossyBase, options: .atomic)
+                    defer { try? FileManager.default.removeItem(at: lossyBase) }
+
+                    let quantOut = tmpDir.appendingPathComponent("quant-\(UUID().uuidString).png")
                     defer { try? FileManager.default.removeItem(at: quantOut) }
+
                     _ = try await BinaryRunner.run(
                         binary: "pngquant",
                         arguments: [
@@ -79,21 +89,31 @@ enum ExportPipeline {
                             "--skip-if-larger",
                             "--output", quantOut.path,
                             "--force",
-                            tmp.path
+                            lossyBase.path
                         ],
                         timeout: 60
                     )
-                    if FileManager.default.fileExists(atPath: quantOut.path) {
-                        _ = try FileManager.default.replaceItemAt(tmp, withItemAt: quantOut)
-                    }
-                }
 
-                _ = try await BinaryRunner.run(
-                    binary: "oxipng",
-                    arguments: ["-o", "2", "--strip", "safe", tmp.path],
-                    timeout: 120
-                )
-                output = try Data(contentsOf: tmp)
+                    if FileManager.default.fileExists(atPath: quantOut.path) {
+                        _ = try FileManager.default.replaceItemAt(lossyBase, withItemAt: quantOut)
+                        _ = try await BinaryRunner.run(
+                            binary: "oxipng",
+                            arguments: ["-o", "2", "--strip", "safe", lossyBase.path],
+                            timeout: 120
+                        )
+                        let losslessSize = (try? FileManager.default.attributesOfItem(atPath: losslessPath.path)[.size] as? Int) ?? Int.max
+                        let lossySize = (try? FileManager.default.attributesOfItem(atPath: lossyBase.path)[.size] as? Int) ?? Int.max
+                        if lossySize < losslessSize {
+                            output = try Data(contentsOf: lossyBase)
+                        } else {
+                            output = try Data(contentsOf: losslessPath)
+                        }
+                    } else {
+                        output = try Data(contentsOf: losslessPath)
+                    }
+                } else {
+                    output = try Data(contentsOf: losslessPath)
+                }
             } catch {
                 logger("PNG最適化失敗（未圧縮で保存）: \(error.localizedDescription)")
             }
