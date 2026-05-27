@@ -133,6 +133,7 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var pendingRateLimitConfirmation: RateLimitConfirmation?
     @Published var pendingFreeAccountBlock = false
     @Published var isRefreshingAccountUsage = false
+    var needsAccountUsageRefreshAfterGeneration = false
     @Published var preferredSaveFolder: URL?
     @Published var errorToast: String?
     @Published var accountUsagePrewarmFailed = false

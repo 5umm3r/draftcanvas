@@ -300,8 +300,14 @@ extension DraftCanvasViewModel {
             generatingProjectIDs.remove(projectID)
             activityTracker.end()
         }
-        if generatingProjectIDs.isEmpty, let results {
-            onAllJobsCompleted(results: results)
+        if generatingProjectIDs.isEmpty {
+            if needsAccountUsageRefreshAfterGeneration {
+                needsAccountUsageRefreshAfterGeneration = false
+                refreshAccountUsage()
+            }
+            if let results {
+                onAllJobsCompleted(results: results)
+            }
         }
     }
 

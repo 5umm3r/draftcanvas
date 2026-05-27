@@ -30,8 +30,15 @@ extension DraftCanvasViewModel {
         let imgH = CGFloat(cgImage.height)
 
         // CGImage.cropping は top-left origin — rect と同じ座標系なので反転不要
-        let cropRect = CGRect(origin: rect.origin, size: rect.size)
+        // 浮動小数点誤差で非整数になると CGImage が切り上げてサイズが+1pxになるため整数丸め
+        let rawRect = CGRect(origin: rect.origin, size: rect.size)
             .intersection(CGRect(x: 0, y: 0, width: imgW, height: imgH))
+        let cropRect = CGRect(
+            x: rawRect.origin.x.rounded(),
+            y: rawRect.origin.y.rounded(),
+            width: rawRect.size.width.rounded(),
+            height: rawRect.size.height.rounded()
+        ).intersection(CGRect(x: 0, y: 0, width: imgW, height: imgH))
 
         guard let cropped = cgImage.cropping(to: cropRect),
               let pngData = encodePNG(cgImage: cropped)

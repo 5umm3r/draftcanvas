@@ -311,6 +311,7 @@ final class CropCanvasNSView: NSView {
         case .handle(let h):
             cropRect = resizedRect(from: dragStartCropRect, handle: h, dxImg: dxImg, dyImg: dyImg)
         }
+        coordinator?.commitCropRect(cropRect)
         needsDisplay = true
     }
 

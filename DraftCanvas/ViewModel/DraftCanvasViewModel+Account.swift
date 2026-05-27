@@ -1,8 +1,22 @@
 import Foundation
 
 extension DraftCanvasViewModel {
+    func refreshAccountUsageIfStale() {
+        let isStale = accountUsageStatusFetchedAt.map { Date().timeIntervalSince($0) > 30 } ?? true
+        guard isStale else { return }
+        if !generatingProjectIDs.isEmpty {
+            needsAccountUsageRefreshAfterGeneration = true
+            return
+        }
+        refreshAccountUsage()
+    }
+
     func refreshAccountUsage() {
-        guard !isRefreshingAccountUsage, generatingProjectIDs.isEmpty else { return }
+        guard !isRefreshingAccountUsage else { return }
+        guard generatingProjectIDs.isEmpty else {
+            needsAccountUsageRefreshAfterGeneration = true
+            return
+        }
 
         isRefreshingAccountUsage = true
         accountUsagePrewarmFailed = false
@@ -19,7 +33,6 @@ extension DraftCanvasViewModel {
                 }
             } catch {
                 await MainActor.run {
-                    self.accountUsageStatus = .unavailable
                     self.isRefreshingAccountUsage = false
                     self.accountUsagePrewarmFailed = true
                     self.logs.append("Codexアカウントと使用量の取得に失敗しました: \(error.localizedDescription)")

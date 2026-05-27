@@ -187,6 +187,8 @@ final class CodexAppServerClient: @unchecked Sendable {
         ]
         if let instructions {
             params["instructions"] = instructions
+        } else {
+            params["instructions"] = CodexLogFormatter.defaultThreadInstructions
         }
         if disableResponseStorage {
             params["disableResponseStorage"] = true
@@ -318,16 +320,7 @@ final class CodexAppServerClient: @unchecked Sendable {
                 do {
                     let request = JSONRPCRequest(id: id, method: method, params: sendableParams.value)
                     let line = try JSONRPCCodec.encodeRequestLine(request)
-                    #if DEBUG
-                    self.emitLog("-> \(String(data: line, encoding: .utf8)?.trimmingCharacters(in: .newlines) ?? method)")
-                    #else
-                    if var dict = try? JSONSerialization.jsonObject(with: line) as? [String: Any] {
-                        dict = redactSensitiveFields(in: dict)
-                        self.emitLog("-> \(self.compactJSONString(dict))")
-                    } else {
-                        self.emitLog("-> \(method)")
-                    }
-                    #endif
+                    self.emitLog(CodexLogFormatter.outbound(method: method, params: sendableParams.value))
                     try stdinHandle.write(contentsOf: line)
                 } catch {
                     self.pending.removeValue(forKey: id)
@@ -395,11 +388,9 @@ final class CodexAppServerClient: @unchecked Sendable {
     private func handleStdout(_ data: Data) {
         let messages = stdoutParser.append(data)
         for message in messages {
-            #if DEBUG
-            emitLog("<- \(compactJSONString(message))")
-            #else
-            emitLog("<- \(compactJSONString(redactSensitiveFields(in: message)))")
-            #endif
+            if let logLine = CodexLogFormatter.inbound(message) {
+                emitLog(logLine)
+            }
             if let id = message["id"] as? Int {
                 handleResponse(message, id: id)
             } else {
@@ -641,18 +632,22 @@ enum RateLimitClassifier {
 
     static func classify(_ error: [String: Any]) -> DraftCanvasError? {
         let isRateLimitCode: Bool
+        let isServiceUnavailable: Bool
         if let intCode = error["code"] as? Int {
             isRateLimitCode = intCode == 429 || intCode == -32029
+            isServiceUnavailable = intCode == 503
         } else if let strCode = error["code"] as? String {
             isRateLimitCode = strCode == "429"
+            isServiceUnavailable = strCode == "503"
         } else {
             isRateLimitCode = false
+            isServiceUnavailable = false
         }
 
         let message = (error["message"] as? String ?? "").lowercased()
         let hasRateLimitKeyword = rateLimitKeywords.contains { message.contains($0) }
 
-        guard isRateLimitCode || hasRateLimitKeyword else { return nil }
+        guard isRateLimitCode || (!isServiceUnavailable && hasRateLimitKeyword) else { return nil }
 
         let retryAfter: TimeInterval? = {
             guard let data = error["data"] as? [String: Any] else { return nil }

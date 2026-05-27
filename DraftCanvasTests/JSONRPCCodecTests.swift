@@ -151,6 +151,62 @@ final class JSONRPCCodecTests: XCTestCase {
         XCTAssertEqual(CodexEventExtractor.extractAssistantText(from: notification), "actual enhanced output")
     }
 
+    func testOutboundLogForTurnStartDoesNotExposePromptText() {
+        let log = CodexLogFormatter.outbound(
+            method: "turn/start",
+            params: [
+                "threadId": "thread_123456789",
+                "input": [
+                    [
+                        "type": "text",
+                        "text": "private user prompt that should not appear in app logs"
+                    ]
+                ]
+            ]
+        )
+
+        XCTAssertEqual(log, "-> turn/start thread=thread_123456789 input=1")
+        XCTAssertFalse(log.contains("private user prompt"))
+    }
+
+    func testInboundLogSuppressesCommandOutputDeltas() {
+        let notification: [String: Any] = [
+            "method": "item/commandExecution/outputDelta",
+            "params": [
+                "delta": "rg: /Users/example/Library: Operation not permitted"
+            ]
+        ]
+
+        XCTAssertNil(CodexLogFormatter.inbound(notification))
+    }
+
+    func testInboundLogSuppressesAgentMessageDeltas() {
+        let notification: [String: Any] = [
+            "method": "item/agentMessage/delta",
+            "params": [
+                "delta": "Some of what we're working on might be easier..."
+            ]
+        ]
+
+        XCTAssertNil(CodexLogFormatter.inbound(notification))
+    }
+
+    func testInboundLogSummarizesImageGenerationResult() {
+        let notification: [String: Any] = [
+            "method": "rawResponseItem/completed",
+            "params": [
+                "item": [
+                    "type": "image_generation_call",
+                    "id": "img_123",
+                    "status": "completed",
+                    "result": Data([0x89, 0x50]).base64EncodedString()
+                ]
+            ]
+        ]
+
+        XCTAssertEqual(CodexLogFormatter.inbound(notification), "<- 画像生成結果を受信しました: img_123")
+    }
+
     func testProcessTerminationClosesHandlesWithoutResettingLaunchedStandardIO() throws {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/bin/sleep")

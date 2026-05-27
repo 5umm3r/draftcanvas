@@ -19,6 +19,8 @@ sed -i '' "s/MARKETING_VERSION = [0-9][0-9.]*;/MARKETING_VERSION = ${VERSION};/g
 sed -i '' "s/CURRENT_PROJECT_VERSION = [0-9]*;/CURRENT_PROJECT_VERSION = ${NEXT_BUILD};/g" DraftCanvas.xcodeproj/project.pbxproj
 git add DraftCanvas.xcodeproj/project.pbxproj
 git commit -m "chore: bump version to ${VERSION}"
+git tag "v${VERSION}"
+git push origin HEAD "v${VERSION}"
 BUILD_NUMBER=$(git rev-list --count HEAD)
 echo "==> Version: $VERSION  Build: $BUILD_NUMBER"
 
