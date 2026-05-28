@@ -44,7 +44,7 @@ struct DraftCanvasApp: App {
         .commands {
             CommandGroup(replacing: .newItem) { }
             CommandGroup(replacing: .appInfo) {
-                Button("Draft Canvas について") {
+                Button {
                     let info = Bundle.main.infoDictionary
                     let short = info?["CFBundleShortVersionString"] as? String ?? ""
                     let build = info?["CFBundleVersion"] as? String ?? ""
@@ -52,9 +52,13 @@ struct DraftCanvasApp: App {
                         .applicationVersion: short,
                         .version: "build \(build)"
                     ])
+                } label: {
+                    Label("Draft Canvas について", systemImage: "info.circle")
                 }
-            }
-            CommandGroup(after: .appInfo) {
+                trialStatusMenuItem
+                Divider()
+                SettingsLink()
+                    .keyboardShortcut(",", modifiers: .command)
                 Button {
                     sparkleUpdater.checkForUpdates()
                 } label: {
@@ -66,8 +70,8 @@ struct DraftCanvasApp: App {
                 } label: {
                     Label(String(localized: "リリースノート"), systemImage: "doc.text")
                 }
-                trialStatusMenuItem
             }
+            CommandGroup(replacing: .appSettings) { }
         }
 
         WindowGroup("ログ", id: "logs") {
@@ -82,6 +86,9 @@ struct DraftCanvasApp: App {
                 .environmentObject(viewModel)
                 .environmentObject(sparkleUpdater)
                 .environment(\.locale, l10n.locale)
+        }
+        .commands {
+            CommandGroup(replacing: .appSettings) { }
         }
     }
 }

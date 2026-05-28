@@ -34,19 +34,6 @@ struct SettingsView: View {
                 .gridColumnAlignment(.leading)
             }
             GridRow {
-                Text("生成指示を英語に翻訳")
-                VStack(alignment: .leading, spacing: 4) {
-                    Toggle(isOn: $viewModel.translateToEnglish) { EmptyView() }
-                        .labelsHidden()
-                        .toggleStyle(.switch)
-                    Text("オンにすると生成前に英語へ翻訳しブレを抑えますが、トークン消費が増えます。")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .frame(maxWidth: 340, alignment: .leading)
-                }
-            }
-            GridRow {
                 Text("保存先")
                 HStack(spacing: 8) {
                     if let url = viewModel.preferredSaveFolder {
