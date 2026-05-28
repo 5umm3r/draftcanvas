@@ -91,6 +91,92 @@ final class GenerationCoordinatorTests: XCTestCase {
 
         XCTAssertEqual(store.load()?.standardizedFileURL, directory.standardizedFileURL)
     }
+
+    @MainActor
+    func testAccountUsageRefreshCoalescesDuplicateStaleRefreshes() async throws {
+        let accountClient = RecordingAccountClient(delayNanoseconds: 100_000_000)
+        let viewModel = makeAccountRefreshViewModel(accountClient: accountClient)
+
+        viewModel.refreshAccountUsageIfStale()
+        viewModel.refreshAccountUsageIfStale()
+
+        try await Task.sleep(nanoseconds: 20_000_000)
+        let inFlightReadCount = await accountClient.readAccountUsageCallCount()
+        XCTAssertEqual(inFlightReadCount, 1)
+
+        try await waitForAccountLabel("tester@example.com", viewModel: viewModel)
+        let completedReadCount = await accountClient.readAccountUsageCallCount()
+        XCTAssertEqual(completedReadCount, 1)
+    }
+
+    @MainActor
+    func testAccountUsageRefreshDefersWhileGenerationIsRunning() async {
+        let accountClient = RecordingAccountClient()
+        let viewModel = makeAccountRefreshViewModel(accountClient: accountClient)
+        viewModel.generatingProjectIDs.insert(UUID())
+
+        viewModel.refreshAccountUsageIfStale()
+
+        XCTAssertTrue(viewModel.needsAccountUsageRefreshAfterGeneration)
+        let readCount = await accountClient.readAccountUsageCallCount()
+        XCTAssertEqual(readCount, 0)
+    }
+
+    @MainActor
+    func testPrewarmLoadsModelsOnlyOnceUnlessForced() async throws {
+        let accountClient = RecordingAccountClient()
+        let viewModel = makeAccountRefreshViewModel(accountClient: accountClient)
+
+        viewModel.prewarmAndRefresh()
+        try await Task.sleep(nanoseconds: 80_000_000)
+        viewModel.prewarmAndRefresh()
+        try await Task.sleep(nanoseconds: 80_000_000)
+
+        let initialModelListCount = await accountClient.listModelsCallCount()
+        XCTAssertEqual(initialModelListCount, 1)
+
+        viewModel.prewarmAndRefresh(forceMetadata: true)
+        try await Task.sleep(nanoseconds: 80_000_000)
+
+        let forcedModelListCount = await accountClient.listModelsCallCount()
+        XCTAssertEqual(forcedModelListCount, 2)
+    }
+
+    @MainActor
+    private func makeAccountRefreshViewModel(accountClient: RecordingAccountClient) -> DraftCanvasViewModel {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("DraftCanvasTests-\(UUID().uuidString)", isDirectory: true)
+        return DraftCanvasViewModel(
+            projectStore: ProjectStore(rootDirectory: root),
+            preferredSaveFolderStore: PreferredSaveFolderStore(
+                userDefaults: UserDefaults(suiteName: "DraftCanvasTests-\(UUID().uuidString)")!
+            ),
+            accountClient: accountClient,
+            prewarmOnInit: false
+        )
+    }
+
+    @MainActor
+    private func waitForAccountLabel(
+        _ expected: String,
+        viewModel: DraftCanvasViewModel,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) async throws {
+        for _ in 0..<20 {
+            if viewModel.accountUsageStatus.accountLabel == expected {
+                return
+            }
+
+            try await Task.sleep(nanoseconds: 50_000_000)
+        }
+
+        XCTFail(
+            "Expected account label \(expected), got \(viewModel.accountUsageStatus.accountLabel)",
+            file: file,
+            line: line
+        )
+    }
 }
 
 private actor RecordingGenerationRunner: GenerationRunning {
@@ -116,5 +202,75 @@ private actor RecordingGenerationRunner: GenerationRunning {
 
     func maxConcurrentValue() -> Int {
         maxConcurrent
+    }
+}
+
+private actor RecordingAccountClient: CodexAccountProviding {
+    nonisolated let codexExecutablePath = "/usr/bin/false"
+    private let delayNanoseconds: UInt64
+    private var readCount = 0
+    private var modelCount = 0
+    private var startCount = 0
+
+    init(delayNanoseconds: UInt64 = 0) {
+        self.delayNanoseconds = delayNanoseconds
+    }
+
+    func readAccountUsageCallCount() -> Int {
+        readCount
+    }
+
+    func listModelsCallCount() -> Int {
+        modelCount
+    }
+
+    func startCallCount() -> Int {
+        startCount
+    }
+
+    func start() async throws {
+        startCount += 1
+    }
+
+    nonisolated func stop() {}
+
+    func readAccountUsageStatus() async throws -> CodexAccountUsageStatus {
+        readCount += 1
+
+        if delayNanoseconds > 0 {
+            try await Task.sleep(nanoseconds: delayNanoseconds)
+        }
+
+        return CodexAccountUsageStatus.parse(
+            accountResponse: [
+                "account": [
+                    "type": "chatgpt",
+                    "email": "tester@example.com",
+                    "planType": "plus"
+                ]
+            ],
+            rateLimitsResponse: [
+                "rateLimits": [
+                    "primary": ["usedPercent": 20],
+                    "secondary": ["usedPercent": 30],
+                    "planType": "plus"
+                ]
+            ]
+        )
+    }
+
+    func listModels(includeHidden: Bool) async throws -> [CodexModel] {
+        modelCount += 1
+
+        return [
+            CodexModel(
+                id: "gpt-test",
+                displayName: "GPT Test",
+                supportedReasoningEfforts: ["low", "medium"],
+                defaultReasoningEffort: "low",
+                isDefault: true,
+                rating: nil
+            )
+        ]
     }
 }

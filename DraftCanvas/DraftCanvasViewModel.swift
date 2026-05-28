@@ -181,6 +181,7 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var focusPromptTrigger: UUID? = nil
 
     let client: CodexAppServerClient
+    let accountClient: CodexAccountProviding
     let coordinator: GenerationCoordinator
     let projectStore: ProjectStore
     let preferredSaveFolderStore: PreferredSaveFolderStore
@@ -190,6 +191,7 @@ final class DraftCanvasViewModel: ObservableObject {
     var upscalingTasks: [UUID: Task<Void, Never>] = [:]
     var enhanceTask: Task<Void, Never>?
     var materialExtractionTask: Task<Void, Never>?
+    var accountUsageRefreshTask: Task<CodexAccountUsageStatus, Error>?
     let activityTracker = ActivityTracker()
     var onReplacePromptText: ((String) -> Void)?
     let thumbnailStore: CanvasThumbnailStore
@@ -197,12 +199,15 @@ final class DraftCanvasViewModel: ObservableObject {
 
     init(
         projectStore: ProjectStore = ProjectStore(),
-        preferredSaveFolderStore: PreferredSaveFolderStore = PreferredSaveFolderStore()
+        preferredSaveFolderStore: PreferredSaveFolderStore = PreferredSaveFolderStore(),
+        client: CodexAppServerClient = CodexAppServerClient(),
+        accountClient: CodexAccountProviding? = nil,
+        prewarmOnInit: Bool = true
     ) {
         DraftCanvasViewModel.migratePromptLanguageModeIfNeeded()
         DraftCanvasViewModel.migrateAppSupportDirectoryIfNeeded()
-        let client = CodexAppServerClient()
         self.client = client
+        self.accountClient = accountClient ?? client
         self.coordinator = GenerationCoordinator(runner: CodexGenerationRunner(client: client))
         self.projectStore = projectStore
         self.preferredSaveFolderStore = preferredSaveFolderStore
@@ -235,7 +240,9 @@ final class DraftCanvasViewModel: ObservableObject {
         loadProjects()
         preferredSaveFolder = preferredSaveFolderStore.load()
             ?? FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
-        prewarmAndRefresh()
+        if prewarmOnInit {
+            prewarmAndRefresh()
+        }
     }
 
     func rebuildAllTagsCache() {
