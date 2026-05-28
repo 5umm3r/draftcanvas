@@ -6305,6 +6305,38 @@
           }
         }
       }
+    },
+    "リリースノート": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Release Notes"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "リリースノート"
+          }
+        }
+      }
+    },
+    "Draft Canvas リリースノート": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Draft Canvas Release Notes"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Draft Canvas リリースノート"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

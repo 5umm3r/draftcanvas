@@ -61,6 +61,11 @@ struct DraftCanvasApp: App {
                     Label("アップデートを確認…", systemImage: "square.and.arrow.down")
                 }
                 .disabled(!sparkleUpdater.canCheckForUpdates)
+                Button {
+                    ReleaseNotesWindowController.shared.present()
+                } label: {
+                    Label(String(localized: "リリースノート"), systemImage: "doc.text")
+                }
                 trialStatusMenuItem
             }
         }
