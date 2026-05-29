@@ -332,6 +332,20 @@ extension ContentView {
                     }
                     .help("プロンプトテンプレート")
 
+                    // バッチキューボタン
+                    Button {
+                        isBatchQueueSheetPresented.toggle()
+                    } label: {
+                        Image(systemName: "square.stack.3d.up")
+                            .font(.system(size: 13))
+                            .frame(height: 28)
+                            .padding(.horizontal, 8)
+                            .background(Color.primary.opacity(0.04))
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                    }
+                    .buttonStyle(.borderless)
+                    .help("バッチ生成キュー")
+
                     Menu {
                         ForEach(viewModel.availableModels) { model in
                             Button {

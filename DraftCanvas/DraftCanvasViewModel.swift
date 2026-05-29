@@ -204,6 +204,8 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var promptHistory: [PromptHistoryEntry] = []
     let promptTemplateStore = PromptTemplateStore()
     @Published var promptTemplates: [PromptTemplate] = []
+    @Published var batchQueue: [BatchQueueEntry] = []
+    @Published var isBatchRunning: Bool = false
     let originalImageStore: CanvasOriginalImageStore
 
     init(
@@ -394,6 +396,7 @@ final class DraftCanvasViewModel: ObservableObject {
         !generatingProjectIDs.isEmpty
             || exportingProjectID != nil
             || batchExportProgress != nil
+            || isBatchRunning
     }
 
     func confirmTermination() {
@@ -420,6 +423,7 @@ final class DraftCanvasViewModel: ObservableObject {
             || upscalePreview != nil
             || inpaintingTarget != nil
             || cropTarget != nil
+            || isBatchRunning
     }
 
     func cancelInFlightWorkForRelaunch() {

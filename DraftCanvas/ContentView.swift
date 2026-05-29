@@ -15,6 +15,7 @@ struct ContentView: View {
     @State var isHistoryPopoverPresented = false
     @State var isTemplatePopoverPresented = false
     @State var isTemplateSheetPresented = false
+    @State var isBatchQueueSheetPresented = false
     @State var promptIsFocused = false
     @State var promptTextHeight: CGFloat = 76
     @State var canvasZoom: CGFloat = 1.0
@@ -187,6 +188,9 @@ struct ContentView: View {
         }
         .sheet(isPresented: $isTemplateSheetPresented) {
             PromptTemplateSheet(viewModel: viewModel)
+        }
+        .sheet(isPresented: $isBatchQueueSheetPresented) {
+            BatchQueueSheet(viewModel: viewModel)
         }
         .sheet(item: $viewModel.exportRequest) { request in
             ExportOptionsSheet(

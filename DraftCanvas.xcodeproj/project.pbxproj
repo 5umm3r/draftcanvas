@@ -47,6 +47,9 @@
 		BB0001050000000100000001 /* PromptTemplateStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0001040000000100000001 /* PromptTemplateStore.swift */; };
 		BB0001070000000100000001 /* DraftCanvasViewModel+Templates.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0001060000000100000001 /* DraftCanvasViewModel+Templates.swift */; };
 		BB0001090000000100000001 /* PromptTemplateSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0001080000000100000001 /* PromptTemplateSheet.swift */; };
+		BB0002020000000100000001 /* BatchQueueEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0002010000000100000001 /* BatchQueueEntry.swift */; };
+		BB0002040000000100000001 /* DraftCanvasViewModel+BatchQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0002030000000100000001 /* DraftCanvasViewModel+BatchQueue.swift */; };
+		BB0002060000000100000001 /* BatchQueueSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0002050000000100000001 /* BatchQueueSheet.swift */; };
 		BB00010B0000000100000001 /* PromptTemplatePopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB00010A0000000100000001 /* PromptTemplatePopover.swift */; };
 		1A4DA35B6990671B2B04CE17 /* GenerationProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDE4F73BDF7FFF820CD906D9 /* GenerationProgressView.swift */; };
 		1B8FE23372C461DA5914694F /* DraftCanvasViewModel+Generation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645A49DEAC9C0E39B2762518 /* DraftCanvasViewModel+Generation.swift */; };
@@ -375,6 +378,9 @@
 		BB0001040000000100000001 /* PromptTemplateStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptTemplateStore.swift; path = Stores/PromptTemplateStore.swift; sourceTree = "<group>"; };
 		BB0001060000000100000001 /* DraftCanvasViewModel+Templates.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Templates.swift"; path = "ViewModel/DraftCanvasViewModel+Templates.swift"; sourceTree = "<group>"; };
 		BB0001080000000100000001 /* PromptTemplateSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptTemplateSheet.swift; path = Views/PromptTemplateSheet.swift; sourceTree = "<group>"; };
+		BB0002010000000100000001 /* BatchQueueEntry.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BatchQueueEntry.swift; path = Models/BatchQueueEntry.swift; sourceTree = "<group>"; };
+		BB0002030000000100000001 /* DraftCanvasViewModel+BatchQueue.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+BatchQueue.swift"; path = "ViewModel/DraftCanvasViewModel+BatchQueue.swift"; sourceTree = "<group>"; };
+		BB0002050000000100000001 /* BatchQueueSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BatchQueueSheet.swift; path = Views/BatchQueueSheet.swift; sourceTree = "<group>"; };
 		BB00010A0000000100000001 /* PromptTemplatePopover.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptTemplatePopover.swift; path = Views/PromptTemplatePopover.swift; sourceTree = "<group>"; };
 		FFF632FC9AA946138EEF8D01EA71C8FB /* libvtracer_ffi.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libvtracer_ffi.a; path = Vendor/vtracer/libvtracer_ffi.a; sourceTree = "<group>"; };
 		b79086998a564de490b9a76dbc67c001 /* FilteringProjectCreationSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FilteringProjectCreationSheet.swift; path = Views/FilteringProjectCreationSheet.swift; sourceTree = "<group>"; };
@@ -540,6 +546,7 @@
 				09C61E0F55E7FD6835C52AF4 /* RateLimitConfirmation.swift */,
 				6D8A2AE8C81B31B43D4B0DA0 /* CompletionSoundOption.swift */,
 				BB0001000000000100000001 /* PromptTemplate.swift */,
+				BB0002010000000100000001 /* BatchQueueEntry.swift */,
 				BB0001020000000100000001 /* BuiltInPromptTemplates.swift */,
 			);
 			name = Models;
@@ -564,6 +571,7 @@
 				B268164EA0D2A09163FB3A63 /* AccountPopover.swift */,
 				47BFD14309F14DD4B67547F3 /* PromptHistoryPopover.swift */,
 				BB0001080000000100000001 /* PromptTemplateSheet.swift */,
+				BB0002050000000100000001 /* BatchQueueSheet.swift */,
 				BB00010A0000000100000001 /* PromptTemplatePopover.swift */,
 				BFC23E9DED99669C4518E0C5 /* LogWindow.swift */,
 				CDE4F73BDF7FFF820CD906D9 /* GenerationProgressView.swift */,
@@ -725,6 +733,7 @@
 				CC0000010000000100000002 /* DraftCanvasViewModel+CanvasNavigation.swift */,
 				F6A0184D75554ACCBBF6B1F2 /* DraftCanvasViewModel+Crop.swift */,
 				BB0001060000000100000001 /* DraftCanvasViewModel+Templates.swift */,
+				BB0002030000000100000001 /* DraftCanvasViewModel+BatchQueue.swift */,
 			);
 			name = ViewModel;
 			sourceTree = "<group>";
@@ -1015,6 +1024,9 @@
 				BB0001050000000100000001 /* PromptTemplateStore.swift in Sources */,
 				BB0001070000000100000001 /* DraftCanvasViewModel+Templates.swift in Sources */,
 				BB0001090000000100000001 /* PromptTemplateSheet.swift in Sources */,
+				BB0002020000000100000001 /* BatchQueueEntry.swift in Sources */,
+				BB0002040000000100000001 /* DraftCanvasViewModel+BatchQueue.swift in Sources */,
+				BB0002060000000100000001 /* BatchQueueSheet.swift in Sources */,
 				BB00010B0000000100000001 /* PromptTemplatePopover.swift in Sources */,
 				567A1648B15EE73ABFCECE9A /* ProjectStore+Snapshot.swift in Sources */,
 				609AB8481AC5CA95EA27277E /* CropEditorSheet.swift in Sources */,

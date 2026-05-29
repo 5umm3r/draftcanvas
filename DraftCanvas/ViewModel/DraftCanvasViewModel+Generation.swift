@@ -222,6 +222,8 @@ extension DraftCanvasViewModel {
     }
 
     func onAllJobsCompleted(results: [GenerationJob]) {
+        // バッチ実行中は各エントリ完了時の音・通知を抑制し、全体完了時に一括で鳴らす
+        guard !isBatchRunning else { return }
         if completionSound != CompletionSoundOption.off.rawValue {
             NSSound(named: NSSound.Name(completionSound))?.play()
         }
