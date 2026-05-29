@@ -22,6 +22,12 @@ extension DraftCanvasViewModel {
         if !skipRateLimitCheck, checkRateLimitBeforeGenerate(inputs: inputs) { return }
         let promptText = inputs.prompt.trimmingCharacters(in: .whitespacesAndNewlines)
 
+        // プロンプト履歴に記録
+        if !promptText.isEmpty {
+            promptHistoryStore.record(promptText)
+            promptHistory = promptHistoryStore.allEntries()
+        }
+
         let targetProjectID: UUID
         if let existing = selectedProjectID, projects.contains(where: { $0.id == existing }) {
             targetProjectID = existing

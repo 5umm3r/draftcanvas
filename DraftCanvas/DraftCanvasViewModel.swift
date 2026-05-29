@@ -195,6 +195,8 @@ final class DraftCanvasViewModel: ObservableObject {
     let activityTracker = ActivityTracker()
     var onReplacePromptText: ((String) -> Void)?
     let thumbnailStore: CanvasThumbnailStore
+    let promptHistoryStore = PromptHistoryStore()
+    @Published var promptHistory: [PromptHistoryEntry] = []
     let originalImageStore: CanvasOriginalImageStore
 
     init(
@@ -236,6 +238,7 @@ final class DraftCanvasViewModel: ObservableObject {
                 self?.logs.append("並列度を \(old) → \(new) に調整しました")
             }
         }
+        promptHistory = promptHistoryStore.loadEntries()
         projectStore.cleanupAllAttachments()
         loadProjects()
         preferredSaveFolder = preferredSaveFolderStore.load()

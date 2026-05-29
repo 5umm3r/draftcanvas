@@ -275,6 +275,38 @@ extension ContentView {
                 Divider()
 
                 HStack(spacing: 16) {
+                    // 履歴ボタン
+                    Button {
+                        isHistoryPopoverPresented.toggle()
+                    } label: {
+                        Image(systemName: "clock.arrow.trianglehead.counterclockwise.rotate.90")
+                            .font(.system(size: 13))
+                            .frame(height: 28)
+                            .padding(.horizontal, 8)
+                            .background(Color.primary.opacity(0.04))
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                    }
+                    .buttonStyle(.borderless)
+                    .popover(isPresented: $isHistoryPopoverPresented, arrowEdge: .bottom) {
+                        PromptHistoryPopover(
+                            entries: viewModel.promptHistory,
+                            onSelect: { entry in
+                                viewModel.onReplacePromptText?(entry.prompt)
+                                isHistoryPopoverPresented = false
+                            },
+                            onDelete: { id in
+                                viewModel.promptHistoryStore.delete(id: id)
+                                viewModel.promptHistory = viewModel.promptHistoryStore.allEntries()
+                            },
+                            onClear: {
+                                viewModel.promptHistoryStore.clear()
+                                viewModel.promptHistory = []
+                                isHistoryPopoverPresented = false
+                            }
+                        )
+                    }
+                    .help("プロンプト履歴")
+
                     Menu {
                         ForEach(viewModel.availableModels) { model in
                             Button {

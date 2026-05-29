@@ -12,6 +12,7 @@ struct ContentView: View {
     @State var renamingText = ""
     @State var confirmingDeleteProjectID: UUID?
     @State var isAccountPopoverPresented = false
+    @State var isHistoryPopoverPresented = false
     @State var promptIsFocused = false
     @State var promptTextHeight: CGFloat = 76
     @State var canvasZoom: CGFloat = 1.0
