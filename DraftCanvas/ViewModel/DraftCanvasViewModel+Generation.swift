@@ -55,10 +55,6 @@ extension DraftCanvasViewModel {
             translateToEnglish: translateToEnglish
         )
 
-        lastRequestByProject[targetProjectID] = request
-        generatingProjectIDs.insert(targetProjectID)
-        activityTracker.begin()
-        logs.append("生成を開始しました。count=\(request.normalizedCount), concurrency=\(request.normalizedConcurrency)")
         if let editSource = inputs.editSource {
             logs.append("アイテムを再編集します: \(editSource.filePath)")
         }
@@ -66,8 +62,37 @@ extension DraftCanvasViewModel {
         let placeholderJobs = (0..<request.normalizedCount).map { index in
             GenerationJob(index: index, prompt: request.prompt, aspectRatio: request.aspectRatio)
         }
-        for job in placeholderJobs {
-            upsert(job, into: targetProjectID)
+
+        runGeneration(request: request, projectID: targetProjectID, jobs: placeholderJobs) { [weak self] in
+            guard let self else { return }
+            if var inputs = self.inputsByProject[targetProjectID] {
+                if let editSource = inputs.editSource, editSource.isInpainting {
+                    self.projectStore.cleanupMaskFiles(id: editSource.projectItemID)
+                }
+                inputs.editSource = nil
+                if let attached = inputs.attachedImage {
+                    self.projectStore.cleanupAttachment(id: attached.id)
+                }
+                inputs.attachedImage = nil
+                self.inputsByProject[targetProjectID] = inputs
+            }
+            self.activeEditProjectID = nil
+        }
+    }
+
+    func runGeneration(
+        request: GenerationRequest,
+        projectID: UUID,
+        jobs: [GenerationJob],
+        onCompletion: (() -> Void)? = nil
+    ) {
+        lastRequestByProject[projectID] = request
+        generatingProjectIDs.insert(projectID)
+        activityTracker.begin()
+        logs.append("生成を開始しました。count=\(request.normalizedCount), concurrency=\(request.normalizedConcurrency)")
+
+        for job in jobs {
+            upsert(job, into: projectID)
         }
 
         let runID = UUID()
@@ -76,45 +101,34 @@ extension DraftCanvasViewModel {
             guard let self else { return }
             let preparedRequest = await prepareRequestForGeneration(request)
             await MainActor.run {
-                self.lastRequestByProject[targetProjectID] = preparedRequest
+                self.lastRequestByProject[projectID] = preparedRequest
             }
 
             guard !Task.isCancelled else {
                 await MainActor.run {
-                    self.finishRun(runID: runID, projectID: targetProjectID)
+                    self.finishRun(runID: runID, projectID: projectID)
                 }
                 return
             }
 
-            let results = await coordinator.runSpecific(jobs: placeholderJobs, request: preparedRequest) { [weak self] job in
+            let results = await coordinator.runSpecific(jobs: jobs, request: preparedRequest) { [weak self] job in
                 await MainActor.run {
                     guard let self else { return }
-                    self.handleJobUpdate(job, into: targetProjectID, request: preparedRequest)
+                    self.handleJobUpdate(job, into: projectID, request: preparedRequest)
                 }
             }
 
             await MainActor.run {
-                self.finishRun(runID: runID, projectID: targetProjectID, results: results)
-                if var inputs = self.inputsByProject[targetProjectID] {
-                    if let editSource = inputs.editSource, editSource.isInpainting {
-                        self.projectStore.cleanupMaskFiles(id: editSource.projectItemID)
-                    }
-                    inputs.editSource = nil
-                    if let attached = inputs.attachedImage {
-                        self.projectStore.cleanupAttachment(id: attached.id)
-                    }
-                    inputs.attachedImage = nil
-                    self.inputsByProject[targetProjectID] = inputs
-                }
-                self.activeEditProjectID = nil
-                self.logs.append("全ジョブが終了しました。")
+                self.finishRun(runID: runID, projectID: projectID, results: results)
+                onCompletion?()
                 self.refreshAccountUsage()
+                self.logs.append("全ジョブが終了しました。")
             }
         }
-        if generationTasks[targetProjectID] == nil {
-            generationTasks[targetProjectID] = [:]
+        if generationTasks[projectID] == nil {
+            generationTasks[projectID] = [:]
         }
-        generationTasks[targetProjectID]?[runID] = generationTask
+        generationTasks[projectID]?[runID] = generationTask
     }
 
     func prepareRequestForGeneration(_ request: GenerationRequest) async -> GenerationRequest {
