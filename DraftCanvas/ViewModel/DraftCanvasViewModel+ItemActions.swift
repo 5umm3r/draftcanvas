@@ -222,6 +222,42 @@ extension DraftCanvasViewModel {
         generationTasks[projectID]?[removalRunID] = removalTask
     }
 
+    func generateVariations(item: ProjectItem, count: Int) {
+        let projectID = selectedProjectID ?? item.projectID
+        let fileURL = projectStore.resolvedFileURL(for: item)
+        let concurrency = min(count, 3)  // レート制限回避のため並列数を上限3に
+
+        let editSource = GenerationEditSource(
+            projectItemID: item.id,
+            filePath: fileURL.path,
+            originalPrompt: item.prompt,
+            // maskFilePath: nil → runWithRetry が filePath を referenceImage として使う
+            inpaintPurpose: .edit
+        )
+
+        let model = currentInputs.model.isEmpty
+            ? (availableModels.first(where: \.isDefault)?.id ?? availableModels.first?.id ?? "")
+            : currentInputs.model
+
+        let request = GenerationRequest(
+            prompt: item.prompt,
+            count: count,
+            concurrency: concurrency,
+            aspectRatio: item.aspectRatio,
+            editSource: editSource,
+            model: model,
+            reasoningEffort: currentInputs.reasoningEffort,
+            translateToEnglish: translateToEnglish
+        )
+
+        let jobs = (0..<request.normalizedCount).map { index in
+            GenerationJob(index: index, prompt: request.prompt, aspectRatio: request.aspectRatio)
+        }
+
+        logs.append("バリエーション生成を開始します: \(count)枚, item=\(item.id)")
+        runGeneration(request: request, projectID: projectID, jobs: jobs)
+    }
+
     func startBackgroundRemoval(item: ProjectItem) {
         let projectID = selectedProjectID ?? item.projectID
 

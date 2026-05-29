@@ -80,7 +80,7 @@ extension DraftCanvasViewModel {
         }
     }
 
-    private func runGeneration(
+    func runGeneration(
         request: GenerationRequest,
         projectID: UUID,
         jobs: [GenerationJob],
