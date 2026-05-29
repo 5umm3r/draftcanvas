@@ -345,7 +345,11 @@ extension DraftCanvasViewModel {
 
     private func autoRetryFailedJobs(projectID: UUID) {
         guard !isGenerating(for: projectID),
-              let request = lastRequestByProject[projectID] else { return }
+              let request = lastRequestByProject[projectID] else {
+            // isGenerating 中に呼ばれた場合はカウントをリセットして意図しない再トリガーを防ぐ
+            autoRetryCountByProject.removeValue(forKey: projectID)
+            return
+        }
 
         var failedJobs = (jobsByProject[projectID] ?? []).filter {
             $0.status == .failed && ($0.failureKind == .rateLimited || $0.failureKind == .timeout)

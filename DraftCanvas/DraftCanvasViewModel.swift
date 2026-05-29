@@ -427,6 +427,9 @@ final class DraftCanvasViewModel: ObservableObject {
         vectorizationTasks.removeAll()
         for (_, t) in upscalingTasks { t.cancel() }
         upscalingTasks.removeAll()
+        for (_, t) in autoRetryTasks { t.cancel() }
+        autoRetryTasks.removeAll()
+        autoRetryCountByProject.removeAll()
         enhanceTask?.cancel()
         enhanceTask = nil
         materialExtractionTask?.cancel()
@@ -452,6 +455,7 @@ final class DraftCanvasViewModel: ObservableObject {
         let tasksToAwait = generationTasks.values.flatMap { $0.values }
             + Array(vectorizationTasks.values)
             + Array(upscalingTasks.values)
+            + Array(autoRetryTasks.values)
         let enhance = enhanceTask
         cancelInFlightWorkForRelaunch()
         for task in tasksToAwait { await task.value }
