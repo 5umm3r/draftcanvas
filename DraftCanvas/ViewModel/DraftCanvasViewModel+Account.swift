@@ -4,15 +4,11 @@ extension DraftCanvasViewModel {
     func refreshAccountUsageIfStale() {
         let isStale = accountUsageStatusFetchedAt.map { Date().timeIntervalSince($0) > 30 } ?? true
         guard isStale else { return }
-        if !generatingProjectIDs.isEmpty {
-            needsAccountUsageRefreshAfterGeneration = true
-            return
-        }
         refreshAccountUsage()
     }
 
     func refreshAccountUsage() {
-        guard !isRefreshingAccountUsage else { return }
+        guard accountUsageRefreshTask == nil else { return }
         guard generatingProjectIDs.isEmpty else {
             needsAccountUsageRefreshAfterGeneration = true
             return
@@ -22,18 +18,23 @@ extension DraftCanvasViewModel {
         accountUsagePrewarmFailed = false
         logs.append("Codexアカウントと使用量を取得します。")
 
+        let refreshTask = Task { try await self.accountClient.readAccountUsageStatus() }
+        accountUsageRefreshTask = refreshTask
+
         Task {
             do {
-                let status = try await self.client.readAccountUsageStatus()
+                let status = try await refreshTask.value
                 await MainActor.run {
                     self.accountUsageStatus = status
                     self.accountUsageStatusFetchedAt = Date()
                     self.isRefreshingAccountUsage = false
+                    self.accountUsageRefreshTask = nil
                     self.logs.append("Codexアカウントと使用量を更新しました。")
                 }
             } catch {
                 await MainActor.run {
                     self.isRefreshingAccountUsage = false
+                    self.accountUsageRefreshTask = nil
                     self.accountUsagePrewarmFailed = true
                     self.logs.append("Codexアカウントと使用量の取得に失敗しました: \(error.localizedDescription)")
                 }
@@ -42,15 +43,17 @@ extension DraftCanvasViewModel {
     }
 
     func relaunchAndRefreshAccountUsage() {
-        client.stop()
-        prewarmAndRefresh()
+        accountClient.stop()
+        availableModels = []
+        codexVersion = "--"
+        prewarmAndRefresh(forceMetadata: true)
     }
 
-    func prewarmAndRefresh() {
+    func prewarmAndRefresh(forceMetadata: Bool = false) {
         accountUsagePrewarmFailed = false
         Task {
             do {
-                try await client.start()
+                try await accountClient.start()
             } catch {
                 await MainActor.run {
                     self.accountUsagePrewarmFailed = true
@@ -58,21 +61,27 @@ extension DraftCanvasViewModel {
                 }
                 return
             }
-            let path = client.codexExecutablePath
+            let path = accountClient.codexExecutablePath
+            let shouldRefreshModels = forceMetadata || availableModels.isEmpty
+            let shouldRefreshVersion = forceMetadata || codexVersion == "--"
             await withTaskGroup(of: Void.self) { group in
-                group.addTask { await self.refreshAvailableModels() }
-                group.addTask {
-                    let v = await CodexAppServerClient.fetchVersion(executablePath: path)
-                    await MainActor.run { self.codexVersion = v ?? "--" }
+                if shouldRefreshModels {
+                    group.addTask { await self.refreshAvailableModels() }
+                }
+                if shouldRefreshVersion {
+                    group.addTask {
+                        let v = await CodexAppServerClient.fetchVersion(executablePath: path)
+                        await MainActor.run { self.codexVersion = v ?? "--" }
+                    }
                 }
             }
-            refreshAccountUsage()
+            refreshAccountUsageIfStale()
         }
     }
 
     func refreshAvailableModels() async {
         do {
-            let models = try await client.listModels(includeHidden: false)
+            let models = try await accountClient.listModels(includeHidden: false)
             self.availableModels = models
             normalizeProjectModelSelection()
         } catch {
@@ -107,7 +116,7 @@ extension DraftCanvasViewModel {
     }
 
     func stopServer() {
-        client.stop()
+        accountClient.stop()
         logs.append("codex app-server を停止しました。")
     }
 

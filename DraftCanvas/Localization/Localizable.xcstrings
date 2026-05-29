@@ -753,34 +753,18 @@
         }
       }
     },
-    "生成指示を英語に翻訳": {
+    "英語正規化: 生成前に英語へ変換しブレを抑制。トークン消費が増えます。": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Translate prompts to English"
+            "value": "English normalization: converts prompts to English before generation to reduce variance. Increases token usage."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "生成指示を英語に翻訳"
-          }
-        }
-      }
-    },
-    "オンにすると生成前に英語へ翻訳しブレを抑えますが、トークン消費が増えます。": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "When on, prompts are translated to English before generation to reduce variance, increasing token usage."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "オンにすると生成前に英語へ翻訳しブレを抑えますが、トークン消費が増えます。"
+            "value": "英語正規化: 生成前に英語へ変換しブレを抑制。トークン消費が増えます。"
           }
         }
       }
@@ -6302,6 +6286,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "終了する"
+          }
+        }
+      }
+    },
+    "リリースノート": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Release Notes"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "リリースノート"
+          }
+        }
+      }
+    },
+    "Draft Canvas リリースノート": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Draft Canvas Release Notes"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Draft Canvas リリースノート"
           }
         }
       }

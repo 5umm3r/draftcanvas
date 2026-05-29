@@ -59,6 +59,10 @@
 		3d9b2ec6374d49069afecc8eb54c2178 /* CanvasScrollZoomCatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = b7e96c4970d44133991b9ff817e3cefd /* CanvasScrollZoomCatcher.swift */; };
 		41053AB1D53250B416E8AC4D /* CanvasSortOrder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 410F564BA7D206DD5EA2C662 /* CanvasSortOrder.swift */; };
 		426C488F52914F25AB95605A /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 685A9AEED87C464187DCC749 /* Credits.rtf */; };
+		D20ECA64965848A0A4ADD6B4 /* CHANGELOG.md in Resources */ = {isa = PBXBuildFile; fileRef = 7A849F083BB442A3BEB856C5 /* CHANGELOG.md */; };
+		76B73CEC981747E9BED29DCB /* ReleaseNotesLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BDF0A24AF344BB2A91A3719 /* ReleaseNotesLoader.swift */; };
+		80DEEA3EEF3B4363BF7B2B4C /* ReleaseNotesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B9B0755F95E405CBF6D4D94 /* ReleaseNotesView.swift */; };
+		F7ABBD22A032442C8AD85E09 /* ReleaseNotesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19567DB358354E8FA09A03C0 /* ReleaseNotesWindowController.swift */; };
 		4274C5BAB8A77FBE81F62719 /* CropCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 764CBF0897AE6463E97937A1 /* CropCanvasView.swift */; };
 		42BC49111A89D529A5ECD10A /* ContentView+Sidebar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C868E502BA17EA0D9D53C12 /* ContentView+Sidebar.swift */; };
 		44040E4D9476FC74EBD213EB /* ExtractionPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA1CD19F7366497A52D573 /* ExtractionPipeline.swift */; };
@@ -265,6 +269,10 @@
 		645A49DEAC9C0E39B2762518 /* DraftCanvasViewModel+Generation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Generation.swift"; path = "ViewModel/DraftCanvasViewModel+Generation.swift"; sourceTree = "<group>"; };
 		65C55B0EA2C5BFEA766A00A1 /* AccountKind.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AccountKind.swift; path = Models/AccountKind.swift; sourceTree = "<group>"; };
 		685A9AEED87C464187DCC749 /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = Credits.rtf; path = Resources/Credits.rtf; sourceTree = "<group>"; };
+		7A849F083BB442A3BEB856C5 /* CHANGELOG.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = CHANGELOG.md; path = ../CHANGELOG.md; sourceTree = "<group>"; };
+		0BDF0A24AF344BB2A91A3719 /* ReleaseNotesLoader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ReleaseNotesLoader.swift; path = Views/ReleaseNotes/ReleaseNotesLoader.swift; sourceTree = "<group>"; };
+		0B9B0755F95E405CBF6D4D94 /* ReleaseNotesView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ReleaseNotesView.swift; path = Views/ReleaseNotes/ReleaseNotesView.swift; sourceTree = "<group>"; };
+		19567DB358354E8FA09A03C0 /* ReleaseNotesWindowController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ReleaseNotesWindowController.swift; path = Views/ReleaseNotes/ReleaseNotesWindowController.swift; sourceTree = "<group>"; };
 		69FDABE8B186C31A4DBF6E4F /* AttachedImage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AttachedImage.swift; path = Models/AttachedImage.swift; sourceTree = "<group>"; };
 		6BC26547B4F04C2DD19122DF /* MaterialExtractor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MaterialExtractor.swift; path = MaterialExtraction/MaterialExtractor.swift; sourceTree = "<group>"; };
 		6C740E410C53396028707D44 /* ExtractionStage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExtractionStage.swift; path = MaterialExtraction/Pipeline/Stages/ExtractionStage.swift; sourceTree = "<group>"; };
@@ -417,6 +425,7 @@
 				10B001072D00000100000001 /* DraftCanvasViewModel+Sketch.swift */,
 				DA1427245F8D423E91B73BB8 /* Export */,
 				685A9AEED87C464187DCC749 /* Credits.rtf */,
+				7A849F083BB442A3BEB856C5 /* CHANGELOG.md */,
 				7119B2C4A2654E4E835B0B4D /* bin */,
 				8C80B9B1C9684E89AC961D4A /* Licenses */,
 				F67AEB01174F85EC294F17E2 /* ViewModel */,
@@ -550,6 +559,7 @@
 				6F7D3A57833DEA080335B320 /* LicenseSheet.swift */,
 				fb7d415c11834f8094805ae90e496476 /* LicensesSheet.swift */,
 				F70B07E78EA6F806ACA2F023 /* Canvas */,
+				A232ECEED6254A4498FBE040 /* ReleaseNotes */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -704,6 +714,16 @@
 			name = Canvas;
 			sourceTree = "<group>";
 		};
+		A232ECEED6254A4498FBE040 /* ReleaseNotes */ = {
+			isa = PBXGroup;
+			children = (
+				0BDF0A24AF344BB2A91A3719 /* ReleaseNotesLoader.swift */,
+				0B9B0755F95E405CBF6D4D94 /* ReleaseNotesView.swift */,
+				19567DB358354E8FA09A03C0 /* ReleaseNotesWindowController.swift */,
+			);
+			name = ReleaseNotes;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -796,6 +816,7 @@
 				DC6F3E2000000011A0000001 /* InfoPlist.xcstrings in Resources */,
 				C041F91DE6E54E1E9E3C79AA /* Licenses in Resources */,
 				426C488F52914F25AB95605A /* Credits.rtf in Resources */,
+				D20ECA64965848A0A4ADD6B4 /* CHANGELOG.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -837,6 +858,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				10A0001B2D00000100000001 /* DraftCanvasApp.swift in Sources */,
+				76B73CEC981747E9BED29DCB /* ReleaseNotesLoader.swift in Sources */,
+				80DEEA3EEF3B4363BF7B2B4C /* ReleaseNotesView.swift in Sources */,
+				F7ABBD22A032442C8AD85E09 /* ReleaseNotesWindowController.swift in Sources */,
 				E98965B897824860A68297C9 /* LocalizationManager.swift in Sources */,
 				10A0001C2D00000100000001 /* ContentView.swift in Sources */,
 				10A000312D00000100000001 /* JSONRPCCodec.swift in Sources */,
@@ -1210,9 +1234,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "Developer ID Application";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 180;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = ZXL9PZ4629;
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1235,9 +1260,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "Developer ID Application";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 180;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = ZXL9PZ4629;
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",

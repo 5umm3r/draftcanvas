@@ -417,6 +417,14 @@ extension ContentView {
                     .fixedSize()
                     .help("並列実行数")
 
+                    Toggle(isOn: $viewModel.translateToEnglish) {
+                        Image(systemName: "text.bubble")
+                            .font(.system(size: 13))
+                    }
+                    .toggleStyle(.switch)
+                    .controlSize(.small)
+                    .help(String(localized: "英語正規化: 生成前に英語へ変換しブレを抑制。トークン消費が増えます。"))
+
                     Spacer()
 
                     Button {
