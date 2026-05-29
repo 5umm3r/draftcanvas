@@ -234,6 +234,7 @@ extension ContentView {
         if let item = viewModel.items.first(where: { $0.id == viewModel.selectedItemID }),
            !viewModel.isSelectionMode {
             VStack(spacing: 6) {
+                VariationMenuButton(item: item, viewModel: viewModel)
                 CircularPromptActionButton(
                     systemImage: "wand.and.stars",
                     tooltip: "再編集",
@@ -337,6 +338,84 @@ private struct ImageCopyButton: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
                 withAnimation(.easeIn(duration: 0.2)) { didCopy = false }
             }
+        }
+    }
+}
+
+private struct VariationMenuButton: View {
+    let item: ProjectItem
+    let viewModel: DraftCanvasViewModel
+    @State private var isHovered = false
+    @State private var showPopover = false
+
+    private var isDisabled: Bool {
+        item.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private func variationCountButton(label: LocalizedStringKey, count: Int) -> some View {
+        Button {
+            viewModel.generateVariations(item: item, count: count)
+            showPopover = false
+        } label: {
+            Text(label)
+                .font(.system(size: 13))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    var body: some View {
+        Button {
+            showPopover = true
+        } label: {
+            ZStack(alignment: .bottomTrailing) {
+                Image(systemName: "repeat")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(Color.primary)
+                    .frame(width: 36, height: 36)
+                    .background(
+                        Color.primary.opacity(isHovered ? 0.12 : 0.06),
+                        in: Circle()
+                    )
+                let costLevel = viewModel.itemActionCostLevel
+                if costLevel > 0 {
+                    CodexCostBadge(level: costLevel)
+                        .offset(x: 4, y: 4)
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        .disabled(isDisabled)
+        .onHover { isHovered = $0 }
+        .animation(.easeInOut(duration: 0.1), value: isHovered)
+        .overlay(alignment: .center) {
+            if isHovered && !showPopover {
+                Text(LocalizedStringKey("バリエーション"))
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(.primary)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(.regularMaterial, in: Capsule())
+                    .shadow(color: .black.opacity(0.12), radius: 4, x: 0, y: 2)
+                    .fixedSize()
+                    .offset(x: 60)
+                    .allowsHitTesting(false)
+                    .transition(.opacity)
+            }
+        }
+        .animation(.easeInOut(duration: 0.12), value: isHovered)
+        .zIndex(isHovered ? 100 : 0)
+        .popover(isPresented: $showPopover, arrowEdge: .trailing) {
+            VStack(spacing: 2) {
+                variationCountButton(label: "2枚", count: 2)
+                variationCountButton(label: "4枚", count: 4)
+                variationCountButton(label: "6枚", count: 6)
+            }
+            .padding(.vertical, 4)
+            .frame(width: 100)
         }
     }
 }

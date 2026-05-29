@@ -75,7 +75,7 @@ extension DraftCanvasViewModel {
         }
     }
 
-    private func runGeneration(
+    func runGeneration(
         request: GenerationRequest,
         projectID: UUID,
         jobs: [GenerationJob],
@@ -312,7 +312,7 @@ extension DraftCanvasViewModel {
         }
     }
 
-    private func finishRun(runID: UUID, projectID: UUID, results: [GenerationJob]? = nil) {
+    func finishRun(runID: UUID, projectID: UUID, results: [GenerationJob]? = nil) {
         generationTasks[projectID]?.removeValue(forKey: runID)
         if generationTasks[projectID]?.isEmpty == true {
             generationTasks.removeValue(forKey: projectID)

@@ -294,4 +294,144 @@ extension DraftCanvasViewModel {
             logs.append("背景除去保存失敗: \(error.localizedDescription)")
         }
     }
+
+    func generateVariations(item: ProjectItem, count: Int) {
+        guard EntitlementGate.shared.requireUnlocked() else { return }
+        let trimmedPrompt = item.prompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedPrompt.isEmpty else { return }
+        if accountUsageStatus.isChatGPTFreePlan {
+            pendingFreeAccountBlock = true
+            return
+        }
+
+        let projectID = item.projectID
+        let fileURL = projectStore.resolvedFileURL(for: item)
+        let normalizedCount = min(max(count, 1), 24)
+        let concurrency = min(normalizedCount, 3)
+        let capturedModel = currentInputs.model.isEmpty
+            ? (availableModels.first(where: \.isDefault)?.id ?? availableModels.first?.id ?? "")
+            : currentInputs.model
+        let capturedReasoningEffort = currentInputs.reasoningEffort
+        let capturedAspectRatio = item.aspectRatio
+        let capturedItemID = item.id
+        let capturedTranslate = translateToEnglish
+        let variatorModel = Self.selectFastLowCostModel(from: availableModels)
+
+        // プレースホルダー jobs を即座に表示し、生成中状態を設定する。
+        // LLM 変奏取得後に同じ job ID でプロンプトを更新して coordinator に渡す。
+        let placeholderJobs = (0..<normalizedCount).map { index in
+            GenerationJob(index: index, prompt: trimmedPrompt, aspectRatio: capturedAspectRatio)
+        }
+        for job in placeholderJobs {
+            upsert(job, into: projectID)
+        }
+        generatingProjectIDs.insert(projectID)
+        activityTracker.begin()
+        logs.append("バリエーション生成を開始します: \(normalizedCount)枚, item=\(item.id)")
+
+        let runID = UUID()
+        if generationTasks[projectID] == nil { generationTasks[projectID] = [:] }
+
+        let capturedCoordinator = coordinator
+
+        let variationTask = Task { [weak self] in
+            guard let self else { return }
+
+            let variationPrompts = await makeVariationPrompts(
+                originalPrompt: trimmedPrompt,
+                count: normalizedCount,
+                translateToEnglish: capturedTranslate,
+                model: variatorModel
+            )
+
+            // 同一 job ID でプロンプトを変奏版に更新する。
+            var jobs = placeholderJobs
+            for (i, prompt) in variationPrompts.enumerated() where i < jobs.count {
+                jobs[i].prompt = prompt
+            }
+
+            let editSource = GenerationEditSource(
+                projectItemID: capturedItemID,
+                filePath: fileURL.path,
+                originalPrompt: trimmedPrompt,
+                inpaintPurpose: .edit
+            )
+            // 変奏プロンプトは目的言語で生成済みのため translateToEnglish=false で二重正規化を防ぐ。
+            let request = GenerationRequest(
+                prompt: trimmedPrompt,
+                count: normalizedCount,
+                concurrency: concurrency,
+                aspectRatio: capturedAspectRatio,
+                editSource: editSource,
+                model: capturedModel,
+                reasoningEffort: capturedReasoningEffort,
+                translateToEnglish: false
+            )
+
+            await MainActor.run { self.lastRequestByProject[projectID] = request }
+
+            guard !Task.isCancelled else {
+                await MainActor.run { self.finishRun(runID: runID, projectID: projectID) }
+                return
+            }
+
+            let results = await capturedCoordinator.runSpecific(jobs: jobs, request: request) { [weak self] job in
+                await MainActor.run { self?.handleJobUpdate(job, into: projectID, request: request) }
+            }
+
+            await MainActor.run {
+                self.finishRun(runID: runID, projectID: projectID, results: results)
+                self.logs.append("バリエーション生成完了。")
+                self.refreshAccountUsage()
+            }
+        }
+        generationTasks[projectID]?[runID] = variationTask
+    }
+
+    /// LLM で変奏プロンプトを取得する。20秒タイムアウト・失敗・件数不足の場合は元プロンプトでフォールバックし count 件を返す。
+    private func makeVariationPrompts(
+        originalPrompt: String,
+        count: Int,
+        translateToEnglish: Bool,
+        model: CodexModel
+    ) async -> [String] {
+        let fallback = Array(repeating: originalPrompt, count: count)
+        let client = self.client
+
+        var prompts: [String]
+        do {
+            prompts = try await withThrowingTaskGroup(of: [String].self) { group in
+                group.addTask {
+                    try await PromptVariator.generate(
+                        originalPrompt: originalPrompt,
+                        count: count,
+                        translateToEnglish: translateToEnglish,
+                        client: client,
+                        model: model
+                    )
+                }
+                group.addTask {
+                    try await Task.sleep(nanoseconds: 20 * 1_000_000_000)
+                    throw DraftCanvasError.timeout
+                }
+                defer { group.cancelAll() }
+                return try await group.next() ?? []
+            }
+        } catch {
+            logs.append("変奏プロンプト生成に失敗。元プロンプトで生成します: \(error.localizedDescription)")
+            return fallback
+        }
+
+        guard !prompts.isEmpty else {
+            logs.append("変奏プロンプトを取得できませんでした。元プロンプトで生成します。")
+            return fallback
+        }
+        if prompts.count > count {
+            prompts = Array(prompts.prefix(count))
+        } else if prompts.count < count {
+            logs.append("変奏プロンプト数が不足(\(prompts.count)/\(count))。元プロンプトで補完します。")
+            while prompts.count < count { prompts.append(originalPrompt) }
+        }
+        return prompts
+    }
 }
