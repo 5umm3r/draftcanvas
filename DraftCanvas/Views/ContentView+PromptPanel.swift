@@ -295,12 +295,10 @@ extension ContentView {
                                 isHistoryPopoverPresented = false
                             },
                             onDelete: { id in
-                                viewModel.promptHistoryStore.delete(id: id)
-                                viewModel.promptHistory = viewModel.promptHistoryStore.allEntries()
+                                viewModel.deleteFromHistory(id: id)
                             },
                             onClear: {
-                                viewModel.promptHistoryStore.clear()
-                                viewModel.promptHistory = []
+                                viewModel.clearHistory()
                                 isHistoryPopoverPresented = false
                             }
                         )

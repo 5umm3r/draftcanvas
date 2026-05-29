@@ -13,13 +13,11 @@ final class PromptHistoryStore: JSONFileStore {
     private var entries: [PromptHistoryEntry]
 
     init() {
-        self.entries = [] // 後で load() で読み込む
+        self.entries = []
+        self.entries = load() ?? []
     }
 
-    func loadEntries() -> [PromptHistoryEntry] {
-        entries = load() ?? []
-        return entries
-    }
+    var allEntries: [PromptHistoryEntry] { entries }
 
     func record(_ prompt: String) {
         let trimmed = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -42,10 +40,6 @@ final class PromptHistoryStore: JSONFileStore {
         }
 
         save(entries)
-    }
-
-    func allEntries() -> [PromptHistoryEntry] {
-        entries
     }
 
     func delete(id: UUID) {

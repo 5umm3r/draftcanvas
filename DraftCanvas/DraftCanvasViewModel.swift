@@ -195,7 +195,7 @@ final class DraftCanvasViewModel: ObservableObject {
     let activityTracker = ActivityTracker()
     var onReplacePromptText: ((String) -> Void)?
     let thumbnailStore: CanvasThumbnailStore
-    let promptHistoryStore = PromptHistoryStore()
+    private let promptHistoryStore = PromptHistoryStore()
     @Published var promptHistory: [PromptHistoryEntry] = []
     let originalImageStore: CanvasOriginalImageStore
 
@@ -238,7 +238,7 @@ final class DraftCanvasViewModel: ObservableObject {
                 self?.logs.append("並列度を \(old) → \(new) に調整しました")
             }
         }
-        promptHistory = promptHistoryStore.loadEntries()
+        promptHistory = promptHistoryStore.allEntries
         projectStore.cleanupAllAttachments()
         loadProjects()
         preferredSaveFolder = preferredSaveFolderStore.load()
@@ -250,6 +250,23 @@ final class DraftCanvasViewModel: ObservableObject {
 
     func rebuildAllTagsCache() {
         allTagsCache = Array(Set(items.flatMap(\.tags))).sorted()
+    }
+
+    // MARK: - Prompt History
+
+    func recordPromptHistory(_ prompt: String) {
+        promptHistoryStore.record(prompt)
+        promptHistory = promptHistoryStore.allEntries
+    }
+
+    func deleteFromHistory(id: UUID) {
+        promptHistoryStore.delete(id: id)
+        promptHistory = promptHistoryStore.allEntries
+    }
+
+    func clearHistory() {
+        promptHistoryStore.clear()
+        promptHistory = []
     }
 
     func appendLog(_ message: String) {

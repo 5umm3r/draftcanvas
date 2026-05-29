@@ -24,8 +24,7 @@ extension DraftCanvasViewModel {
 
         // プロンプト履歴に記録
         if !promptText.isEmpty {
-            promptHistoryStore.record(promptText)
-            promptHistory = promptHistoryStore.allEntries()
+            recordPromptHistory(promptText)
         }
 
         let targetProjectID: UUID
