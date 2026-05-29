@@ -293,6 +293,10 @@ extension DraftCanvasViewModel {
         let tasks = generationTasks[projectID] ?? [:]
         for (_, task) in tasks { task.cancel() }
         generationTasks[projectID] = nil
+        // バックオフ中の自動リトライも停止
+        autoRetryTasks[projectID]?.cancel()
+        autoRetryTasks.removeValue(forKey: projectID)
+        autoRetryCountByProject.removeValue(forKey: projectID)
         if generatingProjectIDs.remove(projectID) != nil {
             activityTracker.end()
         }
@@ -311,9 +315,90 @@ extension DraftCanvasViewModel {
                 refreshAccountUsage()
             }
             if let results {
+                // 自動リトライ判定
+                let autoRetryTargets = results.filter {
+                    $0.status == .failed && ($0.failureKind == .rateLimited || $0.failureKind == .timeout)
+                }
+                let retryCount = autoRetryCountByProject[projectID] ?? 0
+                if autoRetryEnabled, !autoRetryTargets.isEmpty, retryCount < 3 {
+                    autoRetryCountByProject[projectID] = retryCount + 1
+                    let attempt = retryCount + 1
+                    let delay = pow(2.0, Double(attempt)) * 5.0  // 10s, 20s, 40s
+                    logs.append("自動再試行を\(Int(delay))秒後に実行します（\(attempt)/3回目）")
+                    let retryTask = Task { [weak self] in
+                        try? await Task.sleep(for: .seconds(delay))
+                        guard !Task.isCancelled else { return }
+                        await MainActor.run { [weak self] in
+                            self?.autoRetryTasks.removeValue(forKey: projectID)
+                            self?.autoRetryFailedJobs(projectID: projectID)
+                        }
+                    }
+                    autoRetryTasks[projectID] = retryTask
+                    return  // 自動リトライが終わるまで onAllJobsCompleted を保留
+                }
+                // 自動リトライなし / 上限到達 → カウントリセットして完了通知
+                autoRetryCountByProject.removeValue(forKey: projectID)
                 onAllJobsCompleted(results: results)
             }
         }
+    }
+
+    private func autoRetryFailedJobs(projectID: UUID) {
+        guard !isGenerating(for: projectID),
+              let request = lastRequestByProject[projectID] else { return }
+
+        var failedJobs = (jobsByProject[projectID] ?? []).filter {
+            $0.status == .failed && ($0.failureKind == .rateLimited || $0.failureKind == .timeout)
+        }
+        guard !failedJobs.isEmpty else {
+            autoRetryCountByProject.removeValue(forKey: projectID)
+            return
+        }
+
+        // ジョブ状態をリセット（dismissedFailedJobIDs は変更しない）
+        for i in failedJobs.indices {
+            failedJobs[i].status = .queued
+            failedJobs[i].errorMessage = nil
+            failedJobs[i].logs = []
+            failedJobs[i].imageData = nil
+            failedJobs[i].hitRateLimitDuringRun = false
+            failedJobs[i].failureKind = nil
+        }
+        for job in failedJobs {
+            upsert(job, into: projectID)
+        }
+
+        generatingProjectIDs.insert(projectID)
+        activityTracker.begin()
+        logs.append("自動再試行を開始します: \(failedJobs.count)件")
+
+        let runID = UUID()
+        let retryTask = Task { [weak self] in
+            guard let self else { return }
+            let preparedRequest = await prepareRequestForGeneration(request)
+            await MainActor.run { self.lastRequestByProject[projectID] = preparedRequest }
+
+            guard !Task.isCancelled else {
+                await MainActor.run { self.finishRun(runID: runID, projectID: projectID) }
+                return
+            }
+
+            let retried = await coordinator.runSpecific(
+                jobs: failedJobs,
+                request: preparedRequest
+            ) { [weak self] job in
+                await MainActor.run {
+                    self?.handleJobUpdate(job, into: projectID, request: preparedRequest)
+                }
+            }
+            await MainActor.run {
+                self.finishRun(runID: runID, projectID: projectID, results: retried)
+                self.refreshAccountUsage()
+                self.logs.append("自動再試行完了。")
+            }
+        }
+        if generationTasks[projectID] == nil { generationTasks[projectID] = [:] }
+        generationTasks[projectID]?[runID] = retryTask
     }
 
     private func isGenerating(for projectID: UUID) -> Bool {

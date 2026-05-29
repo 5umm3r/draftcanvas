@@ -55,6 +55,18 @@ struct SettingsView: View {
             Divider()
                 .gridCellUnsizedAxes(.horizontal)
             GridRow {
+                Text("生成")
+                    .gridColumnAlignment(.trailing)
+                Toggle(isOn: $viewModel.autoRetryEnabled) {
+                    Text("失敗時に自動で再試行（レート制限・タイムアウトのみ）")
+                }
+                .toggleStyle(.switch)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .gridColumnAlignment(.leading)
+            }
+            Divider()
+                .gridCellUnsizedAxes(.horizontal)
+            GridRow {
                 Text("アップデート")
                     .gridColumnAlignment(.trailing)
                 HStack {

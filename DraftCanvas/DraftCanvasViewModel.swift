@@ -15,6 +15,11 @@ final class DraftCanvasViewModel: ObservableObject {
     var lastRequestByProject: [UUID: GenerationRequest] = [:]
     var generationTasks: [UUID: [UUID: Task<Void, Never>]] = [:]
 
+    // MARK: - 自動リトライ
+    @AppStorage("autoRetryEnabled") var autoRetryEnabled: Bool = true
+    var autoRetryCountByProject: [UUID: Int] = [:]    // run 単位のリトライ回数（上限3）
+    var autoRetryTasks: [UUID: Task<Void, Never>] = [:]  // バックオフ中の予約タスク
+
     // MARK: - Global state
     @AppStorage("appAppearance") var appAppearanceRaw: String = "light"
     @AppStorage("completionSound") var completionSound: String = CompletionSoundOption.glass.rawValue
