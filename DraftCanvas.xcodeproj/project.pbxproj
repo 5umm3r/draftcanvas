@@ -38,19 +38,6 @@
 		10B001082D00000100000001 /* DraftCanvasViewModel+Sketch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10B001072D00000100000001 /* DraftCanvasViewModel+Sketch.swift */; };
 		11E0B45D4D0F324989FCCD93 /* AttachedImageThumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 882F372486E669E60EAD25D8 /* AttachedImageThumbnail.swift */; };
 		1483368FC84E89012DA1976D /* ProjectStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB8A29297366EC8F58149110 /* ProjectStore.swift */; };
-		391EC66B64EEEEDCD865B89E /* JSONFileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37FC0ACFFA0352312D01B3B7 /* JSONFileStore.swift */; };
-		657B2463B9994ED4BFB49AE3 /* PromptHistoryEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = E58972011E3E4DAFBD7BC354 /* PromptHistoryEntry.swift */; };
-		DA7818EDA1924BF6A9093A0D /* PromptHistoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC98BC65D19C4C4799328A5D /* PromptHistoryStore.swift */; };
-		40B5120F59244E8A9D6824A0 /* PromptHistoryPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47BFD14309F14DD4B67547F3 /* PromptHistoryPopover.swift */; };
-		BB0001010000000100000001 /* PromptTemplate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0001000000000100000001 /* PromptTemplate.swift */; };
-		BB0001030000000100000001 /* BuiltInPromptTemplates.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0001020000000100000001 /* BuiltInPromptTemplates.swift */; };
-		BB0001050000000100000001 /* PromptTemplateStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0001040000000100000001 /* PromptTemplateStore.swift */; };
-		BB0001070000000100000001 /* DraftCanvasViewModel+Templates.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0001060000000100000001 /* DraftCanvasViewModel+Templates.swift */; };
-		BB0001090000000100000001 /* PromptTemplateSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0001080000000100000001 /* PromptTemplateSheet.swift */; };
-		BB0002020000000100000001 /* BatchQueueEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0002010000000100000001 /* BatchQueueEntry.swift */; };
-		BB0002040000000100000001 /* DraftCanvasViewModel+BatchQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0002030000000100000001 /* DraftCanvasViewModel+BatchQueue.swift */; };
-		BB0002060000000100000001 /* BatchQueueSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0002050000000100000001 /* BatchQueueSheet.swift */; };
-		BB00010B0000000100000001 /* PromptTemplatePopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB00010A0000000100000001 /* PromptTemplatePopover.swift */; };
 		1A4DA35B6990671B2B04CE17 /* GenerationProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDE4F73BDF7FFF820CD906D9 /* GenerationProgressView.swift */; };
 		1B8FE23372C461DA5914694F /* DraftCanvasViewModel+Generation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645A49DEAC9C0E39B2762518 /* DraftCanvasViewModel+Generation.swift */; };
 		1DB8CE4FC0FD4CF4BBF4E05B2D70E6E5 /* RightClickView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AAB73390054788B1EC621297303393 /* RightClickView.swift */; };
@@ -369,19 +356,6 @@
 		F911F670026F1D09F8FA9CB9 /* AutoScrollerAnchor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AutoScrollerAnchor.swift; path = Views/Canvas/AutoScrollerAnchor.swift; sourceTree = "<group>"; };
 		F9AAB73390054788B1EC621297303393 /* RightClickView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RightClickView.swift; path = Views/RightClickView.swift; sourceTree = "<group>"; };
 		FB8A29297366EC8F58149110 /* ProjectStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ProjectStore.swift; path = Stores/ProjectStore.swift; sourceTree = "<group>"; };
-		37FC0ACFFA0352312D01B3B7 /* JSONFileStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = JSONFileStore.swift; path = Stores/JSONFileStore.swift; sourceTree = "<group>"; };
-		E58972011E3E4DAFBD7BC354 /* PromptHistoryEntry.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptHistoryEntry.swift; path = Models/PromptHistoryEntry.swift; sourceTree = "<group>"; };
-		EC98BC65D19C4C4799328A5D /* PromptHistoryStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptHistoryStore.swift; path = Stores/PromptHistoryStore.swift; sourceTree = "<group>"; };
-		47BFD14309F14DD4B67547F3 /* PromptHistoryPopover.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptHistoryPopover.swift; path = Views/PromptHistoryPopover.swift; sourceTree = "<group>"; };
-		BB0001000000000100000001 /* PromptTemplate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptTemplate.swift; path = Models/PromptTemplate.swift; sourceTree = "<group>"; };
-		BB0001020000000100000001 /* BuiltInPromptTemplates.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BuiltInPromptTemplates.swift; path = Models/BuiltInPromptTemplates.swift; sourceTree = "<group>"; };
-		BB0001040000000100000001 /* PromptTemplateStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptTemplateStore.swift; path = Stores/PromptTemplateStore.swift; sourceTree = "<group>"; };
-		BB0001060000000100000001 /* DraftCanvasViewModel+Templates.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Templates.swift"; path = "ViewModel/DraftCanvasViewModel+Templates.swift"; sourceTree = "<group>"; };
-		BB0001080000000100000001 /* PromptTemplateSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptTemplateSheet.swift; path = Views/PromptTemplateSheet.swift; sourceTree = "<group>"; };
-		BB0002010000000100000001 /* BatchQueueEntry.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BatchQueueEntry.swift; path = Models/BatchQueueEntry.swift; sourceTree = "<group>"; };
-		BB0002030000000100000001 /* DraftCanvasViewModel+BatchQueue.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+BatchQueue.swift"; path = "ViewModel/DraftCanvasViewModel+BatchQueue.swift"; sourceTree = "<group>"; };
-		BB0002050000000100000001 /* BatchQueueSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BatchQueueSheet.swift; path = Views/BatchQueueSheet.swift; sourceTree = "<group>"; };
-		BB00010A0000000100000001 /* PromptTemplatePopover.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptTemplatePopover.swift; path = Views/PromptTemplatePopover.swift; sourceTree = "<group>"; };
 		FFF632FC9AA946138EEF8D01EA71C8FB /* libvtracer_ffi.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libvtracer_ffi.a; path = Vendor/vtracer/libvtracer_ffi.a; sourceTree = "<group>"; };
 		b79086998a564de490b9a76dbc67c001 /* FilteringProjectCreationSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FilteringProjectCreationSheet.swift; path = Views/FilteringProjectCreationSheet.swift; sourceTree = "<group>"; };
 		b7e96c4970d44133991b9ff817e3cefd /* CanvasScrollZoomCatcher.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CanvasScrollZoomCatcher.swift; path = Views/CanvasScrollZoomCatcher.swift; sourceTree = "<group>"; };
@@ -541,13 +515,9 @@
 				57EF848052CE479E6FC03AE1 /* PreferredSaveFolderStore.swift */,
 				E1B7F76E0F94712837D48517 /* CodexTypes.swift */,
 				65C55B0EA2C5BFEA766A00A1 /* AccountKind.swift */,
-				E58972011E3E4DAFBD7BC354 /* PromptHistoryEntry.swift */,
 				71E877DFCDE496FC77BDFEDC /* DraftCanvasError.swift */,
 				09C61E0F55E7FD6835C52AF4 /* RateLimitConfirmation.swift */,
 				6D8A2AE8C81B31B43D4B0DA0 /* CompletionSoundOption.swift */,
-				BB0001000000000100000001 /* PromptTemplate.swift */,
-				BB0002010000000100000001 /* BatchQueueEntry.swift */,
-				BB0001020000000100000001 /* BuiltInPromptTemplates.swift */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -569,10 +539,6 @@
 				053F5A416ED0C9A5453822CD /* DetailRow.swift */,
 				DC6F3E1100000011A0000001 /* SettingsView.swift */,
 				B268164EA0D2A09163FB3A63 /* AccountPopover.swift */,
-				47BFD14309F14DD4B67547F3 /* PromptHistoryPopover.swift */,
-				BB0001080000000100000001 /* PromptTemplateSheet.swift */,
-				BB0002050000000100000001 /* BatchQueueSheet.swift */,
-				BB00010A0000000100000001 /* PromptTemplatePopover.swift */,
 				BFC23E9DED99669C4518E0C5 /* LogWindow.swift */,
 				CDE4F73BDF7FFF820CD906D9 /* GenerationProgressView.swift */,
 				9A210B096C95BC73D72354E1 /* VectorizingOverlay.swift */,
@@ -704,11 +670,8 @@
 		EA8C8919B0D765B8B83C2EF0 /* Stores */ = {
 			isa = PBXGroup;
 			children = (
-				37FC0ACFFA0352312D01B3B7 /* JSONFileStore.swift */,
-				EC98BC65D19C4C4799328A5D /* PromptHistoryStore.swift */,
 				FB8A29297366EC8F58149110 /* ProjectStore.swift */,
 				2C11346DB4BD717A69D174D6 /* ProjectStore+Snapshot.swift */,
-				BB0001040000000100000001 /* PromptTemplateStore.swift */,
 			);
 			name = Stores;
 			sourceTree = "<group>";
@@ -732,8 +695,6 @@
 				AA0000010000000100000002 /* DraftCanvasViewModel+Upscale.swift */,
 				CC0000010000000100000002 /* DraftCanvasViewModel+CanvasNavigation.swift */,
 				F6A0184D75554ACCBBF6B1F2 /* DraftCanvasViewModel+Crop.swift */,
-				BB0001060000000100000001 /* DraftCanvasViewModel+Templates.swift */,
-				BB0002030000000100000001 /* DraftCanvasViewModel+BatchQueue.swift */,
 			);
 			name = ViewModel;
 			sourceTree = "<group>";
@@ -1015,19 +976,6 @@
 				974D369AFE901A5535087602 /* RateLimitConfirmation.swift in Sources */,
 				4FC05F8F2A7A7ED86B430F79 /* CompletionSoundOption.swift in Sources */,
 				1483368FC84E89012DA1976D /* ProjectStore.swift in Sources */,
-				391EC66B64EEEEDCD865B89E /* JSONFileStore.swift in Sources */,
-				657B2463B9994ED4BFB49AE3 /* PromptHistoryEntry.swift in Sources */,
-				DA7818EDA1924BF6A9093A0D /* PromptHistoryStore.swift in Sources */,
-				40B5120F59244E8A9D6824A0 /* PromptHistoryPopover.swift in Sources */,
-				BB0001010000000100000001 /* PromptTemplate.swift in Sources */,
-				BB0001030000000100000001 /* BuiltInPromptTemplates.swift in Sources */,
-				BB0001050000000100000001 /* PromptTemplateStore.swift in Sources */,
-				BB0001070000000100000001 /* DraftCanvasViewModel+Templates.swift in Sources */,
-				BB0001090000000100000001 /* PromptTemplateSheet.swift in Sources */,
-				BB0002020000000100000001 /* BatchQueueEntry.swift in Sources */,
-				BB0002040000000100000001 /* DraftCanvasViewModel+BatchQueue.swift in Sources */,
-				BB0002060000000100000001 /* BatchQueueSheet.swift in Sources */,
-				BB00010B0000000100000001 /* PromptTemplatePopover.swift in Sources */,
 				567A1648B15EE73ABFCECE9A /* ProjectStore+Snapshot.swift in Sources */,
 				609AB8481AC5CA95EA27277E /* CropEditorSheet.swift in Sources */,
 				4274C5BAB8A77FBE81F62719 /* CropCanvasView.swift in Sources */,

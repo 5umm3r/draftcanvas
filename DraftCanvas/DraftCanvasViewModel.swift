@@ -200,12 +200,6 @@ final class DraftCanvasViewModel: ObservableObject {
     let activityTracker = ActivityTracker()
     var onReplacePromptText: ((String) -> Void)?
     let thumbnailStore: CanvasThumbnailStore
-    private let promptHistoryStore = PromptHistoryStore()
-    @Published var promptHistory: [PromptHistoryEntry] = []
-    let promptTemplateStore = PromptTemplateStore()
-    @Published var promptTemplates: [PromptTemplate] = []
-    @Published var batchQueue: [BatchQueueEntry] = []
-    @Published var isBatchRunning: Bool = false
     let originalImageStore: CanvasOriginalImageStore
 
     init(
@@ -247,8 +241,6 @@ final class DraftCanvasViewModel: ObservableObject {
                 self?.logs.append("並列度を \(old) → \(new) に調整しました")
             }
         }
-        promptHistory = promptHistoryStore.allEntries
-        promptTemplates = promptTemplateStore.allTemplates
         projectStore.cleanupAllAttachments()
         loadProjects()
         preferredSaveFolder = preferredSaveFolderStore.load()
@@ -260,23 +252,6 @@ final class DraftCanvasViewModel: ObservableObject {
 
     func rebuildAllTagsCache() {
         allTagsCache = Array(Set(items.flatMap(\.tags))).sorted()
-    }
-
-    // MARK: - Prompt History
-
-    func recordPromptHistory(_ prompt: String) {
-        promptHistoryStore.record(prompt)
-        promptHistory = promptHistoryStore.allEntries
-    }
-
-    func deleteFromHistory(id: UUID) {
-        promptHistoryStore.delete(id: id)
-        promptHistory = promptHistoryStore.allEntries
-    }
-
-    func clearHistory() {
-        promptHistoryStore.clear()
-        promptHistory = []
     }
 
     func appendLog(_ message: String) {
@@ -396,7 +371,6 @@ final class DraftCanvasViewModel: ObservableObject {
         !generatingProjectIDs.isEmpty
             || exportingProjectID != nil
             || batchExportProgress != nil
-            || isBatchRunning
     }
 
     func confirmTermination() {
@@ -423,7 +397,6 @@ final class DraftCanvasViewModel: ObservableObject {
             || upscalePreview != nil
             || inpaintingTarget != nil
             || cropTarget != nil
-            || isBatchRunning
     }
 
     func cancelInFlightWorkForRelaunch() {

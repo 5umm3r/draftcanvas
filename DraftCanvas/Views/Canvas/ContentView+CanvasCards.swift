@@ -237,11 +237,10 @@ extension ContentView {
                 CircularPromptActionButton(
                     systemImage: "wand.and.stars",
                     tooltip: "再編集",
-                    costLevel: viewModel.selectedModelCostLevel
+                    costLevel: viewModel.itemActionCostLevel
                 ) {
                     viewModel.edit(item: item)
                 }
-                VariationMenuButton(item: item, viewModel: viewModel)
                 CircularPromptActionButton(
                     systemImage: "paintbrush.pointed",
                     tooltip: "マスク編集",
@@ -286,12 +285,12 @@ extension ContentView {
                     viewModel.vectorize(item: item)
                 }
 
-                ImageCopyButton(item: item, viewModel: viewModel)
-
                 Rectangle()
                     .fill(Color.primary.opacity(0.12))
                     .frame(width: 28, height: 1)
                     .padding(.vertical, 2)
+
+                ImageCopyButton(item: item, viewModel: viewModel)
 
                 CircularPromptActionButton(
                     systemImage: "doc.on.doc",
@@ -331,7 +330,7 @@ private struct ImageCopyButton: View {
     var body: some View {
         CircularPromptActionButton(
             systemImage: didCopy ? "checkmark" : "doc.on.doc.fill",
-            tooltip: didCopy ? "コピー完了" : "コピー"
+            tooltip: didCopy ? "コピー完了" : "クリップボードにコピー"
         ) {
             guard viewModel.copyItemToClipboard(item) else { return }
             withAnimation(.easeOut(duration: 0.15)) { didCopy = true }
@@ -342,53 +341,3 @@ private struct ImageCopyButton: View {
     }
 }
 
-private struct VariationMenuButton: View {
-    let item: ProjectItem
-    let viewModel: DraftCanvasViewModel
-    @State private var isHovered = false
-
-    var body: some View {
-        Menu {
-            Button("2枚") {
-                guard EntitlementGate.shared.requireUnlocked() else { return }
-                viewModel.generateVariations(item: item, count: 2)
-            }
-            Button("4枚") {
-                guard EntitlementGate.shared.requireUnlocked() else { return }
-                viewModel.generateVariations(item: item, count: 4)
-            }
-            Button("6枚") {
-                guard EntitlementGate.shared.requireUnlocked() else { return }
-                viewModel.generateVariations(item: item, count: 6)
-            }
-        } label: {
-            Image(systemName: "square.on.square.dashed")
-                .font(.system(size: 15, weight: .medium))
-                .foregroundStyle(Color.primary)
-                .frame(width: 36, height: 36)
-                .background(
-                    Color.primary.opacity(isHovered ? 0.12 : 0.06),
-                    in: Circle()
-                )
-        }
-        .menuStyle(.borderlessButton)
-        .onHover { isHovered = $0 }
-        .overlay(alignment: .center) {
-            if isHovered {
-                Text("バリエーション")
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(.primary)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(.regularMaterial, in: Capsule())
-                    .shadow(color: .black.opacity(0.12), radius: 4, x: 0, y: 2)
-                    .fixedSize()
-                    .offset(x: 60)
-                    .allowsHitTesting(false)
-                    .transition(.opacity)
-            }
-        }
-        .animation(.easeInOut(duration: 0.12), value: isHovered)
-        .zIndex(isHovered ? 100 : 0)
-    }
-}

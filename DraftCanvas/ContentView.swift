@@ -12,10 +12,6 @@ struct ContentView: View {
     @State var renamingText = ""
     @State var confirmingDeleteProjectID: UUID?
     @State var isAccountPopoverPresented = false
-    @State var isHistoryPopoverPresented = false
-    @State var isTemplatePopoverPresented = false
-    @State var isTemplateSheetPresented = false
-    @State var isBatchQueueSheetPresented = false
     @State var promptIsFocused = false
     @State var promptTextHeight: CGFloat = 76
     @State var canvasZoom: CGFloat = 1.0
@@ -185,12 +181,6 @@ struct ContentView: View {
             if let confirmation = viewModel.pendingRateLimitConfirmation {
                 Text(String(localized: "残量が少なくなっています (残り \(confirmation.remainingPercent)%%)。生成を続行しますか？"))
             }
-        }
-        .sheet(isPresented: $isTemplateSheetPresented) {
-            PromptTemplateSheet(viewModel: viewModel)
-        }
-        .sheet(isPresented: $isBatchQueueSheetPresented) {
-            BatchQueueSheet(viewModel: viewModel)
         }
         .sheet(item: $viewModel.exportRequest) { request in
             ExportOptionsSheet(

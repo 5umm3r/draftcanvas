@@ -22,11 +22,6 @@ extension DraftCanvasViewModel {
         if !skipRateLimitCheck, checkRateLimitBeforeGenerate(inputs: inputs) { return }
         let promptText = inputs.prompt.trimmingCharacters(in: .whitespacesAndNewlines)
 
-        // プロンプト履歴に記録
-        if !promptText.isEmpty {
-            recordPromptHistory(promptText)
-        }
-
         let targetProjectID: UUID
         if let existing = selectedProjectID, projects.contains(where: { $0.id == existing }) {
             targetProjectID = existing
@@ -80,7 +75,7 @@ extension DraftCanvasViewModel {
         }
     }
 
-    func runGeneration(
+    private func runGeneration(
         request: GenerationRequest,
         projectID: UUID,
         jobs: [GenerationJob],
@@ -222,8 +217,6 @@ extension DraftCanvasViewModel {
     }
 
     func onAllJobsCompleted(results: [GenerationJob]) {
-        // バッチ実行中は各エントリ完了時の音・通知を抑制し、全体完了時に一括で鳴らす
-        guard !isBatchRunning else { return }
         if completionSound != CompletionSoundOption.off.rawValue {
             NSSound(named: NSSound.Name(completionSound))?.play()
         }
