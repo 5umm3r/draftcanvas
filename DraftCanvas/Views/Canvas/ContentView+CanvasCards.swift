@@ -349,9 +349,18 @@ private struct VariationMenuButton: View {
 
     var body: some View {
         Menu {
-            Button("2枚") { viewModel.generateVariations(item: item, count: 2) }
-            Button("4枚") { viewModel.generateVariations(item: item, count: 4) }
-            Button("6枚") { viewModel.generateVariations(item: item, count: 6) }
+            Button("2枚") {
+                guard EntitlementGate.shared.requireUnlocked() else { return }
+                viewModel.generateVariations(item: item, count: 2)
+            }
+            Button("4枚") {
+                guard EntitlementGate.shared.requireUnlocked() else { return }
+                viewModel.generateVariations(item: item, count: 4)
+            }
+            Button("6枚") {
+                guard EntitlementGate.shared.requireUnlocked() else { return }
+                viewModel.generateVariations(item: item, count: 6)
+            }
         } label: {
             Image(systemName: "square.on.square.dashed")
                 .font(.system(size: 15, weight: .medium))
@@ -364,7 +373,6 @@ private struct VariationMenuButton: View {
         }
         .menuStyle(.borderlessButton)
         .onHover { isHovered = $0 }
-        .animation(.easeInOut(duration: 0.1), value: isHovered)
         .overlay(alignment: .center) {
             if isHovered {
                 Text("バリエーション")

@@ -223,6 +223,12 @@ extension DraftCanvasViewModel {
     }
 
     func generateVariations(item: ProjectItem, count: Int) {
+        // ガード: generate() と同等の前提条件チェック
+        guard canGenerate else { return }
+        if accountUsageStatus.isChatGPTFreePlan {
+            pendingFreeAccountBlock = true
+            return
+        }
         let projectID = selectedProjectID ?? item.projectID
         let fileURL = projectStore.resolvedFileURL(for: item)
         let concurrency = min(count, 3)  // レート制限回避のため並列数を上限3に
