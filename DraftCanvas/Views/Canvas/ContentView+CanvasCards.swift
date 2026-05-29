@@ -332,7 +332,7 @@ private struct ImageCopyButton: View {
             systemImage: didCopy ? "checkmark" : "doc.on.doc.fill",
             tooltip: didCopy ? "コピー完了" : "コピー"
         ) {
-            viewModel.copyItemToClipboard(item)
+            guard viewModel.copyItemToClipboard(item) else { return }
             withAnimation(.easeOut(duration: 0.15)) { didCopy = true }
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
                 withAnimation(.easeIn(duration: 0.2)) { didCopy = false }

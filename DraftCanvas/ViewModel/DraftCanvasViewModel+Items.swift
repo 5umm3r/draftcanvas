@@ -167,13 +167,15 @@ extension DraftCanvasViewModel {
         NSWorkspace.shared.activateFileViewerSelecting([projectStore.resolvedFileURL(for: item)])
     }
 
-    func copyItemToClipboard(_ item: ProjectItem) {
+    @discardableResult
+    func copyItemToClipboard(_ item: ProjectItem) -> Bool {
         let url = fileURL(for: item)
         guard
             let imageData = try? Data(contentsOf: url),
-            let image = cachedImage(for: item)
-        else { return }
+            let image = NSImage(data: imageData)
+        else { return false }
         ImageClipboard.copy(imageData: imageData, image: image)
+        return true
     }
 
     func fileURL(for item: ProjectItem) -> URL {

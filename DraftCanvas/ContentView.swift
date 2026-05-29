@@ -87,12 +87,13 @@ struct ContentView: View {
         .background {
             if !promptIsFocused, let id = viewModel.selectedItemID,
                let item = viewModel.items.first(where: { $0.id == id }) {
-                Button("") {
-                    viewModel.copyItemToClipboard(item)
+                Button(action: { viewModel.copyItemToClipboard(item) }) {
+                    EmptyView()
                 }
                 .keyboardShortcut("c", modifiers: .command)
                 .opacity(0)
                 .allowsHitTesting(false)
+                .accessibilityHidden(true)
             }
         }
         .onDisappear {
