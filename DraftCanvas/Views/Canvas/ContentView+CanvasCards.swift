@@ -285,6 +285,8 @@ extension ContentView {
                     viewModel.vectorize(item: item)
                 }
 
+                ImageCopyButton(item: item, viewModel: viewModel)
+
                 Rectangle()
                     .fill(Color.primary.opacity(0.12))
                     .frame(width: 28, height: 1)
@@ -316,6 +318,25 @@ extension ContentView {
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             .shadow(color: .black.opacity(0.15), radius: 10, x: 2, y: 4)
             .transition(.opacity.combined(with: .move(edge: .leading)))
+        }
+    }
+}
+
+private struct ImageCopyButton: View {
+    let item: ProjectItem
+    let viewModel: DraftCanvasViewModel
+    @State private var didCopy = false
+
+    var body: some View {
+        CircularPromptActionButton(
+            systemImage: didCopy ? "checkmark" : "doc.on.doc.fill",
+            tooltip: didCopy ? "コピー完了" : "コピー"
+        ) {
+            viewModel.copyItemToClipboard(item)
+            withAnimation(.easeOut(duration: 0.15)) { didCopy = true }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                withAnimation(.easeIn(duration: 0.2)) { didCopy = false }
+            }
         }
     }
 }

@@ -38,6 +38,7 @@
 		10B001082D00000100000001 /* DraftCanvasViewModel+Sketch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10B001072D00000100000001 /* DraftCanvasViewModel+Sketch.swift */; };
 		11E0B45D4D0F324989FCCD93 /* AttachedImageThumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 882F372486E669E60EAD25D8 /* AttachedImageThumbnail.swift */; };
 		1483368FC84E89012DA1976D /* ProjectStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB8A29297366EC8F58149110 /* ProjectStore.swift */; };
+		391EC66B64EEEEDCD865B89E /* JSONFileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37FC0ACFFA0352312D01B3B7 /* JSONFileStore.swift */; };
 		1A4DA35B6990671B2B04CE17 /* GenerationProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDE4F73BDF7FFF820CD906D9 /* GenerationProgressView.swift */; };
 		1B8FE23372C461DA5914694F /* DraftCanvasViewModel+Generation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645A49DEAC9C0E39B2762518 /* DraftCanvasViewModel+Generation.swift */; };
 		1DB8CE4FC0FD4CF4BBF4E05B2D70E6E5 /* RightClickView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9AAB73390054788B1EC621297303393 /* RightClickView.swift */; };
@@ -88,6 +89,7 @@
 		65E9F650BD09EDB0C69A024C /* MergeByIoUStage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DE15CC1A1EBFC5019F0CB6D /* MergeByIoUStage.swift */; };
 		6674C4948F6E53B481C1DAA9 /* MaterialExtractionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7478BE9ADE271121FBE887B5 /* MaterialExtractionSheet.swift */; };
 		6C7D321C41B44E16A879562D /* PromptCopyButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = E824D7305F84430390074FD7 /* PromptCopyButton.swift */; };
+		248AEE3818B146B1937B4911 /* ImageClipboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A611B88DE4D46C5947C2912 /* ImageClipboard.swift */; };
 		6D01CA24CE02BAF032C88CCF /* ExtractionStage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C740E410C53396028707D44 /* ExtractionStage.swift */; };
 		6D5D1FA5364B40638154C18BA55ADB3F /* AuroraPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F4EB0EF2B144D698A6FF43FDBF0752B /* AuroraPlaceholderView.swift */; };
 		6E741A5F363C469469976EEF /* CropCanvasNSView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9D3BC93ABEDB39F1B691F5F /* CropCanvasNSView.swift */; };
@@ -338,6 +340,7 @@
 		E1B7F76E0F94712837D48517 /* CodexTypes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CodexTypes.swift; path = Models/CodexTypes.swift; sourceTree = "<group>"; };
 		E5EB180980BB2AAFC5E98E4A /* PopoverButton.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PopoverButton.swift; path = Views/PopoverButton.swift; sourceTree = "<group>"; };
 		E824D7305F84430390074FD7 /* PromptCopyButton.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptCopyButton.swift; path = Views/PromptCopyButton.swift; sourceTree = "<group>"; };
+		9A611B88DE4D46C5947C2912 /* ImageClipboard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ImageClipboard.swift; path = ImageClipboard.swift; sourceTree = "<group>"; };
 		E8915BD226E7F28DDF71EF11 /* InpaintMode.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = InpaintMode.swift; path = Editors/InpaintingMask/InpaintMode.swift; sourceTree = "<group>"; };
 		ED5AA59DD5375F249E537A35 /* SketchCanvasView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SketchCanvasView.swift; path = Editors/Sketch/SketchCanvasView.swift; sourceTree = "<group>"; };
 		ED927E3B459549A0B1B4F3AE89381572 /* CircularShareButton.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CircularShareButton.swift; path = Views/CircularShareButton.swift; sourceTree = "<group>"; };
@@ -354,6 +357,7 @@
 		F911F670026F1D09F8FA9CB9 /* AutoScrollerAnchor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AutoScrollerAnchor.swift; path = Views/Canvas/AutoScrollerAnchor.swift; sourceTree = "<group>"; };
 		F9AAB73390054788B1EC621297303393 /* RightClickView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RightClickView.swift; path = Views/RightClickView.swift; sourceTree = "<group>"; };
 		FB8A29297366EC8F58149110 /* ProjectStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ProjectStore.swift; path = Stores/ProjectStore.swift; sourceTree = "<group>"; };
+		37FC0ACFFA0352312D01B3B7 /* JSONFileStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = JSONFileStore.swift; path = Stores/JSONFileStore.swift; sourceTree = "<group>"; };
 		FFF632FC9AA946138EEF8D01EA71C8FB /* libvtracer_ffi.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libvtracer_ffi.a; path = Vendor/vtracer/libvtracer_ffi.a; sourceTree = "<group>"; };
 		b79086998a564de490b9a76dbc67c001 /* FilteringProjectCreationSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FilteringProjectCreationSheet.swift; path = Views/FilteringProjectCreationSheet.swift; sourceTree = "<group>"; };
 		b7e96c4970d44133991b9ff817e3cefd /* CanvasScrollZoomCatcher.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CanvasScrollZoomCatcher.swift; path = Views/CanvasScrollZoomCatcher.swift; sourceTree = "<group>"; };
@@ -405,6 +409,7 @@
 				71D9B64C22F34738AC6F6CB0 /* Localization */,
 				10A0000B2D00000100000001 /* DraftCanvasApp.swift */,
 				10A0000C2D00000100000001 /* ContentView.swift */,
+				9A611B88DE4D46C5947C2912 /* ImageClipboard.swift */,
 				10A0003F2D00000100000001 /* Assets.xcassets */,
 				10A0003B2D00000100000001 /* JSONRPCCodec.swift */,
 				10A0003C2D00000100000001 /* CodexAppServerClient.swift */,
@@ -667,6 +672,7 @@
 		EA8C8919B0D765B8B83C2EF0 /* Stores */ = {
 			isa = PBXGroup;
 			children = (
+				37FC0ACFFA0352312D01B3B7 /* JSONFileStore.swift */,
 				FB8A29297366EC8F58149110 /* ProjectStore.swift */,
 				2C11346DB4BD717A69D174D6 /* ProjectStore+Snapshot.swift */,
 			);
@@ -933,6 +939,7 @@
 				6D5D1FA5364B40638154C18BA55ADB3F /* AuroraPlaceholderView.swift in Sources */,
 				B8D9D407FB64ED096398E71A /* PopoverButton.swift in Sources */,
 				6C7D321C41B44E16A879562D /* PromptCopyButton.swift in Sources */,
+				248AEE3818B146B1937B4911 /* ImageClipboard.swift in Sources */,
 				0CEE8A5F3C8EEE502B378859 /* ContentView+TopBar.swift in Sources */,
 				42BC49111A89D529A5ECD10A /* ContentView+Sidebar.swift in Sources */,
 				F21946B70FE9D2F0BFA137A8 /* ContentView+PromptPanel.swift in Sources */,
@@ -972,6 +979,7 @@
 				974D369AFE901A5535087602 /* RateLimitConfirmation.swift in Sources */,
 				4FC05F8F2A7A7ED86B430F79 /* CompletionSoundOption.swift in Sources */,
 				1483368FC84E89012DA1976D /* ProjectStore.swift in Sources */,
+				391EC66B64EEEEDCD865B89E /* JSONFileStore.swift in Sources */,
 				567A1648B15EE73ABFCECE9A /* ProjectStore+Snapshot.swift in Sources */,
 				609AB8481AC5CA95EA27277E /* CropEditorSheet.swift in Sources */,
 				4274C5BAB8A77FBE81F62719 /* CropCanvasView.swift in Sources */,

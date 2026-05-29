@@ -84,6 +84,17 @@ struct ContentView: View {
         }
         .animation(.easeInOut(duration: 0.2), value: expandedItem != nil)
         .animation(.easeInOut(duration: 0.25), value: viewModel.errorToast)
+        .background {
+            if !promptIsFocused, let id = viewModel.selectedItemID,
+               let item = viewModel.items.first(where: { $0.id == id }) {
+                Button("") {
+                    viewModel.copyItemToClipboard(item)
+                }
+                .keyboardShortcut("c", modifiers: .command)
+                .opacity(0)
+                .allowsHitTesting(false)
+            }
+        }
         .onDisappear {
             viewModel.stopServer()
         }
