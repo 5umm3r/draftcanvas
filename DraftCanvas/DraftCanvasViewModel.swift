@@ -202,6 +202,8 @@ final class DraftCanvasViewModel: ObservableObject {
     let thumbnailStore: CanvasThumbnailStore
     private let promptHistoryStore = PromptHistoryStore()
     @Published var promptHistory: [PromptHistoryEntry] = []
+    let promptTemplateStore = PromptTemplateStore()
+    @Published var promptTemplates: [PromptTemplate] = []
     let originalImageStore: CanvasOriginalImageStore
 
     init(
@@ -244,6 +246,7 @@ final class DraftCanvasViewModel: ObservableObject {
             }
         }
         promptHistory = promptHistoryStore.allEntries
+        promptTemplates = promptTemplateStore.allTemplates
         projectStore.cleanupAllAttachments()
         loadProjects()
         preferredSaveFolder = preferredSaveFolderStore.load()

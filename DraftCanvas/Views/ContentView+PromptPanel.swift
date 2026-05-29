@@ -305,6 +305,33 @@ extension ContentView {
                     }
                     .help("プロンプト履歴")
 
+                    // テンプレートボタン
+                    Button {
+                        isTemplatePopoverPresented.toggle()
+                    } label: {
+                        Image(systemName: "text.badge.star")
+                            .font(.system(size: 13))
+                            .frame(height: 28)
+                            .padding(.horizontal, 8)
+                            .background(Color.primary.opacity(0.04))
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                    }
+                    .buttonStyle(.borderless)
+                    .popover(isPresented: $isTemplatePopoverPresented, arrowEdge: .bottom) {
+                        PromptTemplatePopover(
+                            templates: viewModel.promptTemplates,
+                            onSelect: { template in
+                                viewModel.applyTemplate(template)
+                                isTemplatePopoverPresented = false
+                            },
+                            onManage: {
+                                isTemplatePopoverPresented = false
+                                isTemplateSheetPresented = true
+                            }
+                        )
+                    }
+                    .help("プロンプトテンプレート")
+
                     Menu {
                         ForEach(viewModel.availableModels) { model in
                             Button {
