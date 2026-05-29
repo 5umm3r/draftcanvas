@@ -80,7 +80,7 @@ extension DraftCanvasViewModel {
         }
     }
 
-    func runGeneration(
+    private func runGeneration(
         request: GenerationRequest,
         projectID: UUID,
         jobs: [GenerationJob],
@@ -107,6 +107,7 @@ extension DraftCanvasViewModel {
             guard !Task.isCancelled else {
                 await MainActor.run {
                     self.finishRun(runID: runID, projectID: projectID)
+                    onCompletion?()
                 }
                 return
             }
@@ -121,8 +122,8 @@ extension DraftCanvasViewModel {
             await MainActor.run {
                 self.finishRun(runID: runID, projectID: projectID, results: results)
                 onCompletion?()
-                self.refreshAccountUsage()
                 self.logs.append("全ジョブが終了しました。")
+                self.refreshAccountUsage()
             }
         }
         if generationTasks[projectID] == nil {
