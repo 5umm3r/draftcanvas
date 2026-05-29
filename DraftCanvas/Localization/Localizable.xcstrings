@@ -3606,7 +3606,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Could not load image"
+            "value": "Failed to load image"
           }
         },
         "ja": {
@@ -4862,998 +4862,994 @@
         }
       }
     },
-
-    "Dialogue.Analyzing" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Analyzing your answers…"
+    "Dialogue.Analyzing": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analyzing your answers…"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AIが回答を分析しています…"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AIが回答を分析しています…"
           }
         }
       }
     },
-    "Dialogue.Back" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Back"
+    "Dialogue.Back": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "戻る"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "戻る"
           }
         }
       }
     },
-    "Dialogue.Button.help" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Build prompt through AI dialogue"
+    "Dialogue.Button.help": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Build prompt through AI dialogue"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AIと対話してプロンプトを作成"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AIと対話してプロンプトを作成"
           }
         }
       }
     },
-    "Dialogue.Cancel" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cancel"
+    "Dialogue.Cancel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "キャンセル"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "キャンセル"
           }
         }
       }
     },
-    "Dialogue.Category.composition" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Composition"
+    "Dialogue.Category.composition": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Composition"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "構図"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "構図"
           }
         }
       }
     },
-    "Dialogue.Category.mood" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mood"
+    "Dialogue.Category.mood": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mood"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "雰囲気"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "雰囲気"
           }
         }
       }
     },
-    "Dialogue.Category.palette" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Palette"
+    "Dialogue.Category.palette": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Palette"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "色調"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "色調"
           }
         }
       }
     },
-    "Dialogue.Category.style" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Style"
+    "Dialogue.Category.style": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Style"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "スタイル"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "スタイル"
           }
         }
       }
     },
-    "Dialogue.Category.subject" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Subject"
+    "Dialogue.Category.subject": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subject"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "被写体"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "被写体"
           }
         }
       }
     },
-    "Dialogue.Confirm" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Use This Prompt"
+    "Dialogue.Confirm": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use This Prompt"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "プロンプト欄に貼る"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "プロンプト欄に貼る"
           }
         }
       }
     },
-    "Dialogue.Error.analyzeTimeout" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Analysis timed out"
+    "Dialogue.Error.analyzeTimeout": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analysis timed out"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "分析がタイムアウトしました"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "分析がタイムアウトしました"
           }
         }
       }
     },
-    "Dialogue.Error.emptyResult" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Generated result was empty"
+    "Dialogue.Error.emptyResult": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Generated result was empty"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "生成結果が空でした"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "生成結果が空でした"
           }
         }
       }
     },
-    "Dialogue.Error.noResult" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Failed to get result"
+    "Dialogue.Error.noResult": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to get result"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "結果を取得できませんでした"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "結果を取得できませんでした"
           }
         }
       }
     },
-    "Dialogue.Error.synthesizeTimeout" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prompt generation timed out"
+    "Dialogue.Error.synthesizeTimeout": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prompt generation timed out"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "プロンプト生成がタイムアウトしました"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "プロンプト生成がタイムアウトしました"
           }
         }
       }
     },
-    "Dialogue.FreeText.label" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Free text (optional)"
+    "Dialogue.FreeText.label": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Free text (optional)"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "自由記述（任意）"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自由記述（任意）"
           }
         }
       }
     },
-    "Dialogue.FreeText.placeholder" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Any additional details…"
+    "Dialogue.FreeText.placeholder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Any additional details…"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "その他、補足があれば…"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "その他、補足があれば…"
           }
         }
       }
     },
-    "Dialogue.Header.analyzing" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Analyzing…"
+    "Dialogue.Header.analyzing": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analyzing…"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "分析中…"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "分析中…"
           }
         }
       }
     },
-    "Dialogue.Header.failed" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Error"
+    "Dialogue.Header.failed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Error"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "エラー"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "エラー"
           }
         }
       }
     },
-    "Dialogue.Header.result" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prompt Ready"
+    "Dialogue.Header.result": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prompt Ready"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "プロンプト完成"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "プロンプト完成"
           }
         }
       }
     },
-    "Dialogue.Header.synthesizing" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Generating prompt…"
+    "Dialogue.Header.synthesizing": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Generating prompt…"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "プロンプト生成中…"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "プロンプト生成中…"
           }
         }
       }
     },
-    "Dialogue.Next" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Next"
+    "Dialogue.Next": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "次へ"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "次へ"
           }
         }
       }
     },
-    "Dialogue.Option.composition.aerialView" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aerial View"
+    "Dialogue.Option.composition.aerialView": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aerial View"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "俯瞰"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "俯瞰"
           }
         }
       }
     },
-    "Dialogue.Option.composition.closeUp" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close-up"
+    "Dialogue.Option.composition.closeUp": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close-up"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "クローズアップ"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "クローズアップ"
           }
         }
       }
     },
-    "Dialogue.Option.composition.ruleOfThirds" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rule of Thirds"
+    "Dialogue.Option.composition.ruleOfThirds": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rule of Thirds"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "三分割法"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "三分割法"
           }
         }
       }
     },
-    "Dialogue.Option.composition.symmetrical" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Symmetrical"
+    "Dialogue.Option.composition.symmetrical": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Symmetrical"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "シンメトリー"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "シンメトリー"
           }
         }
       }
     },
-    "Dialogue.Option.composition.wideAngle" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wide Angle"
+    "Dialogue.Option.composition.wideAngle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wide Angle"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "広角"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "広角"
           }
         }
       }
     },
-    "Dialogue.Option.mood.dramatic" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dramatic"
+    "Dialogue.Option.mood.dramatic": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dramatic"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ドラマチック"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ドラマチック"
           }
         }
       }
     },
-    "Dialogue.Option.mood.energetic" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Energetic"
+    "Dialogue.Option.mood.energetic": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Energetic"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "エネルギッシュ"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "エネルギッシュ"
           }
         }
       }
     },
-    "Dialogue.Option.mood.joyful" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Joyful"
+    "Dialogue.Option.mood.joyful": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Joyful"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "明るい"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "明るい"
           }
         }
       }
     },
-    "Dialogue.Option.mood.melancholic" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Melancholic"
+    "Dialogue.Option.mood.melancholic": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Melancholic"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "メランコリック"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "メランコリック"
           }
         }
       }
     },
-    "Dialogue.Option.mood.mysterious" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mysterious"
+    "Dialogue.Option.mood.mysterious": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mysterious"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "神秘的"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "神秘的"
           }
         }
       }
     },
-    "Dialogue.Option.mood.serene" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Serene"
+    "Dialogue.Option.mood.serene": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Serene"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "穏やか"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "穏やか"
           }
         }
       }
     },
-    "Dialogue.Option.palette.cool" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cool Tones"
+    "Dialogue.Option.palette.cool": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cool Tones"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "寒色系"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "寒色系"
           }
         }
       }
     },
-    "Dialogue.Option.palette.dark" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dark"
+    "Dialogue.Option.palette.dark": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dark"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ダーク"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ダーク"
           }
         }
       }
     },
-    "Dialogue.Option.palette.monochrome" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Monochrome"
+    "Dialogue.Option.palette.monochrome": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Monochrome"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "モノクロ"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "モノクロ"
           }
         }
       }
     },
-    "Dialogue.Option.palette.pastel" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pastel"
+    "Dialogue.Option.palette.pastel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pastel"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "パステル"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "パステル"
           }
         }
       }
     },
-    "Dialogue.Option.palette.vibrant" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vibrant"
+    "Dialogue.Option.palette.vibrant": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vibrant"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "鮮やか"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "鮮やか"
           }
         }
       }
     },
-    "Dialogue.Option.palette.warm" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Warm Tones"
+    "Dialogue.Option.palette.warm": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Warm Tones"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "暖色系"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暖色系"
           }
         }
       }
     },
-    "Dialogue.Option.style.3dRender" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "3D Render"
+    "Dialogue.Option.style.3dRender": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3D Render"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "3D レンダー"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3D レンダー"
           }
         }
       }
     },
-    "Dialogue.Option.style.anime" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Anime"
+    "Dialogue.Option.style.anime": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anime"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "アニメ"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アニメ"
           }
         }
       }
     },
-    "Dialogue.Option.style.illustration" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Illustration"
+    "Dialogue.Option.style.illustration": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Illustration"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "イラスト"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "イラスト"
           }
         }
       }
     },
-    "Dialogue.Option.style.oilPainting" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Oil Painting"
+    "Dialogue.Option.style.oilPainting": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oil Painting"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "油絵"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "油絵"
           }
         }
       }
     },
-    "Dialogue.Option.style.photorealistic" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Photorealistic"
+    "Dialogue.Option.style.photorealistic": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Photorealistic"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "フォトリアル"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "フォトリアル"
           }
         }
       }
     },
-    "Dialogue.Option.style.watercolor" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Watercolor"
+    "Dialogue.Option.style.watercolor": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Watercolor"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "水彩"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "水彩"
           }
         }
       }
     },
-    "Dialogue.Option.subject.abstract" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Abstract"
+    "Dialogue.Option.subject.abstract": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abstract"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "抽象"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "抽象"
           }
         }
       }
     },
-    "Dialogue.Option.subject.animal" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Animal"
+    "Dialogue.Option.subject.animal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Animal"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "動物"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "動物"
           }
         }
       }
     },
-    "Dialogue.Option.subject.architecture" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Architecture"
+    "Dialogue.Option.subject.architecture": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Architecture"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "建築"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "建築"
           }
         }
       }
     },
-    "Dialogue.Option.subject.landscape" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Landscape"
+    "Dialogue.Option.subject.landscape": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Landscape"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "風景"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "風景"
           }
         }
       }
     },
-    "Dialogue.Option.subject.object" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Object"
+    "Dialogue.Option.subject.object": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Object"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "物体"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "物体"
           }
         }
       }
     },
-    "Dialogue.Option.subject.person" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Person"
+    "Dialogue.Option.subject.person": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Person"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "人物"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "人物"
           }
         }
       }
     },
-    "Dialogue.Question.composition" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "What composition or angle?"
+    "Dialogue.Question.composition": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What composition or angle?"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "どんな構図・アングルですか？"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "どんな構図・アングルですか？"
           }
         }
       }
     },
-    "Dialogue.Question.mood" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "What mood or feeling?"
+    "Dialogue.Question.mood": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What mood or feeling?"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "どんな雰囲気・感情ですか？"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "どんな雰囲気・感情ですか？"
           }
         }
       }
     },
-    "Dialogue.Question.palette" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "What color palette?"
+    "Dialogue.Question.palette": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What color palette?"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "どんな色使いですか？"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "どんな色使いですか？"
           }
         }
       }
     },
-    "Dialogue.Question.style" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "What visual style?"
+    "Dialogue.Question.style": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What visual style?"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "どんな表現スタイルですか？"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "どんな表現スタイルですか？"
           }
         }
       }
     },
-    "Dialogue.Question.subject" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "What do you want to depict?"
+    "Dialogue.Question.subject": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What do you want to depict?"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "何を描きたいですか？"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "何を描きたいですか？"
           }
         }
       }
     },
-    "Dialogue.Result.label" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Generated prompt (editable)"
+    "Dialogue.Result.label": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Generated prompt (editable)"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "生成プロンプト（編集可）"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "生成プロンプト（編集可）"
           }
         }
       }
     },
-    "Dialogue.Retry" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Retry"
+    "Dialogue.Retry": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retry"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "再試行"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "再試行"
           }
         }
       }
     },
-    "Dialogue.Skip" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Skip"
+    "Dialogue.Skip": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skip"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "スキップ"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "スキップ"
           }
         }
       }
     },
-    "Dialogue.Synthesizing" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Generating prompt…"
+    "Dialogue.Synthesizing": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Generating prompt…"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "プロンプトを生成しています…"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "プロンプトを生成しています…"
           }
         }
       }
     },
-
-    "Dialogue.Header.step" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Step %d of %d — %@"
+    "Dialogue.Header.step": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Step %d of %d — %@"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ステップ %d / %d — %@"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ステップ %d / %d — %@"
           }
         }
       }
     },
-
-    "Dialogue.Header.aiFollowup" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Follow-up %d of %d"
+    "Dialogue.Header.aiFollowup": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Follow-up %d of %d"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "追加質問 %d / %d"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "追加質問 %d / %d"
           }
         }
       }
     },
-
-    "Dialogue.AIFollowup.instruction" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Type your answer and tap Next"
+    "Dialogue.AIFollowup.instruction": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type your answer and tap Next"
           }
         },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "テキストを入力して「次へ」を押してください"
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "テキストを入力して「次へ」を押してください"
           }
         }
       }
@@ -6114,22 +6110,6 @@
         }
       }
     },
-    "画像を読み込めませんでした": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Failed to load image"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "画像を読み込めませんでした"
-          }
-        }
-      }
-    },
     "自由": {
       "localizations": {
         "en": {
@@ -6318,6 +6298,278 @@
           "stringUnit": {
             "state": "translated",
             "value": "Draft Canvas リリースノート"
+          }
+        }
+      }
+    },
+    "テンプレート": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Templates"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "テンプレート"
+          }
+        }
+      }
+    },
+    "管理": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manage"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "管理"
+          }
+        }
+      }
+    },
+    "テンプレートがありません": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No templates"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "テンプレートがありません"
+          }
+        }
+      }
+    },
+    "プロンプトテンプレート": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prompt Templates"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "プロンプトテンプレート"
+          }
+        }
+      }
+    },
+    "プリセット": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preset"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "プリセット"
+          }
+        }
+      }
+    },
+    "新規テンプレート": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New Template"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新規テンプレート"
+          }
+        }
+      }
+    },
+    "テンプレートを編集": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit Template"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "テンプレートを編集"
+          }
+        }
+      }
+    },
+    "プロンプト": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prompt"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "プロンプト"
+          }
+        }
+      }
+    },
+    "新規に切替": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Switch to New"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新規に切替"
+          }
+        }
+      }
+    },
+    "追加": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "追加"
+          }
+        }
+      }
+    },
+    "水彩画": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Watercolor"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "水彩画"
+          }
+        }
+      }
+    },
+    "油絵": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oil Painting"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "油絵"
+          }
+        }
+      }
+    },
+    "フラットイラスト": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Flat Illustration"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "フラットイラスト"
+          }
+        }
+      }
+    },
+    "写真風": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Photorealistic"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "写真風"
+          }
+        }
+      }
+    },
+    "3Dレンダー": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3D Render"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3Dレンダー"
+          }
+        }
+      }
+    },
+    "ラインアート": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Line Art"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ラインアート"
+          }
+        }
+      }
+    },
+    "テンプレートを削除しますか？": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete this template?"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "テンプレートを削除しますか？"
           }
         }
       }

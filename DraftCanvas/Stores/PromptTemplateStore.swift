@@ -21,11 +21,11 @@ final class PromptTemplateStore: JSONFileStore {
     }
 
     func add(_ template: PromptTemplate) {
-        var t = template
         // ユーザー作成は必ず isBuiltIn = false
-        t = PromptTemplate(
-            id: t.id, name: t.name, prompt: t.prompt, isBuiltIn: false,
-            count: t.count, aspectRatio: t.aspectRatio, model: t.model, reasoningEffort: t.reasoningEffort
+        let t = PromptTemplate(
+            id: template.id, name: template.name, prompt: template.prompt, isBuiltIn: false,
+            count: template.count, aspectRatio: template.aspectRatio,
+            model: template.model, reasoningEffort: template.reasoningEffort
         )
         userTemplates.append(t)
         save(userTemplates)

@@ -7,6 +7,7 @@ struct PromptTemplateSheet: View {
     @State private var editingID: UUID?
     @State private var name: String = ""
     @State private var prompt: String = ""
+    @State private var deletingID: UUID?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -47,7 +48,7 @@ struct PromptTemplateSheet: View {
                                 }
                                 .buttonStyle(.borderless)
                                 Button {
-                                    viewModel.deleteTemplate(id: template.id)
+                                    deletingID = template.id
                                 } label: {
                                     Image(systemName: "trash")
                                 }
@@ -93,6 +94,18 @@ struct PromptTemplateSheet: View {
         }
         .padding(20)
         .frame(width: 460)
+        .alert("テンプレートを削除しますか？", isPresented: .init(
+            get: { deletingID != nil },
+            set: { if !$0 { deletingID = nil } }
+        )) {
+            Button("削除", role: .destructive) {
+                if let id = deletingID { viewModel.deleteTemplate(id: id) }
+                deletingID = nil
+            }
+            Button("キャンセル", role: .cancel) { deletingID = nil }
+        } message: {
+            Text("この操作は取り消せません。")
+        }
     }
 
     private func resetForm() {
@@ -106,7 +119,12 @@ struct PromptTemplateSheet: View {
         let trimmedPrompt = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty, !trimmedPrompt.isEmpty else { return }
         if let id = editingID {
-            viewModel.updateTemplate(PromptTemplate(id: id, name: trimmedName, prompt: trimmedPrompt))
+            let existing = viewModel.promptTemplates.first(where: { $0.id == id })
+            viewModel.updateTemplate(PromptTemplate(
+                id: id, name: trimmedName, prompt: trimmedPrompt,
+                count: existing?.count, aspectRatio: existing?.aspectRatio,
+                model: existing?.model, reasoningEffort: existing?.reasoningEffort
+            ))
         } else {
             viewModel.saveTemplate(PromptTemplate(name: trimmedName, prompt: trimmedPrompt))
         }
