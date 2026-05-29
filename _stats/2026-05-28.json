@@ -1,5 +1,5 @@
 {
-  "date": "2026-05-29",
+  "date": "2026-05-28",
   "releases": [
     {
       "tag": "v1.0.4",
@@ -7,11 +7,11 @@
       "assets": [
         {
           "name": "appcast.xml",
-          "dl": 5
+          "dl": 4
         },
         {
           "name": "DraftCanvas.dmg",
-          "dl": 4
+          "dl": 2
         }
       ]
     },
