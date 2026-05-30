@@ -16,7 +16,7 @@ struct CircularShareButton: View {
         .disabled(urls.isEmpty)
         .onHover { isHovered = $0 }
         .animation(.easeInOut(duration: 0.1), value: isHovered)
-        .overlay(alignment: .center) {
+        .overlay(alignment: .leading) {
             if isHovered {
                 Text("共有")
                     .font(.caption.weight(.medium))
@@ -26,7 +26,7 @@ struct CircularShareButton: View {
                     .background(.regularMaterial, in: Capsule())
                     .shadow(color: .black.opacity(0.12), radius: 4, x: 0, y: 2)
                     .fixedSize()
-                    .offset(x: 60)
+                    .offset(x: 44)
                     .allowsHitTesting(false)
                     .transition(.opacity)
             }

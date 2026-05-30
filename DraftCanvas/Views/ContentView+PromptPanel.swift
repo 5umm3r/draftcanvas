@@ -150,6 +150,55 @@ extension ContentView {
                 .padding(.vertical, 8)
             }
 
+            if !isCollapsed {
+                HStack(spacing: 4) {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            viewModel.isHistoryPopoverPresented = false
+                            viewModel.isTemplatePopoverPresented.toggle()
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "list.bullet.rectangle")
+                                .font(.system(size: 11))
+                            Text("テンプレート")
+                                .font(.system(size: 12))
+                        }
+                        .frame(height: 24)
+                        .padding(.horizontal, 8)
+                        .background(viewModel.isTemplatePopoverPresented ? Color.accentColor.opacity(0.12) : Color.primary.opacity(0.04))
+                        .clipShape(RoundedRectangle(cornerRadius: 5))
+                    }
+                    .buttonStyle(.plain)
+                    .help("テンプレート")
+
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            viewModel.isTemplatePopoverPresented = false
+                            viewModel.isHistoryPopoverPresented.toggle()
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "clock.arrow.circlepath")
+                                .font(.system(size: 11))
+                            Text("生成履歴")
+                                .font(.system(size: 12))
+                        }
+                        .frame(height: 24)
+                        .padding(.horizontal, 8)
+                        .background(viewModel.isHistoryPopoverPresented ? Color.accentColor.opacity(0.12) : Color.primary.opacity(0.04))
+                        .clipShape(RoundedRectangle(cornerRadius: 5))
+                    }
+                    .buttonStyle(.plain)
+                    .help("生成履歴")
+
+                    Spacer()
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 10)
+                .padding(.bottom, 4)
+            }
+
             ZStack(alignment: .bottomTrailing) {
                 PromptTextView(
                     text: viewModel.binding(for: \.prompt),
@@ -159,6 +208,9 @@ extension ContentView {
                     onSubmit: { viewModel.generate() },
                     onSetupReplacer: { replacer in
                         viewModel.onReplacePromptText = replacer
+                    },
+                    onSetupAppender: { appender in
+                        viewModel.onAppendPromptText = appender
                     },
                     onPasteImage: {
                         viewModel.pasteImageFromClipboard()
@@ -187,6 +239,7 @@ extension ContentView {
                             .font(.system(size: 18))
                             .foregroundStyle(.secondary)
                             .allowsHitTesting(false)
+                            .padding(.top, 0)
                     }
                 }
                 .padding(.trailing, isCollapsed ? 0 : 44)
@@ -269,7 +322,7 @@ extension ContentView {
                 }
             }
             .padding(.horizontal, isCollapsed ? 0 : 16)
-            .padding(.top, isCollapsed ? 0 : 14)
+            .padding(.top, isCollapsed ? 0 : 6)
 
             if !isCollapsed {
                 Divider()
@@ -280,14 +333,7 @@ extension ContentView {
                             Button {
                                 viewModel.binding(for: \.model).wrappedValue = model.id
                             } label: {
-                                if let r = model.rating {
-                                    Label(
-                                        "\(model.displayName)   \(String(localized: "コスト")):\(r.cost)  \(String(localized: "賢さ")):\(r.smart)  \(String(localized: "速さ")):\(r.speed)",
-                                        systemImage: viewModel.currentInputs.model == model.id ? "checkmark" : ""
-                                    )
-                                } else {
-                                    Label(model.displayName, systemImage: viewModel.currentInputs.model == model.id ? "checkmark" : "")
-                                }
+                                Label(model.displayName, systemImage: viewModel.currentInputs.model == model.id ? "checkmark" : "")
                             }
                         }
                     } label: {
@@ -417,6 +463,14 @@ extension ContentView {
                     .fixedSize()
                     .help("並列実行数")
 
+                    Toggle(isOn: $viewModel.translateToEnglish) {
+                        Image(systemName: "text.bubble")
+                            .font(.system(size: 13))
+                    }
+                    .toggleStyle(.switch)
+                    .controlSize(.small)
+                    .help(String(localized: "英語正規化: 生成前に英語へ変換しブレを抑制。トークン消費が増えます。"))
+
                     Spacer()
 
                     Button {
@@ -474,7 +528,6 @@ extension ContentView {
                         Image(systemName: "bolt.fill")
                             .font(.system(size: 9, weight: .semibold))
                             .foregroundStyle(.secondary)
-                            .opacity(viewModel.selectedModelCostLevel > 0 ? 1 : 0)
                             .offset(x: 3, y: 3)
                     }
                     .disabled(!viewModel.canGenerate || viewModel.isGeneratingForSelected)

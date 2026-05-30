@@ -36,7 +36,16 @@ private struct SendableParams: @unchecked Sendable {
     let value: [String: Any]?
 }
 
+protocol CodexAccountProviding: AnyObject, Sendable {
+    var codexExecutablePath: String { get }
+    func start() async throws
+    func stop()
+    func readAccountUsageStatus() async throws -> CodexAccountUsageStatus
+    func listModels(includeHidden: Bool) async throws -> [CodexModel]
+}
+
 final class CodexAppServerClient: @unchecked Sendable {
+    private static let queueKey = DispatchSpecificKey<Void>()
     private let queue = DispatchQueue(label: "local.draftcanvas.codex-app-server")
     let codexExecutablePath: String
     private var process: Process?
@@ -52,6 +61,7 @@ final class CodexAppServerClient: @unchecked Sendable {
 
     init(codexExecutablePath: String = CodexAppServerClient.defaultCodexExecutablePath()) {
         self.codexExecutablePath = codexExecutablePath
+        queue.setSpecific(key: Self.queueKey, value: ())
     }
 
     deinit {
@@ -146,7 +156,7 @@ final class CodexAppServerClient: @unchecked Sendable {
     }
 
     func stop() {
-        queue.async {
+        let work = {
             ProcessTerminationResources.release(
                 process: self.process,
                 stdinHandle: self.stdinHandle,
@@ -162,6 +172,11 @@ final class CodexAppServerClient: @unchecked Sendable {
             self.pending.removeAll()
             self.turnWaiters.values.forEach { $0.finish(throwing: DraftCanvasError.processExited) }
             self.turnWaiters.removeAll()
+        }
+        if DispatchQueue.getSpecific(key: Self.queueKey) != nil {
+            work()
+        } else {
+            queue.sync(execute: work)
         }
     }
 
@@ -221,7 +236,6 @@ final class CodexAppServerClient: @unchecked Sendable {
             let defaultEffort = dict["defaultReasoningEffort"] as? String ?? "medium"
             let isDefault = dict["isDefault"] as? Bool ?? false
             let rating = ModelRating.lookup(displayName: displayName)
-            print("[ModelRating] id=\(id) displayName=\(displayName) rating=\(String(describing: rating))")
             return CodexModel(
                 id: id,
                 displayName: displayName,
@@ -530,6 +544,8 @@ final class CodexAppServerClient: @unchecked Sendable {
         return nil
     }
 }
+
+extension CodexAppServerClient: CodexAccountProviding {}
 
 enum CodexTurnInputFactory {
     static func input(prompt: String, referenceImagePath: String? = nil) -> [[String: Any]] {

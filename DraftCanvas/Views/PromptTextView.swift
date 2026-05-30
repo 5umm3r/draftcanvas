@@ -105,6 +105,7 @@ struct PromptTextView: NSViewRepresentable {
     var maxHeight: CGFloat
     var onSubmit: (() -> Void)?
     var onSetupReplacer: ((@escaping (String) -> Void) -> Void)?
+    var onSetupAppender: ((@escaping (String) -> Void) -> Void)?
     var onPasteImage: (() -> Void)?
     var onDropFileURL: ((URL) -> Void)?
     var onDropNSImage: ((NSImage) -> Void)?
@@ -155,6 +156,9 @@ struct PromptTextView: NSViewRepresentable {
         context.coordinator.textViewRef = textView
         onSetupReplacer?({ [weak coordinator = context.coordinator] newText in
             coordinator?.replaceTextUndoably(newText)
+        })
+        onSetupAppender?({ [weak coordinator = context.coordinator] addition in
+            coordinator?.appendTextUndoably(addition)
         })
 
         let scrollView = NSScrollView()
@@ -224,6 +228,14 @@ struct PromptTextView: NSViewRepresentable {
 
         func replaceTextUndoably(_ newText: String) {
             guard let tv = textViewRef else { return }
+            tv.selectAll(nil)
+            tv.insertText(newText, replacementRange: tv.selectedRange())
+        }
+
+        func appendTextUndoably(_ addition: String) {
+            guard let tv = textViewRef else { return }
+            let existing = tv.string
+            let newText = PromptTextAppender.smartAppend(existing: existing, addition: addition)
             tv.selectAll(nil)
             tv.insertText(newText, replacementRange: tv.selectedRange())
         }

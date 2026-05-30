@@ -15,6 +15,11 @@ final class DraftCanvasViewModel: ObservableObject {
     var lastRequestByProject: [UUID: GenerationRequest] = [:]
     var generationTasks: [UUID: [UUID: Task<Void, Never>]] = [:]
 
+    // MARK: - 自動リトライ
+    @AppStorage("autoRetryEnabled") var autoRetryEnabled: Bool = true
+    var autoRetryCountByProject: [UUID: Int] = [:]    // run 単位のリトライ回数（上限3）
+    var autoRetryTasks: [UUID: Task<Void, Never>] = [:]  // バックオフ中の予約タスク
+
     // MARK: - Global state
     @AppStorage("appAppearance") var appAppearanceRaw: String = "light"
     @AppStorage("completionSound") var completionSound: String = CompletionSoundOption.glass.rawValue
@@ -180,7 +185,13 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var importError: String? = nil
     @Published var focusPromptTrigger: UUID? = nil
 
+    @Published var templates: [PromptTemplate] = []
+    @Published var promptHistory: [PromptHistoryEntry] = []
+    @Published var isTemplatePopoverPresented: Bool = false
+    @Published var isHistoryPopoverPresented: Bool = false
+
     let client: CodexAppServerClient
+    let accountClient: CodexAccountProviding
     let coordinator: GenerationCoordinator
     let projectStore: ProjectStore
     let preferredSaveFolderStore: PreferredSaveFolderStore
@@ -190,24 +201,33 @@ final class DraftCanvasViewModel: ObservableObject {
     var upscalingTasks: [UUID: Task<Void, Never>] = [:]
     var enhanceTask: Task<Void, Never>?
     var materialExtractionTask: Task<Void, Never>?
+    var accountUsageRefreshTask: Task<CodexAccountUsageStatus, Error>?
     let activityTracker = ActivityTracker()
     var onReplacePromptText: ((String) -> Void)?
+    var onAppendPromptText: ((String) -> Void)?
     let thumbnailStore: CanvasThumbnailStore
     let originalImageStore: CanvasOriginalImageStore
+    let templateStore: PromptTemplateStore
+    let historyStore: PromptHistoryStore
 
     init(
         projectStore: ProjectStore = ProjectStore(),
-        preferredSaveFolderStore: PreferredSaveFolderStore = PreferredSaveFolderStore()
+        preferredSaveFolderStore: PreferredSaveFolderStore = PreferredSaveFolderStore(),
+        client: CodexAppServerClient = CodexAppServerClient(),
+        accountClient: CodexAccountProviding? = nil,
+        prewarmOnInit: Bool = true
     ) {
         DraftCanvasViewModel.migratePromptLanguageModeIfNeeded()
         DraftCanvasViewModel.migrateAppSupportDirectoryIfNeeded()
-        let client = CodexAppServerClient()
         self.client = client
+        self.accountClient = accountClient ?? client
         self.coordinator = GenerationCoordinator(runner: CodexGenerationRunner(client: client))
         self.projectStore = projectStore
         self.preferredSaveFolderStore = preferredSaveFolderStore
         self.thumbnailStore = CanvasThumbnailStore(itemsDirectory: projectStore.itemsDirectory)
         self.originalImageStore = CanvasOriginalImageStore()
+        self.templateStore = PromptTemplateStore(rootDirectory: projectStore.rootDirectory)
+        self.historyStore = PromptHistoryStore(rootDirectory: projectStore.rootDirectory)
         client.onLog = { [weak self] message in
             Task { @MainActor [weak self] in
                 guard let self else { return }
@@ -233,9 +253,13 @@ final class DraftCanvasViewModel: ObservableObject {
         }
         projectStore.cleanupAllAttachments()
         loadProjects()
+        loadTemplates()
+        loadHistory()
         preferredSaveFolder = preferredSaveFolderStore.load()
             ?? FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
-        prewarmAndRefresh()
+        if prewarmOnInit {
+            prewarmAndRefresh()
+        }
     }
 
     func rebuildAllTagsCache() {
@@ -395,6 +419,9 @@ final class DraftCanvasViewModel: ObservableObject {
         vectorizationTasks.removeAll()
         for (_, t) in upscalingTasks { t.cancel() }
         upscalingTasks.removeAll()
+        for (_, t) in autoRetryTasks { t.cancel() }
+        autoRetryTasks.removeAll()
+        autoRetryCountByProject.removeAll()
         enhanceTask?.cancel()
         enhanceTask = nil
         materialExtractionTask?.cancel()
@@ -420,6 +447,7 @@ final class DraftCanvasViewModel: ObservableObject {
         let tasksToAwait = generationTasks.values.flatMap { $0.values }
             + Array(vectorizationTasks.values)
             + Array(upscalingTasks.values)
+            + Array(autoRetryTasks.values)
         let enhance = enhanceTask
         cancelInFlightWorkForRelaunch()
         for task in tasksToAwait { await task.value }
