@@ -204,6 +204,7 @@ final class DraftCanvasViewModel: ObservableObject {
     var accountUsageRefreshTask: Task<CodexAccountUsageStatus, Error>?
     let activityTracker = ActivityTracker()
     var onReplacePromptText: ((String) -> Void)?
+    var onAppendPromptText: ((String) -> Void)?
     let thumbnailStore: CanvasThumbnailStore
     let originalImageStore: CanvasOriginalImageStore
     let templateStore: PromptTemplateStore

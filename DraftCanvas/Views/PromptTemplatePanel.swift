@@ -2,7 +2,7 @@ import SwiftUI
 
 struct PromptTemplatePanel: View {
     @ObservedObject var viewModel: DraftCanvasViewModel
-    @State private var selectedTab = 0
+    @State private var selectedCategory: PromptTemplateCategory = .style
     @State private var editingTemplateID: UUID?
     @State private var editName = ""
     @State private var editPrompt = ""
@@ -10,27 +10,26 @@ struct PromptTemplatePanel: View {
     @State private var newName = ""
     @State private var newPrompt = ""
 
-    private var builtInTemplates: [PromptTemplate] {
-        viewModel.templates.filter(\.isBuiltIn)
-    }
-
-    private var userTemplates: [PromptTemplate] {
-        viewModel.templates.filter { !$0.isBuiltIn }
+    private var templatesForSelectedCategory: [PromptTemplate] {
+        viewModel.templates.filter { $0.category == selectedCategory }
     }
 
     var body: some View {
         VStack(spacing: 0) {
             header
             Divider()
-            tabBar
-            Divider()
-            content
-            if selectedTab == 1 {
+            HStack(spacing: 0) {
+                categoryList
+                Divider()
+                templateList
+            }
+            if selectedCategory == .user {
                 Divider()
                 footer
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: 360)
+        .frame(maxWidth: 780)
+        .frame(maxHeight: 380)
         .background(.regularMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         .shadow(color: .black.opacity(0.16), radius: 24, x: 0, y: 12)
@@ -59,26 +58,53 @@ struct PromptTemplatePanel: View {
         .padding(.vertical, 10)
     }
 
-    private var tabBar: some View {
-        Picker("", selection: $selectedTab) {
-            Text("プリセット").tag(0)
-            Text("マイテンプレート").tag(1)
+    private var categoryList: some View {
+        ScrollView {
+            VStack(spacing: 2) {
+                ForEach(PromptTemplateCategory.allCases) { category in
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.15)) {
+                            selectedCategory = category
+                            editingTemplateID = nil
+                            isCreating = false
+                        }
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: category.systemImage)
+                                .font(.system(size: 12))
+                                .frame(width: 16)
+                            Text(category.localizedName)
+                                .font(.system(size: 12))
+                            Spacer()
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 7)
+                        .contentShape(Rectangle())
+                        .background(selectedCategory == category
+                            ? Color.accentColor.opacity(0.12)
+                            : Color.clear)
+                        .clipShape(RoundedRectangle(cornerRadius: 5))
+                        .foregroundStyle(selectedCategory == category
+                            ? Color.accentColor
+                            : Color.primary)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(8)
         }
-        .pickerStyle(.segmented)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
-        .onChange(of: selectedTab) { _, _ in
-            editingTemplateID = nil
-            isCreating = false
-        }
+        .frame(width: 200)
+        .background(Color.primary.opacity(0.02))
     }
 
-    private var content: some View {
+    private var templateList: some View {
         ScrollView {
             LazyVStack(spacing: 0) {
-                let items = selectedTab == 0 ? builtInTemplates : userTemplates
-                if items.isEmpty && selectedTab == 1 {
-                    Text("テンプレートがありません")
+                let items = templatesForSelectedCategory
+                if items.isEmpty {
+                    Text(selectedCategory == .user
+                        ? String(localized: "テンプレートがありません")
+                        : String(localized: "テンプレートなし"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity)
@@ -96,7 +122,7 @@ struct PromptTemplatePanel: View {
                     }
                 }
 
-                if isCreating {
+                if selectedCategory == .user && isCreating {
                     Divider().padding(.leading, 16)
                     createRow
                 }
@@ -106,15 +132,9 @@ struct PromptTemplatePanel: View {
 
     private func templateRow(template: PromptTemplate) -> some View {
         HStack(alignment: .top, spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(template.name)
-                    .font(.subheadline.weight(.medium))
-                    .lineLimit(1)
-                Text(template.promptText)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
-            }
+            Text(template.name)
+                .font(.subheadline.weight(.medium))
+                .lineLimit(1)
             Spacer()
             HStack(spacing: 6) {
                 Button(String(localized: "適用")) {

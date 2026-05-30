@@ -36,13 +36,15 @@ extension DraftCanvasViewModel {
     }
 
     func applyHistory(_ entry: PromptHistoryEntry) {
-        if let replacer = onReplacePromptText {
-            replacer(entry.promptText)
+        if let appender = onAppendPromptText {
+            appender(entry.promptText)
         } else {
             if let id = selectedProjectID {
-                inputsByProject[id]?.prompt = entry.promptText
+                let existing = inputsByProject[id]?.prompt ?? ""
+                inputsByProject[id]?.prompt = PromptTextAppender.smartAppend(existing: existing, addition: entry.promptText)
             } else {
-                draftInputs.prompt = entry.promptText
+                let existing = draftInputs.prompt
+                draftInputs.prompt = PromptTextAppender.smartAppend(existing: existing, addition: entry.promptText)
             }
         }
         isHistoryPopoverPresented = false

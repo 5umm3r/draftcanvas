@@ -7,7 +7,7 @@ extension DraftCanvasViewModel {
     }
 
     func addTemplate(name: String, promptText: String) {
-        let template = PromptTemplate(name: name, promptText: promptText)
+        let template = PromptTemplate(name: name, promptText: promptText, category: .user)
         templates.append(template)
         templateStore.save(templates)
     }
@@ -27,13 +27,15 @@ extension DraftCanvasViewModel {
     }
 
     func applyTemplate(_ template: PromptTemplate) {
-        if let replacer = onReplacePromptText {
-            replacer(template.promptText)
+        if let appender = onAppendPromptText {
+            appender(template.promptText)
         } else {
             if let id = selectedProjectID {
-                inputsByProject[id]?.prompt = template.promptText
+                let existing = inputsByProject[id]?.prompt ?? ""
+                inputsByProject[id]?.prompt = PromptTextAppender.smartAppend(existing: existing, addition: template.promptText)
             } else {
-                draftInputs.prompt = template.promptText
+                let existing = draftInputs.prompt
+                draftInputs.prompt = PromptTextAppender.smartAppend(existing: existing, addition: template.promptText)
             }
         }
         isTemplatePopoverPresented = false

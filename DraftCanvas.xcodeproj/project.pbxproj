@@ -177,6 +177,7 @@
 		dffa5788acfc4dfdada1510b9c9aee33 /* DraftCanvasViewModel+FilteringProjects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 142b1b577a9b4336b315f08d800e5d6a /* DraftCanvasViewModel+FilteringProjects.swift */; };
 		f930d5d3164b439c85edb6c7ee4b9d7e /* TagEditorRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5e64e8265c0548dab23dae9cd36602db /* TagEditorRow.swift */; };
 		E51F55EA9442E596EDA674FC /* PromptTemplate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 532E94693748327CE8224795 /* PromptTemplate.swift */; };
+		A1B2C3D4E5F60718293A4B5C /* PromptTextAppender.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6E7F8091A2B3C4D5E6F7081 /* PromptTextAppender.swift */; };
 		076FAD21B0AA35102DEAC2E9 /* PromptHistoryEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE5EE43F5DFF9ABA7EED3F01 /* PromptHistoryEntry.swift */; };
 		3952E53DAC9D407E9B1DD6FE /* PromptTemplateStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF859C99E0E1FEA7BBC88523 /* PromptTemplateStore.swift */; };
 		4B2D8979387C4F2B53B1DA2E /* PromptHistoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFC9A84BE2FE99FBFF6F2059 /* PromptHistoryStore.swift */; };
@@ -369,6 +370,7 @@
 		b7e96c4970d44133991b9ff817e3cefd /* CanvasScrollZoomCatcher.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CanvasScrollZoomCatcher.swift; path = Views/CanvasScrollZoomCatcher.swift; sourceTree = "<group>"; };
 		fb7d415c11834f8094805ae90e496476 /* LicensesSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LicensesSheet.swift; path = Views/LicensesSheet.swift; sourceTree = "<group>"; };
 		532E94693748327CE8224795 /* PromptTemplate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptTemplate.swift; path = Models/PromptTemplate.swift; sourceTree = "<group>"; };
+		D6E7F8091A2B3C4D5E6F7081 /* PromptTextAppender.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptTextAppender.swift; path = Models/PromptTextAppender.swift; sourceTree = "<group>"; };
 		BE5EE43F5DFF9ABA7EED3F01 /* PromptHistoryEntry.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptHistoryEntry.swift; path = Models/PromptHistoryEntry.swift; sourceTree = "<group>"; };
 		CF859C99E0E1FEA7BBC88523 /* PromptTemplateStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptTemplateStore.swift; path = Stores/PromptTemplateStore.swift; sourceTree = "<group>"; };
 		EFC9A84BE2FE99FBFF6F2059 /* PromptHistoryStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptHistoryStore.swift; path = Stores/PromptHistoryStore.swift; sourceTree = "<group>"; };
@@ -535,6 +537,7 @@
 				09C61E0F55E7FD6835C52AF4 /* RateLimitConfirmation.swift */,
 				6D8A2AE8C81B31B43D4B0DA0 /* CompletionSoundOption.swift */,
 				532E94693748327CE8224795 /* PromptTemplate.swift */,
+				D6E7F8091A2B3C4D5E6F7081 /* PromptTextAppender.swift */,
 				BE5EE43F5DFF9ABA7EED3F01 /* PromptHistoryEntry.swift */,
 			);
 			name = Models;
@@ -1034,6 +1037,7 @@
 				B9329BA91A3E348BBB64F55B /* GroupSmallNearbyStage.swift in Sources */,
 				65E9F650BD09EDB0C69A024C /* MergeByIoUStage.swift in Sources */,
 				E51F55EA9442E596EDA674FC /* PromptTemplate.swift in Sources */,
+				A1B2C3D4E5F60718293A4B5C /* PromptTextAppender.swift in Sources */,
 				076FAD21B0AA35102DEAC2E9 /* PromptHistoryEntry.swift in Sources */,
 				3952E53DAC9D407E9B1DD6FE /* PromptTemplateStore.swift in Sources */,
 				4B2D8979387C4F2B53B1DA2E /* PromptHistoryStore.swift in Sources */,
