@@ -67,10 +67,19 @@ enum ExportPipeline {
                 try output.write(to: losslessPath, options: .atomic)
                 defer { try? FileManager.default.removeItem(at: losslessPath) }
 
+                let isMax = settings.pngLevel == .max
+                let oxiLevel = isMax ? "4" : "2"
+                let oxiStrip = isMax ? "all" : "safe"
+                let oxiTimeout: TimeInterval = isMax ? 300 : 120
+
+                var losslessArgs = ["-o", oxiLevel, "--strip", oxiStrip]
+                if isMax { losslessArgs += ["--interlace", "0"] }
+                losslessArgs.append(losslessPath.path)
+
                 _ = try await BinaryRunner.run(
                     binary: "oxipng",
-                    arguments: ["-o", "2", "--strip", "safe", losslessPath.path],
-                    timeout: 120
+                    arguments: losslessArgs,
+                    timeout: oxiTimeout
                 )
 
                 if settings.pngLevel.isLossy {
@@ -96,10 +105,14 @@ enum ExportPipeline {
 
                     if FileManager.default.fileExists(atPath: quantOut.path) {
                         _ = try FileManager.default.replaceItemAt(lossyBase, withItemAt: quantOut)
+                        var lossyArgs = ["-o", oxiLevel, "--strip", oxiStrip]
+                        if isMax { lossyArgs += ["--interlace", "0"] }
+                        lossyArgs.append(lossyBase.path)
+
                         _ = try await BinaryRunner.run(
                             binary: "oxipng",
-                            arguments: ["-o", "2", "--strip", "safe", lossyBase.path],
-                            timeout: 120
+                            arguments: lossyArgs,
+                            timeout: oxiTimeout
                         )
                         let losslessSize = (try? FileManager.default.attributesOfItem(atPath: losslessPath.path)[.size] as? Int) ?? Int.max
                         let lossySize = (try? FileManager.default.attributesOfItem(atPath: lossyBase.path)[.size] as? Int) ?? Int.max
