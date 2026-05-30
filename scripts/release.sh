@@ -133,7 +133,7 @@ if [ -n "$NOTES" ]; then
     -e '/^[[:space:]]*$/d' | tr -d '\n')
   HTML_NOTES="${HTML_NOTES#</ul>}"
   HTML_NOTES="<ul>${HTML_NOTES}</ul>"
-  sed -i '' "s|</item>|<description><![CDATA[${HTML_NOTES}]]></description></item>|" "$APPCAST_DIR/appcast.xml"
+  sed -i '' "s|</item>|<description><![CDATA[<html><body>${HTML_NOTES}</body></html>]]></description></item>|" "$APPCAST_DIR/appcast.xml"
   echo "    Release notes injected (${VERSION})"
 else
   echo "    No release notes found in CHANGELOG.md for ${VERSION}, skipping"
