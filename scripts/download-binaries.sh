@@ -30,34 +30,50 @@ echo "  ok: $BIN_DIR/oxipng"
 file "$BIN_DIR/oxipng"
 
 # ── pngquant ──────────────────────────────────────────────────────────────────
-# GitHub に macOS 事前ビルドバイナリなし → Homebrew のバイナリを収集して Universal 化
+# pngquant 3.x は純 Rust 実装 (imagequant)。cargo install で両アーキを
+# ビルドして lipo で Universal 化する。
+# Homebrew bottle は lcms2 等を動的リンクし、Homebrew 非導入のエンドユーザー
+# 環境では dyld エラーになる (自己完結でない)。よって brew は使わない。
+PQ_VERSION="3.0.3"
 echo ""
-echo "==> pngquant: Homebrew バイナリを収集中..."
+echo "==> pngquant v${PQ_VERSION}: cargo で Universal Binary をビルド中..."
 
-ARM_PQ="/opt/homebrew/bin/pngquant"
-X86_PQ="/usr/local/bin/pngquant"
+command -v cargo >/dev/null 2>&1 \
+  || { echo "ERROR: cargo が必要です。導入: https://rustup.rs"; exit 1; }
+rustup target add aarch64-apple-darwin x86_64-apple-darwin >/dev/null 2>&1 || true
 
-HAS_ARM=false; HAS_X86=false
-[ -f "$ARM_PQ" ] && HAS_ARM=true
-[ -f "$X86_PQ" ] && HAS_X86=true
+# 静的リンク強制で自己完結バイナリ (システム dylib のみ) を生成する:
+#   - pkg-config の探索パスを無効化 → libpng/lcms2 を vendored static でビルド
+#   - LCMS2_STATIC=1  → lcms2-sys を静的リンク
+#   - PNG_STATIC=1    → libpng-sys を vendored static ビルド (build.rs 準拠)
+# これを怠ると Homebrew の liblcms2/libpng16 dylib を動的リンクし、
+# Homebrew 非導入のエンドユーザー環境で dyld エラーになる。
+PQ_ENV=(env PKG_CONFIG_PATH="" PKG_CONFIG_LIBDIR="/nonexistent" LCMS2_STATIC=1 PNG_STATIC=1)
 
-if $HAS_ARM && $HAS_X86; then
-  lipo -create "$ARM_PQ" "$X86_PQ" -output "$BIN_DIR/pngquant"
-  echo "  Universal Binary 作成完了"
-elif $HAS_ARM; then
-  cp "$ARM_PQ" "$BIN_DIR/pngquant"
-  echo "  WARNING: arm64 のみ (x86_64 未検出)"
-elif $HAS_X86; then
-  cp "$X86_PQ" "$BIN_DIR/pngquant"
-  echo "  WARNING: x86_64 のみ (arm64 未検出 — Rosetta 経由で動作)"
-else
-  echo "  ERROR: pngquant が見つかりません。"
-  echo "  インストール: brew install pngquant"
+"${PQ_ENV[@]}" cargo install pngquant --version "$PQ_VERSION" \
+  --target aarch64-apple-darwin --root "$TMP/pq-arm" --force
+"${PQ_ENV[@]}" cargo install pngquant --version "$PQ_VERSION" \
+  --target x86_64-apple-darwin  --root "$TMP/pq-x86" --force
+
+PQ_ARM="$TMP/pq-arm/bin/pngquant"
+PQ_X86="$TMP/pq-x86/bin/pngquant"
+[ -f "$PQ_ARM" ] && [ -f "$PQ_X86" ] \
+  || { echo "ERROR: pngquant 両アーキのビルドに失敗"; exit 1; }
+
+lipo -create "$PQ_ARM" "$PQ_X86" -output "$BIN_DIR/pngquant"
+chmod +x "$BIN_DIR/pngquant"
+file "$BIN_DIR/pngquant" | grep -q "universal binary" \
+  || { echo "ERROR: pngquant Universal Binary 化失敗"; exit 1; }
+
+# 自己完結チェック: /usr/lib・/System 以外の dylib に依存していないこと
+NONSYS=$(otool -L "$BIN_DIR/pngquant" | tail -n +2 | awk '{print $1}' \
+  | grep -vE '^/usr/lib/|^/System/' || true)
+if [ -n "$NONSYS" ]; then
+  echo "  ERROR: pngquant が非システム dylib に依存 (自己完結でない):"
+  echo "$NONSYS"
   exit 1
 fi
-
-chmod +x "$BIN_DIR/pngquant"
-echo "  ok: $BIN_DIR/pngquant"
+echo "  ok: $BIN_DIR/pngquant (自己完結)"
 file "$BIN_DIR/pngquant"
 
 # ── cwebp ─────────────────────────────────────────────────────────────────────

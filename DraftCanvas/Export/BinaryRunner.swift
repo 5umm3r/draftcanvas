@@ -27,7 +27,8 @@ enum BinaryRunner {
     static func run(
         binary: String,
         arguments: [String],
-        timeout: TimeInterval = 120
+        timeout: TimeInterval = 120,
+        allowedExitCodes: Set<Int32> = [0]
     ) async throws -> (stdout: Data, stderr: String) {
         let url = try resolve(name: binary)
         let p = Process()
@@ -50,7 +51,7 @@ enum BinaryRunner {
                 let stdout = (try? outPipe.fileHandleForReading.readToEnd()) ?? Data()
                 let stderrData = (try? errPipe.fileHandleForReading.readToEnd()) ?? Data()
                 let stderr = String(data: stderrData, encoding: .utf8) ?? ""
-                guard p.terminationStatus == 0 else {
+                guard allowedExitCodes.contains(p.terminationStatus) else {
                     throw Failure.nonZeroExit(p.terminationStatus, stderr)
                 }
                 return (stdout, stderr)
