@@ -18,6 +18,10 @@ extension DraftCanvasViewModel {
         effectiveProjectID.map { generatingProjectIDs.contains($0) } ?? false
     }
 
+    var isEditSourceGenerating: Bool {
+        currentInputs.editSource != nil && isGeneratingForSelected
+    }
+
     func binding<T>(for keyPath: WritableKeyPath<ProjectInputs, T>) -> Binding<T> {
         Binding(
             get: { self.currentInputs[keyPath: keyPath] },

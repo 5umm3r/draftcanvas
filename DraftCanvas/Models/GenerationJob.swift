@@ -39,6 +39,7 @@ struct GenerationJob: Identifiable, Equatable {
     var hitRateLimitDuringRun: Bool
     var isFreeAccountBlocked: Bool
     var failureKind: GenerationFailureKind?
+    var runID: UUID?
 
     init(
         id: UUID = UUID(),
@@ -52,7 +53,8 @@ struct GenerationJob: Identifiable, Equatable {
         errorMessage: String? = nil,
         hitRateLimitDuringRun: Bool = false,
         isFreeAccountBlocked: Bool = false,
-        failureKind: GenerationFailureKind? = nil
+        failureKind: GenerationFailureKind? = nil,
+        runID: UUID? = nil
     ) {
         self.id = id
         self.index = index
@@ -66,5 +68,6 @@ struct GenerationJob: Identifiable, Equatable {
         self.hitRateLimitDuringRun = hitRateLimitDuringRun
         self.isFreeAccountBlocked = isFreeAccountBlocked
         self.failureKind = failureKind
+        self.runID = runID
     }
 }
