@@ -176,6 +176,14 @@
 		dcc9736d94fa4aab89e1f3422f7b8c83 /* LicensesSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = fb7d415c11834f8094805ae90e496476 /* LicensesSheet.swift */; };
 		dffa5788acfc4dfdada1510b9c9aee33 /* DraftCanvasViewModel+FilteringProjects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 142b1b577a9b4336b315f08d800e5d6a /* DraftCanvasViewModel+FilteringProjects.swift */; };
 		f930d5d3164b439c85edb6c7ee4b9d7e /* TagEditorRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5e64e8265c0548dab23dae9cd36602db /* TagEditorRow.swift */; };
+		E51F55EA9442E596EDA674FC /* PromptTemplate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 532E94693748327CE8224795 /* PromptTemplate.swift */; };
+		076FAD21B0AA35102DEAC2E9 /* PromptHistoryEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE5EE43F5DFF9ABA7EED3F01 /* PromptHistoryEntry.swift */; };
+		3952E53DAC9D407E9B1DD6FE /* PromptTemplateStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF859C99E0E1FEA7BBC88523 /* PromptTemplateStore.swift */; };
+		4B2D8979387C4F2B53B1DA2E /* PromptHistoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFC9A84BE2FE99FBFF6F2059 /* PromptHistoryStore.swift */; };
+		4DB240A3CD1BF64C6D62DC2D /* DraftCanvasViewModel+Templates.swift in Sources */ = {isa = PBXBuildFile; fileRef = F895F67E7CA8E2B71286DB54 /* DraftCanvasViewModel+Templates.swift */; };
+		53F597E92978633583CB0130 /* DraftCanvasViewModel+History.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23DA79D443899A31762BC805 /* DraftCanvasViewModel+History.swift */; };
+		EF5C27F2F9FC82D8EEC770FB /* PromptTemplatePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ACDB95A1E509E7F853AD07 /* PromptTemplatePanel.swift */; };
+		DA0A42D2723048F047BBEC82 /* PromptHistoryPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B97FF30AA989BF0B294395 /* PromptHistoryPanel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -360,6 +368,14 @@
 		b79086998a564de490b9a76dbc67c001 /* FilteringProjectCreationSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FilteringProjectCreationSheet.swift; path = Views/FilteringProjectCreationSheet.swift; sourceTree = "<group>"; };
 		b7e96c4970d44133991b9ff817e3cefd /* CanvasScrollZoomCatcher.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CanvasScrollZoomCatcher.swift; path = Views/CanvasScrollZoomCatcher.swift; sourceTree = "<group>"; };
 		fb7d415c11834f8094805ae90e496476 /* LicensesSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LicensesSheet.swift; path = Views/LicensesSheet.swift; sourceTree = "<group>"; };
+		532E94693748327CE8224795 /* PromptTemplate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptTemplate.swift; path = Models/PromptTemplate.swift; sourceTree = "<group>"; };
+		BE5EE43F5DFF9ABA7EED3F01 /* PromptHistoryEntry.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptHistoryEntry.swift; path = Models/PromptHistoryEntry.swift; sourceTree = "<group>"; };
+		CF859C99E0E1FEA7BBC88523 /* PromptTemplateStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptTemplateStore.swift; path = Stores/PromptTemplateStore.swift; sourceTree = "<group>"; };
+		EFC9A84BE2FE99FBFF6F2059 /* PromptHistoryStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptHistoryStore.swift; path = Stores/PromptHistoryStore.swift; sourceTree = "<group>"; };
+		F895F67E7CA8E2B71286DB54 /* DraftCanvasViewModel+Templates.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Templates.swift"; path = "ViewModel/DraftCanvasViewModel+Templates.swift"; sourceTree = "<group>"; };
+		23DA79D443899A31762BC805 /* DraftCanvasViewModel+History.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+History.swift"; path = "ViewModel/DraftCanvasViewModel+History.swift"; sourceTree = "<group>"; };
+		A6ACDB95A1E509E7F853AD07 /* PromptTemplatePanel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptTemplatePanel.swift; path = Views/PromptTemplatePanel.swift; sourceTree = "<group>"; };
+		B8B97FF30AA989BF0B294395 /* PromptHistoryPanel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptHistoryPanel.swift; path = Views/PromptHistoryPanel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -518,6 +534,8 @@
 				71E877DFCDE496FC77BDFEDC /* DraftCanvasError.swift */,
 				09C61E0F55E7FD6835C52AF4 /* RateLimitConfirmation.swift */,
 				6D8A2AE8C81B31B43D4B0DA0 /* CompletionSoundOption.swift */,
+				532E94693748327CE8224795 /* PromptTemplate.swift */,
+				BE5EE43F5DFF9ABA7EED3F01 /* PromptHistoryEntry.swift */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -561,6 +579,8 @@
 				588B9107340E5F4424AC7842 /* TrialExpiredView.swift */,
 				6F7D3A57833DEA080335B320 /* LicenseSheet.swift */,
 				fb7d415c11834f8094805ae90e496476 /* LicensesSheet.swift */,
+				A6ACDB95A1E509E7F853AD07 /* PromptTemplatePanel.swift */,
+				B8B97FF30AA989BF0B294395 /* PromptHistoryPanel.swift */,
 				F70B07E78EA6F806ACA2F023 /* Canvas */,
 				A232ECEED6254A4498FBE040 /* ReleaseNotes */,
 			);
@@ -672,6 +692,8 @@
 			children = (
 				FB8A29297366EC8F58149110 /* ProjectStore.swift */,
 				2C11346DB4BD717A69D174D6 /* ProjectStore+Snapshot.swift */,
+				CF859C99E0E1FEA7BBC88523 /* PromptTemplateStore.swift */,
+				EFC9A84BE2FE99FBFF6F2059 /* PromptHistoryStore.swift */,
 			);
 			name = Stores;
 			sourceTree = "<group>";
@@ -695,6 +717,8 @@
 				AA0000010000000100000002 /* DraftCanvasViewModel+Upscale.swift */,
 				CC0000010000000100000002 /* DraftCanvasViewModel+CanvasNavigation.swift */,
 				F6A0184D75554ACCBBF6B1F2 /* DraftCanvasViewModel+Crop.swift */,
+				F895F67E7CA8E2B71286DB54 /* DraftCanvasViewModel+Templates.swift */,
+				23DA79D443899A31762BC805 /* DraftCanvasViewModel+History.swift */,
 			);
 			name = ViewModel;
 			sourceTree = "<group>";
@@ -1009,6 +1033,14 @@
 				3A541E33670E9A355CBA3473 /* BoundingBoxStage.swift in Sources */,
 				B9329BA91A3E348BBB64F55B /* GroupSmallNearbyStage.swift in Sources */,
 				65E9F650BD09EDB0C69A024C /* MergeByIoUStage.swift in Sources */,
+				E51F55EA9442E596EDA674FC /* PromptTemplate.swift in Sources */,
+				076FAD21B0AA35102DEAC2E9 /* PromptHistoryEntry.swift in Sources */,
+				3952E53DAC9D407E9B1DD6FE /* PromptTemplateStore.swift in Sources */,
+				4B2D8979387C4F2B53B1DA2E /* PromptHistoryStore.swift in Sources */,
+				4DB240A3CD1BF64C6D62DC2D /* DraftCanvasViewModel+Templates.swift in Sources */,
+				53F597E92978633583CB0130 /* DraftCanvasViewModel+History.swift in Sources */,
+				EF5C27F2F9FC82D8EEC770FB /* PromptTemplatePanel.swift in Sources */,
+				DA0A42D2723048F047BBEC82 /* PromptHistoryPanel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

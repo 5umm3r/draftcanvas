@@ -54,12 +54,24 @@ extension ContentView {
                         .frame(maxWidth: 780)
                         .transition(.opacity.combined(with: .move(edge: .bottom)))
                     }
+                    if viewModel.isTemplatePopoverPresented {
+                        PromptTemplatePanel(viewModel: viewModel)
+                            .frame(maxWidth: 780)
+                            .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    }
+                    if viewModel.isHistoryPopoverPresented {
+                        PromptHistoryPanel(viewModel: viewModel)
+                            .frame(maxWidth: 780)
+                            .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    }
                     promptPanel(maxPromptHeight: geometry.size.height / 2)
                 }
                 .padding(.leading, promptLeading)
                 .padding(.trailing, promptStandardPad)
                 .padding(.bottom, 18)
                 .animation(.easeInOut(duration: 0.2), value: viewModel.isGeneratingForSelected)
+                .animation(.easeInOut(duration: 0.2), value: viewModel.isTemplatePopoverPresented)
+                .animation(.easeInOut(duration: 0.2), value: viewModel.isHistoryPopoverPresented)
 
                 VStack(spacing: 8) {
                     if let errorMessage = viewModel.importError {

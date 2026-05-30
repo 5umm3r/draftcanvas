@@ -187,6 +187,43 @@ extension ContentView {
                             .font(.system(size: 18))
                             .foregroundStyle(.secondary)
                             .allowsHitTesting(false)
+                            .padding(.top, 28)
+                    }
+                }
+                .overlay(alignment: .topLeading) {
+                    if !isCollapsed {
+                        HStack(spacing: 4) {
+                            Button {
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    viewModel.isHistoryPopoverPresented = false
+                                    viewModel.isTemplatePopoverPresented.toggle()
+                                }
+                            } label: {
+                                Image(systemName: "list.bullet.rectangle")
+                                    .font(.system(size: 11))
+                                    .frame(width: 24, height: 24)
+                                    .background(viewModel.isTemplatePopoverPresented ? Color.accentColor.opacity(0.12) : Color.primary.opacity(0.04))
+                                    .clipShape(RoundedRectangle(cornerRadius: 5))
+                            }
+                            .buttonStyle(.plain)
+                            .help("テンプレート")
+
+                            Button {
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    viewModel.isTemplatePopoverPresented = false
+                                    viewModel.isHistoryPopoverPresented.toggle()
+                                }
+                            } label: {
+                                Image(systemName: "clock.arrow.circlepath")
+                                    .font(.system(size: 11))
+                                    .frame(width: 24, height: 24)
+                                    .background(viewModel.isHistoryPopoverPresented ? Color.accentColor.opacity(0.12) : Color.primary.opacity(0.04))
+                                    .clipShape(RoundedRectangle(cornerRadius: 5))
+                            }
+                            .buttonStyle(.plain)
+                            .help("生成履歴")
+                        }
+                        .padding(.top, 2)
                     }
                 }
                 .padding(.trailing, isCollapsed ? 0 : 44)

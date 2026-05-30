@@ -185,6 +185,11 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var importError: String? = nil
     @Published var focusPromptTrigger: UUID? = nil
 
+    @Published var templates: [PromptTemplate] = []
+    @Published var promptHistory: [PromptHistoryEntry] = []
+    @Published var isTemplatePopoverPresented: Bool = false
+    @Published var isHistoryPopoverPresented: Bool = false
+
     let client: CodexAppServerClient
     let accountClient: CodexAccountProviding
     let coordinator: GenerationCoordinator
@@ -201,6 +206,8 @@ final class DraftCanvasViewModel: ObservableObject {
     var onReplacePromptText: ((String) -> Void)?
     let thumbnailStore: CanvasThumbnailStore
     let originalImageStore: CanvasOriginalImageStore
+    let templateStore: PromptTemplateStore
+    let historyStore: PromptHistoryStore
 
     init(
         projectStore: ProjectStore = ProjectStore(),
@@ -218,6 +225,8 @@ final class DraftCanvasViewModel: ObservableObject {
         self.preferredSaveFolderStore = preferredSaveFolderStore
         self.thumbnailStore = CanvasThumbnailStore(itemsDirectory: projectStore.itemsDirectory)
         self.originalImageStore = CanvasOriginalImageStore()
+        self.templateStore = PromptTemplateStore(rootDirectory: projectStore.rootDirectory)
+        self.historyStore = PromptHistoryStore(rootDirectory: projectStore.rootDirectory)
         client.onLog = { [weak self] message in
             Task { @MainActor [weak self] in
                 guard let self else { return }
@@ -243,6 +252,8 @@ final class DraftCanvasViewModel: ObservableObject {
         }
         projectStore.cleanupAllAttachments()
         loadProjects()
+        loadTemplates()
+        loadHistory()
         preferredSaveFolder = preferredSaveFolderStore.load()
             ?? FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
         if prewarmOnInit {
