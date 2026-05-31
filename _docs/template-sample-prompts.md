@@ -63,17 +63,17 @@
 
 ## 品質・構図
 
-被写体: `a grand spiral staircase inside an old library`
+被写体: `a red bicycle parked outside a flower shop`
 
 | テンプレート名 | プロンプト |
 |---|---|
-| 高精細 | a grand spiral staircase inside an old library, ultra high resolution, extremely detailed, sharp focus throughout, fine texture rendering, professional quality, 4K clarity |
-| 8Kレンダー | a grand spiral staircase inside an old library, 8K ultra HD render, ray-traced global illumination, physically-based materials, subsurface scattering, photon-mapped caustics |
-| 浅い被写界深度 | a grand spiral staircase inside an old library, shallow depth of field, subject in sharp focus, foreground and background blur, smooth bokeh transition, f/1.4 aperture effect |
-| 三分割構図 | a grand spiral staircase inside an old library, rule of thirds composition, subject placed at intersection points, balanced negative space, guided visual flow, professional framing |
-| ミニマル | a grand spiral staircase inside an old library, minimalist composition, vast negative space, single focal element, clean uncluttered background, reduced color palette, serene simplicity |
-| シンメトリー | a grand spiral staircase inside an old library, perfect symmetrical composition, mirror-image balance, centered subject, Wes Anderson framing, architectural precision, bilateral symmetry |
-| ワイドショット | a grand spiral staircase inside an old library, extreme wide shot, vast landscape, subject small in frame, environmental context, epic scale, panoramic composition |
-| クローズアップ | a grand spiral staircase inside an old library, extreme close-up shot, filling the frame, intimate detail, tight crop, emotional intensity, texture emphasis |
-| ダイナミックアングル | a grand spiral staircase inside an old library, dynamic camera angle, dramatic low angle, foreshortening effect, diagonal composition, sense of motion, action perspective |
-| アイソメトリック | a grand spiral staircase inside an old library, isometric view, 30-degree angle projection, no perspective convergence, technical illustration style, uniform scale, diorama-like |
+| 高精細 | a red bicycle parked outside a flower shop, ultra high resolution, extremely detailed, sharp focus throughout, fine texture rendering, professional quality, 4K clarity |
+| 8Kレンダー | a red bicycle parked outside a flower shop, 8K ultra HD render, ray-traced global illumination, physically-based materials, subsurface scattering, photon-mapped caustics |
+| 浅い被写界深度 | a red bicycle parked outside a flower shop, shallow depth of field, subject in sharp focus, foreground and background blur, smooth bokeh transition, f/1.4 aperture effect |
+| 三分割構図 | a red bicycle parked outside a flower shop, rule of thirds composition, subject placed at intersection points, balanced negative space, guided visual flow, professional framing |
+| ミニマル | a red bicycle parked outside a flower shop, minimalist composition, vast negative space, single focal element, clean uncluttered background, reduced color palette, serene simplicity |
+| シンメトリー | a red bicycle parked outside a flower shop, perfect symmetrical composition, mirror-image balance, centered subject, Wes Anderson framing, architectural precision, bilateral symmetry |
+| ワイドショット | a red bicycle parked outside a flower shop, extreme wide shot, vast landscape, subject small in frame, environmental context, epic scale, panoramic composition |
+| クローズアップ | a red bicycle parked outside a flower shop, extreme close-up shot, filling the frame, intimate detail, tight crop, emotional intensity, texture emphasis |
+| ダイナミックアングル | a red bicycle parked outside a flower shop, dynamic camera angle, dramatic low angle, foreshortening effect, diagonal composition, sense of motion, action perspective |
+| アイソメトリック | a red bicycle parked outside a flower shop, isometric view, 30-degree angle projection, no perspective convergence, technical illustration style, uniform scale, diorama-like |
