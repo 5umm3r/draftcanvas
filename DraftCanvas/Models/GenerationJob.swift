@@ -40,6 +40,7 @@ struct GenerationJob: Identifiable, Equatable {
     var isFreeAccountBlocked: Bool
     var failureKind: GenerationFailureKind?
     var runID: UUID?
+    var scheduledAt: Date
 
     init(
         id: UUID = UUID(),
@@ -54,7 +55,8 @@ struct GenerationJob: Identifiable, Equatable {
         hitRateLimitDuringRun: Bool = false,
         isFreeAccountBlocked: Bool = false,
         failureKind: GenerationFailureKind? = nil,
-        runID: UUID? = nil
+        runID: UUID? = nil,
+        scheduledAt: Date = Date()
     ) {
         self.id = id
         self.index = index
@@ -69,5 +71,6 @@ struct GenerationJob: Identifiable, Equatable {
         self.isFreeAccountBlocked = isFreeAccountBlocked
         self.failureKind = failureKind
         self.runID = runID
+        self.scheduledAt = scheduledAt
     }
 }

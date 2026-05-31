@@ -320,8 +320,10 @@ extension DraftCanvasViewModel {
         // プレースホルダー jobs を即座に表示し、生成中状態を設定する。
         // LLM 変奏取得後に同じ job ID でプロンプトを更新して coordinator に渡す。
         let runID = UUID()
+        let batchBase = Date()
         let placeholderJobs = (0..<normalizedCount).map { index in
-            GenerationJob(index: index, prompt: trimmedPrompt, aspectRatio: capturedAspectRatio, runID: runID)
+            GenerationJob(index: index, prompt: trimmedPrompt, aspectRatio: capturedAspectRatio, runID: runID,
+                          scheduledAt: batchBase.addingTimeInterval(Double(index) * 0.001))
         }
         for job in placeholderJobs {
             upsert(job, into: projectID)

@@ -90,8 +90,12 @@ extension DraftCanvasViewModel {
         logs.append("生成を開始しました。count=\(request.normalizedCount), concurrency=\(request.normalizedConcurrency)")
 
         let runID = UUID()
+        let batchBase = Date()
         var taggedJobs = jobs
-        for i in taggedJobs.indices { taggedJobs[i].runID = runID }
+        for i in taggedJobs.indices {
+            taggedJobs[i].runID = runID
+            taggedJobs[i].scheduledAt = batchBase.addingTimeInterval(Double(taggedJobs[i].index) * 0.001)
+        }
         for job in taggedJobs {
             upsert(job, into: projectID)
         }
@@ -184,7 +188,7 @@ extension DraftCanvasViewModel {
             revisedPrompt: job.revisedPrompt,
             aspectRatio: request.aspectRatio,
             actualAspectRatio: actualRatio,
-            createdAt: Date(),
+            createdAt: job.scheduledAt,
             errorMessage: nil,
             editedFromItemID: request.editSource?.projectItemID
         )
@@ -281,6 +285,7 @@ extension DraftCanvasViewModel {
         autoRetryTasks[projectID]?.cancel()
         autoRetryTasks.removeValue(forKey: projectID)
         autoRetryCountByProject.removeValue(forKey: projectID)
+        autoRetryRequestByProject.removeValue(forKey: projectID)
         if generatingProjectIDs.remove(projectID) != nil {
             activityTracker.end()
         }
@@ -310,6 +315,14 @@ extension DraftCanvasViewModel {
                     let attempt = retryCount + 1
                     let delay = pow(2.0, Double(attempt)) * 5.0  // 10s, 20s, 40s
                     logs.append("自動再試行を\(Int(delay))秒後に実行します（\(attempt)/3回目）")
+                    let retryGrouped = Dictionary(grouping: autoRetryTargets, by: { $0.runID })
+                    for (origRunID, _) in retryGrouped {
+                        guard let rid = origRunID, let req = preparedRequestByRun[rid] else { continue }
+                        if autoRetryRequestByProject[projectID] == nil {
+                            autoRetryRequestByProject[projectID] = [:]
+                        }
+                        autoRetryRequestByProject[projectID]?[rid] = req
+                    }
                     let retryTask = Task { [weak self] in
                         try? await Task.sleep(for: .seconds(delay))
                         guard !Task.isCancelled else { return }
@@ -349,11 +362,12 @@ extension DraftCanvasViewModel {
         let grouped = Dictionary(grouping: failedJobs, by: { $0.runID })
         var enqueued = false
         for (origRunID, groupJobs) in grouped {
-            guard let request = origRunID.flatMap({ preparedRequestByRun[$0] })
+            guard let request = origRunID.flatMap({ autoRetryRequestByProject[projectID]?[$0] })
                     ?? lastRequestByProject[projectID] else { continue }
             enqueueRetryRun(jobs: groupJobs, request: request, projectID: projectID, logMessage: "自動再試行完了。")
             enqueued = true
         }
+        autoRetryRequestByProject.removeValue(forKey: projectID)
         if !enqueued {
             generatingProjectIDs.remove(projectID)
             activityTracker.end()

@@ -20,6 +20,7 @@ final class DraftCanvasViewModel: ObservableObject {
     @AppStorage("autoRetryEnabled") var autoRetryEnabled: Bool = true
     var autoRetryCountByProject: [UUID: Int] = [:]    // run 単位のリトライ回数（上限3）
     var autoRetryTasks: [UUID: Task<Void, Never>] = [:]  // バックオフ中の予約タスク
+    var autoRetryRequestByProject: [UUID: [UUID: GenerationRequest]] = [:]  // リトライ用リクエスト退避
 
     // MARK: - Global state
     @AppStorage("appAppearance") var appAppearanceRaw: String = "light"
@@ -423,6 +424,7 @@ final class DraftCanvasViewModel: ObservableObject {
         for (_, t) in autoRetryTasks { t.cancel() }
         autoRetryTasks.removeAll()
         autoRetryCountByProject.removeAll()
+        autoRetryRequestByProject.removeAll()
         enhanceTask?.cancel()
         enhanceTask = nil
         materialExtractionTask?.cancel()
