@@ -139,7 +139,7 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var pendingRateLimitConfirmation: RateLimitConfirmation?
     @Published var pendingFreeAccountBlock = false
     @Published var isRefreshingAccountUsage = false
-
+    var needsAccountUsageRefreshAfterGeneration = false
     @Published var preferredSaveFolder: URL?
     @Published var errorToast: String?
     @Published var accountUsagePrewarmFailed = false
@@ -245,13 +245,6 @@ final class DraftCanvasViewModel: ObservableObject {
                         self.logFlushTask = nil
                     }
                 }
-            }
-        }
-        client.onRateLimitsUpdated = { [weak self] snapshot in
-            Task { @MainActor [weak self] in
-                guard let self else { return }
-                self.accountUsageStatus.apply(snapshot)
-                self.accountUsageStatusFetchedAt = Date()
             }
         }
         coordinator.onConcurrencyAdjusted = { [weak self] old, new in

@@ -9,28 +9,35 @@ extension DraftCanvasViewModel {
 
     func refreshAccountUsage() {
         guard accountUsageRefreshTask == nil else { return }
+        guard generatingProjectIDs.isEmpty else {
+            needsAccountUsageRefreshAfterGeneration = true
+            return
+        }
 
         isRefreshingAccountUsage = true
         accountUsagePrewarmFailed = false
         logs.append("Codexアカウントと使用量を取得します。")
 
-        let client = self.accountClient
-        let refreshTask = Task.detached { try await client.readAccountUsageStatus() }
+        let refreshTask = Task { try await self.accountClient.readAccountUsageStatus() }
         accountUsageRefreshTask = refreshTask
 
         Task {
             do {
                 let status = try await refreshTask.value
-                self.accountUsageStatus = status
-                self.accountUsageStatusFetchedAt = Date()
-                self.isRefreshingAccountUsage = false
-                self.accountUsageRefreshTask = nil
-                self.logs.append("Codexアカウントと使用量を更新しました。")
+                await MainActor.run {
+                    self.accountUsageStatus = status
+                    self.accountUsageStatusFetchedAt = Date()
+                    self.isRefreshingAccountUsage = false
+                    self.accountUsageRefreshTask = nil
+                    self.logs.append("Codexアカウントと使用量を更新しました。")
+                }
             } catch {
-                self.isRefreshingAccountUsage = false
-                self.accountUsageRefreshTask = nil
-                self.accountUsagePrewarmFailed = true
-                self.logs.append("Codexアカウントと使用量の取得に失敗しました: \(error.localizedDescription)")
+                await MainActor.run {
+                    self.isRefreshingAccountUsage = false
+                    self.accountUsageRefreshTask = nil
+                    self.accountUsagePrewarmFailed = true
+                    self.logs.append("Codexアカウントと使用量の取得に失敗しました: \(error.localizedDescription)")
+                }
             }
         }
     }

@@ -58,7 +58,6 @@ final class CodexAppServerClient: @unchecked Sendable {
     private var turnWaiters: [String: TurnWaiter] = [:]
     private var startupTask: Task<Void, Error>?
     var onLog: (@Sendable (String) -> Void)?
-    var onRateLimitsUpdated: (@Sendable (RateLimitsSnapshot) -> Void)?
 
     init(codexExecutablePath: String = CodexAppServerClient.defaultCodexExecutablePath()) {
         self.codexExecutablePath = codexExecutablePath
@@ -439,14 +438,6 @@ final class CodexAppServerClient: @unchecked Sendable {
     }
 
     private func handleNotification(_ message: [String: Any]) {
-        if let method = message["method"] as? String,
-           method == "account/rateLimits/updated",
-           let params = message["params"] as? [String: Any] {
-            let snapshot = RateLimitsSnapshot.parse(params)
-            onRateLimitsUpdated?(snapshot)
-            return
-        }
-
         guard let threadID = CodexEventExtractor.threadID(from: message) else {
             return
         }

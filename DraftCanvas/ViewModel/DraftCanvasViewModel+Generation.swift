@@ -184,6 +184,7 @@ extension DraftCanvasViewModel {
             revisedPrompt: job.revisedPrompt,
             aspectRatio: request.aspectRatio,
             actualAspectRatio: actualRatio,
+            createdAt: Date(),
             errorMessage: nil,
             editedFromItemID: request.editSource?.projectItemID
         )
@@ -294,6 +295,10 @@ extension DraftCanvasViewModel {
             activityTracker.end()
         }
         if generatingProjectIDs.isEmpty {
+            if needsAccountUsageRefreshAfterGeneration {
+                needsAccountUsageRefreshAfterGeneration = false
+                refreshAccountUsage()
+            }
             if let results {
                 // 自動リトライ判定
                 let autoRetryTargets = results.filter {

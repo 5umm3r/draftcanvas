@@ -24,33 +24,6 @@ enum AccountKind: Equatable {
     }
 }
 
-struct RateLimitsSnapshot: Sendable, Equatable {
-    var primaryPercentLabel: String
-    var primaryRemainingFraction: Double?
-    var primaryResetText: String?
-    var primaryResetDate: Date?
-    var secondaryPercentLabel: String
-    var secondaryRemainingFraction: Double?
-    var secondaryResetText: String?
-    var secondaryResetDate: Date?
-
-    static func parse(_ params: [String: Any]) -> RateLimitsSnapshot {
-        let rateLimits = CodexAccountUsageStatus.preferredRateLimits(from: params)
-        let primary = CodexAccountUsageStatus.usageStatus(prefix: "5h", window: rateLimits?["primary"] as? [String: Any])
-        let secondary = CodexAccountUsageStatus.usageStatus(prefix: "weekly", window: rateLimits?["secondary"] as? [String: Any])
-        return RateLimitsSnapshot(
-            primaryPercentLabel: primary.percentLabel,
-            primaryRemainingFraction: primary.remainingFraction,
-            primaryResetText: primary.resetText,
-            primaryResetDate: primary.resetDate,
-            secondaryPercentLabel: secondary.percentLabel,
-            secondaryRemainingFraction: secondary.remainingFraction,
-            secondaryResetText: secondary.resetText,
-            secondaryResetDate: secondary.resetDate
-        )
-    }
-}
-
 struct CodexAccountUsageStatus: Equatable {
     var accountLabel: String
     var planLabel: String
@@ -138,7 +111,7 @@ struct CodexAccountUsageStatus: Equatable {
         )
     }
 
-    fileprivate static func preferredRateLimits(from response: [String: Any]) -> [String: Any]? {
+    private static func preferredRateLimits(from response: [String: Any]) -> [String: Any]? {
         if
             let byID = response["rateLimitsByLimitId"] as? [String: Any],
             let codex = byID["codex"] as? [String: Any]
@@ -152,7 +125,7 @@ struct CodexAccountUsageStatus: Equatable {
         preferredRateLimits(from: response)?["planType"] as? String
     }
 
-    fileprivate static func usageStatus(
+    private static func usageStatus(
         prefix: String,
         window: [String: Any]?
     ) -> (prefix: String, percentLabel: String, remainingFraction: Double?, resetText: String?, resetDate: Date?) {
@@ -207,17 +180,6 @@ struct CodexAccountUsageStatus: Equatable {
         if let value = value as? Int { return Double(value) }
         if let value = value as? NSNumber { return value.doubleValue }
         return nil
-    }
-
-    mutating func apply(_ snapshot: RateLimitsSnapshot) {
-        primaryUsagePercentLabel = snapshot.primaryPercentLabel
-        primaryUsageRemainingFraction = snapshot.primaryRemainingFraction
-        primaryResetText = snapshot.primaryResetText
-        primaryResetDate = snapshot.primaryResetDate
-        secondaryUsagePercentLabel = snapshot.secondaryPercentLabel
-        secondaryUsageRemainingFraction = snapshot.secondaryRemainingFraction
-        secondaryResetText = snapshot.secondaryResetText
-        secondaryResetDate = snapshot.secondaryResetDate
     }
 
     var isChatGPTFreePlan: Bool {
