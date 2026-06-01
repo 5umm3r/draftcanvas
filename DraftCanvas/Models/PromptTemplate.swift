@@ -4,7 +4,6 @@ enum PromptTemplateCategory: String, Codable, CaseIterable, Identifiable {
     case style    = "style"
     case photo    = "photo"
     case lighting = "lighting"
-    case quality  = "quality"
     case user     = "user"
 
     var id: String { rawValue }
@@ -14,7 +13,6 @@ enum PromptTemplateCategory: String, Codable, CaseIterable, Identifiable {
         case .style:    return String(localized: "画風・スタイル")
         case .photo:    return String(localized: "写真・カメラ")
         case .lighting: return String(localized: "ライティング・雰囲気")
-        case .quality:  return String(localized: "品質・構図")
         case .user:     return String(localized: "マイテンプレート")
         }
     }
@@ -24,7 +22,6 @@ enum PromptTemplateCategory: String, Codable, CaseIterable, Identifiable {
         case .style:    return "paintpalette"
         case .photo:    return "camera"
         case .lighting: return "light.max"
-        case .quality:  return "sparkle.magnifyingglass"
         case .user:     return "person.crop.circle"
         }
     }
@@ -75,7 +72,7 @@ extension PromptTemplate {
         )
     }
 
-    static let builtIns: [PromptTemplate] = stylePresets + photoPresets + lightingPresets + qualityPresets
+    static let builtIns: [PromptTemplate] = stylePresets + photoPresets + lightingPresets
 
     // MARK: 画風・スタイル
 
@@ -182,38 +179,4 @@ extension PromptTemplate {
                 category: .lighting, thumbnailImageName: "template-lighting-10"),
     ]
 
-    // MARK: 品質・構図
-
-    private static let qualityPresets: [PromptTemplate] = [
-        builtIn(uuid: "000000000030", name: String(localized: "高精細"),
-                promptText: "ultra high resolution, extremely detailed, sharp focus throughout, fine texture rendering, professional quality, 4K clarity",
-                category: .quality),
-        builtIn(uuid: "000000000031", name: String(localized: "8Kレンダー"),
-                promptText: "8K ultra HD render, ray-traced global illumination, physically-based materials, subsurface scattering, photon-mapped caustics",
-                category: .quality),
-        builtIn(uuid: "000000000032", name: String(localized: "浅い被写界深度"),
-                promptText: "shallow depth of field, subject in sharp focus, foreground and background blur, smooth bokeh transition, f/1.4 aperture effect",
-                category: .quality),
-        builtIn(uuid: "000000000033", name: String(localized: "三分割構図"),
-                promptText: "rule of thirds composition, subject placed at intersection points, balanced negative space, guided visual flow, professional framing",
-                category: .quality),
-        builtIn(uuid: "000000000034", name: String(localized: "ミニマル"),
-                promptText: "minimalist composition, vast negative space, single focal element, clean uncluttered background, reduced color palette, serene simplicity",
-                category: .quality),
-        builtIn(uuid: "000000000035", name: String(localized: "シンメトリー"),
-                promptText: "perfect symmetrical composition, mirror-image balance, centered subject, Wes Anderson framing, architectural precision, bilateral symmetry",
-                category: .quality),
-        builtIn(uuid: "000000000036", name: String(localized: "ワイドショット"),
-                promptText: "extreme wide shot, vast landscape, subject small in frame, environmental context, epic scale, panoramic composition",
-                category: .quality),
-        builtIn(uuid: "000000000037", name: String(localized: "クローズアップ"),
-                promptText: "extreme close-up shot, filling the frame, intimate detail, tight crop, emotional intensity, texture emphasis",
-                category: .quality),
-        builtIn(uuid: "000000000038", name: String(localized: "ダイナミックアングル"),
-                promptText: "dynamic camera angle, dramatic low angle, foreshortening effect, diagonal composition, sense of motion, action perspective",
-                category: .quality),
-        builtIn(uuid: "000000000039", name: String(localized: "アイソメトリック"),
-                promptText: "isometric view, 30-degree angle projection, no perspective convergence, technical illustration style, uniform scale, diorama-like",
-                category: .quality),
-    ]
 }
