@@ -124,9 +124,11 @@ extension DraftCanvasViewModel {
             }
 
             await MainActor.run {
-                self.finishRun(runID: runID, projectID: projectID, results: results)
+                let didScheduleRetry = self.finishRun(runID: runID, projectID: projectID, results: results)
                 onCompletion?()
-                self.logs.append("全ジョブが終了しました。")
+                if !didScheduleRetry {
+                    self.logs.append("全ジョブが終了しました。")
+                }
                 self.refreshAccountUsage()
             }
         }
@@ -309,9 +311,9 @@ extension DraftCanvasViewModel {
         refreshAccountUsage()
     }
 
-    func finishRun(runID: UUID, projectID: UUID, results: [GenerationJob]? = nil) {
+    @discardableResult
+    func finishRun(runID: UUID, projectID: UUID, results: [GenerationJob]? = nil) -> Bool {
         generationTasks[projectID]?.removeValue(forKey: runID)
-        preparedRequestByRun.removeValue(forKey: runID)
         if generationTasks[projectID]?.isEmpty == true {
             generationTasks.removeValue(forKey: projectID)
             generatingProjectIDs.remove(projectID)
@@ -323,7 +325,6 @@ extension DraftCanvasViewModel {
                 refreshAccountUsage()
             }
             if let results {
-                // 自動リトライ判定
                 let autoRetryTargets = results.filter {
                     $0.status == .failed && ($0.failureKind == .rateLimited || $0.failureKind == .timeout)
                 }
@@ -341,6 +342,7 @@ extension DraftCanvasViewModel {
                         }
                         autoRetryRequestByProject[projectID]?[rid] = req
                     }
+                    preparedRequestByRun.removeValue(forKey: runID)
                     let retryTask = Task { [weak self] in
                         try? await Task.sleep(for: .seconds(delay))
                         guard !Task.isCancelled else { return }
@@ -350,13 +352,14 @@ extension DraftCanvasViewModel {
                         }
                     }
                     autoRetryTasks[projectID] = retryTask
-                    return  // 自動リトライが終わるまで onAllJobsCompleted を保留
+                    return true
                 }
-                // 自動リトライなし / 上限到達 → カウントリセットして完了通知
                 autoRetryCountByProject.removeValue(forKey: projectID)
                 onAllJobsCompleted(results: results)
             }
         }
+        preparedRequestByRun.removeValue(forKey: runID)
+        return false
     }
 
     private func autoRetryFailedJobs(projectID: UUID) {
@@ -398,9 +401,11 @@ extension DraftCanvasViewModel {
         projectID: UUID,
         logMessage: String
     ) {
+        let runID = UUID()
         var retryJobs = jobs
         for i in retryJobs.indices {
             retryJobs[i].status = .queued
+            retryJobs[i].runID = runID
             retryJobs[i].errorMessage = nil
             retryJobs[i].logs = []
             retryJobs[i].imageData = nil
@@ -410,8 +415,6 @@ extension DraftCanvasViewModel {
         for job in retryJobs {
             upsert(job, into: projectID)
         }
-
-        let runID = UUID()
         let retryTask = Task { [weak self] in
             guard let self else { return }
             let preparedRequest = await prepareRequestForGeneration(request)
