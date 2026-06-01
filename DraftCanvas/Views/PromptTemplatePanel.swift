@@ -17,12 +17,12 @@ struct PromptTemplatePanel: View {
     var body: some View {
         VStack(spacing: 0) {
             templateContent
-            Divider()
-            categoryTabBar
             if selectedCategory == .user {
                 Divider()
                 footer
             }
+            Divider()
+            categoryTabBar
         }
         .frame(maxWidth: 780)
         .background(.regularMaterial)

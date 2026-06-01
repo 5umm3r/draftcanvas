@@ -47,6 +47,7 @@ extension DraftCanvasViewModel {
                 draftInputs.prompt = PromptTextAppender.smartAppend(existing: existing, addition: entry.promptText)
             }
         }
+        shouldFocusPromptAfterApply = true
         isHistoryPopoverPresented = false
     }
 }
