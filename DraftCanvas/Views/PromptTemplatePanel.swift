@@ -84,31 +84,34 @@ struct PromptTemplatePanel: View {
         if selectedCategory == .user {
             userTemplateList
         } else {
-            thumbnailSlider
+            thumbnailGrid
         }
     }
 
-    // MARK: - Thumbnail Slider
+    // MARK: - Thumbnail Grid
 
-    private var thumbnailSlider: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 12) {
-                let items = templatesForSelectedCategory
-                if items.isEmpty {
-                    Text(String(localized: "テンプレートなし"))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 32)
-                } else {
+    private let thumbnailColumns = Array(repeating: GridItem(.flexible(), spacing: 16), count: 4)
+
+    private var thumbnailGrid: some View {
+        ScrollView {
+            let items = templatesForSelectedCategory
+            if items.isEmpty {
+                Text(String(localized: "テンプレートなし"))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 32)
+            } else {
+                LazyVGrid(columns: thumbnailColumns, spacing: 16) {
                     ForEach(items) { template in
                         templateThumbnailCard(template)
                     }
                 }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
         }
+        .frame(minHeight: 280, maxHeight: 360)
     }
 
     private func templateThumbnailCard(_ template: PromptTemplate) -> some View {
@@ -116,18 +119,17 @@ struct PromptTemplatePanel: View {
             viewModel.applyTemplate(template)
         } label: {
             VStack(spacing: 4) {
-                Text(template.name)
-                    .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                    .frame(width: 180)
                 thumbnailImage(for: template)
-                    .frame(width: 180, height: 180)
+                    .aspectRatio(1, contentMode: .fill)
                     .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                     .overlay(
                         RoundedRectangle(cornerRadius: 6, style: .continuous)
                             .stroke(Color.primary.opacity(0.08), lineWidth: 1)
                     )
+                Text(template.name)
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
             }
             .contentShape(Rectangle())
         }
