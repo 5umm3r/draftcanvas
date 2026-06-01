@@ -170,6 +170,9 @@ extension DraftCanvasViewModel {
     }
 
     func handleJobUpdate(_ job: GenerationJob, into projectID: UUID, request: GenerationRequest) {
+        if let runID = job.runID, generationTasks[projectID]?[runID] == nil {
+            return
+        }
         if job.status == .succeeded {
             persistAndPromoteSucceededJob(job, request: request, projectID: projectID)
         } else {
@@ -277,11 +280,25 @@ extension DraftCanvasViewModel {
 
     func cancelProjectRuns(projectID: UUID) {
         let tasks = generationTasks[projectID] ?? [:]
+        let cancelledRunIDs = Set(tasks.keys)
         for (runID, task) in tasks {
             task.cancel()
             preparedRequestByRun.removeValue(forKey: runID)
         }
         generationTasks[projectID] = nil
+
+        if var jobs = jobsByProject[projectID] {
+            jobs.removeAll { job in
+                guard let runID = job.runID else { return false }
+                return cancelledRunIDs.contains(runID)
+            }
+            if jobs.isEmpty {
+                jobsByProject.removeValue(forKey: projectID)
+            } else {
+                jobsByProject[projectID] = jobs
+            }
+        }
+
         autoRetryTasks[projectID]?.cancel()
         autoRetryTasks.removeValue(forKey: projectID)
         autoRetryCountByProject.removeValue(forKey: projectID)
@@ -289,6 +306,7 @@ extension DraftCanvasViewModel {
         if generatingProjectIDs.remove(projectID) != nil {
             activityTracker.end()
         }
+        refreshAccountUsage()
     }
 
     func finishRun(runID: UUID, projectID: UUID, results: [GenerationJob]? = nil) {

@@ -430,6 +430,9 @@ final class DraftCanvasViewModel: ObservableObject {
         enhanceTask = nil
         materialExtractionTask?.cancel()
         materialExtractionTask = nil
+        accountUsageRefreshTask?.cancel()
+        accountUsageRefreshTask = nil
+        isRefreshingAccountUsage = false
 
         generatingProjectIDs.removeAll()
         vectorizingItemIDs.removeAll()

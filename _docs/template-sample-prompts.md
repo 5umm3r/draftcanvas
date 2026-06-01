@@ -44,20 +44,20 @@
 
 ## ライティング・雰囲気
 
-被写体: `a lone lighthouse on a cliff at twilight`
+被写体: `a narrow cobblestone street between old buildings at night`
 
 | テンプレート名 | プロンプト |
 |---|---|
-| シネマティック | a lone lighthouse on a cliff at twilight, cinematic lighting, anamorphic lens flare, film color grading, dramatic shadows, wide aspect ratio, movie-quality composition |
-| ネオン | a lone lighthouse on a cliff at twilight, neon light glow, cyberpunk color palette, electric blue and magenta, reflective wet surfaces, night urban scene, LED signage |
-| 逆光 | a lone lighthouse on a cliff at twilight, backlit silhouette, rim lighting, halo effect around subject, dramatic contrast, sun directly behind, glowing edges |
-| 霧・ミスト | a lone lighthouse on a cliff at twilight, foggy atmosphere, volumetric mist, diffused soft light, low visibility, mysterious mood, ethereal haze, atmospheric depth |
-| ドラマチック影 | a lone lighthouse on a cliff at twilight, dramatic chiaroscuro, deep black shadows, strong directional light, Rembrandt lighting, high contrast, theatrical mood |
-| ソフトライト | a lone lighthouse on a cliff at twilight, soft diffused lighting, overcast sky illumination, minimal shadows, even exposure, gentle gradients, flattering skin tones |
-| ハードライト | a lone lighthouse on a cliff at twilight, hard directional light, sharp defined shadows, high contrast edges, noon sunlight, strong specular highlights, crisp shadow lines |
-| ムーディー | a lone lighthouse on a cliff at twilight, moody dark atmosphere, low-key lighting, deep shadows, muted desaturated tones, melancholic feel, noir-inspired mood |
-| ヴィンテージ | a lone lighthouse on a cliff at twilight, vintage retro aesthetic, faded warm tones, sepia undertones, vignette edges, nostalgic color grading, aged film look |
-| ファンタジー | a lone lighthouse on a cliff at twilight, fantasy ethereal glow, magical particle effects, iridescent light rays, enchanted atmosphere, soft bloom, otherworldly illumination |
+| シネマティック | a narrow cobblestone street between old buildings at night, cinematic lighting, anamorphic lens flare, film color grading, dramatic shadows, wide aspect ratio, movie-quality composition |
+| ネオン | a narrow cobblestone street between old buildings at night, neon light glow, cyberpunk color palette, electric blue and magenta, reflective wet surfaces, night urban scene, LED signage |
+| 逆光 | a narrow cobblestone street between old buildings at night, backlit silhouette, rim lighting, halo effect around subject, dramatic contrast, sun directly behind, glowing edges |
+| 霧・ミスト | a narrow cobblestone street between old buildings at night, foggy atmosphere, volumetric mist, diffused soft light, low visibility, mysterious mood, ethereal haze, atmospheric depth |
+| ドラマチック影 | a narrow cobblestone street between old buildings at night, dramatic chiaroscuro, deep black shadows, strong directional light, Rembrandt lighting, high contrast, theatrical mood |
+| ソフトライト | a narrow cobblestone street between old buildings at night, soft diffused lighting, overcast sky illumination, minimal shadows, even exposure, gentle gradients, flattering skin tones |
+| ハードライト | a narrow cobblestone street between old buildings at night, hard directional light, sharp defined shadows, high contrast edges, noon sunlight, strong specular highlights, crisp shadow lines |
+| ムーディー | a narrow cobblestone street between old buildings at night, moody dark atmosphere, low-key lighting, deep shadows, muted desaturated tones, melancholic feel, noir-inspired mood |
+| ヴィンテージ | a narrow cobblestone street between old buildings at night, vintage retro aesthetic, faded warm tones, sepia undertones, vignette edges, nostalgic color grading, aged film look |
+| ファンタジー | a narrow cobblestone street between old buildings at night, fantasy ethereal glow, magical particle effects, iridescent light rays, enchanted atmosphere, soft bloom, otherworldly illumination |
 
 ---
 
