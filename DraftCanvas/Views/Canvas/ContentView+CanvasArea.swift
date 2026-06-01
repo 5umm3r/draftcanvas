@@ -355,6 +355,10 @@ extension ContentView {
                                 NSApp.keyWindow?.makeFirstResponder(nil)
                                 promptIsFocused = false
                                 canvasIsFocused = true
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    viewModel.isTemplatePopoverPresented = false
+                                    viewModel.isHistoryPopoverPresented = false
+                                }
                             }
                     )
                     .onPreferenceChange(CardFramePreferenceKey.self) { frames in

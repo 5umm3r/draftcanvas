@@ -191,6 +191,7 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var promptHistory: [PromptHistoryEntry] = []
     @Published var isTemplatePopoverPresented: Bool = false
     @Published var isHistoryPopoverPresented: Bool = false
+    @Published var shouldFocusPromptAfterApply: Bool = false
 
     let client: CodexAppServerClient
     let accountClient: CodexAccountProviding

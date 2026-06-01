@@ -66,6 +66,7 @@ extension ContentView {
         let hasText = !prompt.isEmpty
         let isEmptyIdle = false
         let isCollapsed = !promptIsFocused && hasText && !isPromptHoverExpanded
+            && !viewModel.isTemplatePopoverPresented && !viewModel.isHistoryPopoverPresented
 
         let minH = PromptPanelLayout.minHeight(isEmptyIdle: isEmptyIdle, isCollapsed: isCollapsed)
         let maxH = PromptPanelLayout.maxHeight(
@@ -579,6 +580,13 @@ extension ContentView {
                 hoverCollapseTask?.cancel()
                 hoverCollapseTask = nil
                 isPromptHoverExpanded = false
+            }
+        }
+        .onChange(of: viewModel.shouldFocusPromptAfterApply) { _, shouldFocus in
+            if shouldFocus {
+                viewModel.shouldFocusPromptAfterApply = false
+                promptIsFocused = true
+                promptFocusTrigger = true
             }
         }
     }
