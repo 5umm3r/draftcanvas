@@ -111,6 +111,14 @@ cwebp v${CWEBP_VERSION} - BSD 3-Clause License
 https://chromium.googlesource.com/webm/libwebp/
 EOF
 
+# ── strip + re-sign ──────────────────────────────────────────────────────────
+echo ""
+echo "==> strip + codesign..."
+for bin in "$BIN_DIR/oxipng" "$BIN_DIR/pngquant" "$BIN_DIR/cwebp"; do
+  strip "$bin" 2>/dev/null || true
+  codesign --force --sign - "$bin"
+done
+
 touch "$BIN_DIR/.gitkeep"
 echo ""
 echo "==> 完了: $BIN_DIR"

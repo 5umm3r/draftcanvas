@@ -65,6 +65,12 @@ xcodebuild -exportArchive \
   -exportPath "$EXPORT_DIR" \
   -exportOptionsPlist "$EXPORT_OPTS"
 
+echo "==> Strip unused Sparkle localizations"
+find "$EXPORT_DIR/DraftCanvas.app/Contents/Frameworks/Sparkle.framework" \
+  -name "*.lproj" -type d \
+  ! -name "en.lproj" ! -name "ja.lproj" ! -name "Base.lproj" \
+  -exec rm -rf {} + 2>/dev/null || true
+
 echo "==> Re-sign embedded binaries (Hardened Runtime)"
 SIGN_IDENTITY="Developer ID Application"
 BIN_DIR="$EXPORT_DIR/DraftCanvas.app/Contents/Resources/bin"
