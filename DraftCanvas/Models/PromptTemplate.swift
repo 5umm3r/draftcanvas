@@ -37,14 +37,16 @@ struct PromptTemplate: Identifiable, Codable, Equatable {
     let isBuiltIn: Bool
     var createdAt: Date
     var category: PromptTemplateCategory
+    var thumbnailImageName: String?
 
-    init(id: UUID = UUID(), name: String, promptText: String, isBuiltIn: Bool = false, createdAt: Date = Date(), category: PromptTemplateCategory = .user) {
+    init(id: UUID = UUID(), name: String, promptText: String, isBuiltIn: Bool = false, createdAt: Date = Date(), category: PromptTemplateCategory = .user, thumbnailImageName: String? = nil) {
         self.id = id
         self.name = name
         self.promptText = promptText
         self.isBuiltIn = isBuiltIn
         self.createdAt = createdAt
         self.category = category
+        self.thumbnailImageName = thumbnailImageName
     }
 
     init(from decoder: Decoder) throws {
@@ -55,19 +57,21 @@ struct PromptTemplate: Identifiable, Codable, Equatable {
         isBuiltIn = try container.decode(Bool.self, forKey: .isBuiltIn)
         createdAt = try container.decode(Date.self, forKey: .createdAt)
         category = try container.decodeIfPresent(PromptTemplateCategory.self, forKey: .category) ?? .user
+        thumbnailImageName = try container.decodeIfPresent(String.self, forKey: .thumbnailImageName)
     }
 }
 
 // MARK: - Built-in Presets
 
 extension PromptTemplate {
-    private static func builtIn(uuid: String, name: String, promptText: String, category: PromptTemplateCategory) -> PromptTemplate {
+    private static func builtIn(uuid: String, name: String, promptText: String, category: PromptTemplateCategory, thumbnailImageName: String? = nil) -> PromptTemplate {
         PromptTemplate(
             id: UUID(uuidString: "00000001-0000-0000-0000-\(uuid)")!,
             name: name,
             promptText: promptText,
             isBuiltIn: true,
-            category: category
+            category: category,
+            thumbnailImageName: thumbnailImageName
         )
     }
 
@@ -78,34 +82,34 @@ extension PromptTemplate {
     private static let stylePresets: [PromptTemplate] = [
         builtIn(uuid: "000000000001", name: String(localized: "水彩画風"),
                 promptText: "watercolor painting style, soft watercolor washes, translucent layers, paper texture visible, delicate brushwork, bleeding ink edges",
-                category: .style),
+                category: .style, thumbnailImageName: "template-style-01"),
         builtIn(uuid: "000000000002", name: String(localized: "油絵風"),
                 promptText: "oil painting style, thick impasto brushstrokes, rich saturated colors, visible canvas texture, dramatic chiaroscuro lighting",
-                category: .style),
+                category: .style, thumbnailImageName: "template-style-02"),
         builtIn(uuid: "000000000003", name: String(localized: "フラットイラスト"),
                 promptText: "flat design illustration, clean vector-like style, bold solid colors, minimal shading, simple geometric shapes",
-                category: .style),
+                category: .style, thumbnailImageName: "template-style-03"),
         builtIn(uuid: "000000000004", name: String(localized: "ピクセルアート"),
                 promptText: "pixel art style, 32x32 sprite aesthetic, limited 16-color palette, crisp hard edges, no anti-aliasing, retro video game",
-                category: .style),
+                category: .style, thumbnailImageName: "template-style-04"),
         builtIn(uuid: "000000000005", name: String(localized: "ラインアート"),
                 promptText: "clean line art, precise ink drawing, bold outlines, minimal hatching, black and white with selective color accents",
-                category: .style),
+                category: .style, thumbnailImageName: "template-style-05"),
         builtIn(uuid: "000000000006", name: String(localized: "鉛筆スケッチ"),
                 promptText: "pencil sketch drawing, graphite texture, rough construction lines, cross-hatching shading, artistic study, sketchbook paper",
-                category: .style),
+                category: .style, thumbnailImageName: "template-style-06"),
         builtIn(uuid: "000000000007", name: String(localized: "アニメ風"),
                 promptText: "anime illustration style, cel-shaded coloring, large expressive eyes, clean outlines, vibrant color palette, manga-inspired composition",
-                category: .style),
+                category: .style, thumbnailImageName: "template-style-07"),
         builtIn(uuid: "000000000008", name: String(localized: "浮世絵風"),
                 promptText: "ukiyo-e woodblock print style, flat color areas, bold black outlines, traditional Japanese composition, wave patterns, washi paper texture",
-                category: .style),
+                category: .style, thumbnailImageName: "template-style-08"),
         builtIn(uuid: "000000000009", name: String(localized: "ローポリ3D"),
                 promptText: "low-poly 3D render, geometric faceted surfaces, minimal polygon count, flat shading, pastel color palette, abstract simplified forms",
-                category: .style),
+                category: .style, thumbnailImageName: "template-style-09"),
         builtIn(uuid: "00000000000a", name: String(localized: "コミック風"),
                 promptText: "comic book illustration, bold ink outlines, halftone dot shading, dynamic action poses, speech bubble layout, vivid primary colors",
-                category: .style),
+                category: .style, thumbnailImageName: "template-style-10"),
     ]
 
     // MARK: 写真・カメラ
