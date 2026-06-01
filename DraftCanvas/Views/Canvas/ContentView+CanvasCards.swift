@@ -6,9 +6,10 @@ extension ContentView {
         let persistedItems = viewModel.displayedItemsSnapshot.map { CanvasEntry.item($0) }
         let showJobs = viewModel.isGeneratingForSelected && viewModel.selectedFilteringProjectID == nil && !viewModel.isSearchActive
         let inProgressJobs = showJobs ? viewModel.currentJobs.map { CanvasEntry.job($0) } : []
+        let all = persistedItems + inProgressJobs
         switch viewModel.canvasSortOrder {
-        case .createdAtAscending: return persistedItems + inProgressJobs
-        case .createdAtDescending: return inProgressJobs + persistedItems
+        case .createdAtAscending: return all.sorted { $0.sortDate < $1.sortDate }
+        case .createdAtDescending: return all.sorted { $0.sortDate > $1.sortDate }
         }
     }
 

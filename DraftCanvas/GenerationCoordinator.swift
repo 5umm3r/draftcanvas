@@ -61,6 +61,10 @@ final class GenerationCoordinator: @unchecked Sendable {
     ) async -> [GenerationJob] {
         let controller = ConcurrencyController(initial: request.normalizedConcurrency)
         var jobs = inputJobs
+        var positionByJobIndex: [Int: Int] = [:]
+        for (pos, job) in jobs.enumerated() {
+            positionByJobIndex[job.index] = pos
+        }
 
         await withTaskGroup(of: GenerationJob.self) { group in
             var nextIndex = 0
@@ -70,7 +74,7 @@ final class GenerationCoordinator: @unchecked Sendable {
                 guard running < effectiveConcurrency, nextIndex < jobs.count else { return }
                 var job = jobs[nextIndex]
                 job.status = .running
-                jobs[job.index] = job
+                jobs[nextIndex] = job
                 let capturedJob = job
                 let runner = runner
                 let request = request
@@ -90,7 +94,9 @@ final class GenerationCoordinator: @unchecked Sendable {
 
             while let completed = await group.next() {
                 running -= 1
-                jobs[completed.index] = completed
+                if let pos = positionByJobIndex[completed.index] {
+                    jobs[pos] = completed
+                }
                 await onUpdate?(completed)
 
                 if completed.hitRateLimitDuringRun {

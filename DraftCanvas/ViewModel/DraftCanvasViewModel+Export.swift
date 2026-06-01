@@ -132,7 +132,10 @@ extension DraftCanvasViewModel {
         let panel = NSSavePanel()
         panel.allowedContentTypes = [.zip]
         let projectName = projects.first(where: { $0.id == selectedProjectID })?.name ?? "Untitled"
-        panel.nameFieldStringValue = "\(ExportNaming.sanitize(projectName))-batch.zip"
+        let baseName = "\(ExportNaming.sanitize(projectName))-batch.zip"
+        let suggestedURL = (preferredSaveFolder ?? FileManager.default.temporaryDirectory)
+            .appendingPathComponent(baseName)
+        panel.nameFieldStringValue = ensureUniqueURL(suggestedURL).lastPathComponent
         if let folder = preferredSaveFolder { panel.directoryURL = folder }
         guard panel.runModal() == .OK, let zipURL = panel.url else { return }
 

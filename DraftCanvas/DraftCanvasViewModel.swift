@@ -13,12 +13,14 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var terminationRequested = false
     @Published var draftInputs: ProjectInputs = ProjectInputs()
     var lastRequestByProject: [UUID: GenerationRequest] = [:]
+    var preparedRequestByRun: [UUID: GenerationRequest] = [:]
     var generationTasks: [UUID: [UUID: Task<Void, Never>]] = [:]
 
     // MARK: - 自動リトライ
     @AppStorage("autoRetryEnabled") var autoRetryEnabled: Bool = true
     var autoRetryCountByProject: [UUID: Int] = [:]    // run 単位のリトライ回数（上限3）
     var autoRetryTasks: [UUID: Task<Void, Never>] = [:]  // バックオフ中の予約タスク
+    var autoRetryRequestByProject: [UUID: [UUID: GenerationRequest]] = [:]  // リトライ用リクエスト退避
 
     // MARK: - Global state
     @AppStorage("appAppearance") var appAppearanceRaw: String = "light"
@@ -189,6 +191,7 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var promptHistory: [PromptHistoryEntry] = []
     @Published var isTemplatePopoverPresented: Bool = false
     @Published var isHistoryPopoverPresented: Bool = false
+    @Published var shouldFocusPromptAfterApply: Bool = false
 
     let client: CodexAppServerClient
     let accountClient: CodexAccountProviding
@@ -422,10 +425,14 @@ final class DraftCanvasViewModel: ObservableObject {
         for (_, t) in autoRetryTasks { t.cancel() }
         autoRetryTasks.removeAll()
         autoRetryCountByProject.removeAll()
+        autoRetryRequestByProject.removeAll()
         enhanceTask?.cancel()
         enhanceTask = nil
         materialExtractionTask?.cancel()
         materialExtractionTask = nil
+        accountUsageRefreshTask?.cancel()
+        accountUsageRefreshTask = nil
+        isRefreshingAccountUsage = false
 
         generatingProjectIDs.removeAll()
         vectorizingItemIDs.removeAll()

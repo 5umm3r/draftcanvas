@@ -5,7 +5,9 @@ import UserNotifications
 extension DraftCanvasViewModel {
     func generate(skipRateLimitCheck: Bool = false) {
         guard canGenerate else { return }
-        guard !isGeneratingForSelected else { return }
+        if currentInputs.editSource != nil {
+            guard !isGeneratingForSelected else { return }
+        }
         if accountUsageStatus.isChatGPTFreePlan {
             pendingFreeAccountBlock = true
             return
@@ -87,17 +89,23 @@ extension DraftCanvasViewModel {
         activityTracker.begin()
         logs.append("生成を開始しました。count=\(request.normalizedCount), concurrency=\(request.normalizedConcurrency)")
 
-        for job in jobs {
+        let runID = UUID()
+        let batchBase = Date()
+        var taggedJobs = jobs
+        for i in taggedJobs.indices {
+            taggedJobs[i].runID = runID
+            taggedJobs[i].scheduledAt = batchBase.addingTimeInterval(Double(taggedJobs[i].index) * 0.001)
+        }
+        for job in taggedJobs {
             upsert(job, into: projectID)
         }
-
-        let runID = UUID()
 
         let generationTask = Task { [weak self] in
             guard let self else { return }
             let preparedRequest = await prepareRequestForGeneration(request)
             await MainActor.run {
                 self.lastRequestByProject[projectID] = preparedRequest
+                self.preparedRequestByRun[runID] = preparedRequest
             }
 
             guard !Task.isCancelled else {
@@ -108,7 +116,7 @@ extension DraftCanvasViewModel {
                 return
             }
 
-            let results = await coordinator.runSpecific(jobs: jobs, request: preparedRequest) { [weak self] job in
+            let results = await coordinator.runSpecific(jobs: taggedJobs, request: preparedRequest) { [weak self] job in
                 await MainActor.run {
                     guard let self else { return }
                     self.handleJobUpdate(job, into: projectID, request: preparedRequest)
@@ -116,9 +124,11 @@ extension DraftCanvasViewModel {
             }
 
             await MainActor.run {
-                self.finishRun(runID: runID, projectID: projectID, results: results)
+                let didScheduleRetry = self.finishRun(runID: runID, projectID: projectID, results: results)
                 onCompletion?()
-                self.logs.append("全ジョブが終了しました。")
+                if !didScheduleRetry {
+                    self.logs.append("全ジョブが終了しました。")
+                }
                 self.refreshAccountUsage()
             }
         }
@@ -162,6 +172,9 @@ extension DraftCanvasViewModel {
     }
 
     func handleJobUpdate(_ job: GenerationJob, into projectID: UUID, request: GenerationRequest) {
+        if let runID = job.runID, generationTasks[projectID]?[runID] == nil {
+            return
+        }
         if job.status == .succeeded {
             persistAndPromoteSucceededJob(job, request: request, projectID: projectID)
         } else {
@@ -180,6 +193,7 @@ extension DraftCanvasViewModel {
             revisedPrompt: job.revisedPrompt,
             aspectRatio: request.aspectRatio,
             actualAspectRatio: actualRatio,
+            createdAt: job.scheduledAt,
             errorMessage: nil,
             editedFromItemID: request.editSource?.projectItemID
         )
@@ -241,79 +255,64 @@ extension DraftCanvasViewModel {
     }
 
     func retryFailedJobs(projectID: UUID) {
-        guard !isGenerating(for: projectID),
-              let request = lastRequestByProject[projectID] else { return }
+        guard !isGenerating(for: projectID) else { return }
 
-        var failedJobs = (jobsByProject[projectID] ?? []).filter { $0.status == .failed }
+        let failedJobs = (jobsByProject[projectID] ?? []).filter { $0.status == .failed }
         guard !failedJobs.isEmpty else { return }
 
         dismissedFailedJobIDs.subtract(failedJobs.map(\.id))
-
-        for i in failedJobs.indices {
-            failedJobs[i].status = .queued
-            failedJobs[i].errorMessage = nil
-            failedJobs[i].logs = []
-            failedJobs[i].imageData = nil
-            failedJobs[i].hitRateLimitDuringRun = false
-            failedJobs[i].failureKind = nil
-        }
-        for job in failedJobs {
-            upsert(job, into: projectID)
-        }
 
         generatingProjectIDs.insert(projectID)
         activityTracker.begin()
         logs.append("失敗ジョブを再試行します: \(failedJobs.count)件")
 
-        let runID = UUID()
-
-        let retryTask = Task { [weak self] in
-            guard let self else { return }
-            let preparedRequest = await prepareRequestForGeneration(request)
-            await MainActor.run {
-                self.lastRequestByProject[projectID] = preparedRequest
-            }
-
-            guard !Task.isCancelled else {
-                await MainActor.run {
-                    self.finishRun(runID: runID, projectID: projectID)
-                }
-                return
-            }
-
-            let retried = await coordinator.runSpecific(jobs: failedJobs, request: preparedRequest) { [weak self] job in
-                await MainActor.run {
-                    guard let self else { return }
-                    self.handleJobUpdate(job, into: projectID, request: preparedRequest)
-                }
-            }
-
-            await MainActor.run {
-                self.finishRun(runID: runID, projectID: projectID, results: retried)
-                self.refreshAccountUsage()
-                self.logs.append("再試行完了。")
-            }
+        let grouped = Dictionary(grouping: failedJobs, by: { $0.runID })
+        var enqueued = false
+        for (origRunID, groupJobs) in grouped {
+            guard let request = origRunID.flatMap({ preparedRequestByRun[$0] })
+                    ?? lastRequestByProject[projectID] else { continue }
+            enqueueRetryRun(jobs: groupJobs, request: request, projectID: projectID, logMessage: "再試行完了。")
+            enqueued = true
         }
-        if generationTasks[projectID] == nil {
-            generationTasks[projectID] = [:]
-        }
-        generationTasks[projectID]?[runID] = retryTask
-    }
-
-    func cancelProjectRuns(projectID: UUID) {
-        let tasks = generationTasks[projectID] ?? [:]
-        for (_, task) in tasks { task.cancel() }
-        generationTasks[projectID] = nil
-        // バックオフ中の自動リトライも停止
-        autoRetryTasks[projectID]?.cancel()
-        autoRetryTasks.removeValue(forKey: projectID)
-        autoRetryCountByProject.removeValue(forKey: projectID)
-        if generatingProjectIDs.remove(projectID) != nil {
+        if !enqueued {
+            generatingProjectIDs.remove(projectID)
             activityTracker.end()
         }
     }
 
-    func finishRun(runID: UUID, projectID: UUID, results: [GenerationJob]? = nil) {
+    func cancelProjectRuns(projectID: UUID) {
+        let tasks = generationTasks[projectID] ?? [:]
+        let cancelledRunIDs = Set(tasks.keys)
+        for (runID, task) in tasks {
+            task.cancel()
+            preparedRequestByRun.removeValue(forKey: runID)
+        }
+        generationTasks[projectID] = nil
+
+        if var jobs = jobsByProject[projectID] {
+            jobs.removeAll { job in
+                guard let runID = job.runID else { return false }
+                return cancelledRunIDs.contains(runID)
+            }
+            if jobs.isEmpty {
+                jobsByProject.removeValue(forKey: projectID)
+            } else {
+                jobsByProject[projectID] = jobs
+            }
+        }
+
+        autoRetryTasks[projectID]?.cancel()
+        autoRetryTasks.removeValue(forKey: projectID)
+        autoRetryCountByProject.removeValue(forKey: projectID)
+        autoRetryRequestByProject.removeValue(forKey: projectID)
+        if generatingProjectIDs.remove(projectID) != nil {
+            activityTracker.end()
+        }
+        refreshAccountUsage()
+    }
+
+    @discardableResult
+    func finishRun(runID: UUID, projectID: UUID, results: [GenerationJob]? = nil) -> Bool {
         generationTasks[projectID]?.removeValue(forKey: runID)
         if generationTasks[projectID]?.isEmpty == true {
             generationTasks.removeValue(forKey: projectID)
@@ -326,7 +325,6 @@ extension DraftCanvasViewModel {
                 refreshAccountUsage()
             }
             if let results {
-                // 自動リトライ判定
                 let autoRetryTargets = results.filter {
                     $0.status == .failed && ($0.failureKind == .rateLimited || $0.failureKind == .timeout)
                 }
@@ -336,6 +334,15 @@ extension DraftCanvasViewModel {
                     let attempt = retryCount + 1
                     let delay = pow(2.0, Double(attempt)) * 5.0  // 10s, 20s, 40s
                     logs.append("自動再試行を\(Int(delay))秒後に実行します（\(attempt)/3回目）")
+                    let retryGrouped = Dictionary(grouping: autoRetryTargets, by: { $0.runID })
+                    for (origRunID, _) in retryGrouped {
+                        guard let rid = origRunID, let req = preparedRequestByRun[rid] else { continue }
+                        if autoRetryRequestByProject[projectID] == nil {
+                            autoRetryRequestByProject[projectID] = [:]
+                        }
+                        autoRetryRequestByProject[projectID]?[rid] = req
+                    }
+                    preparedRequestByRun.removeValue(forKey: runID)
                     let retryTask = Task { [weak self] in
                         try? await Task.sleep(for: .seconds(delay))
                         guard !Task.isCancelled else { return }
@@ -345,24 +352,23 @@ extension DraftCanvasViewModel {
                         }
                     }
                     autoRetryTasks[projectID] = retryTask
-                    return  // 自動リトライが終わるまで onAllJobsCompleted を保留
+                    return true
                 }
-                // 自動リトライなし / 上限到達 → カウントリセットして完了通知
                 autoRetryCountByProject.removeValue(forKey: projectID)
                 onAllJobsCompleted(results: results)
             }
         }
+        preparedRequestByRun.removeValue(forKey: runID)
+        return false
     }
 
     private func autoRetryFailedJobs(projectID: UUID) {
-        guard !isGenerating(for: projectID),
-              let request = lastRequestByProject[projectID] else {
-            // isGenerating 中に呼ばれた場合はカウントをリセットして意図しない再トリガーを防ぐ
+        guard !isGenerating(for: projectID) else {
             autoRetryCountByProject.removeValue(forKey: projectID)
             return
         }
 
-        var failedJobs = (jobsByProject[projectID] ?? []).filter {
+        let failedJobs = (jobsByProject[projectID] ?? []).filter {
             $0.status == .failed && ($0.failureKind == .rateLimited || $0.failureKind == .timeout)
         }
         guard !failedJobs.isEmpty else {
@@ -370,38 +376,58 @@ extension DraftCanvasViewModel {
             return
         }
 
-        // ジョブ状態をリセット（dismissedFailedJobIDs は変更しない）
-        for i in failedJobs.indices {
-            failedJobs[i].status = .queued
-            failedJobs[i].errorMessage = nil
-            failedJobs[i].logs = []
-            failedJobs[i].imageData = nil
-            failedJobs[i].hitRateLimitDuringRun = false
-            failedJobs[i].failureKind = nil
-        }
-        for job in failedJobs {
-            upsert(job, into: projectID)
-        }
-
         generatingProjectIDs.insert(projectID)
         activityTracker.begin()
         logs.append("自動再試行を開始します: \(failedJobs.count)件")
 
+        let grouped = Dictionary(grouping: failedJobs, by: { $0.runID })
+        var enqueued = false
+        for (origRunID, groupJobs) in grouped {
+            guard let request = origRunID.flatMap({ autoRetryRequestByProject[projectID]?[$0] })
+                    ?? lastRequestByProject[projectID] else { continue }
+            enqueueRetryRun(jobs: groupJobs, request: request, projectID: projectID, logMessage: "自動再試行完了。")
+            enqueued = true
+        }
+        autoRetryRequestByProject.removeValue(forKey: projectID)
+        if !enqueued {
+            generatingProjectIDs.remove(projectID)
+            activityTracker.end()
+        }
+    }
+
+    private func enqueueRetryRun(
+        jobs: [GenerationJob],
+        request: GenerationRequest,
+        projectID: UUID,
+        logMessage: String
+    ) {
         let runID = UUID()
+        var retryJobs = jobs
+        for i in retryJobs.indices {
+            retryJobs[i].status = .queued
+            retryJobs[i].runID = runID
+            retryJobs[i].errorMessage = nil
+            retryJobs[i].logs = []
+            retryJobs[i].imageData = nil
+            retryJobs[i].hitRateLimitDuringRun = false
+            retryJobs[i].failureKind = nil
+        }
+        for job in retryJobs {
+            upsert(job, into: projectID)
+        }
         let retryTask = Task { [weak self] in
             guard let self else { return }
             let preparedRequest = await prepareRequestForGeneration(request)
-            await MainActor.run { self.lastRequestByProject[projectID] = preparedRequest }
+            await MainActor.run {
+                self.preparedRequestByRun[runID] = preparedRequest
+            }
 
             guard !Task.isCancelled else {
                 await MainActor.run { self.finishRun(runID: runID, projectID: projectID) }
                 return
             }
 
-            let retried = await coordinator.runSpecific(
-                jobs: failedJobs,
-                request: preparedRequest
-            ) { [weak self] job in
+            let retried = await coordinator.runSpecific(jobs: retryJobs, request: preparedRequest) { [weak self] job in
                 await MainActor.run {
                     self?.handleJobUpdate(job, into: projectID, request: preparedRequest)
                 }
@@ -409,7 +435,7 @@ extension DraftCanvasViewModel {
             await MainActor.run {
                 self.finishRun(runID: runID, projectID: projectID, results: retried)
                 self.refreshAccountUsage()
-                self.logs.append("自動再試行完了。")
+                self.logs.append(logMessage)
             }
         }
         if generationTasks[projectID] == nil { generationTasks[projectID] = [:] }

@@ -15,4 +15,11 @@ enum CanvasEntry: Identifiable {
         if case .item(let item) = self { return item.id }
         return nil
     }
+
+    var sortDate: Date {
+        switch self {
+        case .item(let i): return i.createdAt
+        case .job(let j): return j.scheduledAt
+        }
+    }
 }

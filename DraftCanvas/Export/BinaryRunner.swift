@@ -27,15 +27,18 @@ enum BinaryRunner {
     static func run(
         binary: String,
         arguments: [String],
-        timeout: TimeInterval = 120
+        timeout: TimeInterval = 120,
+        allowedExitCodes: Set<Int32> = [0]
     ) async throws -> (stdout: Data, stderr: String) {
         let url = try resolve(name: binary)
         let p = Process()
         p.executableURL = url
         p.arguments = arguments
-        let outPipe = Pipe()
+
+        // stdout は不要（oxipng/pngquant はファイル出力）→ /dev/null で cooperative thread ブロック回避
+        p.standardOutput = FileHandle.nullDevice
+
         let errPipe = Pipe()
-        p.standardOutput = outPipe
         p.standardError = errPipe
 
         do {
@@ -44,16 +47,14 @@ enum BinaryRunner {
             throw Failure.io(error)
         }
 
-        return try await withThrowingTaskGroup(of: (Data, String).self) { group in
+        // terminationHandler で非ブロッキング待機（cooperative thread pool を消費しない）
+        let status: Int32 = try await withThrowingTaskGroup(of: Int32.self) { group in
             group.addTask {
-                p.waitUntilExit()
-                let stdout = (try? outPipe.fileHandleForReading.readToEnd()) ?? Data()
-                let stderrData = (try? errPipe.fileHandleForReading.readToEnd()) ?? Data()
-                let stderr = String(data: stderrData, encoding: .utf8) ?? ""
-                guard p.terminationStatus == 0 else {
-                    throw Failure.nonZeroExit(p.terminationStatus, stderr)
+                try await withCheckedThrowingContinuation { continuation in
+                    p.terminationHandler = { proc in
+                        continuation.resume(returning: proc.terminationStatus)
+                    }
                 }
-                return (stdout, stderr)
             }
             group.addTask {
                 try await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
@@ -64,5 +65,14 @@ enum BinaryRunner {
             group.cancelAll()
             return result
         }
+
+        // プロセス終了後に stderr を読む（プロセス終了済みなので即返る）
+        let stderrData = errPipe.fileHandleForReading.readDataToEndOfFile()
+        let stderr = String(data: stderrData, encoding: .utf8) ?? ""
+
+        guard allowedExitCodes.contains(status) else {
+            throw Failure.nonZeroExit(status, stderr)
+        }
+        return (Data(), stderr)
     }
 }

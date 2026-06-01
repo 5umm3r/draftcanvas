@@ -319,8 +319,11 @@ extension DraftCanvasViewModel {
 
         // プレースホルダー jobs を即座に表示し、生成中状態を設定する。
         // LLM 変奏取得後に同じ job ID でプロンプトを更新して coordinator に渡す。
+        let runID = UUID()
+        let batchBase = Date()
         let placeholderJobs = (0..<normalizedCount).map { index in
-            GenerationJob(index: index, prompt: trimmedPrompt, aspectRatio: capturedAspectRatio)
+            GenerationJob(index: index, prompt: trimmedPrompt, aspectRatio: capturedAspectRatio, runID: runID,
+                          scheduledAt: batchBase.addingTimeInterval(Double(index) * 0.001))
         }
         for job in placeholderJobs {
             upsert(job, into: projectID)
@@ -329,7 +332,6 @@ extension DraftCanvasViewModel {
         activityTracker.begin()
         logs.append("バリエーション生成を開始します: \(normalizedCount)枚, item=\(item.id)")
 
-        let runID = UUID()
         if generationTasks[projectID] == nil { generationTasks[projectID] = [:] }
 
         let capturedCoordinator = coordinator
@@ -368,7 +370,10 @@ extension DraftCanvasViewModel {
                 translateToEnglish: false
             )
 
-            await MainActor.run { self.lastRequestByProject[projectID] = request }
+            await MainActor.run {
+                self.lastRequestByProject[projectID] = request
+                self.preparedRequestByRun[runID] = request
+            }
 
             guard !Task.isCancelled else {
                 await MainActor.run { self.finishRun(runID: runID, projectID: projectID) }

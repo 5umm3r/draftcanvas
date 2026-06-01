@@ -78,6 +78,41 @@ gh auth login
 
 リリース先リポジトリ: `5umm3r/draftcanvas-releases`
 
+### 6. 同梱バイナリ (oxipng / pngquant / cwebp)
+
+エクスポートの画像最適化に外部バイナリを同梱する。`DraftCanvas/Resources/bin/` に
+Universal Binary (x86_64 + arm64) で配置し、git 管理下に置く。通常リリース時の再取得は
+不要（コミット済みを使う）。バージョン更新やバイナリ欠損時のみ再生成する:
+
+```bash
+./scripts/download-binaries.sh
+```
+
+- oxipng / cwebp: 配布元から両アーキを取得して lipo 結合
+- **pngquant: Rust 製。`cargo install` で両アーキを静的ビルドして lipo 結合**
+  → **Rust ツールチェーンが必須**:
+  ```bash
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+  source "$HOME/.cargo/env"
+  rustup target add aarch64-apple-darwin x86_64-apple-darwin
+  ```
+
+**重要 — 自己完結要件**: アプリは Universal 配布（Intel ユーザーも対象）。同梱バイナリは
+3 つとも Universal かつ **システム dylib (`/usr/lib`・`/System`) のみに依存**していること。
+
+- pngquant を素の `cargo install` でビルドすると Homebrew の `liblcms2`/`libpng16` を
+  動的リンクし、Homebrew 非導入のエンドユーザー環境で `dyld: Symbol not found` で起動失敗する。
+  これを防ぐため download-binaries.sh は `PNG_STATIC=1` / `LCMS2_STATIC=1` +
+  pkg-config 無効化で vendored static ビルドを強制し、ビルド後に自己完結チェックを行う。
+- 確認:
+  ```bash
+  lipo -archs DraftCanvas/Resources/bin/pngquant   # → x86_64 arm64
+  otool -L DraftCanvas/Resources/bin/pngquant      # → /usr/lib/* と /System/* のみ
+  ```
+
+> 同梱バイナリの署名は release.sh の "Re-sign embedded binaries" ステップが
+> Developer ID + Hardened Runtime で再署名するため、ここでの署名状態は問わない。
+
 ---
 
 ## リリース実行
@@ -149,6 +184,14 @@ brew install --cask sparkle
 
 **`DC_NOTARY` プロファイルエラー**
 → セットアップ手順 2 を再実施（App-specific password の有効期限切れの場合あり）。
+
+**最大圧縮 PNG が圧縮されない / エクスポートしたアプリで圧縮が効かない**
+→ 同梱 pngquant が単一アーキ、または Homebrew dylib 動的リンクで起動失敗の可能性。
+セットアップ手順 6 の確認コマンドで Universal かつ自己完結であることを検証する。
+NG なら download-binaries.sh を再実行。
+
+**`download-binaries.sh` で `cargo: command not found`**
+→ Rust 未導入。セットアップ手順 6 の rustup インストールを実施。
 
 ---
 

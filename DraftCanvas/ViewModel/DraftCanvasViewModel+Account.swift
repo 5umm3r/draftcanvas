@@ -23,26 +23,39 @@ extension DraftCanvasViewModel {
 
         Task {
             do {
-                let status = try await refreshTask.value
-                await MainActor.run {
-                    self.accountUsageStatus = status
-                    self.accountUsageStatusFetchedAt = Date()
-                    self.isRefreshingAccountUsage = false
-                    self.accountUsageRefreshTask = nil
-                    self.logs.append("Codexアカウントと使用量を更新しました。")
+                let status = try await withThrowingTaskGroup(of: CodexAccountUsageStatus.self) { group in
+                    group.addTask { try await refreshTask.value }
+                    group.addTask {
+                        try await Task.sleep(nanoseconds: 15_000_000_000)
+                        throw CancellationError()
+                    }
+                    guard let result = try await group.next() else {
+                        throw CancellationError()
+                    }
+                    group.cancelAll()
+                    return result
                 }
+                self.accountUsageStatus = status
+                self.accountUsageStatusFetchedAt = Date()
+                self.isRefreshingAccountUsage = false
+                self.accountUsageRefreshTask = nil
+                self.logs.append("Codexアカウントと使用量を更新しました。")
             } catch {
-                await MainActor.run {
-                    self.isRefreshingAccountUsage = false
-                    self.accountUsageRefreshTask = nil
+                refreshTask.cancel()
+                self.isRefreshingAccountUsage = false
+                self.accountUsageRefreshTask = nil
+                if !(error is CancellationError) {
                     self.accountUsagePrewarmFailed = true
-                    self.logs.append("Codexアカウントと使用量の取得に失敗しました: \(error.localizedDescription)")
                 }
+                self.logs.append("Codexアカウントと使用量の取得に失敗しました: \(error.localizedDescription)")
             }
         }
     }
 
     func relaunchAndRefreshAccountUsage() {
+        accountUsageRefreshTask?.cancel()
+        accountUsageRefreshTask = nil
+        isRefreshingAccountUsage = false
         accountClient.stop()
         availableModels = []
         codexVersion = "--"
