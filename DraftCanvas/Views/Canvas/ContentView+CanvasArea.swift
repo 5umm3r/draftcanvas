@@ -141,6 +141,10 @@ extension ContentView {
                 sketchEditorSheet(for: target)
                     .environment(\.locale, l10n.locale)
             }
+            .sheet(item: $viewModel.outpaintTarget) { target in
+                outpaintEditorSheet(for: target)
+                    .environment(\.locale, l10n.locale)
+            }
             .sheet(item: $viewModel.backgroundRemovalPreview) { preview in
                 BackgroundRemovalPreviewSheet(preview: preview, viewModel: viewModel)
                     .environment(\.locale, l10n.locale)
@@ -185,6 +189,31 @@ extension ContentView {
                 },
                 onCancel: {
                     viewModel.inpaintingTarget = nil
+                }
+            )
+        } else {
+            Text("画像を読み込めませんでした")
+                .padding(40)
+        }
+    }
+
+    @ViewBuilder
+    func outpaintEditorSheet(for target: OutpaintTarget) -> some View {
+        let item = target.item
+        if let nsImage = viewModel.cachedImage(for: item) {
+            OutpaintEditorSheet(
+                sourceImage: nsImage,
+                initialInsets: target.initialInsets,
+                onComplete: { completion in
+                    switch completion {
+                    case .generate(let insets):
+                        viewModel.applyOutpaint(item: item, insets: insets)
+                    case .prompt(let insets):
+                        viewModel.prepareOutpaint(item: item, insets: insets)
+                    }
+                },
+                onCancel: {
+                    viewModel.outpaintTarget = nil
                 }
             )
         } else {

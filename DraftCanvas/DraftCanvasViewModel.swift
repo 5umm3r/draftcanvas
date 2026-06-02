@@ -27,7 +27,6 @@ final class DraftCanvasViewModel: ObservableObject {
     @AppStorage("completionSound") var completionSound: String = CompletionSoundOption.glass.rawValue
     @AppStorage("canvasSortOrder") var canvasSortOrderRaw: String = CanvasSortOrder.createdAtAscending.rawValue
     @AppStorage("translateToEnglish") var translateToEnglish: Bool = false
-    @AppStorage("includeHiddenModels") var includeHiddenModels: Bool = false
     var canvasSortOrder: CanvasSortOrder {
         get { CanvasSortOrder(rawValue: canvasSortOrderRaw) ?? .createdAtAscending }
         set {
@@ -180,6 +179,8 @@ final class DraftCanvasViewModel: ObservableObject {
         }
     }
     @Published var cropTarget: ProjectItem? = nil
+    @Published var outpaintTarget: OutpaintTarget? = nil
+    var outpaintInsetsCache: [UUID: OutpaintInsets] = [:]
     @Published var backgroundRemovalPreview: BackgroundRemovalPreview? = nil
     @Published var materialExtractionPreview: MaterialExtractionPreview? = nil
     @Published var extractingItemID: UUID? = nil
@@ -413,6 +414,7 @@ final class DraftCanvasViewModel: ObservableObject {
             || upscalePreview != nil
             || inpaintingTarget != nil
             || cropTarget != nil
+            || outpaintTarget != nil
     }
 
     func cancelInFlightWorkForRelaunch() {
@@ -447,6 +449,7 @@ final class DraftCanvasViewModel: ObservableObject {
         upscalePreview = nil
         inpaintingTarget = nil
         cropTarget = nil
+        outpaintTarget = nil
 
         saveState()
     }

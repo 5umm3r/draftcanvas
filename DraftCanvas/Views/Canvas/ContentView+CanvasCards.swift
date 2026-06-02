@@ -252,6 +252,14 @@ extension ContentView {
                     viewModel.openMaskEditor(item: item)
                 }
                 CircularPromptActionButton(
+                    systemImage: "arrow.up.and.down.and.arrow.left.and.right",
+                    tooltip: "アウトペイント",
+                    showCostBadge: viewModel.showCostBadge
+                ) {
+                    guard EntitlementGate.shared.requireUnlocked() else { return }
+                    viewModel.openOutpaintEditor(for: item)
+                }
+                CircularPromptActionButton(
                     systemImage: "scissors",
                     tooltip: "背景を除去",
                     isDisabled: item.isBackgroundRemoved

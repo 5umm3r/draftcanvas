@@ -84,9 +84,13 @@ extension ContentView {
         return VStack(spacing: 0) {
             if !isCollapsed, let editSource = viewModel.currentInputs.editSource {
                 HStack(spacing: 8) {
-                    Image(systemName: editSource.isInpainting ? "paintbrush.pointed" : "wand.and.stars")
+                    Image(systemName: editSource.isOutpainting
+                          ? "arrow.up.and.down.and.arrow.left.and.right"
+                          : editSource.isInpainting ? "paintbrush.pointed" : "wand.and.stars")
                         .foregroundStyle(.secondary)
-                    Text(editSource.isInpainting ? LocalizedStringKey("マスクして編集モード") : LocalizedStringKey("再編集モード"))
+                    Text(editSource.isOutpainting
+                         ? LocalizedStringKey("アウトペイント拡張モード")
+                         : editSource.isInpainting ? LocalizedStringKey("マスクして編集モード") : LocalizedStringKey("再編集モード"))
                         .font(.caption.weight(.semibold))
                     Spacer()
                     Button("解除") {
@@ -96,7 +100,7 @@ extension ContentView {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .background((editSource.isInpainting ? Color.orange : Color.accentColor).opacity(0.10))
+                .background((editSource.isOutpainting ? Color.teal : editSource.isInpainting ? Color.orange : Color.accentColor).opacity(0.10))
 
                 Divider()
             }
@@ -122,7 +126,7 @@ extension ContentView {
                     AttachedImageThumbnail(
                         filePath: attachedImage.filePath,
                         overlayPath: viewModel.currentInputs.editSource.flatMap { src in
-                            guard src.isInpainting else { return nil }
+                            guard src.isInpainting, !src.isOutpainting else { return nil }
                             return viewModel.projectStore.previewURL(id: src.projectItemID).path
                         },
                         onTap: {
@@ -134,7 +138,12 @@ extension ContentView {
                                   editSource.isInpainting,
                                   let item = viewModel.items.first(where: { $0.id == editSource.projectItemID })
                             else { return }
-                            viewModel.openMaskEditor(item: item)
+                            if editSource.isOutpainting {
+                                let cached = viewModel.outpaintInsetsCache[item.id] ?? .zero
+                                viewModel.openOutpaintEditor(for: item, initialInsets: cached)
+                            } else {
+                                viewModel.openMaskEditor(item: item)
+                            }
                         },
                         onRemove: {
                             if viewModel.currentInputs.editSource != nil {

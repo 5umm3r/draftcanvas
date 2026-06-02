@@ -259,7 +259,7 @@ private actor RecordingAccountClient: CodexAccountProviding {
         )
     }
 
-    func listModels(includeHidden: Bool) async throws -> [CodexModel] {
+    func listModels() async throws -> [CodexModel] {
         modelCount += 1
 
         return [

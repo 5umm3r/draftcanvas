@@ -31,6 +31,7 @@ struct GenerationRequest: Equatable {
 enum InpaintPurpose {
     case edit
     case remove
+    case outpaint
 }
 
 struct GenerationEditSource: Equatable {
@@ -42,6 +43,7 @@ struct GenerationEditSource: Equatable {
     var inpaintPurpose: InpaintPurpose
 
     var isInpainting: Bool { maskFilePath != nil }
+    var isOutpainting: Bool { inpaintPurpose == .outpaint && maskFilePath != nil }
 
     init(
         projectItemID: UUID,

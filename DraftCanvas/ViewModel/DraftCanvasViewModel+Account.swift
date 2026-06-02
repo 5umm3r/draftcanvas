@@ -94,7 +94,7 @@ extension DraftCanvasViewModel {
 
     func refreshAvailableModels() async {
         do {
-            let models = try await accountClient.listModels(includeHidden: includeHiddenModels)
+            let models = try await accountClient.listModels()
             self.availableModels = models
             normalizeProjectModelSelection()
         } catch {
