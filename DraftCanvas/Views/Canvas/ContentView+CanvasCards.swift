@@ -239,17 +239,25 @@ extension ContentView {
                 CircularPromptActionButton(
                     systemImage: "wand.and.stars",
                     tooltip: "再編集",
-                    costLevel: viewModel.itemActionCostLevel
+                    showCostBadge: viewModel.showCostBadge
                 ) {
                     viewModel.edit(item: item)
                 }
                 CircularPromptActionButton(
                     systemImage: "paintbrush.pointed",
                     tooltip: "マスク編集",
-                    costLevel: viewModel.itemActionCostLevel
+                    showCostBadge: viewModel.showCostBadge
                 ) {
                     guard EntitlementGate.shared.requireUnlocked() else { return }
                     viewModel.openMaskEditor(item: item)
+                }
+                CircularPromptActionButton(
+                    systemImage: "arrow.up.and.down.and.arrow.left.and.right",
+                    tooltip: "アウトペイント",
+                    showCostBadge: viewModel.showCostBadge
+                ) {
+                    guard EntitlementGate.shared.requireUnlocked() else { return }
+                    viewModel.openOutpaintEditor(for: item)
                 }
                 CircularPromptActionButton(
                     systemImage: "scissors",
@@ -273,7 +281,7 @@ extension ContentView {
                 CircularPromptActionButton(
                     systemImage: "arrow.down.left.and.arrow.up.right.rectangle",
                     tooltip: "高解像度化",
-                    costLevel: viewModel.itemActionCostLevel,
+                    showCostBadge: viewModel.showCostBadge,
                     isDisabled: viewModel.upscalingItemIDs.contains(item.id)
                 ) {
                     guard EntitlementGate.shared.requireUnlocked() else { return }
@@ -381,9 +389,8 @@ private struct VariationMenuButton: View {
                         Color.primary.opacity(isHovered ? 0.12 : 0.06),
                         in: Circle()
                     )
-                let costLevel = viewModel.itemActionCostLevel
-                if costLevel > 0 {
-                    CodexCostBadge(level: costLevel)
+                if viewModel.showCostBadge {
+                    CodexCostBadge()
                         .offset(x: 4, y: 4)
                 }
             }

@@ -3,7 +3,7 @@ import SwiftUI
 struct CircularPromptActionButton: View {
     let systemImage: String
     let tooltip: LocalizedStringKey
-    var costLevel: Int? = nil
+    var showCostBadge: Bool = false
     var isDisabled: Bool = false
     var isAccent: Bool = false
     let action: () -> Void
@@ -23,8 +23,8 @@ struct CircularPromptActionButton: View {
                             : AnyShapeStyle(Color.primary.opacity(isHovered ? 0.12 : 0.06)),
                         in: Circle()
                     )
-                if let level = costLevel, level > 0 {
-                    CodexCostBadge(level: level)
+                if showCostBadge {
+                    CodexCostBadge()
                         .offset(x: 4, y: 4)
                 }
             }

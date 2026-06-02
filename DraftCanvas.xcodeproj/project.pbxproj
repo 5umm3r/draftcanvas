@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+			OP000001000000010000B1 /* OutpaintInsets.swift in Sources */ = {isa = PBXBuildFile; fileRef = OP000001000000010000A1 /* OutpaintInsets.swift */; };
+			OP000002000000010000B1 /* OutpaintCanvasNSView.swift in Sources */ = {isa = PBXBuildFile; fileRef = OP000002000000010000A1 /* OutpaintCanvasNSView.swift */; };
+			OP000003000000010000B1 /* OutpaintCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = OP000003000000010000A1 /* OutpaintCanvasView.swift */; };
+			OP000004000000010000B1 /* OutpaintEditorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = OP000004000000010000A1 /* OutpaintEditorSheet.swift */; };
+			OP000005000000010000B1 /* OutpaintCompositor.swift in Sources */ = {isa = PBXBuildFile; fileRef = OP000005000000010000A1 /* OutpaintCompositor.swift */; };
+			OP000006000000010000B1 /* DraftCanvasViewModel+Outpaint.swift in Sources */ = {isa = PBXBuildFile; fileRef = OP000006000000010000A1 /* DraftCanvasViewModel+Outpaint.swift */; };
 		00255811ED174B7280F29364 /* CanvasEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4423BC359353E1B97E198AB /* CanvasEntry.swift */; };
 		00EC24DDDC57BCEDDCF5E05F /* EntitlementGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349798D5BC976EBEF6AF7E34 /* EntitlementGate.swift */; };
 		04766A478DD74934AA94F185 /* ImageResizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33A4DD507E0443E093B8B328 /* ImageResizer.swift */; };
@@ -378,6 +384,12 @@
 		23DA79D443899A31762BC805 /* DraftCanvasViewModel+History.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+History.swift"; path = "ViewModel/DraftCanvasViewModel+History.swift"; sourceTree = "<group>"; };
 		A6ACDB95A1E509E7F853AD07 /* PromptTemplatePanel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptTemplatePanel.swift; path = Views/PromptTemplatePanel.swift; sourceTree = "<group>"; };
 		B8B97FF30AA989BF0B294395 /* PromptHistoryPanel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptHistoryPanel.swift; path = Views/PromptHistoryPanel.swift; sourceTree = "<group>"; };
+			OP000001000000010000A1 /* OutpaintInsets.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OutpaintInsets.swift; path = Editors/Outpaint/OutpaintInsets.swift; sourceTree = "<group>"; };
+			OP000002000000010000A1 /* OutpaintCanvasNSView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OutpaintCanvasNSView.swift; path = Editors/Outpaint/OutpaintCanvasNSView.swift; sourceTree = "<group>"; };
+			OP000003000000010000A1 /* OutpaintCanvasView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OutpaintCanvasView.swift; path = Editors/Outpaint/OutpaintCanvasView.swift; sourceTree = "<group>"; };
+			OP000004000000010000A1 /* OutpaintEditorSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OutpaintEditorSheet.swift; path = Editors/Outpaint/OutpaintEditorSheet.swift; sourceTree = "<group>"; };
+			OP000005000000010000A1 /* OutpaintCompositor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutpaintCompositor.swift; sourceTree = "<group>"; };
+			OP000006000000010000A1 /* DraftCanvasViewModel+Outpaint.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Outpaint.swift"; path = "ViewModel/DraftCanvasViewModel+Outpaint.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -410,6 +422,17 @@
 			name = Crop;
 			sourceTree = "<group>";
 		};
+		OP000007000000010000A1 /* Outpaint */ = {
+			isa = PBXGroup;
+			children = (
+				OP000004000000010000A1 /* OutpaintEditorSheet.swift */,
+				OP000003000000010000A1 /* OutpaintCanvasView.swift */,
+				OP000002000000010000A1 /* OutpaintCanvasNSView.swift */,
+				OP000001000000010000A1 /* OutpaintInsets.swift */,
+			);
+			name = Outpaint;
+			sourceTree = "<group>";
+		};
 		10A000002D00000100000001 = {
 			isa = PBXGroup;
 			children = (
@@ -440,6 +463,7 @@
 				0b24c56e3df1460d8b338d4d618036f2 /* ImportSignposter.swift */,
 				10A000FD2D00000100000001 /* ImageVectorizer.swift */,
 				10A001012D00000100000001 /* InpaintingMaskCompositor.swift */,
+					OP000005000000010000A1 /* OutpaintCompositor.swift */,
 				53B928C386A94B158778F073 /* CropParameters.swift */,
 				10B001012D00000100000001 /* SketchModels.swift */,
 				10B001032D00000100000001 /* SketchCompositor.swift */,
@@ -594,6 +618,7 @@
 			isa = PBXGroup;
 			children = (
 				034897F30795086A4CAD7D14 /* Crop */,
+				OP000007000000010000A1 /* Outpaint */,
 				9ACBD98E07E97951DFE3AA1D /* Sketch */,
 				660B54C4FF7FE751C10C861D /* InpaintingMask */,
 			);
@@ -720,6 +745,7 @@
 				AA0000010000000100000002 /* DraftCanvasViewModel+Upscale.swift */,
 				CC0000010000000100000002 /* DraftCanvasViewModel+CanvasNavigation.swift */,
 				F6A0184D75554ACCBBF6B1F2 /* DraftCanvasViewModel+Crop.swift */,
+					OP000006000000010000A1 /* DraftCanvasViewModel+Outpaint.swift */,
 				F895F67E7CA8E2B71286DB54 /* DraftCanvasViewModel+Templates.swift */,
 				23DA79D443899A31762BC805 /* DraftCanvasViewModel+History.swift */,
 			);
@@ -906,6 +932,13 @@
 				60fbbabf84104a96aba9dcf0ae00bbb7 /* ImportSignposter.swift in Sources */,
 				10A000FE2D00000100000001 /* ImageVectorizer.swift in Sources */,
 				10A001022D00000100000001 /* InpaintingMaskCompositor.swift in Sources */,
+					OP000001000000010000B1 /* OutpaintInsets.swift in Sources */,
+					OP000002000000010000B1 /* OutpaintCanvasNSView.swift in Sources */,
+					OP000003000000010000B1 /* OutpaintCanvasView.swift in Sources */,
+					OP000004000000010000B1 /* OutpaintEditorSheet.swift in Sources */,
+					OP000005000000010000B1 /* OutpaintCompositor.swift in Sources */,
+					OP000006000000010000B1 /* DraftCanvasViewModel+Outpaint.swift in Sources */,
+
 				10B001022D00000100000001 /* SketchModels.swift in Sources */,
 				10B001042D00000100000001 /* SketchCompositor.swift in Sources */,
 				10B001082D00000100000001 /* DraftCanvasViewModel+Sketch.swift in Sources */,

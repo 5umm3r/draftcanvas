@@ -29,6 +29,15 @@ struct ItemDetailPopover: View {
                 }
             }
 
+            if let modelName = item.modelName {
+                DetailRow(label: "Model", value: modelName)
+            }
+            if let effort = item.reasoningEffort {
+                DetailRow(label: "Reasoning", value: effort)
+            }
+            if let duration = item.generationDuration {
+                DetailRow(label: "Duration", value: String(format: "%.1fs", duration))
+            }
             DetailRow(label: "Created", value: item.createdAt.formatted(date: .abbreviated, time: .shortened))
 
             DetailRow(

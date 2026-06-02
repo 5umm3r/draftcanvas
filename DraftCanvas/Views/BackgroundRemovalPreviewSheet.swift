@@ -103,7 +103,7 @@ struct BackgroundRemovalPreviewSheet: View {
             Spacer()
 
             Button("キャンセル") {
-                viewModel.backgroundRemovalPreview = nil
+                viewModel.cancelBackgroundRemoval()
             }
             .keyboardShortcut(.escape, modifiers: [])
 

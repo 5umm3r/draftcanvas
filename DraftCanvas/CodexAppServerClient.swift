@@ -41,7 +41,7 @@ protocol CodexAccountProviding: AnyObject, Sendable {
     func start() async throws
     func stop()
     func readAccountUsageStatus() async throws -> CodexAccountUsageStatus
-    func listModels(includeHidden: Bool) async throws -> [CodexModel]
+    func listModels() async throws -> [CodexModel]
 }
 
 final class CodexAppServerClient: @unchecked Sendable {
@@ -219,11 +219,11 @@ final class CodexAppServerClient: @unchecked Sendable {
         return threadID
     }
 
-    func listModels(includeHidden: Bool = false) async throws -> [CodexModel] {
+    func listModels() async throws -> [CodexModel] {
         try await start()
         let response = try await sendRequest(
             method: "model/list",
-            params: ["includeHidden": includeHidden]
+            params: [:]
         )
         guard let data = response["data"] as? [[String: Any]] else { return [] }
         return data.compactMap { dict -> CodexModel? in
@@ -235,14 +235,12 @@ final class CodexAppServerClient: @unchecked Sendable {
                 .compactMap { $0["reasoningEffort"] as? String } ?? []
             let defaultEffort = dict["defaultReasoningEffort"] as? String ?? "medium"
             let isDefault = dict["isDefault"] as? Bool ?? false
-            let rating = ModelRating.lookup(displayName: displayName)
             return CodexModel(
                 id: id,
                 displayName: displayName,
                 supportedReasoningEfforts: efforts,
                 defaultReasoningEffort: defaultEffort,
-                isDefault: isDefault,
-                rating: rating
+                isDefault: isDefault
             )
         }
     }

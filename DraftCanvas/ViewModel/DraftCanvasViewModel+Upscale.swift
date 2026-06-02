@@ -14,6 +14,7 @@ extension DraftCanvasViewModel {
             aspectRatio: item.aspectRatio
         )
         upsert(job, into: projectID)
+        upscalingJobContexts[item.id] = (job.id, projectID)
 
         let fileURL = projectStore.resolvedFileURL(for: item)
         let itemID = item.id
@@ -39,26 +40,23 @@ extension DraftCanvasViewModel {
                     )
                 }.value
 
-                var succeeded = running
-                succeeded.status = .succeeded
-                upsert(succeeded, into: projectID)
+                removeJob(id: job.id, from: projectID)
                 upscalingItemIDs.remove(itemID)
                 upscalingTasks.removeValue(forKey: itemID)
+                upscalingJobContexts.removeValue(forKey: itemID)
                 upscalePreview = UpscalePreviewPayload(
                     originalItem: item,
                     originalImageData: originalData,
                     upscaledImageData: upscaledData,
-                    jobLogs: succeeded.logs
+                    jobLogs: running.logs
                 )
                 logs.append("高解像度化プレビュー準備完了: \(itemID)")
             } catch {
+                removeJob(id: job.id, from: projectID)
                 upscalingItemIDs.remove(itemID)
                 upscalingTasks.removeValue(forKey: itemID)
+                upscalingJobContexts.removeValue(forKey: itemID)
                 guard !(error is CancellationError) else { return }
-                var failed = running
-                failed.status = .failed
-                failed.errorMessage = error.localizedDescription
-                upsert(failed, into: projectID)
                 errorToast = String(localized: "高解像度化に失敗しました")
                 logs.append("高解像度化失敗: \(error.localizedDescription)")
             }
@@ -70,6 +68,9 @@ extension DraftCanvasViewModel {
         upscalingTasks[itemID]?.cancel()
         upscalingTasks.removeValue(forKey: itemID)
         upscalingItemIDs.remove(itemID)
+        if let ctx = upscalingJobContexts.removeValue(forKey: itemID) {
+            removeJob(id: ctx.jobID, from: ctx.projectID)
+        }
     }
 
     func commitUpscale(payload: UpscalePreviewPayload, mode: UpscaleApplyMode) {
