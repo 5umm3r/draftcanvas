@@ -72,6 +72,7 @@ extension ContentView {
                 .animation(.easeInOut(duration: 0.2), value: viewModel.isGeneratingForSelected)
                 .animation(.easeInOut(duration: 0.2), value: viewModel.isTemplatePopoverPresented)
                 .animation(.easeInOut(duration: 0.2), value: viewModel.isHistoryPopoverPresented)
+                .animation(.easeInOut(duration: 0.1), value: viewModel.selectedItemID)
 
                 VStack(spacing: 8) {
                     if let errorMessage = viewModel.importError {
@@ -127,8 +128,8 @@ extension ContentView {
             .overlay(alignment: .leading) {
                 canvasActionPanel
                     .padding(.leading, 16)
+                    .animation(.easeInOut(duration: 0.1), value: viewModel.selectedItemID)
             }
-            .animation(.easeInOut(duration: 0.1), value: viewModel.selectedItemID)
             .sheet(item: $viewModel.inpaintingTarget) { item in
                 inpaintingEditorSheet(for: item)
                     .environment(\.locale, l10n.locale)
@@ -321,6 +322,7 @@ extension ContentView {
                         .padding(.leading, 84)
                         .padding(.trailing, 24)
                         .padding(.bottom, 220)
+                        .animation(.smooth(duration: 0.1), value: canvasZoom)
                         .background(
                             AutoScrollerAnchor(scroller: canvasAutoScroller)
                                 .allowsHitTesting(false)
@@ -404,10 +406,8 @@ extension ContentView {
                     }
                     .onChange(of: canvasZoom) { _, _ in
                         if let id = viewModel.selectedItemID {
-                            DispatchQueue.main.async {
-                                withAnimation(.none) {
-                                    proxy.scrollTo(id, anchor: .center)
-                                }
+                            withAnimation(.smooth(duration: 0.15)) {
+                                proxy.scrollTo(id, anchor: .center)
                             }
                         }
                     }

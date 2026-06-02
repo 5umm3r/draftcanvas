@@ -9,7 +9,9 @@ struct CanvasZoomControl: View {
     var body: some View {
         HStack(spacing: 3) {
             Button {
-                zoom = max(minZoom, zoom - step)
+                withAnimation(.smooth(duration: 0.2)) {
+                    zoom = max(minZoom, zoom - step)
+                }
             } label: {
                 Image(systemName: "minus")
                     .frame(width: 18, height: 18)
@@ -23,7 +25,9 @@ struct CanvasZoomControl: View {
                 .frame(width: 140)
 
             Button {
-                zoom = min(maxZoom, zoom + step)
+                withAnimation(.smooth(duration: 0.2)) {
+                    zoom = min(maxZoom, zoom + step)
+                }
             } label: {
                 Image(systemName: "plus")
                     .frame(width: 18, height: 18)
@@ -37,7 +41,11 @@ struct CanvasZoomControl: View {
                 .font(.caption.weight(.semibold).monospacedDigit())
                 .frame(width: 44, alignment: .trailing)
                 .contentShape(Rectangle())
-                .onTapGesture { zoom = 1.0 }
+                .onTapGesture {
+                    withAnimation(.smooth(duration: 0.2)) {
+                        zoom = 1.0
+                    }
+                }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 3)
