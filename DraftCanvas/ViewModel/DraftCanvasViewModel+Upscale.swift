@@ -111,7 +111,7 @@ extension DraftCanvasViewModel {
                 thumbnailStore.deleteThumbnail(for: item)
                 thumbnailStore.writeThumbnail(from: data, item: item)
                 originalImageStore.evict(url: origURL)
-                thumbnailStore.invalidate()
+                thumbnailStore.invalidate(for: item)
                 touchProject(id: projectID)
                 saveState()
                 logs.append("高解像度化: 上書き完了 \(item.id)")

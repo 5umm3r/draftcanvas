@@ -16,7 +16,7 @@ extension ContentView {
             let actionPanelVisible: Bool =
                 !viewModel.isSelectionMode
                 && viewModel.selectedItemID != nil
-                && viewModel.items.contains(where: { $0.id == viewModel.selectedItemID })
+                && viewModel.selectedItemID.map({ viewModel.itemsByID[$0] != nil }) == true
             let actionPanelReservation: CGFloat = 96
             let promptStandardPad: CGFloat = 24
             let needShift = actionPanelVisible && geometry.size.width < (actionPanelReservation + 780 + promptStandardPad)
@@ -176,7 +176,7 @@ extension ContentView {
 
     @ViewBuilder
     func inpaintingEditorSheet(for item: ProjectItem) -> some View {
-        if let nsImage = viewModel.cachedImage(for: item) {
+        EditorImageLoader(viewModel: viewModel, item: item) { nsImage in
             InpaintingMaskEditorSheet(
                 originalImage: nsImage,
                 mode: $viewModel.inpaintMode,
@@ -192,16 +192,13 @@ extension ContentView {
                     viewModel.inpaintingTarget = nil
                 }
             )
-        } else {
-            Text("画像を読み込めませんでした")
-                .padding(40)
         }
     }
 
     @ViewBuilder
     func outpaintEditorSheet(for target: OutpaintTarget) -> some View {
         let item = target.item
-        if let nsImage = viewModel.cachedImage(for: item) {
+        EditorImageLoader(viewModel: viewModel, item: item) { nsImage in
             OutpaintEditorSheet(
                 sourceImage: nsImage,
                 initialInsets: target.initialInsets,
@@ -217,19 +214,15 @@ extension ContentView {
                     viewModel.outpaintTarget = nil
                 }
             )
-        } else {
-            Text("画像を読み込めませんでした")
-                .padding(40)
         }
     }
 
     @ViewBuilder
     func cropEditorSheet(for item: ProjectItem) -> some View {
-        // isCropped アイテムの再編集は元画像を表示する
         let sourceItem: ProjectItem = item.isCropped
-            ? (viewModel.items.first(where: { $0.id == item.editedFromItemID }) ?? item)
+            ? (item.editedFromItemID.flatMap { viewModel.itemsByID[$0] } ?? item)
             : item
-        if let nsImage = viewModel.cachedImage(for: sourceItem) {
+        EditorImageLoader(viewModel: viewModel, item: sourceItem) { nsImage in
             CropEditorSheet(
                 sourceImage: nsImage,
                 initialParams: item.isCropped ? viewModel.cropParameters(for: item.id) : nil,
@@ -240,9 +233,6 @@ extension ContentView {
                     viewModel.cropTarget = nil
                 }
             )
-        } else {
-            Text("画像を読み込めませんでした")
-                .padding(40)
         }
     }
 
@@ -293,10 +283,10 @@ extension ContentView {
             } else {
                 ScrollViewReader { proxy in
                     ScrollView(.vertical) {
-                        let gridSpacing = CanvasCardLayout.spacing(zoom: canvasZoom)
+                        let gridSpacing = CanvasCardLayout.spacing(zoom: gridZoom)
                         LazyVGrid(
                             columns: [GridItem(
-                                .adaptive(minimum: CanvasCardLayout.baseSquareSide * canvasZoom),
+                                .adaptive(minimum: CanvasCardLayout.baseSquareSide * gridZoom),
                                 spacing: gridSpacing
                             )],
                             spacing: gridSpacing
@@ -306,7 +296,7 @@ extension ContentView {
                                     .id(entry.id)
                                     .background(
                                         Group {
-                                            if let itemID = entry.itemID {
+                                            if isDraggingMarquee, let itemID = entry.itemID {
                                                 GeometryReader { geo in
                                                     Color.clear.preference(
                                                         key: CardFramePreferenceKey.self,
@@ -358,6 +348,12 @@ extension ContentView {
                         CanvasScrollZoomCatcher { delta in
                             let newZoom = canvasZoom * CGFloat(exp(delta))
                             canvasZoom = min(max(newZoom, 0.10), 4.0)
+                            gridZoomTask?.cancel()
+                            gridZoomTask = Task {
+                                try? await Task.sleep(for: .milliseconds(32))
+                                guard !Task.isCancelled else { return }
+                                gridZoom = canvasZoom
+                            }
                         }
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                     )
@@ -394,17 +390,16 @@ extension ContentView {
                     )
                     .onPreferenceChange(CardFramePreferenceKey.self) { frames in
                         cardFrames = frames
-                    }
-                    .onChange(of: cardFrames) { _, newFrames in
                         guard isDraggingMarquee, let rect = marqueeRect else { return }
-                        let hits = Set(newFrames.compactMap { id, frame in
+                        let hits = Set(frames.compactMap { id, frame in
                             frame.intersects(rect) ? id : nil
                         })
                         let next = dragSelectedIDs.union(hits)
                         if next != dragSelectedIDs { dragSelectedIDs = next }
                         if next != viewModel.selectedItemIDs { viewModel.selectedItemIDs = next }
                     }
-                    .onChange(of: canvasZoom) { _, _ in
+                    .onChange(of: canvasZoom) { _, newZoom in
+                        if gridZoomTask == nil { gridZoom = newZoom }
                         if let id = viewModel.selectedItemID {
                             withAnimation(.smooth(duration: 0.15)) {
                                 proxy.scrollTo(id, anchor: .center)
@@ -615,5 +610,28 @@ extension ContentView {
         }
         expandedItem = target
         return .handled
+    }
+}
+
+struct EditorImageLoader<Content: View>: View {
+    let viewModel: DraftCanvasViewModel
+    let item: ProjectItem
+    @ViewBuilder let content: (NSImage) -> Content
+    @State private var image: NSImage?
+
+    var body: some View {
+        if let image {
+            content(image)
+        } else {
+            ProgressView()
+                .frame(width: 200, height: 200)
+                .task {
+                    if let cached = viewModel.cachedImage(for: item) {
+                        image = cached
+                    } else {
+                        image = await viewModel.loadImage(for: item)
+                    }
+                }
+        }
     }
 }

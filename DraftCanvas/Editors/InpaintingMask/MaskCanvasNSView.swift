@@ -40,13 +40,18 @@ final class MaskCanvasNSView: NSView {
 
     // MARK: - Stroke sync (called from updateNSView)
 
-    func syncStrokes(_ newStrokes: [MaskStroke]) {
+    @discardableResult
+    func syncStrokes(_ newStrokes: [MaskStroke]) -> Bool {
+        var rebuilt = false
         if committedStrokeCount == 0 && !newStrokes.isEmpty {
             rebuildMaskBuffer(from: newStrokes)
+            rebuilt = true
         } else if newStrokes.count < committedStrokeCount {
             rebuildMaskBuffer(from: newStrokes)
+            rebuilt = true
         }
         committedStrokeCount = newStrokes.count
+        return rebuilt
     }
 
     // MARK: - Buffer management
@@ -161,17 +166,7 @@ final class MaskCanvasNSView: NSView {
     override func draw(_ dirtyRect: NSRect) {
         guard let ctx = NSGraphicsContext.current?.cgContext else { return }
 
-        let tileSize: CGFloat = 12
-        let light = NSColor(white: 0.82, alpha: 1).cgColor
-        let dark = NSColor(white: 0.65, alpha: 1).cgColor
-        let cols = Int(ceil(bounds.width / tileSize))
-        let rows = Int(ceil(bounds.height / tileSize))
-        for row in 0 ..< rows {
-            for col in 0 ..< cols {
-                ctx.setFillColor((row + col) % 2 == 0 ? light : dark)
-                ctx.fill(CGRect(x: CGFloat(col) * tileSize, y: CGFloat(row) * tileSize, width: tileSize, height: tileSize))
-            }
-        }
+        EditorCheckerboard.fill(bounds, in: ctx)
 
         let r = imageRect
         guard r.width > 0, r.height > 0 else { return }

@@ -2,14 +2,16 @@ import SwiftUI
 import os.signpost
 
 extension ContentView {
-    var canvasEntries: [CanvasEntry] {
+    var canvasEntries: [CanvasEntry] { cachedCanvasEntries }
+
+    func recomputeCanvasEntries() {
         let persistedItems = viewModel.displayedItemsSnapshot.map { CanvasEntry.item($0) }
         let showJobs = viewModel.isGeneratingForSelected && viewModel.selectedFilteringProjectID == nil && !viewModel.isSearchActive
         let inProgressJobs = showJobs ? viewModel.currentJobs.map { CanvasEntry.job($0) } : []
         let all = persistedItems + inProgressJobs
         switch viewModel.canvasSortOrder {
-        case .createdAtAscending: return all.sorted { $0.sortDate < $1.sortDate }
-        case .createdAtDescending: return all.sorted { $0.sortDate > $1.sortDate }
+        case .createdAtAscending: cachedCanvasEntries = all.sorted { $0.sortDate < $1.sortDate }
+        case .createdAtDescending: cachedCanvasEntries = all.sorted { $0.sortDate > $1.sortDate }
         }
     }
 
@@ -31,7 +33,7 @@ extension ContentView {
         return VStack(alignment: .leading, spacing: 8) {
                 ZStack(alignment: .bottomTrailing) {
                     if let sourceID = item.editedFromItemID,
-                       let sourceItem = viewModel.items.first(where: { $0.id == sourceID }) {
+                       let sourceItem = viewModel.itemsByID[sourceID] {
                         let thumbSize = 36 * max(0.7, min(canvasZoom, 1.6))
                         ItemThumbnailView(
                             thumbnailStore: viewModel.thumbnailStore,
@@ -232,7 +234,7 @@ extension ContentView {
 
     @ViewBuilder
     var canvasActionPanel: some View {
-        if let item = viewModel.items.first(where: { $0.id == viewModel.selectedItemID }),
+        if let selectedID = viewModel.selectedItemID, let item = viewModel.itemsByID[selectedID],
            !viewModel.isSelectionMode {
             VStack(spacing: 6) {
                 VariationMenuButton(item: item, viewModel: viewModel)

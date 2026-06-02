@@ -21,10 +21,17 @@ struct MaskCanvasView: NSViewRepresentable {
 
     func updateNSView(_ nsView: MaskCanvasNSView, context: Context) {
         context.coordinator.parent = self
-        nsView.brushRadius = brushRadius
-        nsView.isEraser = isEraser
-        nsView.syncStrokes(strokes)
-        nsView.needsDisplay = true
+        var changed = false
+        if nsView.brushRadius != brushRadius {
+            nsView.brushRadius = brushRadius
+            changed = true
+        }
+        if nsView.isEraser != isEraser {
+            nsView.isEraser = isEraser
+            changed = true
+        }
+        if nsView.syncStrokes(strokes) { changed = true }
+        if changed { nsView.needsDisplay = true }
     }
 
     final class Coordinator: NSObject {

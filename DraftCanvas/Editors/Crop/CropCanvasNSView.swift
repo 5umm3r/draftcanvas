@@ -32,6 +32,7 @@ final class CropCanvasNSView: NSView {
     private var dragKind: DragKind = .none
     private var dragStartViewPoint: CGPoint = .zero
     private var dragStartCropRect: CGRect = .zero
+    private var lastCommitTime: CFAbsoluteTime = 0
 
     init(image: NSImage, cropRect: CGRect, template: AspectTemplate) {
         self.image = image
@@ -171,18 +172,7 @@ final class CropCanvasNSView: NSView {
     override func draw(_ dirtyRect: NSRect) {
         guard let ctx = NSGraphicsContext.current?.cgContext else { return }
 
-        // チェッカーボード背景
-        let tileSize: CGFloat = 12
-        let light = NSColor(white: 0.82, alpha: 1).cgColor
-        let dark = NSColor(white: 0.65, alpha: 1).cgColor
-        let cols = Int(ceil(bounds.width / tileSize))
-        let rows = Int(ceil(bounds.height / tileSize))
-        for row in 0 ..< rows {
-            for col in 0 ..< cols {
-                ctx.setFillColor((row + col) % 2 == 0 ? light : dark)
-                ctx.fill(CGRect(x: CGFloat(col) * tileSize, y: CGFloat(row) * tileSize, width: tileSize, height: tileSize))
-            }
-        }
+        EditorCheckerboard.fill(bounds, in: ctx)
 
         let r = imageRect
         guard r.width > 0, r.height > 0 else { return }
@@ -311,7 +301,11 @@ final class CropCanvasNSView: NSView {
         case .handle(let h):
             cropRect = resizedRect(from: dragStartCropRect, handle: h, dxImg: dxImg, dyImg: dyImg)
         }
-        coordinator?.commitCropRect(cropRect)
+        let now = CFAbsoluteTimeGetCurrent()
+        if now - lastCommitTime >= 0.05 {
+            lastCommitTime = now
+            coordinator?.commitCropRect(cropRect)
+        }
         needsDisplay = true
     }
 
