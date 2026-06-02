@@ -231,10 +231,11 @@ extension DraftCanvasViewModel {
             aspectRatio: item.aspectRatio
         )
         upsert(job, into: projectID)
+        backgroundRemovalJobContext = (job.id, projectID)
 
         let fileURL = projectStore.resolvedFileURL(for: item)
 
-        Task {
+        backgroundRemovalTask = Task {
             var running = job
             running.status = .running
             upsert(running, into: projectID)
@@ -244,9 +245,9 @@ extension DraftCanvasViewModel {
                 let session = try await BackgroundRemover.extractMask(from: inputData)
                 let initialData = try BackgroundRemover.apply(session: session, edgeStrength: 0.5, mode: session.initialMode)
 
-                var succeeded = running
-                succeeded.status = .succeeded
-                upsert(succeeded, into: projectID)
+                removeJob(id: job.id, from: projectID)
+                backgroundRemovalJobContext = nil
+                backgroundRemovalTask = nil
 
                 backgroundRemovalPreview = BackgroundRemovalPreview(
                     item: item,
@@ -255,15 +256,24 @@ extension DraftCanvasViewModel {
                 )
                 logs.append("背景除去プレビュー準備完了: \(item.id)")
             } catch {
-                var failed = running
-                failed.status = .failed
-                failed.errorMessage = error.localizedDescription
-                upsert(failed, into: projectID)
+                removeJob(id: job.id, from: projectID)
+                backgroundRemovalJobContext = nil
+                backgroundRemovalTask = nil
                 let message = (error as? BackgroundRemovalError)?.localizedDescription
                     ?? String(localized: "背景除去に失敗しました")
                 errorToast = message
                 logs.append("背景除去失敗: \(error.localizedDescription)")
             }
+        }
+    }
+
+    func cancelBackgroundRemoval() {
+        backgroundRemovalTask?.cancel()
+        backgroundRemovalTask = nil
+        backgroundRemovalPreview = nil
+        if let ctx = backgroundRemovalJobContext {
+            removeJob(id: ctx.jobID, from: ctx.projectID)
+            backgroundRemovalJobContext = nil
         }
     }
 
@@ -305,6 +315,7 @@ extension DraftCanvasViewModel {
         }
 
         let projectID = item.projectID
+        cleanupStaleJobs(for: projectID)
         let fileURL = projectStore.resolvedFileURL(for: item)
         let normalizedCount = min(max(count, 1), 24)
         let concurrency = min(normalizedCount, 3)

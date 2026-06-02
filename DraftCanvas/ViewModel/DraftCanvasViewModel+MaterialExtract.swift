@@ -12,6 +12,7 @@ extension DraftCanvasViewModel {
             aspectRatio: item.aspectRatio
         )
         upsert(job, into: projectID)
+        materialExtractionJobContext = (job.id, projectID)
 
         let fileURL = projectStore.resolvedFileURL(for: item)
         extractingItemID = item.id
@@ -25,21 +26,18 @@ extension DraftCanvasViewModel {
                 let inputData = try Data(contentsOf: fileURL)
                 let session = try await MaterialExtractor.detect(from: inputData)
 
-                var succeeded = running
-                succeeded.status = .succeeded
-                upsert(succeeded, into: projectID)
+                removeJob(id: job.id, from: projectID)
 
                 extractingItemID = nil
                 materialExtractionTask = nil
+                materialExtractionJobContext = nil
                 materialExtractionPreview = MaterialExtractionPreview(item: item, session: session)
                 logs.append("素材分解検出完了: \(session.instances.count) 個 (\(item.id))")
             } catch {
+                removeJob(id: job.id, from: projectID)
                 extractingItemID = nil
                 materialExtractionTask = nil
-                var failed = running
-                failed.status = .failed
-                failed.errorMessage = error.localizedDescription
-                upsert(failed, into: projectID)
+                materialExtractionJobContext = nil
                 let message = (error as? MaterialExtractionError)?.localizedDescription
                     ?? String(localized: "素材分解に失敗しました")
                 errorToast = message
@@ -130,5 +128,10 @@ extension DraftCanvasViewModel {
         materialExtractionTask?.cancel()
         materialExtractionTask = nil
         materialExtractionPreview = nil
+        extractingItemID = nil
+        if let ctx = materialExtractionJobContext {
+            removeJob(id: ctx.jobID, from: ctx.projectID)
+            materialExtractionJobContext = nil
+        }
     }
 }

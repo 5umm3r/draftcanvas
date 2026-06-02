@@ -204,8 +204,12 @@ final class DraftCanvasViewModel: ObservableObject {
     var vectorizationTasks: [UUID: Task<Void, Never>] = [:]
     var upscalingItemIDs: Set<UUID> = []
     var upscalingTasks: [UUID: Task<Void, Never>] = [:]
+    var upscalingJobContexts: [UUID: (jobID: UUID, projectID: UUID)] = [:]
     var enhanceTask: Task<Void, Never>?
+    var backgroundRemovalTask: Task<Void, Never>?
+    var backgroundRemovalJobContext: (jobID: UUID, projectID: UUID)?
     var materialExtractionTask: Task<Void, Never>?
+    var materialExtractionJobContext: (jobID: UUID, projectID: UUID)?
     var accountUsageRefreshTask: Task<CodexAccountUsageStatus, Error>?
     let activityTracker = ActivityTracker()
     var onReplacePromptText: ((String) -> Void)?
@@ -425,14 +429,19 @@ final class DraftCanvasViewModel: ObservableObject {
         vectorizationTasks.removeAll()
         for (_, t) in upscalingTasks { t.cancel() }
         upscalingTasks.removeAll()
+        upscalingJobContexts.removeAll()
         for (_, t) in autoRetryTasks { t.cancel() }
         autoRetryTasks.removeAll()
         autoRetryCountByProject.removeAll()
         autoRetryRequestByProject.removeAll()
         enhanceTask?.cancel()
         enhanceTask = nil
+        backgroundRemovalTask?.cancel()
+        backgroundRemovalTask = nil
+        backgroundRemovalJobContext = nil
         materialExtractionTask?.cancel()
         materialExtractionTask = nil
+        materialExtractionJobContext = nil
         accountUsageRefreshTask?.cancel()
         accountUsageRefreshTask = nil
         isRefreshingAccountUsage = false

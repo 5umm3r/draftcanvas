@@ -84,6 +84,7 @@ extension DraftCanvasViewModel {
         jobs: [GenerationJob],
         onCompletion: (() -> Void)? = nil
     ) {
+        cleanupStaleJobs(for: projectID)
         lastRequestByProject[projectID] = request
         generatingProjectIDs.insert(projectID)
         activityTracker.begin()
@@ -169,6 +170,54 @@ extension DraftCanvasViewModel {
             jobs.append(job)
         }
         jobsByProject[projectID] = jobs
+    }
+
+    func removeJob(id: UUID, from projectID: UUID) {
+        if var jobs = jobsByProject[projectID] {
+            jobs.removeAll { $0.id == id }
+            if jobs.isEmpty {
+                jobsByProject.removeValue(forKey: projectID)
+            } else {
+                jobsByProject[projectID] = jobs
+            }
+        }
+    }
+
+    func cleanupStaleJobs(for projectID: UUID) {
+        guard var jobs = jobsByProject[projectID] else { return }
+
+        let activeRunIDs: Set<UUID>
+        if let keys = generationTasks[projectID]?.keys {
+            activeRunIDs = Set(keys)
+        } else {
+            activeRunIDs = []
+        }
+
+        let activeNilRunIDJobIDs: Set<UUID> = {
+            var ids = Set<UUID>()
+            if let ctx = backgroundRemovalJobContext, ctx.projectID == projectID { ids.insert(ctx.jobID) }
+            if let ctx = materialExtractionJobContext, ctx.projectID == projectID { ids.insert(ctx.jobID) }
+            for (_, ctx) in upscalingJobContexts where ctx.projectID == projectID { ids.insert(ctx.jobID) }
+            return ids
+        }()
+
+        let removedIDs = jobs.filter { job in
+            if let runID = job.runID {
+                return !activeRunIDs.contains(runID)
+            }
+            return !activeNilRunIDJobIDs.contains(job.id)
+        }.map(\.id)
+
+        jobs.removeAll { removedIDs.contains($0.id) }
+
+        if jobs.isEmpty {
+            jobsByProject.removeValue(forKey: projectID)
+        } else {
+            jobsByProject[projectID] = jobs
+        }
+
+        let removedIDSet = Set(removedIDs)
+        dismissedFailedJobIDs.subtract(removedIDSet)
     }
 
     func handleJobUpdate(_ job: GenerationJob, into projectID: UUID, request: GenerationRequest) {
