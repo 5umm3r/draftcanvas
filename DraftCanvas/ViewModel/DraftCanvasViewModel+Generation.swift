@@ -187,6 +187,8 @@ extension DraftCanvasViewModel {
 
     private func persistAndPromoteSucceededJob(_ job: GenerationJob, request: GenerationRequest, projectID: UUID) {
         let actualRatio = job.imageData.flatMap { pixelAspectRatioFromImageData($0) }
+        let displayName = availableModels.first(where: { $0.id == request.model })?.displayName ?? request.model
+        let duration = Date().timeIntervalSince(job.scheduledAt)
         var item = ProjectItem(
             projectID: projectID,
             prompt: job.prompt,
@@ -195,7 +197,10 @@ extension DraftCanvasViewModel {
             actualAspectRatio: actualRatio,
             createdAt: job.scheduledAt,
             errorMessage: nil,
-            editedFromItemID: request.editSource?.projectItemID
+            editedFromItemID: request.editSource?.projectItemID,
+            modelName: displayName,
+            reasoningEffort: request.reasoningEffort,
+            generationDuration: duration
         )
         do {
             guard let imageData = job.imageData else { throw DraftCanvasError.missingGeneratedContent }

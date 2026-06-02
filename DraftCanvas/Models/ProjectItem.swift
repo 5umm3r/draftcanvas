@@ -17,6 +17,9 @@ struct ProjectItem: Identifiable, Equatable {
     let isImported: Bool
     var tags: [String]
     var sketchSourcePath: String?
+    let modelName: String?
+    let reasoningEffort: String?
+    let generationDuration: TimeInterval?
 
     init(
         id: UUID = UUID(),
@@ -33,7 +36,10 @@ struct ProjectItem: Identifiable, Equatable {
         isCropped: Bool = false,
         isImported: Bool = false,
         tags: [String] = [],
-        sketchSourcePath: String? = nil
+        sketchSourcePath: String? = nil,
+        modelName: String? = nil,
+        reasoningEffort: String? = nil,
+        generationDuration: TimeInterval? = nil
     ) {
         self.id = id
         self.projectID = projectID
@@ -50,6 +56,9 @@ struct ProjectItem: Identifiable, Equatable {
         self.isImported = isImported
         self.tags = tags
         self.sketchSourcePath = sketchSourcePath
+        self.modelName = modelName
+        self.reasoningEffort = reasoningEffort
+        self.generationDuration = generationDuration
     }
 
     func fileURL(in rootDirectory: URL) -> URL {
@@ -74,6 +83,9 @@ extension ProjectItem: Codable {
         case isImported
         case tags
         case sketchSourcePath
+        case modelName
+        case reasoningEffort
+        case generationDuration
     }
 
     init(from decoder: Decoder) throws {
@@ -93,6 +105,9 @@ extension ProjectItem: Codable {
         isImported = try c.decodeIfPresent(Bool.self, forKey: .isImported) ?? false
         tags = try c.decodeIfPresent([String].self, forKey: .tags) ?? []
         sketchSourcePath = try c.decodeIfPresent(String.self, forKey: .sketchSourcePath)
+        modelName = try c.decodeIfPresent(String.self, forKey: .modelName)
+        reasoningEffort = try c.decodeIfPresent(String.self, forKey: .reasoningEffort)
+        generationDuration = try c.decodeIfPresent(TimeInterval.self, forKey: .generationDuration)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -112,5 +127,8 @@ extension ProjectItem: Codable {
         if isImported { try c.encode(isImported, forKey: .isImported) }
         if !tags.isEmpty { try c.encode(tags, forKey: .tags) }
         try c.encodeIfPresent(sketchSourcePath, forKey: .sketchSourcePath)
+        try c.encodeIfPresent(modelName, forKey: .modelName)
+        try c.encodeIfPresent(reasoningEffort, forKey: .reasoningEffort)
+        try c.encodeIfPresent(generationDuration, forKey: .generationDuration)
     }
 }

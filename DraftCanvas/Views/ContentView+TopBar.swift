@@ -183,7 +183,7 @@ extension ContentView {
             HStack(spacing: 2) {
                 Image(systemName: "bolt.fill")
                     .font(.system(size: 9, weight: .bold))
-                    .foregroundStyle(Color.accentColor.opacity(0.8))
+                    .foregroundStyle(.primary)
 
                 usageProgressBar(value: remainingFraction)
             }
@@ -209,6 +209,12 @@ extension ContentView {
 
     func usageProgressBar(value: Double?) -> some View {
         let progress = min(1, max(0, value ?? 0))
+        let barColor: Color = {
+            guard value != nil else { return .clear }
+            if progress > 0.5 { return .green }
+            if progress > 0.2 { return .orange }
+            return .red
+        }()
 
         return GeometryReader { proxy in
             ZStack(alignment: .leading) {
@@ -216,7 +222,7 @@ extension ContentView {
                     .fill(Color.primary.opacity(0.12))
 
                 RoundedRectangle(cornerRadius: 2)
-                    .fill(Color.accentColor.opacity(value == nil ? 0 : 0.82))
+                    .fill(barColor.opacity(0.82))
                     .frame(width: proxy.size.width * progress)
             }
         }
