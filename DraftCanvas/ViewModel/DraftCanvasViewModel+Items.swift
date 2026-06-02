@@ -184,6 +184,7 @@ extension DraftCanvasViewModel {
 
     func cachedImage(for item: ProjectItem) -> NSImage? {
         let url = fileURL(for: item)
+        if let cached = originalImageStore.cached(for: url) { return cached }
         guard let img = NSImage(contentsOf: url) else { return nil }
         #if DEBUG
         CanvasMetrics.imageLoadCount += 1
@@ -192,6 +193,11 @@ extension DraftCanvasViewModel {
         }
         #endif
         return img
+    }
+
+    func loadImage(for item: ProjectItem) async -> NSImage? {
+        let url = fileURL(for: item)
+        return await originalImageStore.loadIfNeeded(url: url)
     }
 
     func thumbnail(for item: ProjectItem) -> NSImage? {

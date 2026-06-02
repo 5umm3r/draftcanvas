@@ -175,7 +175,7 @@ extension ContentView {
 
     @ViewBuilder
     func inpaintingEditorSheet(for item: ProjectItem) -> some View {
-        if let nsImage = viewModel.cachedImage(for: item) {
+        EditorImageLoader(viewModel: viewModel, item: item) { nsImage in
             InpaintingMaskEditorSheet(
                 originalImage: nsImage,
                 mode: $viewModel.inpaintMode,
@@ -191,16 +191,13 @@ extension ContentView {
                     viewModel.inpaintingTarget = nil
                 }
             )
-        } else {
-            Text("画像を読み込めませんでした")
-                .padding(40)
         }
     }
 
     @ViewBuilder
     func outpaintEditorSheet(for target: OutpaintTarget) -> some View {
         let item = target.item
-        if let nsImage = viewModel.cachedImage(for: item) {
+        EditorImageLoader(viewModel: viewModel, item: item) { nsImage in
             OutpaintEditorSheet(
                 sourceImage: nsImage,
                 initialInsets: target.initialInsets,
@@ -216,19 +213,15 @@ extension ContentView {
                     viewModel.outpaintTarget = nil
                 }
             )
-        } else {
-            Text("画像を読み込めませんでした")
-                .padding(40)
         }
     }
 
     @ViewBuilder
     func cropEditorSheet(for item: ProjectItem) -> some View {
-        // isCropped アイテムの再編集は元画像を表示する
         let sourceItem: ProjectItem = item.isCropped
             ? (item.editedFromItemID.flatMap { viewModel.itemsByID[$0] } ?? item)
             : item
-        if let nsImage = viewModel.cachedImage(for: sourceItem) {
+        EditorImageLoader(viewModel: viewModel, item: sourceItem) { nsImage in
             CropEditorSheet(
                 sourceImage: nsImage,
                 initialParams: item.isCropped ? viewModel.projectStore.readCropParameters(id: item.id) : nil,
@@ -239,9 +232,6 @@ extension ContentView {
                     viewModel.cropTarget = nil
                 }
             )
-        } else {
-            Text("画像を読み込めませんでした")
-                .padding(40)
         }
     }
 
@@ -620,5 +610,28 @@ extension ContentView {
         }
         expandedItem = target
         return .handled
+    }
+}
+
+struct EditorImageLoader<Content: View>: View {
+    let viewModel: DraftCanvasViewModel
+    let item: ProjectItem
+    @ViewBuilder let content: (NSImage) -> Content
+    @State private var image: NSImage?
+
+    var body: some View {
+        if let image {
+            content(image)
+        } else {
+            ProgressView()
+                .frame(width: 200, height: 200)
+                .task {
+                    if let cached = viewModel.cachedImage(for: item) {
+                        image = cached
+                    } else {
+                        image = await viewModel.loadImage(for: item)
+                    }
+                }
+        }
     }
 }
