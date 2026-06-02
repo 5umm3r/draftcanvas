@@ -268,8 +268,7 @@ private actor RecordingAccountClient: CodexAccountProviding {
                 displayName: "GPT Test",
                 supportedReasoningEfforts: ["low", "medium"],
                 defaultReasoningEffort: "low",
-                isDefault: true,
-                rating: nil
+                isDefault: true
             )
         ]
     }

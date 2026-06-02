@@ -57,10 +57,19 @@ struct SettingsView: View {
             GridRow {
                 Text("生成")
                     .gridColumnAlignment(.trailing)
-                Toggle(isOn: $viewModel.autoRetryEnabled) {
-                    Text("失敗時に自動で再試行（レート制限・タイムアウトのみ）")
+                VStack(alignment: .leading, spacing: 10) {
+                    Toggle(isOn: $viewModel.autoRetryEnabled) {
+                        Text("失敗時に自動で再試行（レート制限・タイムアウトのみ）")
+                    }
+                    .toggleStyle(.switch)
+                    Toggle(isOn: $viewModel.includeHiddenModels) {
+                        Text("隠しモデルも表示")
+                    }
+                    .toggleStyle(.switch)
+                    .onChange(of: viewModel.includeHiddenModels) { _, _ in
+                        Task { await viewModel.refreshAvailableModels() }
+                    }
                 }
-                .toggleStyle(.switch)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .gridColumnAlignment(.leading)
             }

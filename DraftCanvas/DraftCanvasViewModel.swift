@@ -27,6 +27,7 @@ final class DraftCanvasViewModel: ObservableObject {
     @AppStorage("completionSound") var completionSound: String = CompletionSoundOption.glass.rawValue
     @AppStorage("canvasSortOrder") var canvasSortOrderRaw: String = CanvasSortOrder.createdAtAscending.rawValue
     @AppStorage("translateToEnglish") var translateToEnglish: Bool = false
+    @AppStorage("includeHiddenModels") var includeHiddenModels: Bool = false
     var canvasSortOrder: CanvasSortOrder {
         get { CanvasSortOrder(rawValue: canvasSortOrderRaw) ?? .createdAtAscending }
         set {

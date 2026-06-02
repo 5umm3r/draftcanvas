@@ -270,7 +270,7 @@ extension ContentView {
                             .font(.system(size: 14, weight: .medium))
                         }
                         .frame(minWidth: 28, minHeight: 28, maxHeight: 28)
-                        .padding(.horizontal, viewModel.itemActionCostLevel > 0 ? 4 : 0)
+                        .padding(.horizontal, viewModel.showCostBadge ? 4 : 0)
                         .background(
                             viewModel.isEnhancingPrompt
                                 ? Color.accentColor.opacity(0.15)
@@ -283,7 +283,7 @@ extension ContentView {
                         Image(systemName: "bolt.fill")
                             .font(.system(size: 9, weight: .semibold))
                             .foregroundStyle(.secondary)
-                            .opacity(viewModel.itemActionCostLevel > 0 ? 1 : 0)
+                            .opacity(viewModel.showCostBadge ? 1 : 0)
                             .offset(x: 3, y: 3)
                     }
                     .disabled(enhanceDisabled)

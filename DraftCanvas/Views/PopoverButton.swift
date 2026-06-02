@@ -6,7 +6,7 @@ struct PopoverButton: View {
     let action: () -> Void
     var isDisabled: Bool = false
     var disabledReason: String? = nil
-    var costLevel: Int? = nil
+    var showCostBadge: Bool = false
 
     var body: some View {
         Button(action: action) {
@@ -16,8 +16,8 @@ struct PopoverButton: View {
                     .frame(width: 16, alignment: .center)
                 Text(title)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                if let level = costLevel {
-                    CodexCostBadge(level: level)
+                if showCostBadge {
+                    CodexCostBadge()
                 }
             }
         }
