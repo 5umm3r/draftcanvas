@@ -42,6 +42,9 @@ struct ContentView: View {
     @State var confirmingDeleteItemID: UUID? = nil
     @FocusState var canvasIsFocused: Bool
     @State var canvasViewportWidth: CGFloat = 0
+    @State var cachedCanvasEntries: [CanvasEntry] = []
+    @State var gridZoom: CGFloat = 1.0
+    @State var gridZoomTask: Task<Void, Never>?
 
     var body: some View {
         let _ = l10n.locale  // l10n 変化で ContentView を再描画させる
@@ -86,7 +89,7 @@ struct ContentView: View {
         .animation(.easeInOut(duration: 0.25), value: viewModel.errorToast)
         .background {
             if !promptIsFocused, let id = viewModel.selectedItemID,
-               let item = viewModel.items.first(where: { $0.id == id }) {
+               let item = viewModel.itemsByID[id] {
                 Button(action: { viewModel.copyItemToClipboard(item) }) {
                     EmptyView()
                 }
@@ -203,7 +206,7 @@ struct ContentView: View {
         )) {
             Button("削除", role: .destructive) {
                 if let id = confirmingDeleteItemID,
-                   let item = viewModel.items.first(where: { $0.id == id }) {
+                   let item = viewModel.itemsByID[id] {
                     viewModel.deleteItem(item)
                 }
                 confirmingDeleteItemID = nil
@@ -230,6 +233,13 @@ struct ContentView: View {
                 promptFocusTrigger = true
             }
         }
+        .onAppear { recomputeCanvasEntries() }
+        .onChange(of: viewModel.displayedItemsSnapshot) { _, _ in recomputeCanvasEntries() }
+        .onChange(of: viewModel.jobsByProject) { _, _ in recomputeCanvasEntries() }
+        .onChange(of: viewModel.generatingProjectIDs) { _, _ in recomputeCanvasEntries() }
+        .onChange(of: viewModel.sidebarSelection) { _, _ in recomputeCanvasEntries() }
+        .onChange(of: viewModel.activeEditProjectID) { _, _ in recomputeCanvasEntries() }
+        .onChange(of: viewModel.canvasSortOrderRaw) { _, _ in recomputeCanvasEntries() }
     }
 }
 
@@ -267,7 +277,7 @@ extension ContentView {
             if failed > 0 { viewModel.errorToast = String(localized: "\(failed)件の移動に失敗しました") }
             viewModel.isSelectionMode = false
         } else if let itemID = dragDropItemID,
-                  let item = viewModel.items.first(where: { $0.id == itemID }) {
+                  let item = viewModel.itemsByID[itemID] {
             viewModel.moveItemToProject(item, targetProjectID: targetID)
         }
         resetDragDropState()
@@ -281,7 +291,7 @@ extension ContentView {
             if failed > 0 { viewModel.errorToast = String(localized: "\(failed)件のコピーに失敗しました") }
             viewModel.isSelectionMode = false
         } else if let itemID = dragDropItemID,
-                  let item = viewModel.items.first(where: { $0.id == itemID }) {
+                  let item = viewModel.itemsByID[itemID] {
             viewModel.copyItemToProject(item, targetProjectID: targetID)
         }
         resetDragDropState()

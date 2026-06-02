@@ -113,7 +113,7 @@ extension DraftCanvasViewModel {
                 thumbnailStore.deleteThumbnail(for: item)
                 thumbnailStore.writeThumbnail(from: data, item: item)
                 originalImageStore.evict(url: origURL)
-                thumbnailStore.invalidate()
+                thumbnailStore.invalidate(for: item)
                 if let idx = projects.firstIndex(where: { $0.id == projectID }) {
                     projects[idx].updatedAt = Date()
                 }

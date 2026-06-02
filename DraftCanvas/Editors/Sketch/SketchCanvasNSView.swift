@@ -38,13 +38,18 @@ final class SketchCanvasNSView: NSView {
 
     // MARK: - Stroke sync
 
-    func syncStrokes(_ newStrokes: [SketchStroke]) {
+    @discardableResult
+    func syncStrokes(_ newStrokes: [SketchStroke]) -> Bool {
+        var rebuilt = false
         if committedStrokeCount == 0 && !newStrokes.isEmpty {
             rebuildBuffer(from: newStrokes)
+            rebuilt = true
         } else if newStrokes.count < committedStrokeCount {
             rebuildBuffer(from: newStrokes)
+            rebuilt = true
         }
         committedStrokeCount = newStrokes.count
+        return rebuilt
     }
 
     // MARK: - Buffer management

@@ -8,7 +8,7 @@ struct TagEditorRow: View {
     @FocusState private var isFocused: Bool
 
     private var currentTags: [String] {
-        viewModel.items.first(where: { $0.id == itemID })?.tags ?? []
+        viewModel.itemsByID[itemID]?.tags ?? []
     }
 
     private var suggestions: [String] {

@@ -40,13 +40,18 @@ final class MaskCanvasNSView: NSView {
 
     // MARK: - Stroke sync (called from updateNSView)
 
-    func syncStrokes(_ newStrokes: [MaskStroke]) {
+    @discardableResult
+    func syncStrokes(_ newStrokes: [MaskStroke]) -> Bool {
+        var rebuilt = false
         if committedStrokeCount == 0 && !newStrokes.isEmpty {
             rebuildMaskBuffer(from: newStrokes)
+            rebuilt = true
         } else if newStrokes.count < committedStrokeCount {
             rebuildMaskBuffer(from: newStrokes)
+            rebuilt = true
         }
         committedStrokeCount = newStrokes.count
+        return rebuilt
     }
 
     // MARK: - Buffer management

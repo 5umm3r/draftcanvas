@@ -326,7 +326,7 @@ extension ContentView {
             guard !ids.isEmpty else { return }
             Task { @MainActor in
                 let validIDs = ids.filter { id in
-                    self.viewModel.items.first(where: { $0.id == id })?.projectID != targetProjectID
+                    self.viewModel.itemsByID[id]?.projectID != targetProjectID
                 }
                 guard !validIDs.isEmpty else { return }
                 if validIDs.count == 1 {

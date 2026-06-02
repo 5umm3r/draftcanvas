@@ -37,12 +37,14 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var projects: [Project] = []
     @Published var items: [ProjectItem] = [] {
         didSet {
+            itemsByID = Dictionary(uniqueKeysWithValues: items.map { ($0.id, $0) })
             if !isLoadingProjects {
                 recomputeDisplayedItems()
                 rebuildAllTagsCache()
             }
         }
     }
+    private(set) var itemsByID: [UUID: ProjectItem] = [:]
     @Published private(set) var allTagsCache: [String] = []
     @Published var displayedItemsSnapshot: [ProjectItem] = []
 
