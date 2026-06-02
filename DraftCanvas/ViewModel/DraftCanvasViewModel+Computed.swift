@@ -51,15 +51,16 @@ extension DraftCanvasViewModel {
         return currentJobs.first { $0.id == selectedJobID }
     }
 
+    private func sortedByDate(_ items: [ProjectItem]) -> [ProjectItem] {
+        switch canvasSortOrder {
+        case .createdAtAscending: items.sorted { $0.createdAt < $1.createdAt }
+        case .createdAtDescending: items.sorted { $0.createdAt > $1.createdAt }
+        }
+    }
+
     var itemsForSelectedProject: [ProjectItem] {
         guard let selectedProjectID else { return [] }
-        let filtered = items.filter { $0.projectID == selectedProjectID }
-        switch canvasSortOrder {
-        case .createdAtAscending:
-            return filtered.sorted { $0.createdAt < $1.createdAt }
-        case .createdAtDescending:
-            return filtered.sorted { $0.createdAt > $1.createdAt }
-        }
+        return sortedByDate(items.filter { $0.projectID == selectedProjectID })
     }
 
 
@@ -113,25 +114,14 @@ extension DraftCanvasViewModel {
 
     var displayedItems: [ProjectItem] {
         if isSearchActive {
-            let matched = itemsMatching(searchQuery: sidebarSearchCommitted)
-            switch canvasSortOrder {
-            case .createdAtAscending: return matched.sorted { $0.createdAt < $1.createdAt }
-            case .createdAtDescending: return matched.sorted { $0.createdAt > $1.createdAt }
-            }
+            return sortedByDate(itemsMatching(searchQuery: sidebarSearchCommitted))
         }
         if isAllImagesSelected {
-            switch canvasSortOrder {
-            case .createdAtAscending: return items.sorted { $0.createdAt < $1.createdAt }
-            case .createdAtDescending: return items.sorted { $0.createdAt > $1.createdAt }
-            }
+            return sortedByDate(items)
         }
         if let filteringID = selectedFilteringProjectID,
            let filtering = filteringProjects.first(where: { $0.id == filteringID }) {
-            let matched = itemsMatchingFiltering(filtering)
-            switch canvasSortOrder {
-            case .createdAtAscending: return matched.sorted { $0.createdAt < $1.createdAt }
-            case .createdAtDescending: return matched.sorted { $0.createdAt > $1.createdAt }
-            }
+            return sortedByDate(itemsMatchingFiltering(filtering))
         }
         return itemsForSelectedProject
     }

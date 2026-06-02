@@ -191,6 +191,10 @@
 		53F597E92978633583CB0130 /* DraftCanvasViewModel+History.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23DA79D443899A31762BC805 /* DraftCanvasViewModel+History.swift */; };
 		EF5C27F2F9FC82D8EEC770FB /* PromptTemplatePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ACDB95A1E509E7F853AD07 /* PromptTemplatePanel.swift */; };
 		DA0A42D2723048F047BBEC82 /* PromptHistoryPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B97FF30AA989BF0B294395 /* PromptHistoryPanel.swift */; };
+		7A3D54DE7466451789D4FAB2 /* PromptFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CFCD43E91F743F39EF145FB /* PromptFactory.swift */; };
+		0F494D68E46C4AD2ACA8272B /* PromptEnhancer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B49F199659F41F18C76F3FE /* PromptEnhancer.swift */; };
+		B1978899C70C47C094010C01 /* PromptVariator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53272FCB20F44057A59AC93C /* PromptVariator.swift */; };
+		A98A1147E150494988094F14 /* PromptLanguageNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 640C4AB788CB45F6AF28B1D2 /* PromptLanguageNormalizer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -390,6 +394,10 @@
 			OP000004000000010000A1 /* OutpaintEditorSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OutpaintEditorSheet.swift; path = Editors/Outpaint/OutpaintEditorSheet.swift; sourceTree = "<group>"; };
 			OP000005000000010000A1 /* OutpaintCompositor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutpaintCompositor.swift; sourceTree = "<group>"; };
 			OP000006000000010000A1 /* DraftCanvasViewModel+Outpaint.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Outpaint.swift"; path = "ViewModel/DraftCanvasViewModel+Outpaint.swift"; sourceTree = "<group>"; };
+		1CFCD43E91F743F39EF145FB /* PromptFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptFactory.swift; sourceTree = "<group>"; };
+		0B49F199659F41F18C76F3FE /* PromptEnhancer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptEnhancer.swift; sourceTree = "<group>"; };
+		53272FCB20F44057A59AC93C /* PromptVariator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptVariator.swift; sourceTree = "<group>"; };
+		640C4AB788CB45F6AF28B1D2 /* PromptLanguageNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptLanguageNormalizer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -453,6 +461,10 @@
 				10A0003B2D00000100000001 /* JSONRPCCodec.swift */,
 				10A0003C2D00000100000001 /* CodexAppServerClient.swift */,
 				10A0003D2D00000100000001 /* GenerationCoordinator.swift */,
+				1CFCD43E91F743F39EF145FB /* PromptFactory.swift */,
+				0B49F199659F41F18C76F3FE /* PromptEnhancer.swift */,
+				53272FCB20F44057A59AC93C /* PromptVariator.swift */,
+				640C4AB788CB45F6AF28B1D2 /* PromptLanguageNormalizer.swift */,
 				10A0003E2D00000100000001 /* DraftCanvasViewModel.swift */,
 				10A000F92D00000100000001 /* BackgroundRemover.swift */,
 				3503E3DE1E894D1BA41DB46C /* CanvasMetrics.swift */,
@@ -922,6 +934,10 @@
 				10A000312D00000100000001 /* JSONRPCCodec.swift in Sources */,
 				10A000322D00000100000001 /* CodexAppServerClient.swift in Sources */,
 				10A000332D00000100000001 /* GenerationCoordinator.swift in Sources */,
+				7A3D54DE7466451789D4FAB2 /* PromptFactory.swift in Sources */,
+				0F494D68E46C4AD2ACA8272B /* PromptEnhancer.swift in Sources */,
+				B1978899C70C47C094010C01 /* PromptVariator.swift in Sources */,
+				A98A1147E150494988094F14 /* PromptLanguageNormalizer.swift in Sources */,
 				10A000342D00000100000001 /* DraftCanvasViewModel.swift in Sources */,
 				10A000FA2D00000100000001 /* BackgroundRemover.swift in Sources */,
 				D9F69235C6DA480489596D0E /* CanvasMetrics.swift in Sources */,

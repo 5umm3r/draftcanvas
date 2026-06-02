@@ -5,7 +5,7 @@ extension DraftCanvasViewModel {
         let promptText = currentInputs.prompt.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !promptText.isEmpty, !isEnhancingPrompt else { return }
         guard !availableModels.isEmpty else {
-            errorToast = String(localized: "利用可能なモデルがありません")
+            showError("利用可能なモデルがありません")
             return
         }
 
@@ -76,7 +76,7 @@ extension DraftCanvasViewModel {
                         self.logs.append("プロンプトエンハンス キャンセル")
                         return
                     }
-                    self.errorToast = String(localized: "プロンプトエンハンスに失敗しました")
+                    self.showError("プロンプトエンハンスに失敗しました")
                     self.logs.append("プロンプトエンハンス失敗: \(error.localizedDescription)")
                 }
             }

@@ -38,13 +38,11 @@ extension DraftCanvasViewModel {
                         try self.projectStore.writeSVGData(result.svgData, for: newItem)
                         self.items.append(newItem)
                         self.thumbnailStore.writeThumbnail(from: result.previewPNGData, item: newItem)
-                        if let idx = self.projects.firstIndex(where: { $0.id == projectID }) {
-                            self.projects[idx].updatedAt = Date()
-                        }
+                        self.touchProject(id: projectID)
                         self.saveState()
                         self.logs.append("ベクター化完了: \(newItem.id)")
                     } catch {
-                        self.errorToast = String(localized: "ベクター化結果の保存に失敗しました")
+                        self.showError("ベクター化結果の保存に失敗しました")
                         self.logs.append("ベクター化結果の保存に失敗: \(error.localizedDescription)")
                     }
                 }

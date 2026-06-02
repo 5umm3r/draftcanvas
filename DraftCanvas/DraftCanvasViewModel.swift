@@ -288,6 +288,10 @@ final class DraftCanvasViewModel: ObservableObject {
         #endif
     }
 
+    func showError(_ message: String.LocalizationValue) {
+        errorToast = String(localized: message)
+    }
+
     // MARK: - Private
 
     func loadProjects() {

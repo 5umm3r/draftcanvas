@@ -179,7 +179,7 @@ extension ContentView {
             InpaintingMaskEditorSheet(
                 originalImage: nsImage,
                 mode: $viewModel.inpaintMode,
-                initialStrokes: viewModel.projectStore.readStrokesData(id: item.id) ?? [],
+                initialStrokes: viewModel.inpaintStrokes(for: item.id) ?? [],
                 onComplete: { strokes in
                     if viewModel.inpaintMode == .remove {
                         viewModel.applyMaskRemoval(item: item, strokes: strokes)
@@ -231,7 +231,7 @@ extension ContentView {
         if let nsImage = viewModel.cachedImage(for: sourceItem) {
             CropEditorSheet(
                 sourceImage: nsImage,
-                initialParams: item.isCropped ? viewModel.projectStore.readCropParameters(id: item.id) : nil,
+                initialParams: item.isCropped ? viewModel.cropParameters(for: item.id) : nil,
                 onComplete: { rect, template in
                     viewModel.commitCrop(item: item, rect: rect, template: template)
                 },
@@ -533,7 +533,7 @@ extension ContentView {
 
                         let shareURLs = viewModel.displayedItemsSnapshot
                             .filter { viewModel.selectedItemIDs.contains($0.id) }
-                            .map { viewModel.projectStore.resolvedFileURL(for: $0) }
+                            .map { viewModel.fileURL(for: $0) }
                         ShareLink(items: shareURLs) {
                             Image(systemName: "paperplane")
                                 .font(.system(size: 13, weight: .medium))

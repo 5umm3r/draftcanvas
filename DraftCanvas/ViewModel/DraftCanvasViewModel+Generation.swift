@@ -261,9 +261,7 @@ extension DraftCanvasViewModel {
             items.append(item)
             thumbnailStore.writeThumbnail(from: imageData, item: item)
 
-            if let idx = projects.firstIndex(where: { $0.id == projectID }) {
-                projects[idx].updatedAt = Date()
-            }
+            touchProject(id: projectID)
 
             if var jobs = jobsByProject[projectID] {
                 jobs.removeAll { $0.id == job.id }

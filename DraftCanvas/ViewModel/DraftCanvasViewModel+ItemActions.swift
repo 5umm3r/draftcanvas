@@ -39,9 +39,7 @@ extension DraftCanvasViewModel {
         )
         inputsByProject[id] = inputs
         focusPromptTrigger = UUID()
-        if let idx = projects.firstIndex(where: { $0.id == id }) {
-            projects[idx].updatedAt = Date()
-        }
+        touchProject(id: id)
         logs.append("アイテムを再編集対象にしました: \(fileURL.path)")
     }
 
@@ -68,7 +66,7 @@ extension DraftCanvasViewModel {
                 let canvasSize = CGSize(width: pw, height: ph)
 
                 guard let maskData = InpaintingMaskCompositor.renderMask(from: strokes, canvasSize: canvasSize) else {
-                    await MainActor.run { self.errorToast = String(localized: "マスク画像の生成に失敗しました。") }
+                    await MainActor.run { self.showError("マスク画像の生成に失敗しました。") }
                     return
                 }
 
@@ -114,7 +112,7 @@ extension DraftCanvasViewModel {
                 }
             } catch {
                 await MainActor.run {
-                    self.errorToast = String(localized: "マスクの処理に失敗しました: \(error.localizedDescription)")
+                    self.showError("マスクの処理に失敗しました: \(error.localizedDescription)")
                     self.logs.append("マスク編集処理エラー: \(error.localizedDescription)")
                 }
             }
@@ -158,7 +156,7 @@ extension DraftCanvasViewModel {
 
                 guard let maskData = InpaintingMaskCompositor.renderMask(from: strokes, canvasSize: canvasSize) else {
                     await MainActor.run {
-                        self.errorToast = String(localized: "マスク画像の生成に失敗しました。")
+                        self.showError("マスク画像の生成に失敗しました。")
                         self.generatingProjectIDs.remove(projectID)
                         self.activityTracker.end()
                         self.generationTasks[projectID]?.removeValue(forKey: removalRunID)
@@ -211,7 +209,7 @@ extension DraftCanvasViewModel {
                 }
             } catch {
                 await MainActor.run {
-                    self.errorToast = String(localized: "マスク除去に失敗しました: \(error.localizedDescription)")
+                    self.showError("マスク除去に失敗しました: \(error.localizedDescription)")
                     self.logs.append("マスク除去エラー: \(error.localizedDescription)")
                     self.generatingProjectIDs.remove(projectID)
                     self.activityTracker.end()
@@ -294,13 +292,11 @@ extension DraftCanvasViewModel {
             try projectStore.writeItemData(data, for: newItem)
             items.append(newItem)
             thumbnailStore.writeThumbnail(from: data, item: newItem)
-            if let idx = projects.firstIndex(where: { $0.id == projectID }) {
-                projects[idx].updatedAt = Date()
-            }
+            touchProject(id: projectID)
             saveState()
             logs.append("背景除去保存完了: \(newItem.id)")
         } catch {
-            errorToast = String(localized: "背景除去結果の保存に失敗しました")
+            showError("背景除去結果の保存に失敗しました")
             logs.append("背景除去保存失敗: \(error.localizedDescription)")
         }
     }

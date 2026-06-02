@@ -57,7 +57,7 @@ extension DraftCanvasViewModel {
                 upscalingTasks.removeValue(forKey: itemID)
                 upscalingJobContexts.removeValue(forKey: itemID)
                 guard !(error is CancellationError) else { return }
-                errorToast = String(localized: "高解像度化に失敗しました")
+                showError("高解像度化に失敗しました")
                 logs.append("高解像度化失敗: \(error.localizedDescription)")
             }
         }
@@ -96,13 +96,11 @@ extension DraftCanvasViewModel {
                 try projectStore.writeItemData(data, for: newItem)
                 thumbnailStore.writeThumbnail(from: data, item: newItem)
                 items.append(newItem)
-                if let idx = projects.firstIndex(where: { $0.id == projectID }) {
-                    projects[idx].updatedAt = Date()
-                }
+                touchProject(id: projectID)
                 saveState()
                 logs.append("高解像度化: 新規アイテム追加 \(newItem.id)")
             } catch {
-                errorToast = String(localized: "高解像度化結果の保存に失敗しました")
+                showError("高解像度化結果の保存に失敗しました")
                 logs.append("高解像度化保存失敗: \(error.localizedDescription)")
             }
 
@@ -114,13 +112,11 @@ extension DraftCanvasViewModel {
                 thumbnailStore.writeThumbnail(from: data, item: item)
                 originalImageStore.evict(url: origURL)
                 thumbnailStore.invalidate()
-                if let idx = projects.firstIndex(where: { $0.id == projectID }) {
-                    projects[idx].updatedAt = Date()
-                }
+                touchProject(id: projectID)
                 saveState()
                 logs.append("高解像度化: 上書き完了 \(item.id)")
             } catch {
-                errorToast = String(localized: "高解像度化結果の上書きに失敗しました")
+                showError("高解像度化結果の上書きに失敗しました")
                 logs.append("高解像度化上書き失敗: \(error.localizedDescription)")
             }
         }

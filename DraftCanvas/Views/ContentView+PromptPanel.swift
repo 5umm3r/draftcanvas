@@ -127,7 +127,7 @@ extension ContentView {
                         filePath: attachedImage.filePath,
                         overlayPath: viewModel.currentInputs.editSource.flatMap { src in
                             guard src.isInpainting, !src.isOutpainting else { return nil }
-                            return viewModel.projectStore.previewURL(id: src.projectItemID).path
+                            return viewModel.inpaintPreviewPath(for: src.projectItemID)
                         },
                         onTap: {
                             if attachedImage.kind == .sketch {

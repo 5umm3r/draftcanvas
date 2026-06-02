@@ -39,7 +39,7 @@ extension DraftCanvasViewModel {
 
     func applySketch(strokes: [SketchStroke], canvasPixelSize: CGSize, existingID: UUID?) {
         guard let pngData = SketchCompositor.renderPNG(from: strokes, canvasSize: canvasPixelSize) else {
-            errorToast = String(localized: "ラフ画像の生成に失敗しました")
+            showError("ラフ画像の生成に失敗しました")
             return
         }
 
@@ -64,7 +64,7 @@ extension DraftCanvasViewModel {
             setAttachedImage(attached)
             logs.append("ラフを添付しました")
         } catch {
-            errorToast = String(localized: "ラフ画像の保存に失敗しました")
+            showError("ラフ画像の保存に失敗しました")
             logs.append("ラフ保存エラー: \(error.localizedDescription)")
         }
     }

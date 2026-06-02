@@ -314,7 +314,7 @@ extension ContentView {
                 ) {
                     confirmingDeleteItemID = item.id
                 }
-                CircularShareButton(urls: [viewModel.projectStore.resolvedFileURL(for: item)])
+                CircularShareButton(urls: [viewModel.fileURL(for: item)])
                 CircularPromptActionButton(
                     systemImage: "square.and.arrow.up",
                     tooltip: "エクスポート",

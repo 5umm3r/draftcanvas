@@ -26,7 +26,7 @@ extension DraftCanvasViewModel {
             setAttachedImage(attachedImage)
             logs.append("参照画像を添付しました: \(url.lastPathComponent)")
         } catch {
-            errorToast = String(localized: "画像の読み込みに失敗しました")
+            showError("画像の読み込みに失敗しました")
             logs.append("画像添付エラー: \(error.localizedDescription)")
         }
     }
@@ -35,7 +35,7 @@ extension DraftCanvasViewModel {
         guard let tiff = image.tiffRepresentation,
               let rep = NSBitmapImageRep(data: tiff),
               let pngData = rep.representation(using: .png, properties: [:]) else {
-            errorToast = String(localized: "クリップボードの画像を処理できませんでした")
+            showError("クリップボードの画像を処理できませんでした")
             return
         }
         do {
@@ -45,7 +45,7 @@ extension DraftCanvasViewModel {
             setAttachedImage(attachedImage)
             logs.append("クリップボードから画像を添付しました")
         } catch {
-            errorToast = String(localized: "画像の保存に失敗しました")
+            showError("画像の保存に失敗しました")
             logs.append("クリップボード画像保存エラー: \(error.localizedDescription)")
         }
     }

@@ -88,7 +88,7 @@ extension DraftCanvasViewModel {
                 NSWorkspace.shared.activateFileViewerSelecting([destination])
             } catch {
                 self.logs.append("エクスポートに失敗しました: \(error.localizedDescription)")
-                self.errorToast = String(localized: "エクスポートに失敗しました")
+                self.showError("エクスポートに失敗しました")
             }
         }
     }
@@ -169,7 +169,7 @@ extension DraftCanvasViewModel {
                 NSWorkspace.shared.activateFileViewerSelecting([zipURL])
             } catch {
                 self.logs.append("一括エクスポートに失敗しました: \(error.localizedDescription)")
-                self.errorToast = String(localized: "一括エクスポートに失敗しました")
+                self.showError("一括エクスポートに失敗しました")
             }
         }
     }
