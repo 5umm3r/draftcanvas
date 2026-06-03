@@ -8,12 +8,19 @@ struct ScanlineSweepPlaceholderView: View {
         let phaseOffset: Double
     }
 
+    /// ドット格子の列数・行数
+    private static let cols = 18
+    private static let rows = 14
+    /// 走査線通過後(後方)の残光減衰長と、通過前(前方)の先行光長。0..1正規化座標基準
+    private static let trailLen: Double = 0.34
+    private static let leadLen: Double = 0.06
+
     private static let variants: [Variant] = [
-        Variant(accent: Color(red: 0.34, green: 0.78, blue: 1.0), secondary: Color(red: 0.80, green: 0.55, blue: 1.0), speed: 0.34, phaseOffset: 0),
-        Variant(accent: Color(red: 0.42, green: 0.95, blue: 0.74), secondary: Color(red: 0.35, green: 0.65, blue: 1.0), speed: 0.30, phaseOffset: 0.2),
-        Variant(accent: Color(red: 1.0, green: 0.62, blue: 0.76), secondary: Color(red: 0.50, green: 0.70, blue: 1.0), speed: 0.38, phaseOffset: 0.4),
-        Variant(accent: Color(red: 0.72, green: 0.72, blue: 1.0), secondary: Color(red: 0.36, green: 0.94, blue: 0.90), speed: 0.32, phaseOffset: 0.6),
-        Variant(accent: Color(red: 0.50, green: 0.86, blue: 0.96), secondary: Color(red: 0.72, green: 0.52, blue: 1.0), speed: 0.40, phaseOffset: 0.8),
+        Variant(accent: Color(red: 0.34, green: 0.78, blue: 1.0), secondary: Color(red: 0.80, green: 0.55, blue: 1.0), speed: 0.11, phaseOffset: 0),
+        Variant(accent: Color(red: 0.42, green: 0.95, blue: 0.74), secondary: Color(red: 0.35, green: 0.65, blue: 1.0), speed: 0.095, phaseOffset: 0.2),
+        Variant(accent: Color(red: 1.0, green: 0.62, blue: 0.76), secondary: Color(red: 0.50, green: 0.70, blue: 1.0), speed: 0.125, phaseOffset: 0.4),
+        Variant(accent: Color(red: 0.72, green: 0.72, blue: 1.0), secondary: Color(red: 0.36, green: 0.94, blue: 0.90), speed: 0.10, phaseOffset: 0.6),
+        Variant(accent: Color(red: 0.50, green: 0.86, blue: 0.96), secondary: Color(red: 0.72, green: 0.52, blue: 1.0), speed: 0.13, phaseOffset: 0.8),
     ]
 
     let seed: Int
@@ -32,84 +39,123 @@ struct ScanlineSweepPlaceholderView: View {
 
         Group {
             if reduceMotion {
-                scanlineLayer(t: 0, v: v, bg: bg, isLight: isLight)
+                scanlineCanvas(t: 0, v: v, bg: bg, isLight: isLight)
                     .overlay(ProgressView().controlSize(.small))
             } else {
                 TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { context in
                     let t = context.date.timeIntervalSinceReferenceDate
-                    scanlineLayer(t: t, v: v, bg: bg, isLight: isLight)
+                    scanlineCanvas(t: t, v: v, bg: bg, isLight: isLight)
                 }
             }
         }
-        .drawingGroup()
     }
 
-    private func scanlineLayer(t: Double, v: Variant, bg: Color, isLight: Bool) -> some View {
-        GeometryReader { geo in
+    /// 後方に長く尾を引く非対称な減衰。dist>0=未通過(前方), dist<=0=通過済(後方残光)
+    private func sweepGlow(dist: Double) -> Double {
+        let range = dist <= 0 ? Self.trailLen : Self.leadLen
+        return exp(-abs(dist) / range)
+    }
+
+    private func scanlineCanvas(t: Double, v: Variant, bg: Color, isLight: Bool) -> some View {
+        Canvas { context, size in
+            let w = size.width
+            let h = size.height
+            let minDim = min(w, h)
+            let fullRect = Path(CGRect(origin: .zero, size: size))
+
+            // 背景: ベタ塗り → 中央やや上ビネット(他スタイルと統一)
+            context.fill(fullRect, with: .color(bg))
+            let centerColor: Color = isLight
+                ? Color(red: 0.99, green: 0.995, blue: 1.0)
+                : Color(red: 0.07, green: 0.08, blue: 0.12)
+            let vignette = GraphicsContext.Shading.radialGradient(
+                Gradient(colors: [centerColor, bg]),
+                center: CGPoint(x: w / 2, y: h * 0.42),
+                startRadius: 0, endRadius: minDim * 0.75)
+            context.fill(fullRect, with: vignette)
+
+            // サイクル: 前半=水平走査(横線が上→下), 後半=垂直走査(縦線が左→右)
             let cycle = (t * v.speed + v.phaseOffset).truncatingRemainder(dividingBy: 1)
-            let horizontalPhase = cycle < 0.5 ? cycle * 2 : 0
-            let verticalPhase = cycle >= 0.5 ? (cycle - 0.5) * 2 : 0
             let horizontalActive = cycle < 0.5
-            let lineOpacity = isLight ? 0.18 : 0.32
-            let majorLineOpacity = isLight ? 0.30 : 0.48
-            let glowOpacity = isLight ? 0.34 : 0.58
+            // 走査位置(0..1)。バーが画面外から入り外へ抜けるよう -lead..1+trail 余白を持たせる
+            let sweep: Double = horizontalActive ? (cycle * 2) : ((cycle - 0.5) * 2)
+            let sweepColor = horizontalActive ? v.accent : v.secondary
+            let crossColor = horizontalActive ? v.secondary : v.accent
 
-            ZStack {
-                bg
-                LinearGradient(
-                    colors: [
-                        v.secondary.opacity(0.16),
-                        Color.clear,
-                        v.accent.opacity(0.18),
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
+            let baseDot = isLight ? 0.10 : 0.16
+            let peakDot = isLight ? 0.55 : 0.82
+            let dotBaseR = minDim * 0.006
 
-                ForEach(0..<24, id: \.self) { i in
-                    let isMajor = i.isMultiple(of: 4)
-                    Rectangle()
-                        .fill(v.accent.opacity(isMajor ? majorLineOpacity : lineOpacity))
-                        .frame(height: isMajor ? 1.2 : 0.7)
-                        .offset(y: CGFloat(i) * geo.size.height / 24.0 - geo.size.height / 2.0)
+            // ドット格子: 走査線との距離で点灯。手前ほどグロー
+            for row in 0..<Self.rows {
+                for col in 0..<Self.cols {
+                    let nx = (Double(col) + 0.5) / Double(Self.cols)
+                    let ny = (Double(row) + 0.5) / Double(Self.rows)
+                    let px = CGFloat(nx) * w
+                    let py = CGFloat(ny) * h
+
+                    // アクティブ軸の走査線からの符号付き距離(進行方向が正=前方)
+                    let along = horizontalActive ? ny : nx
+                    let dist = along - sweep
+                    let glow = sweepGlow(dist: dist)
+
+                    let intensity = baseDot + (peakDot - baseDot) * glow
+                    let r = dotBaseR * (1 + 1.6 * glow)
+
+                    // ピーク付近のみソフトな発光を敷く
+                    if glow > 0.08 {
+                        let glowR = r * 3.0
+                        let gRect = CGRect(x: px - glowR, y: py - glowR, width: glowR * 2, height: glowR * 2)
+                        let shading = GraphicsContext.Shading.radialGradient(
+                            Gradient(colors: [sweepColor.opacity(intensity * 0.6), .clear]),
+                            center: CGPoint(x: px, y: py), startRadius: 0, endRadius: glowR)
+                        context.fill(Path(ellipseIn: gRect), with: shading)
+                    }
+
+                    let rect = CGRect(x: px - r, y: py - r, width: r * 2, height: r * 2)
+                    context.fill(Path(ellipseIn: rect), with: .color(sweepColor.opacity(intensity)))
                 }
-
-                ForEach(0..<24, id: \.self) { i in
-                    let isMajor = i.isMultiple(of: 4)
-                    Rectangle()
-                        .fill(v.secondary.opacity(isMajor ? majorLineOpacity * 0.85 : lineOpacity * 0.75))
-                        .frame(width: isMajor ? 1.2 : 0.7)
-                        .offset(x: CGFloat(i) * geo.size.width / 24.0 - geo.size.width / 2.0)
-                }
-
-                Rectangle()
-                    .fill(
-                        LinearGradient(
-                            colors: [.clear, v.accent.opacity(glowOpacity), v.secondary.opacity(glowOpacity * 0.55), .clear],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-                    .frame(width: geo.size.width, height: max(24, geo.size.height * 0.18))
-                    .blur(radius: 5)
-                    .offset(y: CGFloat(horizontalPhase) * (geo.size.height * 1.35) - geo.size.height * 0.68)
-                    .opacity(horizontalActive ? 1 : 0)
-                    .blendMode(isLight ? .multiply : .plusLighter)
-
-                Rectangle()
-                    .fill(
-                        LinearGradient(
-                            colors: [.clear, v.accent.opacity(glowOpacity), v.secondary.opacity(glowOpacity * 0.7), .clear],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .frame(width: max(24, geo.size.width * 0.18), height: geo.size.height)
-                    .blur(radius: 5)
-                    .offset(x: CGFloat(verticalPhase) * (geo.size.width * 1.35) - geo.size.width * 0.68)
-                    .opacity(horizontalActive ? 0 : 1)
-                    .blendMode(isLight ? .multiply : .plusLighter)
             }
+
+            // 走査線本体: アクティブ軸に沿った発光ライン(太→細のalpha重ね描きでソフト発光)
+            let lineGlow = isLight ? 0.30 : 0.50
+            let sweepPos = CGFloat(sweep)
+            var linePath = Path()
+            if horizontalActive {
+                let y = sweepPos * h
+                linePath.move(to: CGPoint(x: 0, y: y))
+                linePath.addLine(to: CGPoint(x: w, y: y))
+            } else {
+                let x = sweepPos * w
+                linePath.move(to: CGPoint(x: x, y: 0))
+                linePath.addLine(to: CGPoint(x: x, y: h))
+            }
+            // 走査線が画面内のときのみ描画
+            if sweep >= 0 && sweep <= 1 {
+                for (mult, op) in [(6.0 as CGFloat, lineGlow * 0.12), (2.5 as CGFloat, lineGlow * 0.22), (1.0 as CGFloat, lineGlow * 0.9)] {
+                    context.stroke(linePath, with: .color(sweepColor.opacity(op)),
+                                   style: StrokeStyle(lineWidth: mult, lineCap: .round))
+                }
+            }
+
+            // 直交方向の淡い基準グリッド線(常時, 控えめ)。走査と垂直な軸を薄く示す
+            let gridOp = isLight ? 0.06 : 0.10
+            var gridPath = Path()
+            if horizontalActive {
+                for col in 0..<Self.cols {
+                    let x = (CGFloat(col) + 0.5) / CGFloat(Self.cols) * w
+                    gridPath.move(to: CGPoint(x: x, y: 0))
+                    gridPath.addLine(to: CGPoint(x: x, y: h))
+                }
+            } else {
+                for row in 0..<Self.rows {
+                    let y = (CGFloat(row) + 0.5) / CGFloat(Self.rows) * h
+                    gridPath.move(to: CGPoint(x: 0, y: y))
+                    gridPath.addLine(to: CGPoint(x: w, y: y))
+                }
+            }
+            context.stroke(gridPath, with: .color(crossColor.opacity(gridOp)),
+                           style: StrokeStyle(lineWidth: 0.6))
         }
     }
 }
