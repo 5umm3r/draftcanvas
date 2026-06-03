@@ -43,6 +43,39 @@ extension ContentView {
         }
     }
 
+    private var accountStatusWarning: some View {
+        let failed = viewModel.accountUsagePrewarmFailed
+        return HStack(spacing: 6) {
+            Image(systemName: failed ? "exclamationmark.triangle.fill" : "person.crop.circle.badge.questionmark")
+                .font(.subheadline)
+                .foregroundStyle(failed ? Color.orange : Color.secondary)
+
+            Text(failed
+                ? String(localized: "アカウント情報の取得に失敗しました")
+                : String(localized: "Codex にログインしていません"))
+                .font(.subheadline)
+                .lineLimit(1)
+
+            Button {
+                viewModel.relaunchAndRefreshAccountUsage()
+            } label: {
+                if viewModel.isRefreshingAccountUsage {
+                    ProgressView()
+                        .controlSize(.small)
+                } else {
+                    Text(String(localized: "再取得"))
+                        .font(.subheadline.weight(.semibold))
+                }
+            }
+            .buttonStyle(.borderless)
+            .disabled(viewModel.isRefreshingAccountUsage)
+        }
+        .padding(.horizontal, 9)
+        .padding(.vertical, 5)
+        .background(Color.orange.opacity(0.10))
+        .clipShape(Capsule())
+    }
+
     var topStatusBar: some View {
         HStack(spacing: 12) {
             Button(action: toggleLogWindow) {
@@ -125,6 +158,9 @@ extension ContentView {
                     remainingFraction: viewModel.accountUsageStatus.secondaryUsageRemainingFraction,
                     resetText: viewModel.accountUsageStatus.secondaryResetText
                 )
+            } else if viewModel.accountUsageStatus.accountKind == .unauthenticated
+                        || viewModel.accountUsagePrewarmFailed {
+                accountStatusWarning
             }
 
             Button {

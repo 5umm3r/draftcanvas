@@ -147,6 +147,7 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var preferredSaveFolder: URL?
     @Published var errorToast: String?
     @Published var accountUsagePrewarmFailed = false
+    @Published var pendingLoginRequired = false
     @Published var codexVersion: String = "--"
     @Published var availableModels: [CodexModel] = []
 

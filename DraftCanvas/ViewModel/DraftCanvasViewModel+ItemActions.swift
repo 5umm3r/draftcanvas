@@ -305,6 +305,10 @@ extension DraftCanvasViewModel {
         guard EntitlementGate.shared.requireUnlocked() else { return }
         let trimmedPrompt = item.prompt.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedPrompt.isEmpty else { return }
+        if accountUsageStatus.accountKind == .unauthenticated || accountUsagePrewarmFailed {
+            pendingLoginRequired = true
+            return
+        }
         if accountUsageStatus.isChatGPTFreePlan {
             pendingFreeAccountBlock = true
             return

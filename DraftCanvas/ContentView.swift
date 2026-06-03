@@ -156,6 +156,18 @@ struct ContentView: View {
             }
         }
         .confirmationDialog(
+            String(localized: "Codex にログインしていません"),
+            isPresented: $viewModel.pendingLoginRequired,
+            titleVisibility: .visible
+        ) {
+            Button(String(localized: "再取得")) {
+                viewModel.relaunchAndRefreshAccountUsage()
+            }
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(String(localized: "ターミナルで codex login を実行してからお試しください。"))
+        }
+        .confirmationDialog(
             String(localized: "ChatGPT Free プランでは画像生成を利用できません"),
             isPresented: $viewModel.pendingFreeAccountBlock,
             titleVisibility: .visible

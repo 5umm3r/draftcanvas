@@ -8,6 +8,10 @@ extension DraftCanvasViewModel {
         if currentInputs.editSource != nil {
             guard !isGeneratingForSelected else { return }
         }
+        if accountUsageStatus.accountKind == .unauthenticated || accountUsagePrewarmFailed {
+            pendingLoginRequired = true
+            return
+        }
         if accountUsageStatus.isChatGPTFreePlan {
             pendingFreeAccountBlock = true
             return
