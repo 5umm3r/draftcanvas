@@ -5,6 +5,9 @@ enum PlaceholderAnimationStyle: String, CaseIterable, Identifiable {
     case aurora
     case gridWave
     case wireframeRotation
+    case particleFlow
+    case scanlineSweep
+    case mosaicPulse
 
     var id: String { rawValue }
 
@@ -14,10 +17,20 @@ enum PlaceholderAnimationStyle: String, CaseIterable, Identifiable {
         case .aurora:            return String(localized: "オーロラ")
         case .gridWave:          return String(localized: "グリッドウェーブ")
         case .wireframeRotation: return String(localized: "ワイヤーフレーム")
+        case .particleFlow:      return String(localized: "パーティクル")
+        case .scanlineSweep:     return String(localized: "スキャンライン")
+        case .mosaicPulse:       return String(localized: "モザイク")
         }
     }
 
-    static let concreteStyles: [PlaceholderAnimationStyle] = [.aurora, .gridWave, .wireframeRotation]
+    static let concreteStyles: [PlaceholderAnimationStyle] = [
+        .aurora,
+        .gridWave,
+        .wireframeRotation,
+        .particleFlow,
+        .scanlineSweep,
+        .mosaicPulse,
+    ]
 
     func resolved(seed: Int) -> PlaceholderAnimationStyle {
         switch self {

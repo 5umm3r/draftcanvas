@@ -12,6 +12,12 @@ struct PlaceholderAnimationView: View {
             GridWavePlaceholderView(seed: seed)
         case .wireframeRotation:
             WireframeRotationPlaceholderView(seed: seed)
+        case .particleFlow:
+            ParticleFlowPlaceholderView(seed: seed)
+        case .scanlineSweep:
+            ScanlineSweepPlaceholderView(seed: seed)
+        case .mosaicPulse:
+            MosaicPulsePlaceholderView(seed: seed)
         case .random:
             AuroraPlaceholderView(seed: seed)
         }

@@ -99,6 +99,9 @@
 		6D5D1FA5364B40638154C18BA55ADB3F /* AuroraPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F4EB0EF2B144D698A6FF43FDBF0752B /* AuroraPlaceholderView.swift */; };
 		12AE501A9E7B84B5D52F3A4D /* WireframeRotationPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE5318919E8AAC424ADF0AC9 /* WireframeRotationPlaceholderView.swift */; };
 		366CA9ACABD136DAC09741DD /* GridWavePlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 154032F7D508D83C1AE5BA3A /* GridWavePlaceholderView.swift */; };
+		91B9F671D2F64CF5BA41B875 /* ParticleFlowPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A5CF2DA36F84F8E91B2D6A7 /* ParticleFlowPlaceholderView.swift */; };
+		A74E6B1D88264E46B5D7C242 /* ScanlineSweepPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C3A52617284E8AA2CBA476 /* ScanlineSweepPlaceholderView.swift */; };
+		C2B64A74E6C54CB9A8A8E1F1 /* MosaicPulsePlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4E2B39C159B4C3DA7762A54 /* MosaicPulsePlaceholderView.swift */; };
 		03BC37653308B5E51A540423 /* PlaceholderAnimationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B3D5F7C3BF3DD894CFA01D5 /* PlaceholderAnimationView.swift */; };
 		8CF480FB670B2392AE228CA0 /* PlaceholderAnimationStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BC894D6CA1F72AEC430FFA9 /* PlaceholderAnimationStyle.swift */; };
 		6E741A5F363C469469976EEF /* CropCanvasNSView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9D3BC93ABEDB39F1B691F5F /* CropCanvasNSView.swift */; };
@@ -290,6 +293,9 @@
 		5F4EB0EF2B144D698A6FF43FDBF0752B /* AuroraPlaceholderView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AuroraPlaceholderView.swift; path = Views/AuroraPlaceholderView.swift; sourceTree = "<group>"; };
 		DE5318919E8AAC424ADF0AC9 /* WireframeRotationPlaceholderView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WireframeRotationPlaceholderView.swift; path = Views/WireframeRotationPlaceholderView.swift; sourceTree = "<group>"; };
 		154032F7D508D83C1AE5BA3A /* GridWavePlaceholderView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GridWavePlaceholderView.swift; path = Views/GridWavePlaceholderView.swift; sourceTree = "<group>"; };
+		4A5CF2DA36F84F8E91B2D6A7 /* ParticleFlowPlaceholderView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ParticleFlowPlaceholderView.swift; path = Views/ParticleFlowPlaceholderView.swift; sourceTree = "<group>"; };
+		D9C3A52617284E8AA2CBA476 /* ScanlineSweepPlaceholderView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ScanlineSweepPlaceholderView.swift; path = Views/ScanlineSweepPlaceholderView.swift; sourceTree = "<group>"; };
+		F4E2B39C159B4C3DA7762A54 /* MosaicPulsePlaceholderView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MosaicPulsePlaceholderView.swift; path = Views/MosaicPulsePlaceholderView.swift; sourceTree = "<group>"; };
 		2B3D5F7C3BF3DD894CFA01D5 /* PlaceholderAnimationView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PlaceholderAnimationView.swift; path = Views/PlaceholderAnimationView.swift; sourceTree = "<group>"; };
 		2BC894D6CA1F72AEC430FFA9 /* PlaceholderAnimationStyle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PlaceholderAnimationStyle.swift; path = Models/PlaceholderAnimationStyle.swift; sourceTree = "<group>"; };
 		5e64e8265c0548dab23dae9cd36602db /* TagEditorRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TagEditorRow.swift; path = Views/TagEditorRow.swift; sourceTree = "<group>"; };
@@ -621,6 +627,9 @@
 				5F4EB0EF2B144D698A6FF43FDBF0752B /* AuroraPlaceholderView.swift */,
 				DE5318919E8AAC424ADF0AC9 /* WireframeRotationPlaceholderView.swift */,
 				154032F7D508D83C1AE5BA3A /* GridWavePlaceholderView.swift */,
+				4A5CF2DA36F84F8E91B2D6A7 /* ParticleFlowPlaceholderView.swift */,
+				D9C3A52617284E8AA2CBA476 /* ScanlineSweepPlaceholderView.swift */,
+				F4E2B39C159B4C3DA7762A54 /* MosaicPulsePlaceholderView.swift */,
 				2B3D5F7C3BF3DD894CFA01D5 /* PlaceholderAnimationView.swift */,
 				E5EB180980BB2AAFC5E98E4A /* PopoverButton.swift */,
 				E824D7305F84430390074FD7 /* PromptCopyButton.swift */,
@@ -1027,6 +1036,9 @@
 				6D5D1FA5364B40638154C18BA55ADB3F /* AuroraPlaceholderView.swift in Sources */,
 				12AE501A9E7B84B5D52F3A4D /* WireframeRotationPlaceholderView.swift in Sources */,
 				366CA9ACABD136DAC09741DD /* GridWavePlaceholderView.swift in Sources */,
+				91B9F671D2F64CF5BA41B875 /* ParticleFlowPlaceholderView.swift in Sources */,
+				A74E6B1D88264E46B5D7C242 /* ScanlineSweepPlaceholderView.swift in Sources */,
+				C2B64A74E6C54CB9A8A8E1F1 /* MosaicPulsePlaceholderView.swift in Sources */,
 				03BC37653308B5E51A540423 /* PlaceholderAnimationView.swift in Sources */,
 				8CF480FB670B2392AE228CA0 /* PlaceholderAnimationStyle.swift in Sources */,
 				B8D9D407FB64ED096398E71A /* PopoverButton.swift in Sources */,

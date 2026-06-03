@@ -7,7 +7,7 @@ private struct AnimationStyleCard: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 3) {
+            VStack(spacing: 4) {
                 Group {
                     if style == .random {
                         ZStack {
@@ -20,14 +20,14 @@ private struct AnimationStyleCard: View {
                         PlaceholderAnimationView(style: style, seed: 0)
                     }
                 }
-                .frame(width: 72, height: 44)
+                .frame(width: 106, height: 64)
                 .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
                 Text(style.displayName)
                     .font(.caption2)
                     .foregroundStyle(isSelected ? .primary : .secondary)
                     .lineLimit(1)
             }
-            .padding(3)
+            .padding(4)
             .background(
                 RoundedRectangle(cornerRadius: 6, style: .continuous)
                     .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 2)
@@ -43,6 +43,11 @@ struct SettingsView: View {
     @EnvironmentObject private var sparkleUpdater: SparkleUpdaterController
     @State private var showLicenses = false
     @State private var automaticallyChecksForUpdates: Bool = true
+    private let animationStyleColumns = [
+        GridItem(.fixed(114), spacing: 8),
+        GridItem(.fixed(114), spacing: 8),
+        GridItem(.fixed(114), spacing: 8),
+    ]
 
     private var selectedAnimationStyle: PlaceholderAnimationStyle {
         PlaceholderAnimationStyle(rawValue: viewModel.placeholderAnimationStyleRaw) ?? .aurora
@@ -108,7 +113,7 @@ struct SettingsView: View {
             GridRow {
                 Text("アニメーション")
                     .gridColumnAlignment(.trailing)
-                HStack(spacing: 6) {
+                LazyVGrid(columns: animationStyleColumns, alignment: .leading, spacing: 6) {
                     ForEach(PlaceholderAnimationStyle.allCases) { style in
                         AnimationStyleCard(
                             style: style,
