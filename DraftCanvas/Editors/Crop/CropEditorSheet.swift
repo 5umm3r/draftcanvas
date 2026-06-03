@@ -49,6 +49,7 @@ struct CropEditorSheet: View {
             )
         }
         .frame(minWidth: 800, minHeight: 620)
+        .resizableSheet()
     }
 
     private var toolbar: some View {

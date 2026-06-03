@@ -195,6 +195,7 @@
 		0F494D68E46C4AD2ACA8272B /* PromptEnhancer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B49F199659F41F18C76F3FE /* PromptEnhancer.swift */; };
 		B1978899C70C47C094010C01 /* PromptVariator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53272FCB20F44057A59AC93C /* PromptVariator.swift */; };
 		A98A1147E150494988094F14 /* PromptLanguageNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 640C4AB788CB45F6AF28B1D2 /* PromptLanguageNormalizer.swift */; };
+		RS000001000000010000B1 /* ResizableSheetModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = RS000001000000010000A1 /* ResizableSheetModifier.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -398,6 +399,7 @@
 		0B49F199659F41F18C76F3FE /* PromptEnhancer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptEnhancer.swift; sourceTree = "<group>"; };
 		53272FCB20F44057A59AC93C /* PromptVariator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptVariator.swift; sourceTree = "<group>"; };
 		640C4AB788CB45F6AF28B1D2 /* PromptLanguageNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptLanguageNormalizer.swift; sourceTree = "<group>"; };
+		RS000001000000010000A1 /* ResizableSheetModifier.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ResizableSheetModifier.swift; path = Editors/ResizableSheetModifier.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -629,6 +631,7 @@
 		529D998CB2EEA40FD576ABD8 /* Editors */ = {
 			isa = PBXGroup;
 			children = (
+				RS000001000000010000A1 /* ResizableSheetModifier.swift */,
 				034897F30795086A4CAD7D14 /* Crop */,
 				OP000007000000010000A1 /* Outpaint */,
 				9ACBD98E07E97951DFE3AA1D /* Sketch */,
@@ -1053,6 +1056,7 @@
 				4FC05F8F2A7A7ED86B430F79 /* CompletionSoundOption.swift in Sources */,
 				1483368FC84E89012DA1976D /* ProjectStore.swift in Sources */,
 				567A1648B15EE73ABFCECE9A /* ProjectStore+Snapshot.swift in Sources */,
+				RS000001000000010000B1 /* ResizableSheetModifier.swift in Sources */,
 				609AB8481AC5CA95EA27277E /* CropEditorSheet.swift in Sources */,
 				4274C5BAB8A77FBE81F62719 /* CropCanvasView.swift in Sources */,
 				6E741A5F363C469469976EEF /* CropCanvasNSView.swift in Sources */,

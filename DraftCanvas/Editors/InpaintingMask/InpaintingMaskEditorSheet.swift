@@ -37,6 +37,7 @@ struct InpaintingMaskEditorSheet: View {
             )
         }
         .frame(minWidth: 800, minHeight: 620)
+        .resizableSheet()
         .confirmationDialog("マスクをすべて消去しますか？", isPresented: $isConfirmingClear, titleVisibility: .visible) {
             Button("消去", role: .destructive) {
                 strokes = []
