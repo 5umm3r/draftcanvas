@@ -115,9 +115,7 @@ extension DraftCanvasViewModel {
             await MainActor.run { [weak self] in
                 guard let self else { return }
                 self.items.append(contentsOf: newItems)
-                if let idx = self.projects.firstIndex(where: { $0.id == projectID }) {
-                    self.projects[idx].updatedAt = Date()
-                }
+                self.touchProject(id: projectID)
                 self.saveState()
                 self.logs.append("素材分解保存完了: \(newItems.count) 件追加")
             }

@@ -41,6 +41,7 @@ struct SketchEditorSheet: View {
             )
         }
         .frame(minWidth: 800, minHeight: 620)
+        .resizableSheet()
         .confirmationDialog("描画をすべて消去しますか？", isPresented: $isConfirmingClear, titleVisibility: .visible) {
             Button("消去", role: .destructive) {
                 strokes = []

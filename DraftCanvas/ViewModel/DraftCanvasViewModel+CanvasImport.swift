@@ -161,9 +161,7 @@ extension DraftCanvasViewModel {
                 self.items.append(contentsOf: sortedItems)
                 self.isLoadingProjects = false
                 self.recomputeDisplayedItems()
-                if let idx = self.projects.firstIndex(where: { $0.id == projectIDToUpdate }) {
-                    self.projects[idx].updatedAt = Date()
-                }
+                self.touchProject(id: projectIDToUpdate)
                 self.saveStateAsync()
                 self.importProgress = nil
                 self.appendLog("[Import] \(sortedItems.count)枚インポート完了")
@@ -182,7 +180,7 @@ extension DraftCanvasViewModel {
             guard let tiff = image.tiffRepresentation,
                   let rep = NSBitmapImageRep(data: tiff),
                   let pngData = rep.representation(using: .png, properties: [:]) else {
-                await MainActor.run { self.errorToast = String(localized: "画像の変換に失敗しました") }
+                await MainActor.run { self.showError("画像の変換に失敗しました") }
                 return
             }
             let aspectRatio = self.aspectRatioFromImageData(pngData)
@@ -201,15 +199,13 @@ extension DraftCanvasViewModel {
                 await MainActor.run { [weak self] in
                     guard let self else { return }
                     self.items.append(newItem)
-                    if let idx = self.projects.firstIndex(where: { $0.id == projectID }) {
-                        self.projects[idx].updatedAt = Date()
-                    }
+                    self.touchProject(id: projectID)
                     self.saveState()
                     self.logs.append("画像をインポートしました (ドラッグ&ドロップ)")
                 }
             } catch {
                 await MainActor.run { [weak self] in
-                    self?.errorToast = String(localized: "画像のインポートに失敗しました")
+                    self?.showError("画像のインポートに失敗しました")
                     self?.logs.append("インポートエラー: \(error.localizedDescription)")
                 }
             }

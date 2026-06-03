@@ -27,6 +27,7 @@ final class DraftCanvasViewModel: ObservableObject {
     @AppStorage("completionSound") var completionSound: String = CompletionSoundOption.glass.rawValue
     @AppStorage("canvasSortOrder") var canvasSortOrderRaw: String = CanvasSortOrder.createdAtAscending.rawValue
     @AppStorage("translateToEnglish") var translateToEnglish: Bool = false
+    @AppStorage("placeholderAnimationStyle") var placeholderAnimationStyleRaw: String = PlaceholderAnimationStyle.aurora.rawValue
     var canvasSortOrder: CanvasSortOrder {
         get { CanvasSortOrder(rawValue: canvasSortOrderRaw) ?? .createdAtAscending }
         set {
@@ -37,12 +38,14 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var projects: [Project] = []
     @Published var items: [ProjectItem] = [] {
         didSet {
+            itemsByID = Dictionary(uniqueKeysWithValues: items.map { ($0.id, $0) })
             if !isLoadingProjects {
                 recomputeDisplayedItems()
                 rebuildAllTagsCache()
             }
         }
     }
+    private(set) var itemsByID: [UUID: ProjectItem] = [:]
     @Published private(set) var allTagsCache: [String] = []
     @Published var displayedItemsSnapshot: [ProjectItem] = []
 
@@ -144,6 +147,7 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var preferredSaveFolder: URL?
     @Published var errorToast: String?
     @Published var accountUsagePrewarmFailed = false
+    @Published var pendingLoginRequired = false
     @Published var codexVersion: String = "--"
     @Published var availableModels: [CodexModel] = []
 
@@ -286,6 +290,10 @@ final class DraftCanvasViewModel: ObservableObject {
             Self.appendToLogFile(msg)
         }
         #endif
+    }
+
+    func showError(_ message: String.LocalizationValue) {
+        errorToast = String(localized: message)
     }
 
     // MARK: - Private

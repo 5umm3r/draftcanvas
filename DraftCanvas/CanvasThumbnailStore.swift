@@ -1,11 +1,12 @@
 import AppKit
+import Combine
 import Foundation
 import ImageIO
 
 final class CanvasThumbnailStore: ObservableObject, @unchecked Sendable {
     let thumbsDirectory: URL
     private let maxPixelSize: CGFloat = 512
-    @Published private(set) var version: Int = 0
+    let thumbnailUpdated = PassthroughSubject<UUID, Never>()
     private let memoryCache: NSCache<NSURL, NSImage> = {
         let c = NSCache<NSURL, NSImage>()
         c.countLimit = 256
@@ -22,21 +23,31 @@ final class CanvasThumbnailStore: ObservableObject, @unchecked Sendable {
         return thumbsDirectory.appendingPathComponent("\(item.id.uuidString).\(ext)")
     }
 
-    // メインスレッドから呼ぶ。ヒット→即返却。ミス→nil＋非同期生成kick
     func thumbnail(for item: ProjectItem, originalURL: URL) -> NSImage? {
         let url = thumbnailURL(for: item)
         let key = url as NSURL
         if let cached = memoryCache.object(forKey: key) { return cached }
-        if let img = loadThumbnailFromDisk(url: url) {
-            memoryCache.setObject(img, forKey: key, cost: 1024 * 1024)
-            return img
-        }
         let store = self
+        let itemID = item.id
         Task.detached(priority: .utility) {
-            store.generateAndSave(from: originalURL, item: item)
-            await MainActor.run { store.version &+= 1 }
+            if let img = store.loadThumbnailFromDisk(url: url) {
+                let rep = img.representations.first
+                let cost = (rep?.pixelsWide ?? 512) * (rep?.pixelsHigh ?? 512) * 4
+                await MainActor.run {
+                    store.memoryCache.setObject(img, forKey: key, cost: cost)
+                    store.thumbnailUpdated.send(itemID)
+                }
+            } else {
+                store.generateAndSave(from: originalURL, item: item)
+                await MainActor.run { store.thumbnailUpdated.send(itemID) }
+            }
         }
         return nil
+    }
+
+    func thumbnailFromCache(for item: ProjectItem) -> NSImage? {
+        let url = thumbnailURL(for: item)
+        return memoryCache.object(forKey: url as NSURL)
     }
 
     private func loadThumbnailFromDisk(url: URL) -> NSImage? {
@@ -49,19 +60,19 @@ final class CanvasThumbnailStore: ObservableObject, @unchecked Sendable {
         return NSImage(cgImage: cg, size: NSSize(width: cg.width, height: cg.height))
     }
 
-    // 生成/インポート直後に呼ぶ（Data バージョン）
     func writeThumbnail(from data: Data, item: ProjectItem) {
         guard let src = CGImageSourceCreateWithData(data as CFData, nil) else { return }
         generateAndSave(source: src, item: item)
     }
 
-    // 生成/インポート直後に呼ぶ（URL バージョン）
     func writeThumbnail(from url: URL, item: ProjectItem) {
         generateAndSave(from: url, item: item)
     }
 
-    func invalidate() {
-        version &+= 1
+    func invalidate(for item: ProjectItem) {
+        let url = thumbnailURL(for: item)
+        memoryCache.removeObject(forKey: url as NSURL)
+        thumbnailUpdated.send(item.id)
     }
 
     func deleteThumbnail(for item: ProjectItem) {
@@ -87,10 +98,12 @@ final class CanvasThumbnailStore: ObservableObject, @unchecked Sendable {
                 count += 1
                 if count % 2 == 0 {
                     await Task.yield()
-                    await MainActor.run { store.version &+= 1 }
+                    await MainActor.run { store.thumbnailUpdated.send(item.id) }
                 }
             }
-            await MainActor.run { store.version &+= 1 }
+            for (item, _) in missing {
+                await MainActor.run { store.thumbnailUpdated.send(item.id) }
+            }
         }
     }
 
@@ -120,6 +133,6 @@ final class CanvasThumbnailStore: ObservableObject, @unchecked Sendable {
         try? FileManager.default.createDirectory(at: thumbsDirectory, withIntermediateDirectories: true)
         try? thumbData.write(to: dest, options: .atomic)
         let img = NSImage(cgImage: cg, size: NSSize(width: cg.width, height: cg.height))
-        memoryCache.setObject(img, forKey: dest as NSURL, cost: 1024 * 1024)
+        memoryCache.setObject(img, forKey: dest as NSURL, cost: cg.width * cg.height * 4)
     }
 }

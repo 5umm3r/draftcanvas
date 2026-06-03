@@ -97,6 +97,13 @@
 		248AEE3818B146B1937B4911 /* ImageClipboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A611B88DE4D46C5947C2912 /* ImageClipboard.swift */; };
 		6D01CA24CE02BAF032C88CCF /* ExtractionStage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C740E410C53396028707D44 /* ExtractionStage.swift */; };
 		6D5D1FA5364B40638154C18BA55ADB3F /* AuroraPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F4EB0EF2B144D698A6FF43FDBF0752B /* AuroraPlaceholderView.swift */; };
+		12AE501A9E7B84B5D52F3A4D /* WireframeRotationPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE5318919E8AAC424ADF0AC9 /* WireframeRotationPlaceholderView.swift */; };
+		366CA9ACABD136DAC09741DD /* GridWavePlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 154032F7D508D83C1AE5BA3A /* GridWavePlaceholderView.swift */; };
+		91B9F671D2F64CF5BA41B875 /* ParticleFlowPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A5CF2DA36F84F8E91B2D6A7 /* ParticleFlowPlaceholderView.swift */; };
+		A74E6B1D88264E46B5D7C242 /* ScanlineSweepPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C3A52617284E8AA2CBA476 /* ScanlineSweepPlaceholderView.swift */; };
+		C2B64A74E6C54CB9A8A8E1F1 /* MosaicPulsePlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4E2B39C159B4C3DA7762A54 /* MosaicPulsePlaceholderView.swift */; };
+		03BC37653308B5E51A540423 /* PlaceholderAnimationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B3D5F7C3BF3DD894CFA01D5 /* PlaceholderAnimationView.swift */; };
+		8CF480FB670B2392AE228CA0 /* PlaceholderAnimationStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BC894D6CA1F72AEC430FFA9 /* PlaceholderAnimationStyle.swift */; };
 		6E741A5F363C469469976EEF /* CropCanvasNSView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9D3BC93ABEDB39F1B691F5F /* CropCanvasNSView.swift */; };
 		6E8724CB3BE74D2F8546DADB /* ExportOptionsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F24932CE5F0543658FB9BBC0 /* ExportOptionsViewModel.swift */; };
 		6E955589E8B6F4A5A1DD7CB6 /* GenerationDetailPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2DA3047FC4CE3B239B0FA74 /* GenerationDetailPopover.swift */; };
@@ -191,6 +198,11 @@
 		53F597E92978633583CB0130 /* DraftCanvasViewModel+History.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23DA79D443899A31762BC805 /* DraftCanvasViewModel+History.swift */; };
 		EF5C27F2F9FC82D8EEC770FB /* PromptTemplatePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ACDB95A1E509E7F853AD07 /* PromptTemplatePanel.swift */; };
 		DA0A42D2723048F047BBEC82 /* PromptHistoryPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B97FF30AA989BF0B294395 /* PromptHistoryPanel.swift */; };
+		7A3D54DE7466451789D4FAB2 /* PromptFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CFCD43E91F743F39EF145FB /* PromptFactory.swift */; };
+		0F494D68E46C4AD2ACA8272B /* PromptEnhancer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B49F199659F41F18C76F3FE /* PromptEnhancer.swift */; };
+		B1978899C70C47C094010C01 /* PromptVariator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53272FCB20F44057A59AC93C /* PromptVariator.swift */; };
+		A98A1147E150494988094F14 /* PromptLanguageNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 640C4AB788CB45F6AF28B1D2 /* PromptLanguageNormalizer.swift */; };
+		RS000001000000010000B1 /* ResizableSheetModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = RS000001000000010000A1 /* ResizableSheetModifier.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -279,6 +291,13 @@
 		5DC1F9813F6149588206DB57719B8174 /* CanvasAutoScroller.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CanvasAutoScroller.swift; path = Views/CanvasAutoScroller.swift; sourceTree = "<group>"; };
 		5EB48D3298DA87D1CD7CE3B8 /* MaskCanvasView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MaskCanvasView.swift; path = Editors/InpaintingMask/MaskCanvasView.swift; sourceTree = "<group>"; };
 		5F4EB0EF2B144D698A6FF43FDBF0752B /* AuroraPlaceholderView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AuroraPlaceholderView.swift; path = Views/AuroraPlaceholderView.swift; sourceTree = "<group>"; };
+		DE5318919E8AAC424ADF0AC9 /* WireframeRotationPlaceholderView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WireframeRotationPlaceholderView.swift; path = Views/WireframeRotationPlaceholderView.swift; sourceTree = "<group>"; };
+		154032F7D508D83C1AE5BA3A /* GridWavePlaceholderView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GridWavePlaceholderView.swift; path = Views/GridWavePlaceholderView.swift; sourceTree = "<group>"; };
+		4A5CF2DA36F84F8E91B2D6A7 /* ParticleFlowPlaceholderView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ParticleFlowPlaceholderView.swift; path = Views/ParticleFlowPlaceholderView.swift; sourceTree = "<group>"; };
+		D9C3A52617284E8AA2CBA476 /* ScanlineSweepPlaceholderView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ScanlineSweepPlaceholderView.swift; path = Views/ScanlineSweepPlaceholderView.swift; sourceTree = "<group>"; };
+		F4E2B39C159B4C3DA7762A54 /* MosaicPulsePlaceholderView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MosaicPulsePlaceholderView.swift; path = Views/MosaicPulsePlaceholderView.swift; sourceTree = "<group>"; };
+		2B3D5F7C3BF3DD894CFA01D5 /* PlaceholderAnimationView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PlaceholderAnimationView.swift; path = Views/PlaceholderAnimationView.swift; sourceTree = "<group>"; };
+		2BC894D6CA1F72AEC430FFA9 /* PlaceholderAnimationStyle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PlaceholderAnimationStyle.swift; path = Models/PlaceholderAnimationStyle.swift; sourceTree = "<group>"; };
 		5e64e8265c0548dab23dae9cd36602db /* TagEditorRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TagEditorRow.swift; path = Views/TagEditorRow.swift; sourceTree = "<group>"; };
 		60B132C1319526C1EFB8B9B2 /* MaterialExtractorPipelineTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MaterialExtractorPipelineTests.swift; sourceTree = "<group>"; };
 		61DA1CD19F7366497A52D573 /* ExtractionPipeline.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExtractionPipeline.swift; path = MaterialExtraction/Pipeline/ExtractionPipeline.swift; sourceTree = "<group>"; };
@@ -390,6 +409,11 @@
 			OP000004000000010000A1 /* OutpaintEditorSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OutpaintEditorSheet.swift; path = Editors/Outpaint/OutpaintEditorSheet.swift; sourceTree = "<group>"; };
 			OP000005000000010000A1 /* OutpaintCompositor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutpaintCompositor.swift; sourceTree = "<group>"; };
 			OP000006000000010000A1 /* DraftCanvasViewModel+Outpaint.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Outpaint.swift"; path = "ViewModel/DraftCanvasViewModel+Outpaint.swift"; sourceTree = "<group>"; };
+		1CFCD43E91F743F39EF145FB /* PromptFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptFactory.swift; sourceTree = "<group>"; };
+		0B49F199659F41F18C76F3FE /* PromptEnhancer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptEnhancer.swift; sourceTree = "<group>"; };
+		53272FCB20F44057A59AC93C /* PromptVariator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptVariator.swift; sourceTree = "<group>"; };
+		640C4AB788CB45F6AF28B1D2 /* PromptLanguageNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptLanguageNormalizer.swift; sourceTree = "<group>"; };
+		RS000001000000010000A1 /* ResizableSheetModifier.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ResizableSheetModifier.swift; path = Editors/ResizableSheetModifier.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -453,6 +477,10 @@
 				10A0003B2D00000100000001 /* JSONRPCCodec.swift */,
 				10A0003C2D00000100000001 /* CodexAppServerClient.swift */,
 				10A0003D2D00000100000001 /* GenerationCoordinator.swift */,
+				1CFCD43E91F743F39EF145FB /* PromptFactory.swift */,
+				0B49F199659F41F18C76F3FE /* PromptEnhancer.swift */,
+				53272FCB20F44057A59AC93C /* PromptVariator.swift */,
+				640C4AB788CB45F6AF28B1D2 /* PromptLanguageNormalizer.swift */,
 				10A0003E2D00000100000001 /* DraftCanvasViewModel.swift */,
 				10A000F92D00000100000001 /* BackgroundRemover.swift */,
 				3503E3DE1E894D1BA41DB46C /* CanvasMetrics.swift */,
@@ -560,6 +588,7 @@
 				71E877DFCDE496FC77BDFEDC /* DraftCanvasError.swift */,
 				09C61E0F55E7FD6835C52AF4 /* RateLimitConfirmation.swift */,
 				6D8A2AE8C81B31B43D4B0DA0 /* CompletionSoundOption.swift */,
+				2BC894D6CA1F72AEC430FFA9 /* PlaceholderAnimationStyle.swift */,
 				532E94693748327CE8224795 /* PromptTemplate.swift */,
 				D6E7F8091A2B3C4D5E6F7081 /* PromptTextAppender.swift */,
 				BE5EE43F5DFF9ABA7EED3F01 /* PromptHistoryEntry.swift */,
@@ -596,6 +625,12 @@
 				882F372486E669E60EAD25D8 /* AttachedImageThumbnail.swift */,
 				134A116412C44FA2816DEBF3 /* CodexCostBadge.swift */,
 				5F4EB0EF2B144D698A6FF43FDBF0752B /* AuroraPlaceholderView.swift */,
+				DE5318919E8AAC424ADF0AC9 /* WireframeRotationPlaceholderView.swift */,
+				154032F7D508D83C1AE5BA3A /* GridWavePlaceholderView.swift */,
+				4A5CF2DA36F84F8E91B2D6A7 /* ParticleFlowPlaceholderView.swift */,
+				D9C3A52617284E8AA2CBA476 /* ScanlineSweepPlaceholderView.swift */,
+				F4E2B39C159B4C3DA7762A54 /* MosaicPulsePlaceholderView.swift */,
+				2B3D5F7C3BF3DD894CFA01D5 /* PlaceholderAnimationView.swift */,
 				E5EB180980BB2AAFC5E98E4A /* PopoverButton.swift */,
 				E824D7305F84430390074FD7 /* PromptCopyButton.swift */,
 				9FF7C5825340C2B5EBFBDCD7 /* ContentView+TopBar.swift */,
@@ -617,6 +652,7 @@
 		529D998CB2EEA40FD576ABD8 /* Editors */ = {
 			isa = PBXGroup;
 			children = (
+				RS000001000000010000A1 /* ResizableSheetModifier.swift */,
 				034897F30795086A4CAD7D14 /* Crop */,
 				OP000007000000010000A1 /* Outpaint */,
 				9ACBD98E07E97951DFE3AA1D /* Sketch */,
@@ -922,6 +958,10 @@
 				10A000312D00000100000001 /* JSONRPCCodec.swift in Sources */,
 				10A000322D00000100000001 /* CodexAppServerClient.swift in Sources */,
 				10A000332D00000100000001 /* GenerationCoordinator.swift in Sources */,
+				7A3D54DE7466451789D4FAB2 /* PromptFactory.swift in Sources */,
+				0F494D68E46C4AD2ACA8272B /* PromptEnhancer.swift in Sources */,
+				B1978899C70C47C094010C01 /* PromptVariator.swift in Sources */,
+				A98A1147E150494988094F14 /* PromptLanguageNormalizer.swift in Sources */,
 				10A000342D00000100000001 /* DraftCanvasViewModel.swift in Sources */,
 				10A000FA2D00000100000001 /* BackgroundRemover.swift in Sources */,
 				D9F69235C6DA480489596D0E /* CanvasMetrics.swift in Sources */,
@@ -994,6 +1034,13 @@
 				11E0B45D4D0F324989FCCD93 /* AttachedImageThumbnail.swift in Sources */,
 				A132B80CE0D6480F8C6609F5 /* CodexCostBadge.swift in Sources */,
 				6D5D1FA5364B40638154C18BA55ADB3F /* AuroraPlaceholderView.swift in Sources */,
+				12AE501A9E7B84B5D52F3A4D /* WireframeRotationPlaceholderView.swift in Sources */,
+				366CA9ACABD136DAC09741DD /* GridWavePlaceholderView.swift in Sources */,
+				91B9F671D2F64CF5BA41B875 /* ParticleFlowPlaceholderView.swift in Sources */,
+				A74E6B1D88264E46B5D7C242 /* ScanlineSweepPlaceholderView.swift in Sources */,
+				C2B64A74E6C54CB9A8A8E1F1 /* MosaicPulsePlaceholderView.swift in Sources */,
+				03BC37653308B5E51A540423 /* PlaceholderAnimationView.swift in Sources */,
+				8CF480FB670B2392AE228CA0 /* PlaceholderAnimationStyle.swift in Sources */,
 				B8D9D407FB64ED096398E71A /* PopoverButton.swift in Sources */,
 				6C7D321C41B44E16A879562D /* PromptCopyButton.swift in Sources */,
 				248AEE3818B146B1937B4911 /* ImageClipboard.swift in Sources */,
@@ -1037,6 +1084,7 @@
 				4FC05F8F2A7A7ED86B430F79 /* CompletionSoundOption.swift in Sources */,
 				1483368FC84E89012DA1976D /* ProjectStore.swift in Sources */,
 				567A1648B15EE73ABFCECE9A /* ProjectStore+Snapshot.swift in Sources */,
+				RS000001000000010000B1 /* ResizableSheetModifier.swift in Sources */,
 				609AB8481AC5CA95EA27277E /* CropEditorSheet.swift in Sources */,
 				4274C5BAB8A77FBE81F62719 /* CropCanvasView.swift in Sources */,
 				6E741A5F363C469469976EEF /* CropCanvasNSView.swift in Sources */,

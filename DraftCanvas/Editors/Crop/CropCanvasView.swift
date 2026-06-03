@@ -20,14 +20,14 @@ struct CropCanvasView: NSViewRepresentable {
 
     func updateNSView(_ nsView: CropCanvasNSView, context: Context) {
         context.coordinator.parent = self
-        // Template が変わった場合はリセット（中央配置の最大内接矩形）
         if nsView.template != template {
             nsView.template = template
             nsView.applyTemplate()
-        } else {
+            nsView.needsDisplay = true
+        } else if nsView.cropRect != cropRect {
             nsView.cropRect = cropRect
+            nsView.needsDisplay = true
         }
-        nsView.needsDisplay = true
     }
 
     final class Coordinator: NSObject {

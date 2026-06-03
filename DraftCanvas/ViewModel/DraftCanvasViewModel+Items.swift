@@ -3,15 +3,20 @@ import Foundation
 
 extension DraftCanvasViewModel {
 
+    // MARK: - Shared helpers
+
+    func touchProject(id: UUID) {
+        guard let idx = projects.firstIndex(where: { $0.id == id }) else { return }
+        projects[idx].updatedAt = Date()
+    }
+
     // MARK: - Private helpers (no saveState, no selectedItemID side-effects)
 
     private func performDelete(_ item: ProjectItem) {
         projectStore.deleteItemFile(item)
         thumbnailStore.deleteThumbnail(for: item)
         items.removeAll { $0.id == item.id }
-        if let idx = projects.firstIndex(where: { $0.id == item.projectID }) {
-            projects[idx].updatedAt = Date()
-        }
+        touchProject(id: item.projectID)
     }
 
     private func performMove(_ item: ProjectItem, targetProjectID: UUID) -> Bool {
@@ -20,12 +25,8 @@ extension DraftCanvasViewModel {
         let sourceProjectID = items[idx].projectID
         items[idx].projectID = targetProjectID
         items[idx].editedFromItemID = nil
-        if let srcIdx = projects.firstIndex(where: { $0.id == sourceProjectID }) {
-            projects[srcIdx].updatedAt = Date()
-        }
-        if let dstIdx = projects.firstIndex(where: { $0.id == targetProjectID }) {
-            projects[dstIdx].updatedAt = Date()
-        }
+        touchProject(id: sourceProjectID)
+        touchProject(id: targetProjectID)
         return true
     }
 
@@ -54,9 +55,7 @@ extension DraftCanvasViewModel {
             }
             thumbnailStore.writeThumbnail(from: projectStore.resolvedFileURL(for: newItem), item: newItem)
             items.append(newItem)
-            if let idx = projects.firstIndex(where: { $0.id == targetProjectID }) {
-                projects[idx].updatedAt = Date()
-            }
+            touchProject(id: targetProjectID)
             return true
         } catch {
             logs.append("コピーエラー: \(error.localizedDescription)")
@@ -97,19 +96,17 @@ extension DraftCanvasViewModel {
             }
             thumbnailStore.writeThumbnail(from: projectStore.resolvedFileURL(for: newItem), item: newItem)
             items.append(newItem)
-            if let idx = projects.firstIndex(where: { $0.id == item.projectID }) {
-                projects[idx].updatedAt = Date()
-            }
+            touchProject(id: item.projectID)
             saveState()
         } catch {
-            errorToast = String(localized: "アイテムの複製に失敗しました")
+            showError("アイテムの複製に失敗しました")
             logs.append("複製エラー: \(error.localizedDescription)")
         }
     }
 
     func copyItemToProject(_ item: ProjectItem, targetProjectID: UUID) {
         if !performCopy(item, targetProjectID: targetProjectID) {
-            errorToast = String(localized: "アイテムのコピーに失敗しました")
+            showError("アイテムのコピーに失敗しました")
         }
         saveState()
     }
@@ -184,6 +181,7 @@ extension DraftCanvasViewModel {
 
     func cachedImage(for item: ProjectItem) -> NSImage? {
         let url = fileURL(for: item)
+        if let cached = originalImageStore.cached(for: url) { return cached }
         guard let img = NSImage(contentsOf: url) else { return nil }
         #if DEBUG
         CanvasMetrics.imageLoadCount += 1
@@ -194,8 +192,25 @@ extension DraftCanvasViewModel {
         return img
     }
 
+    func loadImage(for item: ProjectItem) async -> NSImage? {
+        let url = fileURL(for: item)
+        return await originalImageStore.loadIfNeeded(url: url)
+    }
+
     func thumbnail(for item: ProjectItem) -> NSImage? {
         thumbnailStore.thumbnail(for: item, originalURL: fileURL(for: item))
+    }
+
+    func inpaintStrokes(for itemID: UUID) -> [MaskStroke]? {
+        projectStore.readStrokesData(id: itemID)
+    }
+
+    func cropParameters(for itemID: UUID) -> CropParameters? {
+        projectStore.readCropParameters(id: itemID)
+    }
+
+    func inpaintPreviewPath(for itemID: UUID) -> String {
+        projectStore.previewURL(id: itemID).path
     }
 
     func ordinalForItem(_ item: ProjectItem, in projectID: UUID) -> Int {

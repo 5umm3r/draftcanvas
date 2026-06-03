@@ -3,12 +3,17 @@ import SwiftUI
 struct GenerationProgressView: View {
     let prompt: String
     let seed: Int
+    @AppStorage("placeholderAnimationStyle") private var animationStyleRaw: String = PlaceholderAnimationStyle.aurora.rawValue
     @State private var isHovering = false
     @State private var showPromptOverlay = false
     @State private var promptDelayTask: Task<Void, Never>?
 
+    private var animationStyle: PlaceholderAnimationStyle {
+        PlaceholderAnimationStyle(rawValue: animationStyleRaw) ?? .aurora
+    }
+
     var body: some View {
-        AuroraPlaceholderView(seed: seed)
+        PlaceholderAnimationView(style: animationStyle, seed: seed)
         .overlay(alignment: .bottom) {
             if showPromptOverlay && !prompt.isEmpty {
                 Text(prompt)

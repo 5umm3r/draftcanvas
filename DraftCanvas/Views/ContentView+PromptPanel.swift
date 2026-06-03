@@ -127,7 +127,7 @@ extension ContentView {
                         filePath: attachedImage.filePath,
                         overlayPath: viewModel.currentInputs.editSource.flatMap { src in
                             guard src.isInpainting, !src.isOutpainting else { return nil }
-                            return viewModel.projectStore.previewURL(id: src.projectItemID).path
+                            return viewModel.inpaintPreviewPath(for: src.projectItemID)
                         },
                         onTap: {
                             if attachedImage.kind == .sketch {
@@ -136,7 +136,7 @@ extension ContentView {
                             }
                             guard let editSource = viewModel.currentInputs.editSource,
                                   editSource.isInpainting,
-                                  let item = viewModel.items.first(where: { $0.id == editSource.projectItemID })
+                                  let item = viewModel.itemsByID[editSource.projectItemID]
                             else { return }
                             if editSource.isOutpainting {
                                 let cached = viewModel.outpaintInsetsCache[item.id] ?? .zero

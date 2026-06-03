@@ -13,7 +13,7 @@ extension DraftCanvasViewModel {
         // isCropped アイテムを再編集する場合は元アイテムの画像から切り出す
         let sourceItemID: UUID = item.isCropped ? (item.editedFromItemID ?? item.id) : item.id
         guard let sourceItem = items.first(where: { $0.id == sourceItemID }) else {
-            errorToast = String(localized: "切り出し元画像が見つかりませんでした")
+            showError("切り出し元画像が見つかりませんでした")
             return
         }
 
@@ -22,7 +22,7 @@ extension DraftCanvasViewModel {
               let imageSource = CGImageSourceCreateWithData(sourceData as CFData, nil),
               let cgImage = CGImageSourceCreateImageAtIndex(imageSource, 0, nil)
         else {
-            errorToast = String(localized: "画像を読み込めませんでした")
+            showError("画像を読み込めませんでした")
             return
         }
 
@@ -43,7 +43,7 @@ extension DraftCanvasViewModel {
         guard let cropped = cgImage.cropping(to: cropRect),
               let pngData = encodePNG(cgImage: cropped)
         else {
-            errorToast = String(localized: "トリミングに失敗しました")
+            showError("トリミングに失敗しました")
             return
         }
 
@@ -80,7 +80,7 @@ extension DraftCanvasViewModel {
                 saveState()
                 logs.append("トリミング再編集保存完了: \(item.id)")
             } catch {
-                errorToast = String(localized: "トリミング結果の保存に失敗しました")
+                showError("トリミング結果の保存に失敗しました")
                 logs.append("トリミング保存失敗: \(error.localizedDescription)")
             }
         } else {
@@ -104,13 +104,11 @@ extension DraftCanvasViewModel {
                     items.append(newItem)
                 }
                 thumbnailStore.writeThumbnail(from: pngData, item: newItem)
-                if let idx = projects.firstIndex(where: { $0.id == projectID }) {
-                    projects[idx].updatedAt = Date()
-                }
+                touchProject(id: projectID)
                 saveState()
                 logs.append("トリミング保存完了: \(newItem.id)")
             } catch {
-                errorToast = String(localized: "トリミング結果の保存に失敗しました")
+                showError("トリミング結果の保存に失敗しました")
                 logs.append("トリミング保存失敗: \(error.localizedDescription)")
             }
         }

@@ -55,7 +55,7 @@ extension DraftCanvasViewModel {
                 }
             } catch {
                 await MainActor.run {
-                    self.errorToast = String(localized: "アウトペイントの準備に失敗しました: \(error.localizedDescription)")
+                    self.showError("アウトペイントの準備に失敗しました: \(error.localizedDescription)")
                     self.logs.append("アウトペイント準備エラー: \(error.localizedDescription)")
                 }
             }
@@ -137,7 +137,7 @@ extension DraftCanvasViewModel {
                 }
             } catch {
                 await MainActor.run {
-                    self.errorToast = String(localized: "アウトペイントに失敗しました: \(error.localizedDescription)")
+                    self.showError("アウトペイントに失敗しました: \(error.localizedDescription)")
                     self.logs.append("アウトペイントエラー: \(error.localizedDescription)")
                     self.generatingProjectIDs.remove(projectID)
                     self.activityTracker.end()

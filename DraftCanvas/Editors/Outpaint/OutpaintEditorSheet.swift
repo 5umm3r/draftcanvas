@@ -40,6 +40,7 @@ struct OutpaintEditorSheet: View {
             }
         }
         .frame(minWidth: 800, minHeight: 620)
+        .resizableSheet()
         .onAppear {
             expandedSize = Self.pixelSize(of: sourceImage)
         }

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ItemThumbnailView: View {
-    @ObservedObject var thumbnailStore: CanvasThumbnailStore
+    let thumbnailStore: CanvasThumbnailStore
     let item: ProjectItem
     let originalURL: URL
     let contentMode: ContentMode
@@ -10,6 +10,7 @@ struct ItemThumbnailView: View {
     var enableOriginalUpgrade: Bool = false
 
     @Environment(\.displayScale) private var displayScale
+    @State private var thumbnailImage: NSImage?
     @State private var originalImage: NSImage?
     @State private var loadTask: Task<Void, Never>?
 
@@ -20,7 +21,7 @@ struct ItemThumbnailView: View {
 
     var body: some View {
         ZStack {
-            if let nsImage = thumbnailStore.thumbnail(for: item, originalURL: originalURL) {
+            if let nsImage = thumbnailImage {
                 Image(nsImage: nsImage)
                     .resizable()
                     .aspectRatio(contentMode: contentMode)
@@ -37,7 +38,12 @@ struct ItemThumbnailView: View {
         }
         .animation(.easeInOut(duration: 0.22), value: originalImage != nil)
         .onAppear {
+            thumbnailImage = thumbnailStore.thumbnail(for: item, originalURL: originalURL)
             if needsOriginal { applyNeedsOriginal(true) }
+        }
+        .onReceive(thumbnailStore.thumbnailUpdated) { updatedID in
+            guard updatedID == item.id else { return }
+            thumbnailImage = thumbnailStore.thumbnailFromCache(for: item)
         }
         .onChange(of: needsOriginal) { _, newValue in
             applyNeedsOriginal(newValue)
