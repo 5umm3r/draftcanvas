@@ -412,6 +412,12 @@ extension ContentView {
                             proxy.scrollTo(id, anchor: .center)
                         }
                     }
+                    .onChange(of: firstJobEntryID) { _, newID in
+                        guard let id = newID else { return }
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            proxy.scrollTo(id, anchor: .top)
+                        }
+                    }
                 }
             }
         }

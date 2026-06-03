@@ -4,6 +4,10 @@ import os.signpost
 extension ContentView {
     var canvasEntries: [CanvasEntry] { cachedCanvasEntries }
 
+    var firstJobEntryID: UUID? {
+        canvasEntries.first { if case .job = $0 { return true } else { return false } }?.id
+    }
+
     func recomputeCanvasEntries() {
         let persistedItems = viewModel.displayedItemsSnapshot.map { CanvasEntry.item($0) }
         let showJobs = viewModel.isGeneratingForSelected && viewModel.selectedFilteringProjectID == nil && !viewModel.isSearchActive
