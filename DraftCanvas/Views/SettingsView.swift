@@ -1,11 +1,52 @@
 import SwiftUI
 
+private struct AnimationStyleCard: View {
+    let style: PlaceholderAnimationStyle
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 3) {
+                Group {
+                    if style == .random {
+                        ZStack {
+                            Color(nsColor: .controlBackgroundColor)
+                            Image(systemName: "shuffle")
+                                .font(.title3)
+                                .foregroundStyle(.secondary)
+                        }
+                    } else {
+                        PlaceholderAnimationView(style: style, seed: 0)
+                    }
+                }
+                .frame(width: 72, height: 44)
+                .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+                Text(style.displayName)
+                    .font(.caption2)
+                    .foregroundStyle(isSelected ? .primary : .secondary)
+                    .lineLimit(1)
+            }
+            .padding(3)
+            .background(
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 2)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
 struct SettingsView: View {
     @EnvironmentObject private var l10n: LocalizationManager
     @EnvironmentObject private var viewModel: DraftCanvasViewModel
     @EnvironmentObject private var sparkleUpdater: SparkleUpdaterController
     @State private var showLicenses = false
     @State private var automaticallyChecksForUpdates: Bool = true
+
+    private var selectedAnimationStyle: PlaceholderAnimationStyle {
+        PlaceholderAnimationStyle(rawValue: viewModel.placeholderAnimationStyleRaw) ?? .aurora
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -57,11 +98,25 @@ struct SettingsView: View {
             GridRow {
                 Text("生成")
                     .gridColumnAlignment(.trailing)
-                VStack(alignment: .leading, spacing: 10) {
-                    Toggle(isOn: $viewModel.autoRetryEnabled) {
-                        Text("失敗時に自動で再試行（レート制限・タイムアウトのみ）")
+                Toggle(isOn: $viewModel.autoRetryEnabled) {
+                    Text("失敗時に自動で再試行（レート制限・タイムアウトのみ）")
+                }
+                .toggleStyle(.switch)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .gridColumnAlignment(.leading)
+            }
+            GridRow {
+                Text("アニメーション")
+                    .gridColumnAlignment(.trailing)
+                HStack(spacing: 6) {
+                    ForEach(PlaceholderAnimationStyle.allCases) { style in
+                        AnimationStyleCard(
+                            style: style,
+                            isSelected: style == selectedAnimationStyle
+                        ) {
+                            viewModel.placeholderAnimationStyleRaw = style.rawValue
+                        }
                     }
-                    .toggleStyle(.switch)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .gridColumnAlignment(.leading)

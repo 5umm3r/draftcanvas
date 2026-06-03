@@ -6750,22 +6750,6 @@
         }
       }
     },
-    "ポートレート": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Portrait"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ポートレート"
-          }
-        }
-      }
-    },
     "マクロ撮影": {
       "localizations": {
         "en": {
@@ -7278,22 +7262,6 @@
         }
       }
     },
-    "マイテンプレート": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "My Templates"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "マイテンプレート"
-          }
-        }
-      }
-    },
     "テンプレートなし": {
       "localizations": {
         "en": {
@@ -7306,6 +7274,102 @@
           "stringUnit": {
             "state": "translated",
             "value": "テンプレートなし"
+          }
+        }
+      }
+    },
+    "オーロラ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aurora"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "オーロラ"
+          }
+        }
+      }
+    },
+    "パーティクル": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Particle Flow"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "パーティクル"
+          }
+        }
+      }
+    },
+    "グリッドウェーブ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grid Wave"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "グリッドウェーブ"
+          }
+        }
+      }
+    },
+    "ワイヤーフレーム": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wireframe"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ワイヤーフレーム"
+          }
+        }
+      }
+    },
+    "アニメーション": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Animation"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アニメーション"
+          }
+        }
+      }
+    },
+    "ランダム": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Random"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ランダム"
           }
         }
       }
