@@ -11,7 +11,7 @@ Draft Canvas への貢献ありがとうございます。
 
 ## Pull Request
 
-1. `main` から feature ブランチを作成
+1. `dev` から feature ブランチを作成
 2. [Conventional Commits](https://www.conventionalcommits.org/) 形式でコミット (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`)
 3. コミットメッセージは日本語
 4. テスト追加・既存テスト通過を確認
