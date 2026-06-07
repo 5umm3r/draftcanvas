@@ -1,8 +1,10 @@
 oxipng v9.1.5 - MIT License
 https://github.com/shssoichiro/oxipng
 
-pngquant - GPL v3 (binary only, subprocess invocation — no linking)
+pngquant v3.0 - GPL v3 (binary only, subprocess invocation — no linking)
+Source code: https://github.com/kornelski/pngquant
 https://pngquant.org/
 
 cwebp v1.5.0 - BSD 3-Clause License
-https://chromium.googlesource.com/webm/libwebp/
+Source code: https://chromium.googlesource.com/webm/libwebp/
+https://developers.google.com/speed/webp/

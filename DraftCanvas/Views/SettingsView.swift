@@ -155,6 +155,14 @@ struct SettingsView: View {
             Button("オープンソースライセンスを表示") { showLicenses = true }
                 .buttonStyle(.link)
             Spacer()
+            Button {
+                if let url = URL(string: "https://github.com/sponsors/5umm3r") {
+                    NSWorkspace.shared.open(url)
+                }
+            } label: {
+                Label("Support", systemImage: "heart")
+            }
+            .buttonStyle(.link)
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 10)

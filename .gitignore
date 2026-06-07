@@ -63,3 +63,6 @@ _build/
 # LLVM coverage profiling
 *.profraw
 *.profdata
+
+# Internal docs
+_docs/

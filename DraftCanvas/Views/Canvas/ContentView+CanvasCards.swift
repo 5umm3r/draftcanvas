@@ -254,7 +254,6 @@ extension ContentView {
                     tooltip: "マスク編集",
                     showCostBadge: viewModel.showCostBadge
                 ) {
-                    guard EntitlementGate.shared.requireUnlocked() else { return }
                     viewModel.openMaskEditor(item: item)
                 }
                 CircularPromptActionButton(
@@ -262,7 +261,6 @@ extension ContentView {
                     tooltip: "アウトペイント",
                     showCostBadge: viewModel.showCostBadge
                 ) {
-                    guard EntitlementGate.shared.requireUnlocked() else { return }
                     viewModel.openOutpaintEditor(for: item)
                 }
                 CircularPromptActionButton(
@@ -290,7 +288,6 @@ extension ContentView {
                     showCostBadge: viewModel.showCostBadge,
                     isDisabled: viewModel.upscalingItemIDs.contains(item.id)
                 ) {
-                    guard EntitlementGate.shared.requireUnlocked() else { return }
                     viewModel.upscaleItem(item)
                 }
                 CircularPromptActionButton(
@@ -326,7 +323,6 @@ extension ContentView {
                     tooltip: "エクスポート",
                     isAccent: true
                 ) {
-                    guard EntitlementGate.shared.requireUnlocked() else { return }
                     viewModel.exportItem(item)
                 }
             }
