@@ -302,7 +302,6 @@ extension DraftCanvasViewModel {
     }
 
     func generateVariations(item: ProjectItem, count: Int) {
-        guard EntitlementGate.shared.requireUnlocked() else { return }
         let trimmedPrompt = item.prompt.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedPrompt.isEmpty else { return }
         if accountUsageStatus.accountKind == .unauthenticated || accountUsagePrewarmFailed {

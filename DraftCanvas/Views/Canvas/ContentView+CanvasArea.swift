@@ -513,7 +513,6 @@ extension ContentView {
 
                     if viewModel.isSelectionMode {
                         Button {
-                            guard EntitlementGate.shared.requireUnlocked() else { return }
                             viewModel.exportSelectedBatch()
                         } label: {
                             Image(systemName: "square.and.arrow.up.on.square")

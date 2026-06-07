@@ -10,7 +10,6 @@ struct DraftCanvasApp: App {
     }
     @StateObject private var l10n = LocalizationManager.shared
     @StateObject private var sparkleUpdater = SparkleUpdaterController()
-    @StateObject private var gate = EntitlementGate.shared
 
     @Environment(\.scenePhase) private var scenePhase
 
@@ -28,16 +27,6 @@ struct DraftCanvasApp: App {
                 .onAppear {
                     appDelegate.viewModel = viewModel
                     viewModel.requestNotificationPermission()
-                    EntitlementGate.shared.evaluate()
-                    if let warning = EntitlementGate.shared.consumeTrialWarning() {
-                        viewModel.errorToast = warning
-                    }
-                }
-                .sheet(isPresented: $gate.showLicensePrompt) {
-                    TrialExpiredView()
-                }
-                .sheet(isPresented: $gate.showLicenseSheet) {
-                    LicenseSheet()
                 }
         }
         .windowStyle(.titleBar)
@@ -55,7 +44,6 @@ struct DraftCanvasApp: App {
                 } label: {
                     Label("Draft Canvas について", systemImage: "info.circle")
                 }
-                trialStatusMenuItem
                 Divider()
                 SettingsLink()
                     .keyboardShortcut(",", modifiers: .command)
@@ -72,6 +60,15 @@ struct DraftCanvasApp: App {
                 }
             }
             CommandGroup(replacing: .appSettings) { }
+            CommandGroup(after: .appInfo) {
+                Button {
+                    if let url = URL(string: "https://github.com/sponsors/5umm3r") {
+                        NSWorkspace.shared.open(url)
+                    }
+                } label: {
+                    Label("Support", systemImage: "heart")
+                }
+            }
         }
 
         WindowGroup("ログ", id: "logs") {
@@ -89,35 +86,6 @@ struct DraftCanvasApp: App {
         }
         .commands {
             CommandGroup(replacing: .appSettings) { }
-        }
-    }
-}
-
-
-private extension DraftCanvasApp {
-    @ViewBuilder
-    var trialStatusMenuItem: some View {
-        switch gate.status {
-        case .licensed:
-            EmptyView()
-        case .trial(let daysLeft):
-            Button {
-                gate.showLicenseSheet = true
-            } label: {
-                if daysLeft <= 3 {
-                    Label("トライアル: 残 \(daysLeft) 日",
-                          systemImage: "exclamationmark.triangle.fill")
-                } else {
-                    Text("トライアル: 残 \(daysLeft) 日")
-                }
-            }
-        case .expired:
-            Button {
-                gate.showLicenseSheet = true
-            } label: {
-                Label("トライアル期限切れ",
-                      systemImage: "exclamationmark.octagon.fill")
-            }
         }
     }
 }

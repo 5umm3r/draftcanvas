@@ -1,12 +1,5 @@
 # CLAUDE.md - DraftCanvas
 
-## 指示ルール
-
-- 語尾「！」→ 即実行
-- 語尾「？」→ 質問のみ（実装しない）
-- 語尾「！？」→ AskUserQuestion で深掘りヒアリング → 全前提確認後にプラン作成
-- 思考は英語、出力は日本語
-
 ## 技術スタック
 
 - Swift / SwiftUI（AppKit interop: `NSViewRepresentable` でキャンバスエディタ）

@@ -19,7 +19,7 @@ jobs:
         run: |
           mkdir -p _stats
           DATE=$(date -u +%Y-%m-%d)
-          curl -s "https://api.github.com/repos/5umm3r/draftcanvas-releases/releases" \
+          curl -s "https://api.github.com/repos/5umm3r/draftcanvas/releases" \
             | jq --arg date "$DATE" '
               [.[] | {
                 tag: .tag_name,
