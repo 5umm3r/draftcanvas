@@ -32,6 +32,6 @@ final class SparkleUpdaterController: NSObject, ObservableObject {
 
 extension SparkleUpdaterController: SPUUpdaterDelegate {
     nonisolated func feedURLString(for updater: SPUUpdater) -> String? {
-        "https://github.com/5umm3r/draftcanvas-releases/releases/latest/download/appcast.xml"
+        "https://github.com/5umm3r/draftcanvas/releases/latest/download/appcast.xml"
     }
 }

@@ -1263,7 +1263,7 @@
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Draft Canvas. All rights reserved.";
 				INFOPLIST_KEY_SUEnableAutomaticChecks = NO;
 				INFOPLIST_KEY_SUEnableInstallerLauncherService = YES;
-				INFOPLIST_KEY_SUFeedURL = "https://github.com/5umm3r/draftcanvas-releases/releases/latest/download/appcast.xml";
+				INFOPLIST_KEY_SUFeedURL = "https://github.com/5umm3r/draftcanvas/releases/latest/download/appcast.xml";
 				INFOPLIST_KEY_SUPublicEDKey = "RWwX8YqgDoSnbSYDpN6z1Z0ihJTrd1fLEVioorvE2hA=";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1303,7 +1303,7 @@
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Draft Canvas. All rights reserved.";
 				INFOPLIST_KEY_SUEnableAutomaticChecks = YES;
 				INFOPLIST_KEY_SUEnableInstallerLauncherService = YES;
-				INFOPLIST_KEY_SUFeedURL = "https://github.com/5umm3r/draftcanvas-releases/releases/latest/download/appcast.xml";
+				INFOPLIST_KEY_SUFeedURL = "https://github.com/5umm3r/draftcanvas/releases/latest/download/appcast.xml";
 				INFOPLIST_KEY_SUPublicEDKey = "RWwX8YqgDoSnbSYDpN6z1Z0ihJTrd1fLEVioorvE2hA=";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
