@@ -65,5 +65,6 @@ docs/superpowers/
 *.profraw
 *.profdata
 
-# Internal docs
+# Internal docs & assets
 _docs/
+asset/
