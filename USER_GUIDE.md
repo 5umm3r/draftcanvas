@@ -228,6 +228,5 @@ Draft Canvas はオープンソース (MIT License) で無料です。
 | 価格 | 無料 |
 | ライセンス | MIT |
 | 商用利用 | 可 |
-| 問い合わせ | spade3yasui@gmail.com |
 
 開発を応援してくれる方は [GitHub Sponsors](https://github.com/sponsors/5umm3r) から。

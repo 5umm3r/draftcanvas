@@ -56,9 +56,10 @@ fastlane/test_output
 # build files
 _build/
 
-# Claude Code local settings
-.claude/settings.local.json
+# Claude Code
+.claude/
 .superpowers/
+docs/superpowers/
 
 # LLVM coverage profiling
 *.profraw
