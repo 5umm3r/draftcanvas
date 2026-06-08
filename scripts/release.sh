@@ -36,7 +36,7 @@ SPARKLE_KEY_FILE="${HOME}/.config/sparkle/ed_private_key"
 GENERATE_APPCAST="$(command -v generate_appcast 2>/dev/null \
   || find /usr/local/Caskroom/sparkle /opt/homebrew/Caskroom/sparkle -name generate_appcast 2>/dev/null | sort -r | head -1 \
   || true)"
-DOWNLOAD_URL_PREFIX="https://github.com/5umm3r/draftcanvas-releases/releases/latest/download/"
+DOWNLOAD_URL_PREFIX="https://github.com/5umm3r/draftcanvas/releases/latest/download/"
 
 if [ -z "$GENERATE_APPCAST" ]; then
   echo "Error: generate_appcast not found. Install via: brew install --cask sparkle" >&2
@@ -146,7 +146,7 @@ else
 fi
 
 echo "==> Upload to GitHub Releases"
-RELEASES_REPO="5umm3r/draftcanvas-releases"
+RELEASES_REPO="5umm3r/draftcanvas"
 TAG="v${VERSION}"
 if gh release view "$TAG" --repo "$RELEASES_REPO" &>/dev/null; then
   echo "    Release $TAG exists — uploading assets (overwrite)"
