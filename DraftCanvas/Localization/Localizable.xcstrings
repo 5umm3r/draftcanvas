@@ -1969,22 +1969,6 @@
         }
       }
     },
-    "このMacのライセンスを解除": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Deactivate on This Mac"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "このMacのライセンスを解除"
-          }
-        }
-      }
-    },
     "このキーは既にアクティベート済みです": {
       "localizations": {
         "en": {
@@ -2963,55 +2947,6 @@
         }
       }
     },
-    "トライアル: 残 %lld 日": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Trial: %lld days remaining"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "トライアル: 残 %lld 日"
-          }
-        }
-      }
-    },
-    "トライアル期間が終了しました": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Trial Period Ended"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "トライアル期間が終了しました"
-          }
-        }
-      }
-    },
-    "トライアル期限切れ": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Trial Expired"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "トライアル期限切れ"
-          }
-        }
-      }
-    },
     "トリミング": {
       "localizations": {
         "en": {
@@ -3888,86 +3823,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "モデル選択"
-          }
-        }
-      }
-    },
-    "ライセンスをお持ちでない方は": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Don't have a license?"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ライセンスをお持ちでない方は"
-          }
-        }
-      }
-    },
-    "ライセンスを有効化": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Activate License"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ライセンスを有効化"
-          }
-        }
-      }
-    },
-    "ライセンスキーが無効です": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Invalid license key."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ライセンスキーが無効です"
-          }
-        }
-      }
-    },
-    "ライセンスキーを持っている": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "I have a license key"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ライセンスキーを持っている"
-          }
-        }
-      }
-    },
-    "ライセンス認証済み": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "License Activated"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ライセンス認証済み"
           }
         }
       }
@@ -5408,22 +5263,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "幅"
-          }
-        }
-      }
-    },
-    "引き続きご利用いただくには\nDraft Canvas をご購入ください。": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "To continue using Draft Canvas,\nplease purchase a license."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "引き続きご利用いただくには\nDraft Canvas をご購入ください。"
           }
         }
       }
@@ -6986,38 +6825,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "読み込み中..."
-          }
-        }
-      }
-    },
-    "購入する": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Buy"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "購入する"
-          }
-        }
-      }
-    },
-    "購入後に届いたライセンスキーを入力してください。": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enter the license key you received after purchase."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "購入後に届いたライセンスキーを入力してください。"
           }
         }
       }
