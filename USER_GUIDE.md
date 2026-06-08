@@ -1,3 +1,5 @@
+**日本語** | [English](USER_GUIDE.en.md)
+
 # Draft Canvas — はじめてガイド
 
 > Mac で AI 画像を生成・編集したい人向けの導入ガイドです。

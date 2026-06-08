@@ -1,3 +1,5 @@
+**日本語** | [English](CONTRIBUTING.en.md)
+
 # Contributing
 
 Draft Canvas への貢献ありがとうございます。
