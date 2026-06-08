@@ -54,11 +54,11 @@ xcodebuild -scheme DraftCanvas -destination 'platform=macOS' \
 
 ## 使い方
 
-詳細は [USER_GUIDE.md](USER_GUIDE.md) を参照。
+詳細は [USER_GUIDE.ja.md](USER_GUIDE.ja.md) を参照。
 
 ## 貢献
 
-Issue や PR を歓迎します。詳しくは [CONTRIBUTING.md](CONTRIBUTING.md) を参照。
+Issue や PR を歓迎します。詳しくは [CONTRIBUTING.ja.md](CONTRIBUTING.ja.md) を参照。
 
 ## スポンサー
 

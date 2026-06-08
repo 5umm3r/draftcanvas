@@ -127,6 +127,23 @@ You can convey composition and layout to AI with a hand-drawn sketch — useful 
 
 You can click the attached sketch again to re-edit it. The reference sketch is shown in the "Sketch" section of the generation detail popover.
 
+### Cropping Images
+
+Trim an image to a specific area.
+
+1. Click to select the image → click "Crop" in the left panel
+2. The crop editor opens — drag to adjust the crop area
+3. Click "Apply" to crop
+
+### Importing Images
+
+You can add local images to the canvas.
+
+- **Drag & drop** PNG, JPEG, or WebP files directly onto the canvas
+- Or use the menu to open an import dialog
+
+Imported images are treated like generated images — you can edit, export, or use them as references for further generation.
+
 ### Exporting Images
 
 1. Click to select the image → click "Export" in the left panel
@@ -147,6 +164,9 @@ The first time, you will be prompted to choose a folder. Subsequent exports go t
 | PDF | For document embedding. Choose lossless or medium/high quality JPEG compression |
 
 For TIFF and PDF, you can select DPI from **72 / 150 / 300 / 600** (default: 300 dpi).
+
+**Tip — Batch Export:**  
+Select multiple images (marquee selection or ⌘-click), then click "Export". All selected images are exported together as a ZIP archive.
 
 ---
 
@@ -187,6 +207,27 @@ Previously used prompts are automatically recorded. Open the history panel from 
 - Switch between multiple projects in the sidebar
 - Add tags to search and organize projects
 - **Filtering Projects**: Save search conditions to create cross-project views
+
+### Settings
+
+Open Settings from the app menu ("Draft Canvas" → "Settings..." or ⌘,).
+
+| Setting | Description |
+|---------|-------------|
+| Appearance | Light / Dark / System |
+| Language | Japanese / English / System. Changing language requires a restart |
+| Translate prompt to English | Translates your prompt to English before generation. Default: off |
+| Generation animation | Choose from 6 styles (Aurora, Grid Wave, Wireframe, Particle, Scanline, Mosaic) or Random |
+| Completion sound | Sound played when generation finishes |
+| Save folder | Default export destination |
+
+### Log Window
+
+Click "Logs" in the TopBar to open a separate log window showing Codex server communication logs. Useful for troubleshooting generation issues.
+
+### Auto Update
+
+Draft Canvas checks for updates automatically via Sparkle. You can also manually check from the app menu: "Draft Canvas" → "Check for Updates...".
 
 ### Usage Monitoring
 

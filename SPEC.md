@@ -4,7 +4,7 @@
 
 > Audience: Users (features, system requirements, licensing) and developers (architecture, domain model, external dependencies, build)
 >
-> Updated: 2026-06-02  
+> Updated: 2026-06-08  
 > Branch: dev
 
 ---
@@ -35,7 +35,7 @@
 
 ### 1.1 Product Summary
 
-Draft Canvas is an AI image generation and editing desktop application for macOS. It generates images from text prompts and manages post-processing operations — inpainting, background removal, upscaling, and vectorization — within a per-project canvas. Image generation is performed by launching Codex CLI as a subprocess in `app-server` mode and calling OpenAI's image generation API (gpt-image pre-2.0) via JSON-RPC over stdio. All processing runs locally on the Mac, with no subscription required.
+Draft Canvas is an AI image generation and editing desktop application for macOS. It generates images from text prompts and manages post-processing operations — inpainting, background removal, upscaling, and vectorization — within a per-project canvas. Image generation is performed by launching Codex CLI as a subprocess in `app-server` mode and calling OpenAI's image generation API (gpt-image pre-2.0) via JSON-RPC over stdio. All processing runs locally on the Mac; a ChatGPT Plus or higher subscription is required for image generation.
 
 Tagline: **"Simple, powerful image editing on Mac."**
 
@@ -227,6 +227,7 @@ Extracts materials and textures from the selected image and saves them as new pr
 | Copy-move item | Option + drag |
 | Multi-select | Marquee selection (drag to define area) or click |
 | Deselect | Click on the canvas background |
+| Copy to clipboard | ⌘C copies the selected image to the system clipboard (`ImageClipboard`) |
 | Expanded view | Double-click a canvas card (`ExpandedImageSheet`) |
 | Action panel | Clicking an image reveals a vertical row of action buttons on the left side of the canvas (`canvasActionPanel`): re-edit, mask edit, remove, outpaint, background removal, material extraction, upscale, vectorize, duplicate, reveal in Finder, delete, and export (`isAccent: true` applies filled accent styling, placed at the bottom) |
 | Auto-scroll | Automatically scrolls to the new card when generation completes (`CanvasAutoScroller`) |
@@ -375,7 +376,7 @@ If the user attempts to quit the app while work is in progress, a confirmation d
 
 Opens an NSView-based sketch editor from the `scribble.variable` button at the bottom of the prompt panel, and passes a hand-drawn rough sketch on a white background as a reference image via `AttachmentKind.sketch` for generation. Disabled during re-editing (`editSource != nil`).
 
-**Sketch editor specification (`SketchEditor.swift`):**
+**Sketch editor specification (`SketchEditorSheet.swift`):**
 
 | Feature | Details |
 |---------|---------|
@@ -590,10 +591,11 @@ The main window uses a three-pane layout.
 | Window ID | File | Size |
 |-------------|---------|-------|
 | `"logs"` | `Views/LogWindow.swift` | 760 x 520 |
+| `"releaseNotes"` | `Views/ReleaseNotes/ReleaseNotesWindowController.swift` | — |
 
 > OSS credits are provided in the app's standard About panel (`Credits.rtf`), regenerated from `Resources/Licenses/*.txt` via `scripts/generate-credits.py`.
 
-Modal sheets: `TrialExpiredView` / `LicenseSheet` / `BackgroundRemovalPreviewSheet` / `UpscalePreviewSheet` / `VectorizingOverlay` / `MaterialExtractionSheet` / `InpaintingMaskEditor` / `OutpaintEditorSheet` / `ExpandedImageSheet` / `ExportOptionsSheet` / `FilteringProjectCreationSheet`
+Modal sheets: `BackgroundRemovalPreviewSheet` / `UpscalePreviewSheet` / `VectorizingOverlay` / `MaterialExtractionSheet` / `InpaintingMaskEditor` / `OutpaintEditorSheet` / `CropEditorSheet` / `ExpandedImageSheet` / `ExportOptionsSheet` / `FilteringProjectCreationSheet`
 
 `SettingsView` is registered as a `Settings` scene and opens from the app menu under "Settings..." (language, appearance, save location, sound).
 
@@ -617,17 +619,22 @@ Modal sheets: `TrialExpiredView` / `LicenseSheet` / `BackgroundRemovalPreviewShe
 | Original image store | `CanvasOriginalImageStore.swift` |
 | CanvasMetrics | `CanvasMetrics.swift` |
 | OSS credits | `Resources/Credits.rtf` (regenerated via `scripts/generate-credits.py`) |
-| Sketch editor | `SketchEditor.swift`, `SketchCompositor.swift`, `SketchModels.swift`, `ViewModel/DraftCanvasViewModel+Sketch.swift` |
+| Crop editor | `Editors/Crop/CropEditorSheet.swift`, `CropCanvasNSView.swift`, `ViewModel/DraftCanvasViewModel+Crop.swift` |
+| Sketch editor | `Editors/Sketch/SketchEditorSheet.swift`, `SketchCompositor.swift`, `SketchModels.swift`, `ViewModel/DraftCanvasViewModel+Sketch.swift` |
 | Outpainting | `Editors/Outpaint/OutpaintEditorSheet.swift`, `Editors/Outpaint/OutpaintInsets.swift`, `OutpaintCompositor.swift`, `ViewModel/DraftCanvasViewModel+Outpaint.swift` |
 | Prompt templates | `Models/PromptTemplate.swift`, `Stores/PromptTemplateStore.swift`, `Views/PromptTemplatePanel.swift`, `ViewModel/DraftCanvasViewModel+Templates.swift` |
 | Prompt history | `Models/PromptHistoryEntry.swift`, `Stores/PromptHistoryStore.swift`, `Views/PromptHistoryPanel.swift`, `ViewModel/DraftCanvasViewModel+History.swift` |
 | Generation placeholders | `Views/PlaceholderAnimationView.swift`, `Views/GenerationProgressView.swift` |
+| Image clipboard | `ImageClipboard.swift` |
+| Prompt variator | `PromptVariator.swift` |
+| Release notes | `Views/ReleaseNotes/ReleaseNotesView.swift`, `ReleaseNotesWindowController.swift`, `ReleaseNotesLoader.swift` |
+| Material extraction | `MaterialExtraction/MaterialExtractor.swift`, `MaterialExtraction/Pipeline/` |
 
 ---
 
 ## 6. Domain Model
 
-Source: `DraftCanvas/Models.swift`
+Source: `DraftCanvas/Models/` (individual files per type)
 
 ### 6.1 Project
 
@@ -701,7 +708,7 @@ Completed and failed jobs are immediately removed from `jobsByProject` (via `rem
 ```swift
 struct GenerationRequest: Equatable {
     var prompt: String
-    var count: Int               // UI maximum: 4. Clamped to 1–24 via normalizedCount (server-side validation)
+    var count: Int               // UI maximum: 8. Clamped to 1–24 via normalizedCount (server-side validation)
     var concurrency: Int         // After normalization: 1–count
     var aspectRatio: GenerationAspectRatio
     var editSource: GenerationEditSource?
@@ -825,17 +832,7 @@ struct ExportSettings: Equatable {
 }
 ```
 
-### 6.12 EntitlementStatus
-
-```swift
-enum EntitlementStatus: Equatable {
-    case trial(daysLeft: Int)
-    case licensed
-    case expired
-}
-```
-
-### 6.13 RateLimitConfirmation
+### 6.12 RateLimitConfirmation
 
 A data structure for proposing concurrency reduction to the user when a rate limit is reached. Generated by `GenerationCoordinator` and passed to the UI.
 
@@ -848,7 +845,7 @@ struct RateLimitConfirmation: Identifiable {
 }
 ```
 
-### 6.14 GenerationFailureKind
+### 6.13 GenerationFailureKind
 
 ```swift
 enum GenerationFailureKind: String, Codable {
@@ -858,7 +855,7 @@ enum GenerationFailureKind: String, Codable {
 }
 ```
 
-### 6.15 AttachmentKind / SketchStroke / CodableColor
+### 6.14 AttachmentKind / SketchStroke / CodableColor
 
 Source: `DraftCanvas/SketchModels.swift`
 
@@ -878,7 +875,7 @@ struct CodableColor: Equatable, Codable {
 }
 ```
 
-### 6.16 ExportFormat (extended)
+### 6.15 ExportFormat (extended)
 
 ```swift
 enum ExportFormat: String, CaseIterable, Codable {
@@ -897,7 +894,7 @@ enum WebPQualityPreset: Int, CaseIterable, Codable {
 }
 ```
 
-### 6.17 ExportDPI / TIFFCompression / PDFImageCompression
+### 6.16 ExportDPI / TIFFCompression / PDFImageCompression
 
 Source: `DraftCanvas/Export/ExportSettings.swift`
 
@@ -1109,12 +1106,7 @@ UI strings use `String(localized:)` directly.
 |----------|------|
 | Project configuration (for Claude Code) | `CLAUDE.md` |
 | Agent rules | `AGENTS.md` |
-| Landing page | `lp/index.html` |
-| Privacy policy (full text) | `lp/privacy.html` |
-| Terms of service (full text) | `lp/terms.html` |
-| External binary management workflow | `_docs/external-binaries-workflow.md` |
-| Image generation model research (2026-05-09) | `_docs/画像生成モデル調査_2026-05-09.md` |
-| Domain model implementation | `DraftCanvas/Models.swift` |
+| Domain models | `DraftCanvas/Models/` |
 | Generation logic | `DraftCanvas/GenerationCoordinator.swift` |
 | Codex communication client | `DraftCanvas/CodexAppServerClient.swift` |
 | ViewModel (main) | `DraftCanvas/DraftCanvasViewModel.swift` |
@@ -1122,5 +1114,5 @@ UI strings use `String(localized:)` directly.
 | Editor implementation | `DraftCanvas/Editors/` |
 | Store implementation | `DraftCanvas/Stores/` |
 | View implementation | `DraftCanvas/Views/` |
-| License implementation | `DraftCanvas/License/` |
 | Export implementation | `DraftCanvas/Export/` |
+| Material extraction | `DraftCanvas/MaterialExtraction/` |
