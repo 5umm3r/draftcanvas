@@ -1,4 +1,4 @@
-**日本語** | [English](USER_GUIDE.en.md)
+**日本語** | [English](USER_GUIDE.md)
 
 # Draft Canvas — はじめてガイド
 
@@ -39,7 +39,7 @@ npm install -g @openai/codex
 
 ### ステップ 2 — Draft Canvas をダウンロードする
 
-[Releases](https://github.com/5umm3r/draftcanvas/releases) から最新の `.dmg` を入手し、アプリをアプリケーションフォルダにコピーします。
+[**DraftCanvas.dmg をダウンロード**](https://github.com/5umm3r/draftcanvas/releases/latest/download/DraftCanvas.dmg)して、アプリをアプリケーションフォルダにコピーします。
 
 ### ステップ 3 — アプリを起動する
 

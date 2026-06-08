@@ -1,234 +1,234 @@
-**日本語** | [English](USER_GUIDE.en.md)
+[日本語](USER_GUIDE.ja.md) | **English**
 
-# Draft Canvas — はじめてガイド
+# Draft Canvas — Getting Started Guide
 
-> Mac で AI 画像を生成・編集したい人向けの導入ガイドです。
-
----
-
-## Draft Canvas とは？
-
-Draft Canvas は、Mac で動く AI 画像生成・編集アプリです。
-
-テキストを打ち込むだけで画像が生成されます。生成した画像はそのままアプリ内で編集でき、背景の除去・高解像度化・SVG 変換まで一気通貫でこなせます。オープンソース (MIT) で無料。
+> An introductory guide for anyone who wants to generate and edit AI images on a Mac.
 
 ---
 
-## 動作環境
+## What is Draft Canvas?
 
-| 項目 | 内容 |
-|------|------|
-| 対応 OS | macOS 14 Sonoma 以降 |
-| Mac の種類 | Apple Silicon（M1〜）・Intel 両対応 |
-| インターネット | 画像生成・ログインに必要。背景除去はオフラインで動作 |
-| 別途必要 | **Codex CLI**（画像生成エンジン）。Codex 経由で **ChatGPT Plus 以上のサブスクリプション**でログイン必要。ChatGPT Free プラン・OpenAI API Key・Amazon Bedrock は未サポート |
+Draft Canvas is an AI image generation and editing app for Mac.
+
+Just type a prompt and images are generated instantly. You can edit them directly within the app — from background removal and upscaling to SVG conversion, all in one place. Open source (MIT) and free.
 
 ---
 
-## はじめ方
+## Requirements
 
-### ステップ 1 — Codex CLI をインストールする
+| Item | Details |
+|------|---------|
+| OS | macOS 14 Sonoma or later |
+| Mac | Apple Silicon (M1 and later) and Intel both supported |
+| Internet | Required for image generation and login. Background removal works offline |
+| Also required | **Codex CLI** (the image generation engine). Login via Codex with a **ChatGPT Plus or higher subscription**. ChatGPT Free plan, OpenAI API Key, and Amazon Bedrock are not supported |
 
-Draft Canvas は Codex CLI を通じて AI に画像を生成させます。先にインストールしてください。
+---
+
+## Getting Started
+
+### Step 1 — Install Codex CLI
+
+Draft Canvas uses Codex CLI to generate images with AI. Install it first.
 
 ```bash
 npm install -g @openai/codex
 ```
 
-インストール後、`codex login` を実行して ChatGPT Plus 以上のアカウントでログインしておきます。
+After installation, run `codex login` and sign in with a ChatGPT Plus or higher account.
 
-### ステップ 2 — Draft Canvas をダウンロードする
+### Step 2 — Download Draft Canvas
 
-[Releases](https://github.com/5umm3r/draftcanvas/releases) から最新の `.dmg` を入手し、アプリをアプリケーションフォルダにコピーします。
+[**Download DraftCanvas.dmg**](https://github.com/5umm3r/draftcanvas/releases/latest/download/DraftCanvas.dmg) and copy the app to your Applications folder.
 
-### ステップ 3 — アプリを起動する
+### Step 3 — Launch the App
 
-初回起動時に通知の許可を求められます。「許可」しておくと、生成完了時に通知が届きます。
+On first launch, you will be asked to allow notifications. Allowing them lets you receive a notification when generation completes.
 
 ---
 
-## 基本的な使い方
+## Basic Usage
 
-### 画像を生成する
+### Generating Images
 
-1. 左サイドバーの **「+」** ボタンで新しいプロジェクトを作成
-2. 画面下のテキストエリアにプロンプトを入力（例: `白い猫がコーヒーを飲んでいる、水彩画風`）
-3. アスペクト比・生成枚数を必要に応じて変更
-4. **「生成」** ボタンをクリック
+1. Click the **"+"** button in the left sidebar to create a new project
+2. Enter a prompt in the text area at the bottom of the screen (e.g., `a white cat drinking coffee, watercolor style`)
+3. Adjust the aspect ratio and number of images as needed
+4. Click the **"Generate"** button
 
-生成完了するとキャンバスに画像カードが並びます。
+Once generation is complete, image cards appear on the canvas.
 
-**ヒント — プロンプト強化機能:**  
-プロンプト入力後に ✨ ボタンを押すと、AI が自動的に詳細な説明を補完します。クオリティが上がりやすくなります。
+**Tip — Prompt Enhancement:**  
+After entering a prompt, press the ✨ button to have AI automatically enrich it with more detail. This often improves output quality.
 
-**ヒント — 生成指示を英語に翻訳:**  
-設定の「生成指示を英語に翻訳」をオンにすると、入力プロンプトを英訳してから生成します。結果のブレが減る場合があります。デフォルトはオフです。
+**Tip — Translate prompt to English:**  
+Enabling "Translate prompt to English" in Settings will translate your prompt to English before generation. This can reduce variability in results. Disabled by default.
 
-### 画像を編集する
+### Editing Images
 
-キャンバス上の画像カードを **クリックして選択** すると、キャンバス左側に丸いアクションボタンが縦に並んで表示されます。
+**Click to select** an image card on the canvas, and a column of circular action buttons will appear on the left side of the canvas.
 
-| ボタン | できること |
-|-------|----------|
-| 再編集 | この画像を元に AI が新しい画像を生成 |
-| マスク編集 | ブラシで範囲を指定して、その部分を AI に修正 or 除去させる |
-| アウトペイント | 画像の外側を AI で拡張し、シーンを自然に継続 |
-| 背景を除去 | Apple の AI で背景をオフライン除去 |
-| 素材として分離 | 画像からマテリアルを抽出して新しいアイテムとして保存 |
-| 高解像度化 | AI でアップスケール |
-| ベクター化 | ラスター画像を SVG に変換 |
-| 複製 | 同じ画像を複製してキャンバスに追加 |
-| Finder で表示 | Finder で保存場所を開く |
-| 削除 | キャンバスから削除 |
-| エクスポート | 保存形式を選んで書き出す（アクセントカラーで強調表示） |
+| Button | What it does |
+|--------|-------------|
+| Re-edit | Generate a new image based on this one |
+| Mask Edit | Paint a region with a brush and have AI modify or remove that area |
+| Outpaint | Extend the scene beyond the image edges with AI |
+| Remove Background | Remove the background offline using Apple's AI |
+| Separate as Material | Extract material from the image and save it as a new item |
+| Upscale | Upscale the image with AI |
+| Vectorize | Convert the raster image to SVG |
+| Duplicate | Duplicate the image and add it to the canvas |
+| Show in Finder | Open the save location in Finder |
+| Delete | Remove from the canvas |
+| Export | Export in your chosen format (highlighted in accent color) |
 
-### マスク編集（インペイント）
+### Mask Edit (Inpainting)
 
-特定の部分だけを変えたいときに使います。
+Use this when you want to change only a specific area.
 
-1. 画像をクリックして選択 → 左パネルの「マスク編集」をクリック
-2. ブラシで変えたい箇所を塗る
-3. マスクエディタ内でモードを選択して生成:
-   - **編集**: プロンプトに指示を入力して「生成」をクリック（塗った範囲を AI が書き換える）
-   - **除去**: 「生成」をクリックするだけ（塗った範囲のオブジェクトを背景で自然に埋める）
+1. Click to select the image → click "Mask Edit" in the left panel
+2. Paint over the area you want to change with the brush
+3. Choose a mode in the mask editor and generate:
+   - **Edit**: Enter instructions in the prompt and click "Generate" (AI rewrites the painted area)
+   - **Remove**: Click "Generate" with no prompt (AI fills the painted area with the surrounding background)
 
-### アウトペイント（画像の外側を拡張）
+### Outpaint (Extending Beyond the Image)
 
-画像の外側にシーンを広げたいときに使います。
+Use this to expand the scene beyond the image boundaries.
 
-1. 画像をクリックして選択 → 左パネルの「アウトペイント」をクリック
-2. エディタが開くので、上下左右の拡張量をスライダーで指定
-3. 実行方法を選択:
-   - **「拡張して生成」**: 元のプロンプトですぐに生成開始
-   - **「プロンプト入力して拡張」**: エディタを閉じてプロンプトを入力してから生成
+1. Click to select the image → click "Outpaint" in the left panel
+2. The editor opens — use the sliders to set how much to expand on each side
+3. Choose how to proceed:
+   - **"Expand and Generate"**: Start generation immediately using the original prompt
+   - **"Enter Prompt and Expand"**: Close the editor, enter a prompt, then generate
 
-生成された画像は既存のシーンを自然に継続するよう AI が補完します。
+The AI will naturally continue the existing scene into the expanded area.
 
-### ラフ描画で構図を伝える
+### Sketch to Guide Composition
 
-プロンプトだけでは伝わりにくい構図・レイアウトを、手描きのラフで AI に伝えられます。
+You can convey composition and layout to AI with a hand-drawn sketch — useful when a text prompt alone is not enough.
 
-1. プロンプトパネル下部の **鉛筆アイコン** をクリック
-2. スケッチエディタが開く。白背景に自由に描く
-3. **「完了」（⌘Return）** を押すと参照画像として添付され、生成時に構図ヒントとして渡される
+1. Click the **pencil icon** at the bottom of the prompt panel
+2. The sketch editor opens — draw freely on the white canvas
+3. Press **"Done" (⌘Return)** to attach it as a reference image, which will be passed as a composition hint during generation
 
-**スケッチエディタの操作:**
+**Sketch Editor Controls:**
 
-| 操作 | 方法 |
-|------|------|
-| ブラシ径変更 | スライダー（5〜80px）または `[` / `]` キー |
-| 色の切替 | ツールバーの色ボタン または `1`〜`5` キー（黒・赤・青・緑・紫） |
-| 消しゴム | 消しゴムボタン または `e` キー |
+| Action | Method |
+|--------|--------|
+| Change brush size | Slider (5–80 px) or `[` / `]` keys |
+| Switch color | Color buttons in the toolbar or `1`–`5` keys (black, red, blue, green, purple) |
+| Eraser | Eraser button or `e` key |
 | Undo / Redo | ⌘Z / ⌘⇧Z |
-| クリア | Clear ボタン（確認ダイアログあり） |
-| キャンセル | Esc |
-| 完了 | ⌘Return |
-| ズーム / パン | ピンチ / スクロール |
+| Clear | Clear button (confirmation dialog shown) |
+| Cancel | Esc |
+| Done | ⌘Return |
+| Zoom / Pan | Pinch / Scroll |
 
-添付済みのラフは再クリックで再編集できます。生成結果の詳細ポップオーバーに「ラフ」セクションとして参照画像が表示されます。
+You can click the attached sketch again to re-edit it. The reference sketch is shown in the "Sketch" section of the generation detail popover.
 
-### 画像をエクスポートする
+### Exporting Images
 
-1. 画像をクリックして選択 → 左パネルの「エクスポート」をクリック
-2. 形式・品質・リサイズを設定
-3. 「書き出す」をクリック
+1. Click to select the image → click "Export" in the left panel
+2. Configure the format, quality, and resize options
+3. Click "Export"
 
-初回はフォルダ選択が表示されます。以後は同じフォルダに保存されます。
+The first time, you will be prompted to choose a folder. Subsequent exports go to the same folder.
 
-**エクスポート形式:**
+**Export Formats:**
 
-| 形式 | 用途 |
-|------|------|
-| PNG | 高品質。Web・印刷用 |
-| JPEG | ファイルサイズを小さくしたい場合 |
-| WebP | Web 用。JPEG より高圧縮・高品質。品質: 高(90) / 中(75) / 低(50) |
-| SVG | ベクター化済みの場合のみ。拡大しても劣化しない |
-| TIFF | 印刷・編集ソフトでの可逆編集。LZW 圧縮、DPI 埋め込み |
-| PDF | ドキュメント貼付。lossless / 中・高品質 JPEG 圧縮を選択可 |
+| Format | Use case |
+|--------|----------|
+| PNG | High quality. For web and print |
+| JPEG | When smaller file size is needed |
+| WebP | For web. Higher compression and quality than JPEG. Quality: High (90) / Medium (75) / Low (50) |
+| SVG | Only available after vectorizing. Scales without quality loss |
+| TIFF | Lossless editing for print and editing software. LZW compression, DPI embedded |
+| PDF | For document embedding. Choose lossless or medium/high quality JPEG compression |
 
-TIFF / PDF では **72 / 150 / 300 / 600 dpi** から DPI を選択できます（デフォルト 300dpi）。
-
----
-
-## 主な機能
-
-### AI 画像生成
-
-| 設定 | 説明 |
-|------|------|
-| プロンプト | 日本語・英語どちらでも OK |
-| 生成指示の言語 | デフォルトは入力言語そのまま。設定「生成指示を英語に翻訳」をオンにすると英語に翻訳してから生成 |
-| アスペクト比 | 正方形 / ポートレート / ストーリー / 横長 / ワイドスクリーン / 自動 |
-| 生成枚数 | 1〜8枚 |
-| 並列数 | 何枚同時に生成するか（レート制限検知時は自動縮減） |
-| モデル | Codex から取得した利用可能モデルから選択 |
-
-### プロンプトテンプレート
-
-プロンプト入力を効率化するテンプレート機能です。プロンプトパネルからテンプレートパネルを開いて選択すると、プロンプトにテキストが挿入されます。
-
-**ビルトインカテゴリ（各10種）:**
-
-| カテゴリ | 内容例 |
-|---------|-------|
-| 画風・スタイル | 水彩画風、油絵風、ピクセルアート、アニメ風、浮世絵風 等 |
-| 写真・カメラ | ポートレート、マクロ撮影、ゴールデンアワー、フィルムグレイン 等 |
-| ライティング・雰囲気 | シネマティック、ネオン、ムーディー、ファンタジー 等 |
-
-テンプレートはサムネイル付きの 4列グリッドで表示されます。自分でカスタムテンプレートを作成・保存することもできます（「マイテンプレート」）。
-
-### プロンプト履歴
-
-過去に使用したプロンプトを自動的に記録します。プロンプトパネルから履歴パネルを開いて選択すると、過去のプロンプトを再利用できます。使用回数も表示されます。
-
-### プロジェクト管理
-
-- 生成した画像はプロジェクトごとにキャンバスで管理
-- 複数プロジェクトをサイドバーで切り替え
-- タグを付けて検索・整理できる
-- **フィルタリングプロジェクト**: 検索条件を保存して横断ビューを作れる
-
-### 使用量の確認
-
-画面上部に 5時間・週次の使用量が常時表示されます。残量パーセントとリセット目安が確認できます。
-
-アカウントアイコンをクリックすると、メールアドレス・プラン・Codex バージョンを確認できます。未ログイン時は `codex login` のガイダンスが、ChatGPT Free プランでは画像生成不可の警告が表示されます。
+For TIFF and PDF, you can select DPI from **72 / 150 / 300 / 600** (default: 300 dpi).
 
 ---
 
-## よくある質問
+## Features
 
-**Q. 生成に失敗する / エラーが出る**  
-A. Codex にログインしているか確認してください。未ログイン時はアカウントポップオーバーに `codex login` のガイダンスが表示されます。ChatGPT Free プランでは画像生成を利用できません（Plus 以上が必要）。
+### AI Image Generation
 
-**Q. ChatGPT Free プランで使える？**  
-A. 画像生成は利用できません。ChatGPT Plus 以上のサブスクリプションが必要です。OpenAI API Key・Amazon Bedrock も未サポートです。プロンプトパネル上部とアカウントポップオーバーに警告が表示されます。
+| Setting | Description |
+|---------|-------------|
+| Prompt | Japanese or English, both work |
+| Prompt language | Defaults to the input language as-is. Enable "Translate prompt to English" in Settings to translate before generation |
+| Aspect ratio | Square / Portrait / Story / Landscape / Widescreen / Auto |
+| Number of images | 1–8 |
+| Concurrency | How many images to generate simultaneously (auto-reduced when rate limiting is detected) |
+| Model | Choose from available models fetched from Codex |
 
-**Q. 設定を変更したら再起動を求められた**  
-A. 表示言語の変更は再起動が必要です。設定画面のアラートから「再起動」ボタンで Draft Canvas が自動的に再起動します。生成や書き出しが進行中の場合は「中断して再起動」（進行中作業は破棄）を選びます。
+### Prompt Templates
 
-**Q. 生成中・エクスポート中にアプリを終了しようとしたらダイアログが出た**  
-A. 画像生成・エクスポートが進行中の場合、アプリが終了をブロックして確認ダイアログを表示します。「終了する」で作業をキャンセルして終了、「キャンセル」で終了を中止して作業を続行できます。
+A template feature to streamline prompt entry. Open the template panel from the prompt panel and select a template to insert text into the prompt.
 
-**Q. 画像の品質やモデルの種類は Draft Canvas のバージョンで決まる？**  
-A. いいえ。画像生成の実行は Codex に委任しているため、**利用可能なモデル・画像品質・解像度は Codex のバージョンに依存**します。Draft Canvas 自体のアップデートとは独立しており、Codex を更新するだけで使えるモデルや生成品質が変わることがあります。
+**Built-in categories (10 templates each):**
 
-**Q. 背景除去はオフラインで使える？**  
-A. はい。背景除去は Mac 上で完結します。インターネット不要です。
+| Category | Examples |
+|----------|---------|
+| Art style | Watercolor, oil painting, pixel art, anime style, ukiyo-e, etc. |
+| Photography | Portrait, macro, golden hour, film grain, etc. |
+| Lighting & mood | Cinematic, neon, moody, fantasy, etc. |
 
-**Q. 生成した画像はどこに保存される？**  
-A. `~/Library/Application Support/Draft Canvas/` 内に自動保存されます。エクスポートで任意のフォルダに書き出せます。
+Templates are displayed in a 4-column grid with thumbnails. You can also create and save your own custom templates ("My Templates").
+
+### Prompt History
+
+Previously used prompts are automatically recorded. Open the history panel from the prompt panel and select a past prompt to reuse it. Usage counts are also shown.
+
+### Project Management
+
+- Generated images are organized per project on the canvas
+- Switch between multiple projects in the sidebar
+- Add tags to search and organize projects
+- **Filtering Projects**: Save search conditions to create cross-project views
+
+### Usage Monitoring
+
+Your 5-hour and weekly usage is always shown at the top of the screen, along with remaining percentage and estimated reset time.
+
+Click the account icon to view your email address, plan, and Codex version. If not logged in, guidance for running `codex login` is shown. If you are on the ChatGPT Free plan, a warning about image generation being unavailable is displayed.
 
 ---
 
-## ライセンス
+## FAQ
 
-Draft Canvas はオープンソース (MIT License) で無料です。
+**Q. Generation fails / I get an error**  
+A. Check that you are logged in to Codex. If not logged in, the account popover shows guidance to run `codex login`. Image generation is not available on the ChatGPT Free plan — Plus or higher is required.
 
-| 項目 | 内容 |
-|------|------|
-| 価格 | 無料 |
-| ライセンス | MIT |
-| 商用利用 | 可 |
+**Q. Can I use the ChatGPT Free plan?**  
+A. Image generation is not available on the Free plan. A ChatGPT Plus or higher subscription is required. OpenAI API Key and Amazon Bedrock are also not supported. Warnings are shown at the top of the prompt panel and in the account popover.
 
-開発を応援してくれる方は [GitHub Sponsors](https://github.com/sponsors/5umm3r) から。
+**Q. I changed a setting and was asked to restart**  
+A. Changing the display language requires a restart. Click the "Restart" button in the settings alert and Draft Canvas will restart automatically. If generation or export is in progress, choose "Interrupt and Restart" (in-progress work will be discarded).
+
+**Q. A dialog appeared when I tried to quit during generation or export**  
+A. When image generation or export is in progress, the app blocks quitting and shows a confirmation dialog. Choose "Quit" to cancel the in-progress work and exit, or "Cancel" to stop the quit and continue working.
+
+**Q. Are image quality and available models determined by the Draft Canvas version?**  
+A. No. Image generation is delegated to Codex, so **available models, image quality, and resolution depend on the Codex version**. This is independent of Draft Canvas updates — updating Codex alone may change the available models and generation quality.
+
+**Q. Does background removal work offline?**  
+A. Yes. Background removal runs entirely on your Mac. No internet connection is needed.
+
+**Q. Where are generated images saved?**  
+A. They are automatically saved to `~/Library/Application Support/Draft Canvas/`. You can export them to any folder of your choice.
+
+---
+
+## License
+
+Draft Canvas is open source (MIT License) and free.
+
+| Item | Details |
+|------|---------|
+| Price | Free |
+| License | MIT |
+| Commercial use | Allowed |
+
+If you'd like to support development, visit [GitHub Sponsors](https://github.com/sponsors/5umm3r).

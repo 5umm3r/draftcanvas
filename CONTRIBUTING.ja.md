@@ -1,4 +1,4 @@
-**日本語** | [English](CONTRIBUTING.en.md)
+**日本語** | [English](CONTRIBUTING.md)
 
 # Contributing
 

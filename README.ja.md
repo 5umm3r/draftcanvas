@@ -1,4 +1,4 @@
-**日本語** | [English](README.en.md)
+**日本語** | [English](README.md)
 
 # Draft Canvas
 

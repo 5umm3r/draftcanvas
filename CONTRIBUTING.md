@@ -1,42 +1,42 @@
-**日本語** | [English](CONTRIBUTING.en.md)
+[日本語](CONTRIBUTING.ja.md) | **English**
 
 # Contributing
 
-Draft Canvas への貢献ありがとうございます。
+Thank you for contributing to Draft Canvas.
 
 ## Issue
 
-バグ報告や機能提案は [Issues](https://github.com/5umm3r/draftcanvas/issues) へ。
+For bug reports and feature requests, please use [Issues](https://github.com/5umm3r/draftcanvas/issues).
 
-- バグ: 再現手順、macOS バージョン、ログ (ログウィンドウからコピー可) を添付
-- 機能提案: ユースケースと期待する動作を記載
+- Bug reports: Include steps to reproduce, macOS version, and logs (can be copied from the log window)
+- Feature requests: Describe the use case and expected behavior
 
 ## Pull Request
 
-1. `dev` から feature ブランチを作成
-2. [Conventional Commits](https://www.conventionalcommits.org/) 形式でコミット (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`)
-3. コミットメッセージは日本語
-4. テスト追加・既存テスト通過を確認
-5. PR を作成
+1. Create a feature branch from `dev`
+2. Commit using [Conventional Commits](https://www.conventionalcommits.org/) format (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`)
+3. Commit messages in Japanese
+4. Add tests and confirm existing tests pass
+5. Open a PR
 
-## ビルド
+## Build
 
 ```bash
-# アプリビルド
+# Build the app
 xcodebuild -scheme DraftCanvas -destination 'platform=macOS' \
   SYMROOT=_build OBJROOT=_build/obj build
 
-# テスト
+# Run tests
 xcodebuild -scheme DraftCanvas -destination 'platform=macOS' \
   SYMROOT=_build OBJROOT=_build/obj test
 
-# Rust FFI (vtracer-ffi/ 変更時のみ)
+# Rust FFI (only when vtracer-ffi/ changes)
 cd vtracer-ffi && ./build_universal.sh
 ```
 
-## コーディング規約
+## Coding Conventions
 
-- Swift / SwiftUI、MVVM パターン
-- アイコンは SF Symbols を使用
-- 絵文字不使用
-- ローカライズは xcstrings 形式
+- Swift / SwiftUI, MVVM pattern
+- Use SF Symbols for icons
+- No emoji
+- Localization in xcstrings format
