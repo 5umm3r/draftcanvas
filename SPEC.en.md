@@ -491,7 +491,7 @@ Draft Canvas is open source (MIT License) and free to use. All features are avai
 | License | MIT |
 | Price | Free |
 | Commercial use | Permitted |
-| Sponsorship | [GitHub Sponsors](https://github.com/sponsors/5umm3r) / [Polar](https://polar.sh/spade3) |
+| Sponsorship | [GitHub Sponsors](https://github.com/sponsors/5umm3r) / [Polar](https://buy.polar.sh/polar_cl_fZgIt4TMaHLTt1ah2aYDWoI9BGoY2KEuTx5fC0G2ehc) |
 
 ---
 
