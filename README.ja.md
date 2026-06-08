@@ -29,7 +29,7 @@ Mac で AI 画像を生成・編集するデスクトップアプリ。テキス
 
 ### ビルド済みアプリ
 
-[Releases](https://github.com/5umm3r/draftcanvas/releases) から最新の `.dmg` をダウンロード。
+[**Download DraftCanvas.dmg**](https://github.com/5umm3r/draftcanvas/releases/latest/download/DraftCanvas.dmg) — 最新版を直接ダウンロード
 
 ### ソースからビルド
 
