@@ -67,6 +67,7 @@ extension ContentView {
         let isEmptyIdle = false
         let isCollapsed = !promptIsFocused && hasText && !isPromptHoverExpanded
             && !viewModel.isTemplatePopoverPresented && !viewModel.isHistoryPopoverPresented
+            && viewModel.currentInputs.editSource == nil
 
         let minH = PromptPanelLayout.minHeight(isEmptyIdle: isEmptyIdle, isCollapsed: isCollapsed)
         let maxH = PromptPanelLayout.maxHeight(
