@@ -83,4 +83,27 @@ Rust側変更時は再ビルド必要。
 
 ## 本番リリース
 
-詳細は `_docs/release.md` を参照
+`main` ブランチで実行:
+
+```bash
+git checkout main && git pull origin main
+bash scripts/release.sh <version>
+```
+
+### リリース時の注意事項
+
+**プロビジョニングプロファイル**
+- macOS プロファイルのインストール先は `~/Library/Developer/Xcode/UserData/Provisioning Profiles/`（iOS と異なる）
+- ダブルクリックでインストールされない場合は手動コピー
+- `scripts/ExportOptions.plist` に `provisioningProfiles` → UUID を明記（`signingStyle: manual` の場合、UUID 未指定だと自動選択されない）
+- iCloud capability を entitlements に追加した場合、Developer ID プロファイルを再生成してインストールし直す
+
+**途中失敗時の再開**
+- バージョンバンプ・タグ・push 済みなら `scripts/release.sh` を再実行しない
+- アーカイブ済みなら export 以降を手動実行:
+  1. `xcodebuild -exportArchive ...`
+  2. バイナリ再署名
+  3. `xcrun notarytool submit ... --wait`
+  4. `xcrun stapler staple`
+  5. DMG 作成・署名・公証・staple
+  6. `generate_appcast` + `gh release upload`
