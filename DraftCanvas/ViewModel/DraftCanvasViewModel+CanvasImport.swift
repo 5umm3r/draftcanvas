@@ -175,6 +175,8 @@ extension DraftCanvasViewModel {
     }
 
     func importImageAsProjectItem(image: NSImage, projectID: UUID) {
+        let capturedProjectStore = self.projectStore
+        let capturedThumbnailStore = self.thumbnailStore
         Task.detached(priority: .userInitiated) { [weak self] in
             guard let self else { return }
             guard let tiff = image.tiffRepresentation,
@@ -193,9 +195,8 @@ extension DraftCanvasViewModel {
                 isImported: true
             )
             do {
-                try self.projectStore.writeItemData(pngData, for: newItem)
-                let thumbnailStoreRef = self.thumbnailStore
-                thumbnailStoreRef.writeThumbnail(from: pngData, item: newItem)
+                try capturedProjectStore.writeItemData(pngData, for: newItem)
+                capturedThumbnailStore.writeThumbnail(from: pngData, item: newItem)
                 await MainActor.run { [weak self] in
                     guard let self else { return }
                     self.items.append(newItem)
