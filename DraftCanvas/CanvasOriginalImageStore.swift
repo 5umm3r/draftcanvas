@@ -29,12 +29,16 @@ final class CanvasOriginalImageStore: ObservableObject {
         cache.object(forKey: url as NSURL)
     }
 
-    func loadIfNeeded(url: URL) async -> NSImage? {
+    func loadIfNeeded(url: URL, syncMonitor: ICloudSyncMonitor? = nil) async -> NSImage? {
         if let hit = cache.object(forKey: url as NSURL) {
             #if DEBUG
             CanvasMetrics.originalCacheHitCount += 1
             #endif
             return hit
+        }
+        if let monitor = syncMonitor, !monitor.isDownloaded(url: url) {
+            monitor.requestDownload(for: url)
+            return nil
         }
         if let existing = inflight[url] {
             return await existing.value

@@ -14,8 +14,9 @@ final class CanvasThumbnailStore: ObservableObject, @unchecked Sendable {
         return c
     }()
 
-    init(itemsDirectory: URL) {
-        thumbsDirectory = itemsDirectory.appendingPathComponent(".thumbs", isDirectory: true)
+    init(itemsDirectory: URL, useNoSync: Bool = false) {
+        let folderName = useNoSync ? ".thumbs.nosync" : ".thumbs"
+        thumbsDirectory = itemsDirectory.appendingPathComponent(folderName, isDirectory: true)
     }
 
     func thumbnailURL(for item: ProjectItem) -> URL {

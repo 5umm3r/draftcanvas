@@ -150,8 +150,12 @@ final class ProjectStore: @unchecked Sendable {
         try? FileManager.default.removeItem(at: cropParametersURL(id: id))
     }
 
+    let isInUbiquityContainer: Bool
+
     init(rootDirectory: URL = ProjectStore.defaultRootDirectory()) {
         self.rootDirectory = rootDirectory
+        self.isInUbiquityContainer = rootDirectory.path.contains("/Mobile Documents/")
+            || rootDirectory.path.contains("/CloudDocs/")
         indexExistingItemFiles()
     }
 
@@ -175,24 +179,59 @@ final class ProjectStore: @unchecked Sendable {
     }
 
     func load() -> Snapshot {
-        guard
-            FileManager.default.fileExists(atPath: metadataURL.path),
-            let data = try? Data(contentsOf: metadataURL)
-        else {
+        guard FileManager.default.fileExists(atPath: metadataURL.path) else {
+            return Snapshot()
+        }
+        if isInUbiquityContainer {
+            resolveConflictsIfNeeded(at: metadataURL)
+        }
+        guard let data = coordinatedRead(at: metadataURL) else {
             return Snapshot()
         }
         guard let snapshot = try? JSONDecoder.projectDecoder.decode(Snapshot.self, from: data) else {
             return Snapshot()
         }
-
         return snapshot
     }
 
     func save(_ snapshot: Snapshot) {
         try? FileManager.default.createDirectory(at: rootDirectory, withIntermediateDirectories: true)
-        if let data = try? JSONEncoder.projectEncoder.encode(snapshot) {
-            try? data.write(to: metadataURL, options: .atomic)
+        guard let data = try? JSONEncoder.projectEncoder.encode(snapshot) else { return }
+        coordinatedWrite(data, to: metadataURL)
+    }
+
+    private func coordinatedRead(at url: URL) -> Data? {
+        guard isInUbiquityContainer else {
+            return try? Data(contentsOf: url)
         }
+        var result: Data?
+        var coordinatorError: NSError?
+        let coordinator = NSFileCoordinator()
+        coordinator.coordinate(readingItemAt: url, options: [], error: &coordinatorError) { coordURL in
+            result = try? Data(contentsOf: coordURL)
+        }
+        return result
+    }
+
+    private func coordinatedWrite(_ data: Data, to url: URL) {
+        guard isInUbiquityContainer else {
+            try? data.write(to: url, options: .atomic)
+            return
+        }
+        var coordinatorError: NSError?
+        let coordinator = NSFileCoordinator()
+        coordinator.coordinate(writingItemAt: url, options: .forReplacing, error: &coordinatorError) { coordURL in
+            try? data.write(to: coordURL, options: .atomic)
+        }
+    }
+
+    private func resolveConflictsIfNeeded(at url: URL) {
+        guard let conflicts = NSFileVersion.unresolvedConflictVersionsOfItem(at: url),
+              !conflicts.isEmpty else { return }
+        for version in conflicts {
+            version.isResolved = true
+        }
+        try? NSFileVersion.removeOtherVersionsOfItem(at: url)
     }
 
     @discardableResult
@@ -248,8 +287,104 @@ final class ProjectStore: @unchecked Sendable {
     }
 
     static func defaultRootDirectory() -> URL {
+        if UserDefaults.standard.bool(forKey: "iCloudSyncEnabled"),
+           let container = ICloudSyncMonitor.iCloudContainerURL() {
+            return container
+        }
+        return localDefaultRootDirectory()
+    }
+
+    static func localDefaultRootDirectory() -> URL {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Application Support", isDirectory: true)
         return base.appendingPathComponent("Draft Canvas", isDirectory: true)
+    }
+
+    static func migrateToICloudIfNeeded(iCloudRoot: URL) {
+        let migrationKey = "draftcanvas.migration.iCloudSync.v1"
+        guard !UserDefaults.standard.bool(forKey: migrationKey) else { return }
+        defer { UserDefaults.standard.set(true, forKey: migrationKey) }
+
+        let fm = FileManager.default
+        let localRoot = localDefaultRootDirectory()
+        guard fm.fileExists(atPath: localRoot.path) else { return }
+
+        try? fm.createDirectory(at: iCloudRoot, withIntermediateDirectories: true)
+
+        let iCloudMetaURL = iCloudRoot.appendingPathComponent("projects.json")
+        let localMetaURL = localRoot.appendingPathComponent("projects.json")
+
+        if !fm.fileExists(atPath: iCloudMetaURL.path) {
+            // iCloud 空 → ローカル全体をコピー
+            for name in ["projects.json", "items", "masks", "prompt_history.json", "prompt_templates.json"] {
+                let src = localRoot.appendingPathComponent(name)
+                let dst = iCloudRoot.appendingPathComponent(name)
+                guard fm.fileExists(atPath: src.path) else { continue }
+                try? fm.copyItem(at: src, to: dst)
+            }
+        } else {
+            // iCloud に既存データあり → ローカル固有データをマージ
+            mergeLocalIntoICloud(localRoot: localRoot, iCloudRoot: iCloudRoot)
+        }
+    }
+
+    private static func mergeLocalIntoICloud(localRoot: URL, iCloudRoot: URL) {
+        let fm = FileManager.default
+        let localStore = ProjectStore(rootDirectory: localRoot)
+        let iCloudStore = ProjectStore(rootDirectory: iCloudRoot)
+
+        let localSnapshot = localStore.load()
+        var cloudSnapshot = iCloudStore.load()
+
+        let cloudProjectIDs = Set(cloudSnapshot.projects.map(\.id))
+        let cloudItemIDs = Set(cloudSnapshot.items.map(\.id))
+        let cloudFilteringIDs = Set(cloudSnapshot.filteringProjects.map(\.id))
+
+        // ローカル固有プロジェクト追加
+        for project in localSnapshot.projects where !cloudProjectIDs.contains(project.id) {
+            cloudSnapshot.projects.append(project)
+        }
+
+        // ローカル固有アイテム追加 + 画像ファイルコピー
+        for item in localSnapshot.items where !cloudItemIDs.contains(item.id) {
+            cloudSnapshot.items.append(item)
+            let srcURL = localStore.resolvedFileURL(for: item)
+            if fm.fileExists(atPath: srcURL.path) {
+                let dstDir = iCloudRoot.appendingPathComponent("items", isDirectory: true)
+                try? fm.createDirectory(at: dstDir, withIntermediateDirectories: true)
+                let dstURL = dstDir.appendingPathComponent(srcURL.lastPathComponent)
+                try? fm.copyItem(at: srcURL, to: dstURL)
+            }
+            // SVG
+            if item.hasSVG {
+                let svgSrc = item.svgFileURL(in: localRoot)
+                let svgDst = item.svgFileURL(in: iCloudRoot)
+                if fm.fileExists(atPath: svgSrc.path) {
+                    try? fm.copyItem(at: svgSrc, to: svgDst)
+                }
+            }
+        }
+
+        // ローカル固有フィルタリングプロジェクト追加
+        for fp in localSnapshot.filteringProjects where !cloudFilteringIDs.contains(fp.id) {
+            cloudSnapshot.filteringProjects.append(fp)
+        }
+
+        // マスクファイルをコピー（UUID重複しないのでそのまま）
+        let localMasks = localRoot.appendingPathComponent("masks", isDirectory: true)
+        let cloudMasks = iCloudRoot.appendingPathComponent("masks", isDirectory: true)
+        if fm.fileExists(atPath: localMasks.path) {
+            try? fm.createDirectory(at: cloudMasks, withIntermediateDirectories: true)
+            if let contents = try? fm.contentsOfDirectory(at: localMasks, includingPropertiesForKeys: nil) {
+                for src in contents {
+                    let dst = cloudMasks.appendingPathComponent(src.lastPathComponent)
+                    if !fm.fileExists(atPath: dst.path) {
+                        try? fm.copyItem(at: src, to: dst)
+                    }
+                }
+            }
+        }
+
+        iCloudStore.save(cloudSnapshot)
     }
 }

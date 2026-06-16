@@ -43,6 +43,8 @@ struct SettingsView: View {
     @EnvironmentObject private var sparkleUpdater: SparkleUpdaterController
     @State private var showLicenses = false
     @State private var automaticallyChecksForUpdates: Bool = true
+    @State private var iCloudPendingRestart = false
+    @State private var showDeleteLocalDataAlert = false
     private let animationStyleColumns = [
         GridItem(.fixed(114), spacing: 8),
         GridItem(.fixed(114), spacing: 8),
@@ -129,6 +131,47 @@ struct SettingsView: View {
             Divider()
                 .gridCellUnsizedAxes(.horizontal)
             GridRow {
+                Text("iCloud")
+                    .gridColumnAlignment(.trailing)
+                VStack(alignment: .leading, spacing: 4) {
+                    Toggle(isOn: Binding(
+                        get: { UserDefaults.standard.bool(forKey: "iCloudSyncEnabled") },
+                        set: { newValue in
+                            UserDefaults.standard.set(newValue, forKey: "iCloudSyncEnabled")
+                            iCloudPendingRestart = true
+                        }
+                    )) {
+                        Text("iCloud Drive で同期")
+                    }
+                    .toggleStyle(.switch)
+                    .disabled(!ICloudSyncMonitor.isICloudAvailable)
+                    if !ICloudSyncMonitor.isICloudAvailable {
+                        Text("iCloud が利用できません。システム設定で iCloud にサインインしてください。")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("プロジェクト、画像、設定を iCloud Drive 経由で他の Mac と同期")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    if iCloudPendingRestart {
+                        Text("変更には再起動が必要です")
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                    }
+                    if UserDefaults.standard.bool(forKey: "draftcanvas.migration.iCloudSync.v1"),
+                       !UserDefaults.standard.bool(forKey: "iCloudLocalDataDeleted") {
+                        Button("ローカルデータのコピーを削除") {
+                            showDeleteLocalDataAlert = true
+                        }
+                        .font(.caption)
+                    }
+                }
+                .gridColumnAlignment(.leading)
+            }
+            Divider()
+                .gridCellUnsizedAxes(.horizontal)
+            GridRow {
                 Text("アップデート")
                     .gridColumnAlignment(.trailing)
                 HStack {
@@ -173,6 +216,16 @@ struct SettingsView: View {
                 sparkleUpdater.updater.automaticallyChecksForUpdates
         }
         .sheet(isPresented: $showLicenses) { LicensesSheet() }
+        .alert("ローカルデータを削除しますか？", isPresented: $showDeleteLocalDataAlert) {
+            Button("削除", role: .destructive) {
+                let localRoot = ProjectStore.localDefaultRootDirectory()
+                try? FileManager.default.removeItem(at: localRoot)
+                UserDefaults.standard.set(true, forKey: "iCloudLocalDataDeleted")
+            }
+            Button("キャンセル", role: .cancel) {}
+        } message: {
+            Text("iCloud にデータが同期済みの場合のみ実行してください。ローカルコピーを削除します。この操作は取り消せません。")
+        }
         .alert("再起動が必要", isPresented: $l10n.pendingRestart) {
             if viewModel.hasInFlightWork {
                 Button("中断して再起動", role: .destructive) {

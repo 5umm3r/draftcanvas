@@ -222,6 +222,7 @@ final class DraftCanvasViewModel: ObservableObject {
     let originalImageStore: CanvasOriginalImageStore
     let templateStore: PromptTemplateStore
     let historyStore: PromptHistoryStore
+    @Published var syncMonitor: ICloudSyncMonitor?
 
     init(
         projectStore: ProjectStore = ProjectStore(),
@@ -232,12 +233,19 @@ final class DraftCanvasViewModel: ObservableObject {
     ) {
         DraftCanvasViewModel.migratePromptLanguageModeIfNeeded()
         DraftCanvasViewModel.migrateAppSupportDirectoryIfNeeded()
+        if UserDefaults.standard.bool(forKey: "iCloudSyncEnabled"),
+           let iCloudURL = ICloudSyncMonitor.iCloudContainerURL() {
+            ProjectStore.migrateToICloudIfNeeded(iCloudRoot: iCloudURL)
+        }
         self.client = client
         self.accountClient = accountClient ?? client
         self.coordinator = GenerationCoordinator(runner: CodexGenerationRunner(client: client))
         self.projectStore = projectStore
         self.preferredSaveFolderStore = preferredSaveFolderStore
-        self.thumbnailStore = CanvasThumbnailStore(itemsDirectory: projectStore.itemsDirectory)
+        self.thumbnailStore = CanvasThumbnailStore(
+            itemsDirectory: projectStore.itemsDirectory,
+            useNoSync: projectStore.isInUbiquityContainer
+        )
         self.originalImageStore = CanvasOriginalImageStore()
         self.templateStore = PromptTemplateStore(rootDirectory: projectStore.rootDirectory)
         self.historyStore = PromptHistoryStore(rootDirectory: projectStore.rootDirectory)
@@ -265,6 +273,11 @@ final class DraftCanvasViewModel: ObservableObject {
             }
         }
         projectStore.cleanupAllAttachments()
+        if projectStore.isInUbiquityContainer {
+            let monitor = ICloudSyncMonitor()
+            self.syncMonitor = monitor
+            monitor.start(containerURL: projectStore.rootDirectory)
+        }
         loadProjects()
         loadTemplates()
         loadHistory()
