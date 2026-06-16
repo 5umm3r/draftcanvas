@@ -10,5 +10,10 @@
 	<string>ZXL9PZ4629</string>
 	<key>signingCertificate</key>
 	<string>Developer ID Application</string>
+	<key>provisioningProfiles</key>
+	<dict>
+		<key>com.spade3.DraftCanvas</key>
+		<string>c79898b2-542a-4e7e-a720-0e9d9715ae9c</string>
+	</dict>
 </dict>
 </plist>

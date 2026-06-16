@@ -202,7 +202,7 @@ final class DraftCanvasViewModel: ObservableObject {
     let client: CodexAppServerClient
     let accountClient: CodexAccountProviding
     let coordinator: GenerationCoordinator
-    let projectStore: ProjectStore
+    var projectStore: ProjectStore
     let preferredSaveFolderStore: PreferredSaveFolderStore
     var isLoadingProjects = false
     var vectorizationTasks: [UUID: Task<Void, Never>] = [:]
@@ -218,10 +218,10 @@ final class DraftCanvasViewModel: ObservableObject {
     let activityTracker = ActivityTracker()
     var onReplacePromptText: ((String) -> Void)?
     var onAppendPromptText: ((String) -> Void)?
-    let thumbnailStore: CanvasThumbnailStore
+    var thumbnailStore: CanvasThumbnailStore
     let originalImageStore: CanvasOriginalImageStore
-    let templateStore: PromptTemplateStore
-    let historyStore: PromptHistoryStore
+    var templateStore: PromptTemplateStore
+    var historyStore: PromptHistoryStore
     @Published var syncMonitor: ICloudSyncMonitor?
 
     init(
@@ -281,6 +281,7 @@ final class DraftCanvasViewModel: ObservableObject {
         loadProjects()
         loadTemplates()
         loadHistory()
+        resolveICloudAsync()
         preferredSaveFolder = preferredSaveFolderStore.load()
             ?? FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
         if prewarmOnInit {
@@ -290,6 +291,34 @@ final class DraftCanvasViewModel: ObservableObject {
 
     func rebuildAllTagsCache() {
         allTagsCache = Array(Set(items.flatMap(\.tags))).sorted()
+    }
+
+    // url(forUbiquityContainerIdentifier:) はメインスレッドで nil を返す場合がある。
+    // バックグラウンドで解決し、iCloud パスが得られたら stores を差し替えて再読み込みする。
+    private func resolveICloudAsync() {
+        guard UserDefaults.standard.bool(forKey: "iCloudSyncEnabled"),
+              !projectStore.isInUbiquityContainer else { return }
+        Task.detached(priority: .userInitiated) { [weak self] in
+            guard let url = ICloudSyncMonitor.iCloudContainerURL() else { return }
+            await MainActor.run { [weak self] in
+                guard let self, !self.projectStore.isInUbiquityContainer else { return }
+                ProjectStore.migrateToICloudIfNeeded(iCloudRoot: url)
+                let newStore = ProjectStore(rootDirectory: url)
+                self.projectStore = newStore
+                self.thumbnailStore = CanvasThumbnailStore(
+                    itemsDirectory: newStore.itemsDirectory,
+                    useNoSync: true
+                )
+                self.templateStore = PromptTemplateStore(rootDirectory: url)
+                self.historyStore = PromptHistoryStore(rootDirectory: url)
+                let monitor = ICloudSyncMonitor()
+                self.syncMonitor = monitor
+                monitor.start(containerURL: url)
+                self.loadProjects()
+                self.loadTemplates()
+                self.loadHistory()
+            }
+        }
     }
 
     func appendLog(_ message: String) {
