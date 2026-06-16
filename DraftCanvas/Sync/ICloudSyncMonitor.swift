@@ -93,6 +93,11 @@ final class ICloudSyncMonitor: ObservableObject {
                 pendingCount += 1
             }
 
+            if needsDownload, !isDownloading,
+               let url = item.value(forAttribute: NSMetadataItemURLKey) as? URL {
+                try? FileManager.default.startDownloadingUbiquitousItem(at: url)
+            }
+
             if let name = item.value(forAttribute: NSMetadataItemFSNameKey) as? String {
                 let stem = (name as NSString).deletingPathExtension
                 if let uuid = UUID(uuidString: stem), needsDownload || isDownloading {
