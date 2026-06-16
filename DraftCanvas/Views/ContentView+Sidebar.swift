@@ -187,6 +187,10 @@ extension ContentView {
                     .fill(Color.primary.opacity(0.06))
                     .frame(width: 1)
             }
+            if let monitor = viewModel.syncMonitor {
+                Divider()
+                ICloudStatusView(syncMonitor: monitor)
+            }
         }
         .frame(width: 200)
         .alert("検索結果を保存しますか？", isPresented: $showSaveSearchAlert) {

@@ -5667,18 +5667,18 @@
         }
       }
     },
-    "残量が少なくなっています (残り %lld%%)。生成を続行しますか？": {
+    "残量が少なくなっています (残り %@%%)。生成を続行しますか？": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Usage is low (%lld%% remaining). Continue generating?"
+            "value": "Usage is low (%@%% remaining). Continue generating?"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "残量が少なくなっています (残り %lld%%)。生成を続行しますか？"
+            "value": "残量が少なくなっています (残り %@%%)。生成を続行しますか？"
           }
         }
       }
@@ -7273,6 +7273,182 @@
           "stringUnit": {
             "state": "translated",
             "value": "魚眼レンズ"
+          }
+        }
+      }
+    },
+    "iCloud": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud"
+          }
+        }
+      }
+    },
+    "iCloud Drive で同期": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sync via iCloud Drive"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud Drive で同期"
+          }
+        }
+      }
+    },
+    "iCloud が利用できません。システム設定で iCloud にサインインしてください。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud is not available. Please sign in to iCloud in System Settings."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud が利用できません。システム設定で iCloud にサインインしてください。"
+          }
+        }
+      }
+    },
+    "プロジェクト、画像、設定を iCloud Drive 経由で他の Mac と同期": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sync projects, images, and settings across Macs via iCloud Drive"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "プロジェクト、画像、設定を iCloud Drive 経由で他の Mac と同期"
+          }
+        }
+      }
+    },
+    "ローカルデータのコピーを削除": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete local data copy"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ローカルデータのコピーを削除"
+          }
+        }
+      }
+    },
+    "ローカルデータを削除しますか？": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete local data?"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ローカルデータを削除しますか？"
+          }
+        }
+      }
+    },
+    "iCloud にデータが同期済みの場合のみ実行してください。ローカルコピーを削除します。この操作は取り消せません。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only run this if your data has been synced to iCloud. This will delete the local copy. This action cannot be undone."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud にデータが同期済みの場合のみ実行してください。ローカルコピーを削除します。この操作は取り消せません。"
+          }
+        }
+      }
+    },
+    "iCloud同期無効": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud sync disabled"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud同期無効"
+          }
+        }
+      }
+    },
+    "同期完了": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All files synced"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "同期完了"
+          }
+        }
+      }
+    },
+    "%lld ファイル同期中...": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Syncing %lld files..."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld ファイル同期中..."
+          }
+        }
+      }
+    },
+    "オフライン": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Offline"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "オフライン"
           }
         }
       }

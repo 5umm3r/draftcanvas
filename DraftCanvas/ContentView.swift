@@ -194,7 +194,7 @@ struct ContentView: View {
             }
         } message: {
             if let confirmation = viewModel.pendingRateLimitConfirmation {
-                Text(String(localized: "残量が少なくなっています (残り \(confirmation.remainingPercent)%%)。生成を続行しますか？"))
+                Text("残量が少なくなっています (残り \(confirmation.remainingPercent.formatted())%)。生成を続行しますか？")
             }
         }
         .sheet(item: $viewModel.exportRequest) { request in
