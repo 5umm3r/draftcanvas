@@ -74,15 +74,17 @@ find "$EXPORT_DIR/DraftCanvas.app/Contents/Frameworks/Sparkle.framework" \
 echo "==> Re-sign embedded binaries (Hardened Runtime)"
 SIGN_IDENTITY="Developer ID Application"
 BIN_DIR="$EXPORT_DIR/DraftCanvas.app/Contents/Resources/bin"
-ENTITLEMENTS="DraftCanvas/DraftCanvas.entitlements"
+EXPORTED_ENTITLEMENTS=$(mktemp)
+codesign -d --entitlements :- "$EXPORT_DIR/DraftCanvas.app" > "$EXPORTED_ENTITLEMENTS" 2>/dev/null
 for f in "$BIN_DIR"/*; do
   [ -f "$f" ] && [ -x "$f" ] || continue
   codesign --force --options runtime --timestamp --sign "$SIGN_IDENTITY" "$f"
 done
 codesign --force --options runtime --timestamp \
-  --entitlements "$ENTITLEMENTS" \
+  --entitlements "$EXPORTED_ENTITLEMENTS" \
   --sign "$SIGN_IDENTITY" \
   "$EXPORT_DIR/DraftCanvas.app"
+rm -f "$EXPORTED_ENTITLEMENTS"
 
 echo "==> Notarize app"
 ditto -c -k --keepParent "$EXPORT_DIR/DraftCanvas.app" "$EXPORT_DIR/DraftCanvas.zip"
