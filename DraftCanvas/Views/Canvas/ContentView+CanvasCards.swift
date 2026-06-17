@@ -313,7 +313,8 @@ extension ContentView {
                 }
                 CircularPromptActionButton(
                     systemImage: "trash",
-                    tooltip: "削除"
+                    tooltip: "削除",
+                    isDestructive: true
                 ) {
                     confirmingDeleteItemID = item.id
                 }

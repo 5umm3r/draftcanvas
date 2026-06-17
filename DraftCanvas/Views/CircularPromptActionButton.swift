@@ -6,6 +6,7 @@ struct CircularPromptActionButton: View {
     var showCostBadge: Bool = false
     var isDisabled: Bool = false
     var isAccent: Bool = false
+    var isDestructive: Bool = false
     let action: () -> Void
 
     @State private var isHovered = false
@@ -15,7 +16,7 @@ struct CircularPromptActionButton: View {
             ZStack(alignment: .bottomTrailing) {
                 Image(systemName: systemImage)
                     .font(.system(size: 15, weight: .medium))
-                    .foregroundStyle(isAccent ? Color.white : Color.primary)
+                    .foregroundStyle(isAccent ? Color.white : (isDestructive ? Color.red : Color.primary))
                     .frame(width: 36, height: 36)
                     .background(
                         isAccent

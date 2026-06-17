@@ -69,6 +69,17 @@ extension ContentView {
                 .padding(.leading, promptLeading)
                 .padding(.trailing, promptStandardPad)
                 .padding(.bottom, 18)
+                .background(
+                    GeometryReader { proxy in
+                        Color.clear.preference(
+                            key: PromptPanelHeightPreferenceKey.self,
+                            value: proxy.size.height
+                        )
+                    }
+                )
+                .onPreferenceChange(PromptPanelHeightPreferenceKey.self) { h in
+                    promptPanelHeight = h
+                }
                 .animation(.easeInOut(duration: 0.2), value: viewModel.isGeneratingForSelected)
                 .animation(.easeInOut(duration: 0.2), value: viewModel.isTemplatePopoverPresented)
                 .animation(.easeInOut(duration: 0.2), value: viewModel.isHistoryPopoverPresented)
@@ -311,7 +322,7 @@ extension ContentView {
                         .padding(.top, 72)
                         .padding(.leading, 84)
                         .padding(.trailing, 24)
-                        .padding(.bottom, 220)
+                        .padding(.bottom, max(220, promptPanelHeight + 40))
                         .animation(.smooth(duration: 0.1), value: canvasZoom)
                         .background(
                             AutoScrollerAnchor(scroller: canvasAutoScroller)

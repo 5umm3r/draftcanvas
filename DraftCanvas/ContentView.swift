@@ -14,6 +14,7 @@ struct ContentView: View {
     @State var isAccountPopoverPresented = false
     @State var promptIsFocused = false
     @State var promptTextHeight: CGFloat = 76
+    @State var promptPanelHeight: CGFloat = 0
     @State var canvasZoom: CGFloat = 1.0
     @State var enhanceRotation: Double = 0
     @State var isPromptDropTargeted = false
