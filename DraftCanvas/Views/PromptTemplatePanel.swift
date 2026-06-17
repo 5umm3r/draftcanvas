@@ -2,13 +2,14 @@ import SwiftUI
 
 struct PromptTemplatePanel: View {
     @ObservedObject var viewModel: DraftCanvasViewModel
-    @State private var selectedCategory: PromptTemplateCategory = .style
+    @State private var selectedCategory: PromptTemplateCategory = .user
     @State private var editingTemplateID: UUID?
     @State private var editName = ""
     @State private var editPrompt = ""
     @State private var isCreating = false
     @State private var newName = ""
     @State private var newPrompt = ""
+    @State private var hoveredRowID: UUID?
 
     private var templatesForSelectedCategory: [PromptTemplate] {
         viewModel.templates.filter { $0.category == selectedCategory }
@@ -188,44 +189,57 @@ struct PromptTemplatePanel: View {
     }
 
     private func templateRow(template: PromptTemplate) -> some View {
-        HStack(alignment: .top, spacing: 12) {
-            Text(template.name)
-                .font(.subheadline.weight(.medium))
-                .lineLimit(1)
-            Spacer()
-            HStack(spacing: 6) {
-                Button(String(localized: "適用")) {
-                    viewModel.applyTemplate(template)
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
-
+        Button {
+            viewModel.applyTemplate(template)
+        } label: {
+            HStack(alignment: .center, spacing: 12) {
+                Text(template.name)
+                    .font(.subheadline.weight(.medium))
+                    .lineLimit(1)
+                Spacer()
                 if !template.isBuiltIn {
-                    Menu {
-                        Button(String(localized: "編集")) {
+                    HStack(spacing: 4) {
+                        Button {
                             editName = template.name
                             editPrompt = template.promptText
                             withAnimation(.easeInOut(duration: 0.15)) {
                                 editingTemplateID = template.id
                             }
+                        } label: {
+                            Text(String(localized: "編集"))
+                                .font(.system(size: 11))
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.primary.opacity(0.06))
+                                .clipShape(RoundedRectangle(cornerRadius: 4))
                         }
-                        Button(String(localized: "削除"), role: .destructive) {
+                        .buttonStyle(.plain)
+
+                        Button {
                             viewModel.deleteTemplate(template)
+                        } label: {
+                            Text(String(localized: "削除"))
+                                .font(.system(size: 11))
+                                .foregroundStyle(Color.red)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.red.opacity(0.08))
+                                .clipShape(RoundedRectangle(cornerRadius: 4))
                         }
-                    } label: {
-                        Image(systemName: "ellipsis")
-                            .font(.system(size: 12))
-                            .frame(width: 24, height: 24)
-                            .background(Color.primary.opacity(0.04))
-                            .clipShape(RoundedRectangle(cornerRadius: 4))
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
             }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
+            .background(hoveredRowID == template.id ? Color.primary.opacity(0.06) : Color.clear)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .contentShape(Rectangle())
+        .buttonStyle(.plain)
+        .onHover { hovering in
+            hoveredRowID = hovering ? template.id : (hoveredRowID == template.id ? nil : hoveredRowID)
+        }
     }
 
     private func editRow(template: PromptTemplate) -> some View {

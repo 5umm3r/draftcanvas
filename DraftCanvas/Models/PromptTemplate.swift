@@ -1,10 +1,10 @@
 import Foundation
 
 enum PromptTemplateCategory: String, Codable, CaseIterable, Identifiable {
+    case user     = "user"
     case style    = "style"
     case photo    = "photo"
     case lighting = "lighting"
-    case user     = "user"
 
     var id: String { rawValue }
 
