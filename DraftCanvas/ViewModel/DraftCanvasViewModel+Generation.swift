@@ -5,9 +5,6 @@ import UserNotifications
 extension DraftCanvasViewModel {
     func generate(skipRateLimitCheck: Bool = false) {
         guard canGenerate else { return }
-        if currentInputs.editSource != nil {
-            guard !isGeneratingForSelected else { return }
-        }
         if accountUsageStatus.accountKind == .unauthenticated || accountUsagePrewarmFailed {
             pendingLoginRequired = true
             return
@@ -65,20 +62,49 @@ extension DraftCanvasViewModel {
             GenerationJob(index: index, prompt: request.prompt, aspectRatio: request.aspectRatio)
         }
 
+        let capturedEditSource = inputs.editSource
+        let capturedAttachment = inputs.attachedImage
+        if let es = capturedEditSource {
+            editSourceRefCounts[es.projectItemID, default: 0] += 1
+        }
+        if let at = capturedAttachment {
+            attachmentRefCounts[at.id, default: 0] += 1
+        }
+
         runGeneration(request: request, projectID: targetProjectID, jobs: placeholderJobs) { [weak self] in
             guard let self else { return }
+            if let es = capturedEditSource {
+                let next = (self.editSourceRefCounts[es.projectItemID] ?? 1) - 1
+                if next <= 0 {
+                    self.editSourceRefCounts.removeValue(forKey: es.projectItemID)
+                    if es.isInpainting {
+                        self.projectStore.cleanupMaskFiles(id: es.projectItemID)
+                    }
+                } else {
+                    self.editSourceRefCounts[es.projectItemID] = next
+                }
+            }
+            if let at = capturedAttachment {
+                let next = (self.attachmentRefCounts[at.id] ?? 1) - 1
+                if next <= 0 {
+                    self.attachmentRefCounts.removeValue(forKey: at.id)
+                    self.projectStore.cleanupAttachment(id: at.id)
+                } else {
+                    self.attachmentRefCounts[at.id] = next
+                }
+            }
             if var inputs = self.inputsByProject[targetProjectID] {
-                if let editSource = inputs.editSource, editSource.isInpainting {
-                    self.projectStore.cleanupMaskFiles(id: editSource.projectItemID)
+                if inputs.editSource?.projectItemID == capturedEditSource?.projectItemID {
+                    inputs.editSource = nil
                 }
-                inputs.editSource = nil
-                if let attached = inputs.attachedImage {
-                    self.projectStore.cleanupAttachment(id: attached.id)
+                if inputs.attachedImage?.id == capturedAttachment?.id {
+                    inputs.attachedImage = nil
                 }
-                inputs.attachedImage = nil
                 self.inputsByProject[targetProjectID] = inputs
             }
-            self.activeEditProjectID = nil
+            if self.editSourceRefCounts.isEmpty {
+                self.activeEditProjectID = nil
+            }
         }
     }
 

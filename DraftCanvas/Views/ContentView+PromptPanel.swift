@@ -540,7 +540,7 @@ extension ContentView {
                             .foregroundStyle(.secondary)
                             .offset(x: 3, y: 3)
                     }
-                    .disabled(!viewModel.canGenerate || viewModel.isEditSourceGenerating)
+                    .disabled(!viewModel.canGenerate)
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
