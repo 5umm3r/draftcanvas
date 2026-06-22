@@ -15,6 +15,8 @@ final class DraftCanvasViewModel: ObservableObject {
     var lastRequestByProject: [UUID: GenerationRequest] = [:]
     var preparedRequestByRun: [UUID: GenerationRequest] = [:]
     var generationTasks: [UUID: [UUID: Task<Void, Never>]] = [:]
+    var editSourceRefCounts: [UUID: Int] = [:]
+    var attachmentRefCounts: [UUID: Int] = [:]
 
     // MARK: - 自動リトライ
     @AppStorage("autoRetryEnabled") var autoRetryEnabled: Bool = true
