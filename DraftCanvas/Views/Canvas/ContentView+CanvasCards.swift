@@ -135,6 +135,9 @@ extension ContentView {
             if viewModel.isSelectionMode {
                 viewModel.toggleMultiSelection(item)
             } else {
+                if viewModel.selectedItemIDs.contains(item.id) && viewModel.selectedItemIDs.count > 1 {
+                    return
+                }
                 viewModel.selectedItemID = item.id
                 viewModel.selectedJobID = nil
             }

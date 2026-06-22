@@ -307,7 +307,7 @@ extension ContentView {
                                     .id(entry.id)
                                     .background(
                                         Group {
-                                            if isDraggingMarquee, let itemID = entry.itemID {
+                                            if let itemID = entry.itemID {
                                                 GeometryReader { geo in
                                                     Color.clear.preference(
                                                         key: CardFramePreferenceKey.self,
@@ -325,8 +325,22 @@ extension ContentView {
                         .padding(.bottom, max(220, promptPanelHeight + 40))
                         .animation(.smooth(duration: 0.1), value: canvasZoom)
                         .background(
-                            AutoScrollerAnchor(scroller: canvasAutoScroller)
-                                .allowsHitTesting(false)
+                            ZStack {
+                                AutoScrollerAnchor(scroller: canvasAutoScroller)
+                                    .allowsHitTesting(false)
+                                Rectangle()
+                                    .fill(Color.clear)
+                                    .contentShape(Rectangle())
+                                    .gesture(
+                                        DragGesture(minimumDistance: 4, coordinateSpace: .named("canvasViewport"))
+                                            .onChanged { value in
+                                                handleMarqueeDrag(value: value)
+                                            }
+                                            .onEnded { value in
+                                                handleMarqueeEnd(value: value)
+                                            }
+                                    )
+                            }
                         )
                     }
                     .coordinateSpace(name: "canvasViewport")
@@ -378,15 +392,6 @@ extension ContentView {
                                 .allowsHitTesting(false)
                         }
                     }
-                    .simultaneousGesture(
-                        DragGesture(minimumDistance: 4, coordinateSpace: .named("canvasViewport"))
-                            .onChanged { value in
-                                handleMarqueeDrag(value: value)
-                            }
-                            .onEnded { value in
-                                handleMarqueeEnd(value: value)
-                            }
-                    )
                     .simultaneousGesture(
                         TapGesture()
                             .onEnded {
