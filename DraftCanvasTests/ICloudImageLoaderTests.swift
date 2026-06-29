@@ -27,4 +27,15 @@ final class ICloudImageLoaderTests: XCTestCase {
             XCTFail("unexpected error: \(error)")
         }
     }
+
+    func test_loadImage_returnsNilForNonImageData() async throws {
+        let loader = ICloudImageLoader()
+        let tmp = FileManager.default.temporaryDirectory
+            .appendingPathComponent("dc-test-\(UUID().uuidString).bin")
+        try Data([0x00, 0x01, 0x02]).write(to: tmp)
+        defer { try? FileManager.default.removeItem(at: tmp) }
+
+        let img = try await loader.loadImage(at: tmp, syncMonitor: nil)
+        XCTAssertNil(img)
+    }
 }

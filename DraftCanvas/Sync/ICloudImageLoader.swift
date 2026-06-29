@@ -1,4 +1,6 @@
 import Foundation
+import AppKit
+import ImageIO
 
 enum ICloudImageLoaderError: Error, Equatable {
     case downloadTimeout
@@ -28,6 +30,15 @@ actor ICloudImageLoader {
             throw ICloudImageLoaderError.fileNotFound
         }
         return try await coordinatedRead(url: url, isUbiquitous: syncMonitor != nil)
+    }
+
+    func loadImage(at url: URL, syncMonitor: ICloudSyncMonitor?) async throws -> NSImage? {
+        let data = try await loadData(at: url, syncMonitor: syncMonitor)
+        return NSImage(data: data)
+    }
+
+    func waitForDownload(at url: URL, syncMonitor: ICloudSyncMonitor) async throws {
+        try await ensureDownloaded(url: url, monitor: syncMonitor)
     }
 
     private func ensureDownloaded(url: URL, monitor: ICloudSyncMonitor) async throws {
