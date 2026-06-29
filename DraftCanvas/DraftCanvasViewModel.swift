@@ -274,7 +274,10 @@ final class DraftCanvasViewModel: ObservableObject {
                 self?.logs.append("並列度を \(old) → \(new) に調整しました")
             }
         }
-        projectStore.cleanupAllAttachments()
+        // iCloud 配下では起動毎の一括削除は同期ノイズ（mtime 更新→再アップロード）を招くため行わない
+        if !projectStore.isInUbiquityContainer {
+            projectStore.cleanupAllAttachments()
+        }
         if projectStore.isInUbiquityContainer {
             let monitor = ICloudSyncMonitor()
             self.syncMonitor = monitor

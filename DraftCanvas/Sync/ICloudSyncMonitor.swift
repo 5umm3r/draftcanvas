@@ -56,6 +56,13 @@ final class ICloudSyncMonitor: ObservableObject {
         observers.removeAll()
     }
 
+    /// クエリ更新通知が届かず状態が固着した場合に備え、現在のクエリ結果を手動で再評価する。
+    /// アプリが前面復帰したタイミング等で呼ぶ。
+    func refresh() {
+        guard query != nil else { return }
+        processQueryResults()
+    }
+
     func requestDownload(for url: URL) {
         try? FileManager.default.startDownloadingUbiquitousItem(at: url)
     }
