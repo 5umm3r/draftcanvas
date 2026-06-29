@@ -16,6 +16,9 @@ final class ICloudSyncMonitor: ObservableObject {
     @Published private(set) var totalItemCount: Int = 0
     @Published private(set) var downloadingItemIDs: Set<UUID> = []
 
+    /// 自動 pull 方針。`eager` で全件 pull、`thumbsOnly` で原本は手動 DL。
+    var autoPullPolicy: ICloudAutoPullPolicy = .eager
+
     private var query: NSMetadataQuery?
     private var observers: [Any] = []
     private let containerIdentifier: String
@@ -103,7 +106,9 @@ final class ICloudSyncMonitor: ObservableObject {
 
             if needsDownload, !isDownloading,
                let url = item.value(forAttribute: NSMetadataItemURLKey) as? URL {
-                try? FileManager.default.startDownloadingUbiquitousItem(at: url)
+                if shouldAutoPull(url: url) {
+                    try? FileManager.default.startDownloadingUbiquitousItem(at: url)
+                }
             }
 
             if let name = item.value(forAttribute: NSMetadataItemFSNameKey) as? String {
@@ -122,6 +127,19 @@ final class ICloudSyncMonitor: ObservableObject {
             syncStatus = .syncing(pending: pendingCount)
         } else {
             syncStatus = .synced
+        }
+    }
+
+    private func shouldAutoPull(url: URL) -> Bool {
+        switch autoPullPolicy {
+        case .eager:
+            return true
+        case .thumbsOnly:
+            let path = url.path
+            if path.contains("/.thumbs/") || path.contains("/.thumbs.nosync/") {
+                return true
+            }
+            return ICloudAutoPullPolicy.isMetadataExtension(url.pathExtension)
         }
     }
 
