@@ -54,7 +54,9 @@ extension DraftCanvasViewModel {
 
         Task.detached(priority: .userInitiated) {
             do {
-                let originalData = try Data(contentsOf: fileURL)
+                let monitor = await MainActor.run { self.syncMonitor }
+                let originalData = try await self.imageLoader.loadData(at: fileURL, syncMonitor: monitor)
+                await self.cacheEviction.recordAccess(url: fileURL)
                 let imgSource = CGImageSourceCreateWithData(originalData as CFData, nil)
                 let imgProps = imgSource.flatMap { CGImageSourceCopyPropertiesAtIndex($0, 0, nil) as? [CFString: Any] }
                 let pw = imgProps?[kCGImagePropertyPixelWidth] as? CGFloat
@@ -143,7 +145,9 @@ extension DraftCanvasViewModel {
 
         let removalTask = Task.detached(priority: .userInitiated) {
             do {
-                let originalData = try Data(contentsOf: fileURL)
+                let monitor = await MainActor.run { self.syncMonitor }
+                let originalData = try await self.imageLoader.loadData(at: fileURL, syncMonitor: monitor)
+                await self.cacheEviction.recordAccess(url: fileURL)
                 let imgSource = CGImageSourceCreateWithData(originalData as CFData, nil)
                 let imgProps = imgSource.flatMap { CGImageSourceCopyPropertiesAtIndex($0, 0, nil) as? [CFString: Any] }
                 let pw = imgProps?[kCGImagePropertyPixelWidth] as? CGFloat
@@ -239,7 +243,8 @@ extension DraftCanvasViewModel {
             upsert(running, into: projectID)
 
             do {
-                let inputData = try Data(contentsOf: fileURL)
+                let inputData = try await imageLoader.loadData(at: fileURL, syncMonitor: syncMonitor)
+                await cacheEviction.recordAccess(url: fileURL)
                 let session = try await BackgroundRemover.extractMask(from: inputData)
                 let initialData = try BackgroundRemover.apply(session: session, edgeStrength: 0.5, mode: session.initialMode)
 
