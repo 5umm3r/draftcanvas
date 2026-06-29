@@ -36,6 +36,11 @@ actor ICloudCacheEviction {
     func setLimitBytes(_ value: Int64) {
         defaults.set(value, forKey: Self.limitBytesKey)
     }
+
+    func forgetAccess(url: URL) {
+        timestamps.removeValue(forKey: url.path)
+        defaults.set(timestamps, forKey: Self.timestampsKey)
+    }
 }
 
 struct ICloudCacheEntry: Sendable {
@@ -59,5 +64,17 @@ extension ICloudCacheEviction {
             overflow -= entry.size
         }
         return evicted
+    }
+
+    /// FileManager.evictUbiquitousItem を呼びローカル副本を解放。
+    /// 戻り値: true=成功, false=エラー or 対象が iCloud 配下でない。
+    @discardableResult
+    nonisolated static func evict(url: URL) -> Bool {
+        do {
+            try FileManager.default.evictUbiquitousItem(at: url)
+            return true
+        } catch {
+            return false
+        }
     }
 }
