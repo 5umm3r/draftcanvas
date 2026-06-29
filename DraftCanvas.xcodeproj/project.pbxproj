@@ -35,6 +35,7 @@
 		10A001022D00000100000001 /* InpaintingMaskCompositor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A001012D00000100000001 /* InpaintingMaskCompositor.swift */; };
 		10A001062D00000100000001 /* CodexVersionFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A001052D00000100000001 /* CodexVersionFetcherTests.swift */; };
 		8EA435875413498F9C6233C7 /* ICloudSyncMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F789420DB0A40228CEE5B41 /* ICloudSyncMonitorTests.swift */; };
+		IC000006000000010000B1 /* ICloudImageLoaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = IC000006000000010000A1 /* ICloudImageLoaderTests.swift */; };
 		10B001022D00000100000001 /* SketchModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10B001012D00000100000001 /* SketchModels.swift */; };
 		10B001042D00000100000001 /* SketchCompositor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10B001032D00000100000001 /* SketchCompositor.swift */; };
 		10B001082D00000100000001 /* DraftCanvasViewModel+Sketch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10B001072D00000100000001 /* DraftCanvasViewModel+Sketch.swift */; };
@@ -190,6 +191,7 @@
 		IC000001000000010000B1 /* ICloudSyncMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = IC000001000000010000A1 /* ICloudSyncMonitor.swift */; };
 		IC000002000000010000B1 /* ICloudStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = IC000002000000010000A1 /* ICloudStatusView.swift */; };
 		IC000004000000010000B1 /* ICloudAutoPullPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = IC000004000000010000A1 /* ICloudAutoPullPolicy.swift */; };
+		IC000005000000010000B1 /* ICloudImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = IC000005000000010000A1 /* ICloudImageLoader.swift */; };
 		OP000001000000010000B1 /* OutpaintInsets.swift in Sources */ = {isa = PBXBuildFile; fileRef = OP000001000000010000A1 /* OutpaintInsets.swift */; };
 		OP000002000000010000B1 /* OutpaintCanvasNSView.swift in Sources */ = {isa = PBXBuildFile; fileRef = OP000002000000010000A1 /* OutpaintCanvasNSView.swift */; };
 		OP000003000000010000B1 /* OutpaintCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = OP000003000000010000A1 /* OutpaintCanvasView.swift */; };
@@ -242,6 +244,7 @@
 		10A001012D00000100000001 /* InpaintingMaskCompositor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InpaintingMaskCompositor.swift; sourceTree = "<group>"; };
 		10A001052D00000100000001 /* CodexVersionFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexVersionFetcherTests.swift; sourceTree = "<group>"; };
 		0F789420DB0A40228CEE5B41 /* ICloudSyncMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ICloudSyncMonitorTests.swift; sourceTree = "<group>"; };
+		IC000006000000010000A1 /* ICloudImageLoaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ICloudImageLoaderTests.swift; sourceTree = "<group>"; };
 		10B001012D00000100000001 /* SketchModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SketchModels.swift; sourceTree = "<group>"; };
 		10B001032D00000100000001 /* SketchCompositor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SketchCompositor.swift; sourceTree = "<group>"; };
 		10B001072D00000100000001 /* DraftCanvasViewModel+Sketch.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Sketch.swift"; path = "ViewModel/DraftCanvasViewModel+Sketch.swift"; sourceTree = "<group>"; };
@@ -400,6 +403,7 @@
 		IC000001000000010000A1 /* ICloudSyncMonitor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ICloudSyncMonitor.swift; path = Sync/ICloudSyncMonitor.swift; sourceTree = "<group>"; };
 		IC000002000000010000A1 /* ICloudStatusView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ICloudStatusView.swift; path = Views/ICloudStatusView.swift; sourceTree = "<group>"; };
 		IC000004000000010000A1 /* ICloudAutoPullPolicy.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ICloudAutoPullPolicy.swift; path = Sync/ICloudAutoPullPolicy.swift; sourceTree = "<group>"; };
+		IC000005000000010000A1 /* ICloudImageLoader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ICloudImageLoader.swift; path = Sync/ICloudImageLoader.swift; sourceTree = "<group>"; };
 		OP000001000000010000A1 /* OutpaintInsets.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OutpaintInsets.swift; path = Editors/Outpaint/OutpaintInsets.swift; sourceTree = "<group>"; };
 		OP000002000000010000A1 /* OutpaintCanvasNSView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OutpaintCanvasNSView.swift; path = Editors/Outpaint/OutpaintCanvasNSView.swift; sourceTree = "<group>"; };
 		OP000003000000010000A1 /* OutpaintCanvasView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OutpaintCanvasView.swift; path = Editors/Outpaint/OutpaintCanvasView.swift; sourceTree = "<group>"; };
@@ -522,6 +526,7 @@
 				10A000FF2D00000100000001 /* ImageVectorizerTests.swift */,
 				10A001052D00000100000001 /* CodexVersionFetcherTests.swift */,
 				0F789420DB0A40228CEE5B41 /* ICloudSyncMonitorTests.swift */,
+				IC000006000000010000A1 /* ICloudImageLoaderTests.swift */,
 				B4EAD194EAC8422CB56493A8620C628D /* SVGRasterizerTests.swift */,
 				EF683B41EA36CD8006DA2CA5 /* ProjectStoreSnapshotTests.swift */,
 				50E763B96027AB7767F474F0 /* CropEditorMathTests.swift */,
@@ -795,6 +800,7 @@
 			children = (
 				IC000001000000010000A1 /* ICloudSyncMonitor.swift */,
 				IC000004000000010000A1 /* ICloudAutoPullPolicy.swift */,
+				IC000005000000010000A1 /* ICloudImageLoader.swift */,
 			);
 			name = Sync;
 			sourceTree = "<group>";
@@ -1017,6 +1023,7 @@
 				IC000001000000010000B1 /* ICloudSyncMonitor.swift in Sources */,
 				IC000002000000010000B1 /* ICloudStatusView.swift in Sources */,
 				IC000004000000010000B1 /* ICloudAutoPullPolicy.swift in Sources */,
+				IC000005000000010000B1 /* ICloudImageLoader.swift in Sources */,
 				74E51C345A4B59211EC0CBF4 /* AccountPopover.swift in Sources */,
 				A13017642482452211C4E9A0 /* LogWindow.swift in Sources */,
 				1A4DA35B6990671B2B04CE17 /* GenerationProgressView.swift in Sources */,
@@ -1130,6 +1137,7 @@
 				10A001002D00000100000001 /* ImageVectorizerTests.swift in Sources */,
 				10A001062D00000100000001 /* CodexVersionFetcherTests.swift in Sources */,
 				8EA435875413498F9C6233C7 /* ICloudSyncMonitorTests.swift in Sources */,
+				IC000006000000010000B1 /* ICloudImageLoaderTests.swift in Sources */,
 				5D142797DE754E1BAF92366C248B473D /* SVGRasterizerTests.swift in Sources */,
 				F9000C7A096D9DC27C7EA911 /* ProjectStoreSnapshotTests.swift in Sources */,
 				2DD35EAB436D47F29CBC22DB /* CropEditorMathTests.swift in Sources */,
