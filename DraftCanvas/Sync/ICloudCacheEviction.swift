@@ -37,3 +37,27 @@ actor ICloudCacheEviction {
         defaults.set(value, forKey: Self.limitBytesKey)
     }
 }
+
+struct ICloudCacheEntry: Sendable {
+    let url: URL
+    let size: Int64
+    let lastAccess: Date
+}
+
+extension ICloudCacheEviction {
+    /// 上限を超えるぶんを LRU で選び、evict 対象 URL を返す (実 evict は呼出側)。
+    func enforceLimit(entries: [ICloudCacheEntry]) -> [URL] {
+        let limit = limitBytes
+        guard limit > 0 else { return [] }
+        let total = entries.reduce(Int64(0)) { $0 + $1.size }
+        guard total > limit else { return [] }
+        var overflow = total - limit
+        var evicted: [URL] = []
+        let sorted = entries.sorted { $0.lastAccess < $1.lastAccess }
+        for entry in sorted where overflow > 0 {
+            evicted.append(entry.url)
+            overflow -= entry.size
+        }
+        return evicted
+    }
+}

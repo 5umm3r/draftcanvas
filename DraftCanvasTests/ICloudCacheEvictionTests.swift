@@ -39,4 +39,29 @@ final class ICloudCacheEvictionTests: XCTestCase {
         let limit = await eviction.limitBytes
         XCTAssertEqual(limit, 5 * 1024 * 1024 * 1024)
     }
+
+    func test_enforceLimit_evictsOldestUntilUnderLimit() async {
+        let defaults = UserDefaults(suiteName: suiteName)!
+        let eviction = ICloudCacheEviction(defaults: defaults)
+        await eviction.setLimitBytes(100)
+        let now = Date()
+        let entries: [ICloudCacheEntry] = [
+            .init(url: URL(fileURLWithPath: "/a"), size: 40, lastAccess: now.addingTimeInterval(-300)),
+            .init(url: URL(fileURLWithPath: "/b"), size: 40, lastAccess: now.addingTimeInterval(-200)),
+            .init(url: URL(fileURLWithPath: "/c"), size: 40, lastAccess: now.addingTimeInterval(-100)),
+        ]
+        let evicted = await eviction.enforceLimit(entries: entries)
+        XCTAssertEqual(evicted.map(\.path), ["/a"])  // 合計 120 -> 80 にするため最古を 1 件 evict
+    }
+
+    func test_enforceLimit_zeroLimitMeansUnlimited() async {
+        let defaults = UserDefaults(suiteName: suiteName)!
+        let eviction = ICloudCacheEviction(defaults: defaults)
+        await eviction.setLimitBytes(0)
+        let entries: [ICloudCacheEntry] = [
+            .init(url: URL(fileURLWithPath: "/a"), size: 999_999_999, lastAccess: Date()),
+        ]
+        let evicted = await eviction.enforceLimit(entries: entries)
+        XCTAssertTrue(evicted.isEmpty)
+    }
 }
