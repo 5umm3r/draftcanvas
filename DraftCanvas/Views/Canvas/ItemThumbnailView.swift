@@ -14,6 +14,7 @@ struct ItemThumbnailView: View {
     @State private var thumbnailImage: NSImage?
     @State private var originalImage: NSImage?
     @State private var loadTask: Task<Void, Never>?
+    @State private var isOriginalDownloading: Bool = false
 
     private var needsOriginal: Bool {
         guard enableOriginalUpgrade, originalStore != nil else { return false }
@@ -36,6 +37,11 @@ struct ItemThumbnailView: View {
                     .aspectRatio(contentMode: contentMode)
                     .transition(.opacity)
             }
+            if isOriginalDownloading, originalImage == nil, needsOriginal {
+                Color.black.opacity(0.15)
+                ProgressView()
+                    .controlSize(.small)
+            }
         }
         .animation(.easeInOut(duration: 0.22), value: originalImage != nil)
         .onAppear {
@@ -57,18 +63,24 @@ struct ItemThumbnailView: View {
 
     private func applyNeedsOriginal(_ needs: Bool) {
         loadTask?.cancel()
+        isOriginalDownloading = false
         guard needs else {
             originalImage = nil
             return
         }
-        loadTask = Task {
+        loadTask = Task { @MainActor in
             try? await Task.sleep(for: .milliseconds(180))
             guard !Task.isCancelled, let store = originalStore else { return }
             if let cached = store.cached(for: originalURL) {
                 withAnimation { originalImage = cached }
                 return
             }
-            if let img = await store.loadIfNeeded(url: originalURL, syncMonitor: syncMonitor) {
+            if let monitor = syncMonitor, !monitor.isDownloaded(url: originalURL) {
+                isOriginalDownloading = true
+            }
+            let img = await store.loadIfNeeded(url: originalURL, syncMonitor: syncMonitor)
+            isOriginalDownloading = false
+            if let img {
                 withAnimation { originalImage = img }
             }
         }
