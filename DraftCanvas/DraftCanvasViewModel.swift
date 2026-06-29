@@ -286,6 +286,7 @@ final class DraftCanvasViewModel: ObservableObject {
             monitor.start(containerURL: projectStore.rootDirectory)
             monitor.autoPullPolicy = ICloudAutoPullPolicy.load()
             installForegroundRefreshObserver()
+            enforceCacheLimitOnLaunchIfNeeded()
         }
         loadProjects()
         loadTemplates()
@@ -328,6 +329,7 @@ final class DraftCanvasViewModel: ObservableObject {
                 self.loadProjects()
                 self.loadTemplates()
                 self.loadHistory()
+                self.enforceCacheLimitOnLaunchIfNeeded()
             }
         }
     }
@@ -544,4 +546,48 @@ final class DraftCanvasViewModel: ObservableObject {
         for task in tasksToAwait { await task.value }
         await enhance?.value
     }
+}
+
+// MARK: - 起動時 LRU eviction
+
+extension DraftCanvasViewModel {
+    /// 起動直後に呼ぶ。原本のサイズと last access を集めて上限超過分を evict。
+    /// 省容量モード OFF の場合は no-op (eager がローカルに pull し続けるため上限の意味が薄い)。
+    func enforceCacheLimitOnLaunchIfNeeded() {
+        guard syncMonitor != nil,
+              ICloudAutoPullPolicy.load() == .thumbsOnly
+        else { return }
+        let eviction = self.cacheEviction
+        let store = self.projectStore
+        Task.detached(priority: .utility) {
+            let entries = await collectEntries(rootDirectory: store.rootDirectory, eviction: eviction)
+            let evictURLs = await eviction.enforceLimit(entries: entries)
+            for url in evictURLs {
+                ICloudCacheEviction.evict(url: url)
+                await eviction.forgetAccess(url: url)
+            }
+        }
+    }
+}
+
+private func collectEntries(rootDirectory: URL, eviction: ICloudCacheEviction) async -> [ICloudCacheEntry] {
+    let fm = FileManager.default
+    let itemsDir = rootDirectory.appendingPathComponent("items")
+    guard let enumerator = fm.enumerator(at: itemsDir, includingPropertiesForKeys: [.fileSizeKey, .isUbiquitousItemKey]) else { return [] }
+    // NSDirectoryEnumerator.makeIterator() は Swift 6 非同期コンテキストで使用不可。
+    // URL と size を同期的に先に収集してから、actor 呼び出しを行う。
+    var collected: [(url: URL, size: Int)] = []
+    while let item = enumerator.nextObject() {
+        guard let url = item as? URL else { continue }
+        if url.lastPathComponent.hasPrefix(".thumbs") { continue }
+        let vals = try? url.resourceValues(forKeys: [.fileSizeKey, .isUbiquitousItemKey])
+        guard let size = vals?.fileSize else { continue }
+        collected.append((url: url, size: size))
+    }
+    var entries: [ICloudCacheEntry] = []
+    for item in collected {
+        let last = (await eviction.lastAccess(url: item.url)) ?? .distantPast
+        entries.append(.init(url: item.url, size: Int64(item.size), lastAccess: last))
+    }
+    return entries
 }
