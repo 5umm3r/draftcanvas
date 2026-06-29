@@ -24,4 +24,19 @@ final class ICloudCacheEvictionTests: XCTestCase {
         let stamp = await eviction.lastAccess(url: url)
         XCTAssertNil(stamp)
     }
+
+    func test_limitBytes_defaultsTo2GB() async {
+        let defaults = UserDefaults(suiteName: suiteName)!
+        let eviction = ICloudCacheEviction(defaults: defaults)
+        let limit = await eviction.limitBytes
+        XCTAssertEqual(limit, 2 * 1024 * 1024 * 1024)
+    }
+
+    func test_limitBytes_canBeSet() async {
+        let defaults = UserDefaults(suiteName: suiteName)!
+        let eviction = ICloudCacheEviction(defaults: defaults)
+        await eviction.setLimitBytes(5 * 1024 * 1024 * 1024)
+        let limit = await eviction.limitBytes
+        XCTAssertEqual(limit, 5 * 1024 * 1024 * 1024)
+    }
 }

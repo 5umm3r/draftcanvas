@@ -27,4 +27,13 @@ actor ICloudCacheEviction {
         guard let ts = timestamps[url.path] else { return nil }
         return Date(timeIntervalSince1970: ts)
     }
+
+    var limitBytes: Int64 {
+        let raw = defaults.object(forKey: Self.limitBytesKey) as? Int64
+        return raw ?? Self.defaultLimitBytes
+    }
+
+    func setLimitBytes(_ value: Int64) {
+        defaults.set(value, forKey: Self.limitBytesKey)
+    }
 }
