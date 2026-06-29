@@ -34,6 +34,9 @@
 		10A001002D00000100000001 /* ImageVectorizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A000FF2D00000100000001 /* ImageVectorizerTests.swift */; };
 		10A001022D00000100000001 /* InpaintingMaskCompositor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A001012D00000100000001 /* InpaintingMaskCompositor.swift */; };
 		10A001062D00000100000001 /* CodexVersionFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A001052D00000100000001 /* CodexVersionFetcherTests.swift */; };
+		8EA435875413498F9C6233C7 /* ICloudSyncMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F789420DB0A40228CEE5B41 /* ICloudSyncMonitorTests.swift */; };
+		IC000006000000010000B1 /* ICloudImageLoaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = IC000006000000010000A1 /* ICloudImageLoaderTests.swift */; };
+		IC000008000000010000B1 /* ICloudCacheEvictionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = IC000008000000010000A1 /* ICloudCacheEvictionTests.swift */; };
 		10B001022D00000100000001 /* SketchModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10B001012D00000100000001 /* SketchModels.swift */; };
 		10B001042D00000100000001 /* SketchCompositor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10B001032D00000100000001 /* SketchCompositor.swift */; };
 		10B001082D00000100000001 /* DraftCanvasViewModel+Sketch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10B001072D00000100000001 /* DraftCanvasViewModel+Sketch.swift */; };
@@ -188,6 +191,9 @@
 		FF35673306EE992D552A6CC7 /* DraftCanvasViewModel+ItemActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BD94C40880F1B413D1381BA /* DraftCanvasViewModel+ItemActions.swift */; };
 		IC000001000000010000B1 /* ICloudSyncMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = IC000001000000010000A1 /* ICloudSyncMonitor.swift */; };
 		IC000002000000010000B1 /* ICloudStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = IC000002000000010000A1 /* ICloudStatusView.swift */; };
+		IC000004000000010000B1 /* ICloudAutoPullPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = IC000004000000010000A1 /* ICloudAutoPullPolicy.swift */; };
+		IC000005000000010000B1 /* ICloudImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = IC000005000000010000A1 /* ICloudImageLoader.swift */; };
+		IC000007000000010000B1 /* ICloudCacheEviction.swift in Sources */ = {isa = PBXBuildFile; fileRef = IC000007000000010000A1 /* ICloudCacheEviction.swift */; };
 		OP000001000000010000B1 /* OutpaintInsets.swift in Sources */ = {isa = PBXBuildFile; fileRef = OP000001000000010000A1 /* OutpaintInsets.swift */; };
 		OP000002000000010000B1 /* OutpaintCanvasNSView.swift in Sources */ = {isa = PBXBuildFile; fileRef = OP000002000000010000A1 /* OutpaintCanvasNSView.swift */; };
 		OP000003000000010000B1 /* OutpaintCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = OP000003000000010000A1 /* OutpaintCanvasView.swift */; };
@@ -239,6 +245,9 @@
 		10A000FF2D00000100000001 /* ImageVectorizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageVectorizerTests.swift; sourceTree = "<group>"; };
 		10A001012D00000100000001 /* InpaintingMaskCompositor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InpaintingMaskCompositor.swift; sourceTree = "<group>"; };
 		10A001052D00000100000001 /* CodexVersionFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexVersionFetcherTests.swift; sourceTree = "<group>"; };
+		0F789420DB0A40228CEE5B41 /* ICloudSyncMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ICloudSyncMonitorTests.swift; sourceTree = "<group>"; };
+		IC000006000000010000A1 /* ICloudImageLoaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ICloudImageLoaderTests.swift; sourceTree = "<group>"; };
+		IC000008000000010000A1 /* ICloudCacheEvictionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ICloudCacheEvictionTests.swift; sourceTree = "<group>"; };
 		10B001012D00000100000001 /* SketchModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SketchModels.swift; sourceTree = "<group>"; };
 		10B001032D00000100000001 /* SketchCompositor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SketchCompositor.swift; sourceTree = "<group>"; };
 		10B001072D00000100000001 /* DraftCanvasViewModel+Sketch.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Sketch.swift"; path = "ViewModel/DraftCanvasViewModel+Sketch.swift"; sourceTree = "<group>"; };
@@ -396,6 +405,9 @@
 		FFF632FC9AA946138EEF8D01EA71C8FB /* libvtracer_ffi.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libvtracer_ffi.a; path = Vendor/vtracer/libvtracer_ffi.a; sourceTree = "<group>"; };
 		IC000001000000010000A1 /* ICloudSyncMonitor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ICloudSyncMonitor.swift; path = Sync/ICloudSyncMonitor.swift; sourceTree = "<group>"; };
 		IC000002000000010000A1 /* ICloudStatusView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ICloudStatusView.swift; path = Views/ICloudStatusView.swift; sourceTree = "<group>"; };
+		IC000004000000010000A1 /* ICloudAutoPullPolicy.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ICloudAutoPullPolicy.swift; path = Sync/ICloudAutoPullPolicy.swift; sourceTree = "<group>"; };
+		IC000005000000010000A1 /* ICloudImageLoader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ICloudImageLoader.swift; path = Sync/ICloudImageLoader.swift; sourceTree = "<group>"; };
+		IC000007000000010000A1 /* ICloudCacheEviction.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ICloudCacheEviction.swift; path = Sync/ICloudCacheEviction.swift; sourceTree = "<group>"; };
 		OP000001000000010000A1 /* OutpaintInsets.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OutpaintInsets.swift; path = Editors/Outpaint/OutpaintInsets.swift; sourceTree = "<group>"; };
 		OP000002000000010000A1 /* OutpaintCanvasNSView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OutpaintCanvasNSView.swift; path = Editors/Outpaint/OutpaintCanvasNSView.swift; sourceTree = "<group>"; };
 		OP000003000000010000A1 /* OutpaintCanvasView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OutpaintCanvasView.swift; path = Editors/Outpaint/OutpaintCanvasView.swift; sourceTree = "<group>"; };
@@ -517,6 +529,9 @@
 				8A9FECC2E7F14E67952FB30D /* CanvasMetricsTests.swift */,
 				10A000FF2D00000100000001 /* ImageVectorizerTests.swift */,
 				10A001052D00000100000001 /* CodexVersionFetcherTests.swift */,
+				0F789420DB0A40228CEE5B41 /* ICloudSyncMonitorTests.swift */,
+				IC000006000000010000A1 /* ICloudImageLoaderTests.swift */,
+				IC000008000000010000A1 /* ICloudCacheEvictionTests.swift */,
 				B4EAD194EAC8422CB56493A8620C628D /* SVGRasterizerTests.swift */,
 				EF683B41EA36CD8006DA2CA5 /* ProjectStoreSnapshotTests.swift */,
 				50E763B96027AB7767F474F0 /* CropEditorMathTests.swift */,
@@ -789,6 +804,9 @@
 			isa = PBXGroup;
 			children = (
 				IC000001000000010000A1 /* ICloudSyncMonitor.swift */,
+				IC000004000000010000A1 /* ICloudAutoPullPolicy.swift */,
+				IC000005000000010000A1 /* ICloudImageLoader.swift */,
+				IC000007000000010000A1 /* ICloudCacheEviction.swift */,
 			);
 			name = Sync;
 			sourceTree = "<group>";
@@ -1010,6 +1028,9 @@
 				DC6F3E3000000011A0000001 /* SettingsView.swift in Sources */,
 				IC000001000000010000B1 /* ICloudSyncMonitor.swift in Sources */,
 				IC000002000000010000B1 /* ICloudStatusView.swift in Sources */,
+				IC000004000000010000B1 /* ICloudAutoPullPolicy.swift in Sources */,
+				IC000005000000010000B1 /* ICloudImageLoader.swift in Sources */,
+				IC000007000000010000B1 /* ICloudCacheEviction.swift in Sources */,
 				74E51C345A4B59211EC0CBF4 /* AccountPopover.swift in Sources */,
 				A13017642482452211C4E9A0 /* LogWindow.swift in Sources */,
 				1A4DA35B6990671B2B04CE17 /* GenerationProgressView.swift in Sources */,
@@ -1122,6 +1143,9 @@
 				BE3A138929BF42F98670599E /* CanvasMetricsTests.swift in Sources */,
 				10A001002D00000100000001 /* ImageVectorizerTests.swift in Sources */,
 				10A001062D00000100000001 /* CodexVersionFetcherTests.swift in Sources */,
+				8EA435875413498F9C6233C7 /* ICloudSyncMonitorTests.swift in Sources */,
+				IC000006000000010000B1 /* ICloudImageLoaderTests.swift in Sources */,
+				IC000008000000010000B1 /* ICloudCacheEvictionTests.swift in Sources */,
 				5D142797DE754E1BAF92366C248B473D /* SVGRasterizerTests.swift in Sources */,
 				F9000C7A096D9DC27C7EA911 /* ProjectStoreSnapshotTests.swift in Sources */,
 				2DD35EAB436D47F29CBC22DB /* CropEditorMathTests.swift in Sources */,
@@ -1272,7 +1296,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 307;
+				CURRENT_PROJECT_VERSION = 335;
 				DEAD_CODE_STRIPPING = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -1295,7 +1319,7 @@
 					"$(inherited)",
 					"$(SRCROOT)/DraftCanvas/Vendor/vtracer",
 				);
-				MARKETING_VERSION = 1.2.5;
+				MARKETING_VERSION = 1.2.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.spade3.DraftCanvas;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1314,7 +1338,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 307;
+				CURRENT_PROJECT_VERSION = 335;
 				DEAD_CODE_STRIPPING = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -1338,7 +1362,7 @@
 					"$(SRCROOT)/DraftCanvas/Vendor/vtracer",
 				);
 				LLVM_LTO = YES;
-				MARKETING_VERSION = 1.2.5;
+				MARKETING_VERSION = 1.2.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.spade3.DraftCanvas;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1354,7 +1378,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 307;
+				CURRENT_PROJECT_VERSION = 335;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = (
@@ -1366,7 +1390,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.2.5;
+				MARKETING_VERSION = 1.2.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.spade3.DraftCanvas.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 6.0;
@@ -1380,7 +1404,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 307;
+				CURRENT_PROJECT_VERSION = 335;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = (
@@ -1392,7 +1416,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.2.5;
+				MARKETING_VERSION = 1.2.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.spade3.DraftCanvas.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 6.0;

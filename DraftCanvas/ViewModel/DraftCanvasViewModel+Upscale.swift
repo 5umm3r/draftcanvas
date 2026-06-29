@@ -28,7 +28,8 @@ extension DraftCanvasViewModel {
             upsert(running, into: projectID)
 
             do {
-                let originalData = try Data(contentsOf: fileURL)
+                let originalData = try await imageLoader.loadData(at: fileURL, syncMonitor: syncMonitor)
+                await cacheEviction.recordAccess(url: fileURL)
 
                 let upscaledData: Data = try await Task.detached(priority: .userInitiated) {
                     try await Self.runUpscaleTurn(

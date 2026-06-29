@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.2.6] - 2026-06-29
+
+### 追加
+
+- 省容量モード（オプション）— iCloud 画像をオンデマンドダウンロードし、ローカルキャッシュ容量上限を設定可能（1/2/5/10 GB・無制限）
+- ローカルキャッシュの LRU 退避（容量上限超過時に最終アクセスが古い原本を `evictUbiquitousItem` で解放）
+- 未ダウンロード原本に DL 進行オーバーレイ表示
+- 最近開いたプロジェクトの起動時先読み（省容量モード時）
+
+### 変更
+
+- iCloud 同期インジケータをパーセンテージから indeterminate スピナーに変更（pending 100 件超で固着する不具合を解消）
+- フォアグラウンド復帰時に NSMetadataQuery を再評価して状態固着を回避
+- 画像読込パス（Crop / Outpaint / Upscale / Vectorize / MaterialExtract / Export / ItemActions / 各 ViewModel）を ICloudImageLoader 経由の async I/O に統一
+
+### 修正
+
+- iCloud 同期プログレスバーが pending 件数の分母固定により早期に頭打ちする問題
+
 ## [1.2.5] - 2026-06-22
 
 ### 変更

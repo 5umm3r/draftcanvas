@@ -13,7 +13,11 @@ enum ICloudSyncStatus: Equatable {
 final class ICloudSyncMonitor: ObservableObject {
     @Published private(set) var syncStatus: ICloudSyncStatus = .disabled
     @Published private(set) var totalDataSize: Int64 = 0
+    @Published private(set) var totalItemCount: Int = 0
     @Published private(set) var downloadingItemIDs: Set<UUID> = []
+
+    /// 自動 pull 方針。`eager` で全件 pull、`thumbsOnly` で原本は手動 DL。
+    var autoPullPolicy: ICloudAutoPullPolicy = .eager
 
     private var query: NSMetadataQuery?
     private var observers: [Any] = []
@@ -56,6 +60,13 @@ final class ICloudSyncMonitor: ObservableObject {
         observers.removeAll()
     }
 
+    /// クエリ更新通知が届かず状態が固着した場合に備え、現在のクエリ結果を手動で再評価する。
+    /// アプリが前面復帰したタイミング等で呼ぶ。
+    func refresh() {
+        guard query != nil else { return }
+        processQueryResults()
+    }
+
     func requestDownload(for url: URL) {
         try? FileManager.default.startDownloadingUbiquitousItem(at: url)
     }
@@ -95,7 +106,9 @@ final class ICloudSyncMonitor: ObservableObject {
 
             if needsDownload, !isDownloading,
                let url = item.value(forAttribute: NSMetadataItemURLKey) as? URL {
-                try? FileManager.default.startDownloadingUbiquitousItem(at: url)
+                if shouldAutoPull(url: url) {
+                    try? FileManager.default.startDownloadingUbiquitousItem(at: url)
+                }
             }
 
             if let name = item.value(forAttribute: NSMetadataItemFSNameKey) as? String {
@@ -107,12 +120,26 @@ final class ICloudSyncMonitor: ObservableObject {
         }
 
         totalDataSize = totalSize
+        totalItemCount = query.resultCount
         downloadingItemIDs = downloading
 
         if pendingCount > 0 {
             syncStatus = .syncing(pending: pendingCount)
         } else {
             syncStatus = .synced
+        }
+    }
+
+    private func shouldAutoPull(url: URL) -> Bool {
+        switch autoPullPolicy {
+        case .eager:
+            return true
+        case .thumbsOnly:
+            let path = url.path
+            if path.contains("/.thumbs/") || path.contains("/.thumbs.nosync/") {
+                return true
+            }
+            return ICloudAutoPullPolicy.isMetadataExtension(url.pathExtension)
         }
     }
 

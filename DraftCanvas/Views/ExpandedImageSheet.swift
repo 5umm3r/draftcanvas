@@ -109,7 +109,8 @@ struct ExpandedImageSheet: View {
                 thumbnailStore: viewModel.thumbnailStore,
                 item: item,
                 originalURL: viewModel.fileURL(for: item),
-                contentMode: .fit
+                contentMode: .fit,
+                syncMonitor: viewModel.syncMonitor
             )
         }
     }

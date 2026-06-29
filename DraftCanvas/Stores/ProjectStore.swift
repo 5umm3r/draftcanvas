@@ -214,6 +214,11 @@ final class ProjectStore: @unchecked Sendable {
     }
 
     private func coordinatedWrite(_ data: Data, to url: URL) {
+        // 内容が既存ファイルと同一なら書き込まない。
+        // atomic 書き込みは内容不変でも mtime を更新し、iCloud の不要な再同期を誘発するため。
+        if let existing = try? Data(contentsOf: url), existing == data {
+            return
+        }
         guard isInUbiquityContainer else {
             try? data.write(to: url, options: .atomic)
             return

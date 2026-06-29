@@ -22,6 +22,7 @@ struct DraftCanvasApp: App {
                 .onChange(of: scenePhase) { _, newPhase in
                     if newPhase == .active {
                         viewModel.refreshAccountUsageIfStale()
+                        viewModel.syncMonitor?.refresh()
                     }
                 }
                 .onAppear {

@@ -18,7 +18,9 @@ extension DraftCanvasViewModel {
 
         Task.detached(priority: .userInitiated) {
             do {
-                let originalData = try Data(contentsOf: fileURL)
+                let monitor = await MainActor.run { self.syncMonitor }
+                let originalData = try await self.imageLoader.loadData(at: fileURL, syncMonitor: monitor)
+                await self.cacheEviction.recordAccess(url: fileURL)
                 let compositorResult = try OutpaintCompositor.composite(
                     originalImageData: originalData,
                     insets: insets
@@ -86,7 +88,9 @@ extension DraftCanvasViewModel {
 
         let outpaintTask = Task.detached(priority: .userInitiated) {
             do {
-                let originalData = try Data(contentsOf: fileURL)
+                let monitor = await MainActor.run { self.syncMonitor }
+                let originalData = try await self.imageLoader.loadData(at: fileURL, syncMonitor: monitor)
+                await self.cacheEviction.recordAccess(url: fileURL)
 
                 let compositorResult = try OutpaintCompositor.composite(
                     originalImageData: originalData,

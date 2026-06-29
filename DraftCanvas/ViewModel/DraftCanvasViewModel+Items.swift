@@ -165,12 +165,13 @@ extension DraftCanvasViewModel {
     }
 
     @discardableResult
-    func copyItemToClipboard(_ item: ProjectItem) -> Bool {
+    func copyItemToClipboard(_ item: ProjectItem) async -> Bool {
         let url = fileURL(for: item)
         guard
-            let imageData = try? Data(contentsOf: url),
+            let imageData = try? await imageLoader.loadData(at: url, syncMonitor: syncMonitor),
             let image = NSImage(data: imageData)
         else { return false }
+        await cacheEviction.recordAccess(url: url)
         ImageClipboard.copy(imageData: imageData, image: image)
         return true
     }
@@ -192,9 +193,17 @@ extension DraftCanvasViewModel {
         return img
     }
 
+    func cachedImageAsync(for item: ProjectItem) async -> NSImage? {
+        let url = fileURL(for: item)
+        if let cached = originalImageStore.cached(for: url) { return cached }
+        guard let img = try? await imageLoader.loadImage(at: url, syncMonitor: syncMonitor) else { return nil }
+        await cacheEviction.recordAccess(url: url)
+        return img
+    }
+
     func loadImage(for item: ProjectItem) async -> NSImage? {
         let url = fileURL(for: item)
-        return await originalImageStore.loadIfNeeded(url: url)
+        return await originalImageStore.loadIfNeeded(url: url, syncMonitor: syncMonitor)
     }
 
     func thumbnail(for item: ProjectItem) -> NSImage? {

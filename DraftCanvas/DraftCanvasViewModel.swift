@@ -225,6 +225,8 @@ final class DraftCanvasViewModel: ObservableObject {
     var templateStore: PromptTemplateStore
     var historyStore: PromptHistoryStore
     @Published var syncMonitor: ICloudSyncMonitor?
+    let imageLoader = ICloudImageLoader()
+    let cacheEviction = ICloudCacheEviction()
 
     init(
         projectStore: ProjectStore = ProjectStore(),
@@ -248,7 +250,7 @@ final class DraftCanvasViewModel: ObservableObject {
             itemsDirectory: projectStore.itemsDirectory,
             useNoSync: projectStore.isInUbiquityContainer
         )
-        self.originalImageStore = CanvasOriginalImageStore()
+        self.originalImageStore = CanvasOriginalImageStore(loader: imageLoader, eviction: cacheEviction)
         self.templateStore = PromptTemplateStore(rootDirectory: projectStore.rootDirectory)
         self.historyStore = PromptHistoryStore(rootDirectory: projectStore.rootDirectory)
         client.onLog = { [weak self] message in
@@ -274,13 +276,20 @@ final class DraftCanvasViewModel: ObservableObject {
                 self?.logs.append("並列度を \(old) → \(new) に調整しました")
             }
         }
-        projectStore.cleanupAllAttachments()
+        // iCloud 配下では起動毎の一括削除は同期ノイズ（mtime 更新→再アップロード）を招くため行わない
+        if !projectStore.isInUbiquityContainer {
+            projectStore.cleanupAllAttachments()
+        }
         if projectStore.isInUbiquityContainer {
             let monitor = ICloudSyncMonitor()
             self.syncMonitor = monitor
             monitor.start(containerURL: projectStore.rootDirectory)
+            monitor.autoPullPolicy = ICloudAutoPullPolicy.load()
+            installForegroundRefreshObserver()
+            enforceCacheLimitOnLaunchIfNeeded()
         }
         loadProjects()
+        prefetchRecentProjectsIfNeeded()
         loadTemplates()
         loadHistory()
         resolveICloudAsync()
@@ -316,9 +325,13 @@ final class DraftCanvasViewModel: ObservableObject {
                 let monitor = ICloudSyncMonitor()
                 self.syncMonitor = monitor
                 monitor.start(containerURL: url)
+                monitor.autoPullPolicy = ICloudAutoPullPolicy.load()
+                self.installForegroundRefreshObserver()
                 self.loadProjects()
                 self.loadTemplates()
                 self.loadHistory()
+                self.enforceCacheLimitOnLaunchIfNeeded()
+                self.prefetchRecentProjectsIfNeeded()
             }
         }
     }
@@ -341,6 +354,16 @@ final class DraftCanvasViewModel: ObservableObject {
     }
 
     // MARK: - Private
+
+    private func installForegroundRefreshObserver() {
+        NotificationCenter.default.addObserver(
+            forName: NSApplication.didBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in self?.syncMonitor?.refresh() }
+        }
+    }
 
     func loadProjects() {
         isLoadingProjects = true
@@ -525,4 +548,72 @@ final class DraftCanvasViewModel: ObservableObject {
         for task in tasksToAwait { await task.value }
         await enhance?.value
     }
+}
+
+// MARK: - 起動時 LRU eviction
+
+extension DraftCanvasViewModel {
+    /// 起動直後に呼ぶ。原本のサイズと last access を集めて上限超過分を evict。
+    /// 省容量モード OFF の場合は no-op (eager がローカルに pull し続けるため上限の意味が薄い)。
+    func enforceCacheLimitOnLaunchIfNeeded() {
+        guard syncMonitor != nil,
+              ICloudAutoPullPolicy.load() == .thumbsOnly
+        else { return }
+        let eviction = self.cacheEviction
+        let store = self.projectStore
+        Task.detached(priority: .utility) {
+            let entries = await collectEntries(rootDirectory: store.rootDirectory, eviction: eviction)
+            let evictURLs = await eviction.enforceLimit(entries: entries)
+            for url in evictURLs {
+                ICloudCacheEviction.evict(url: url)
+                await eviction.forgetAccess(url: url)
+            }
+        }
+    }
+}
+
+// MARK: - 起動時プリフェッチ
+
+extension DraftCanvasViewModel {
+    /// 起動直後、updatedAt 降順で先頭 prefetchCount 件のプロジェクトに紐づく
+    /// アイテム原本の DL を要求する。省容量モード (thumbsOnly) 時のみ実行。
+    func prefetchRecentProjectsIfNeeded(prefetchCount: Int = 3, itemsPerProject: Int = 4) {
+        guard let monitor = syncMonitor,
+              ICloudAutoPullPolicy.load() == .thumbsOnly
+        else { return }
+        let recent = Array(projects.sorted { $0.updatedAt > $1.updatedAt }.prefix(prefetchCount))
+        let allItems = self.items
+        let store = self.projectStore
+        Task.detached(priority: .utility) {
+            for project in recent {
+                let head = Array(allItems.filter { $0.projectID == project.id }.prefix(itemsPerProject))
+                for item in head {
+                    let url = store.resolvedFileURL(for: item)
+                    await MainActor.run { monitor.requestDownload(for: url) }
+                }
+            }
+        }
+    }
+}
+
+private func collectEntries(rootDirectory: URL, eviction: ICloudCacheEviction) async -> [ICloudCacheEntry] {
+    let fm = FileManager.default
+    let itemsDir = rootDirectory.appendingPathComponent("items")
+    guard let enumerator = fm.enumerator(at: itemsDir, includingPropertiesForKeys: [.fileSizeKey, .isUbiquitousItemKey]) else { return [] }
+    // NSDirectoryEnumerator.makeIterator() は Swift 6 非同期コンテキストで使用不可。
+    // URL と size を同期的に先に収集してから、actor 呼び出しを行う。
+    var collected: [(url: URL, size: Int)] = []
+    while let item = enumerator.nextObject() {
+        guard let url = item as? URL else { continue }
+        if url.lastPathComponent.hasPrefix(".thumbs") { continue }
+        let vals = try? url.resourceValues(forKeys: [.fileSizeKey, .isUbiquitousItemKey])
+        guard let size = vals?.fileSize else { continue }
+        collected.append((url: url, size: size))
+    }
+    var entries: [ICloudCacheEntry] = []
+    for item in collected {
+        let last = (await eviction.lastAccess(url: item.url)) ?? .distantPast
+        entries.append(.init(url: item.url, size: Int64(item.size), lastAccess: last))
+    }
+    return entries
 }

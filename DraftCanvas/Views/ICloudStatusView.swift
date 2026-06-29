@@ -17,22 +17,11 @@ struct ICloudStatusView: View {
                     .font(.system(size: 10).monospacedDigit())
                     .foregroundStyle(.tertiary)
             }
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(Color.primary.opacity(0.08))
-                    if case .syncing(let pending) = syncMonitor.syncStatus {
-                        RoundedRectangle(cornerRadius: 2)
-                            .fill(Color.accentColor.opacity(0.6))
-                            .frame(width: syncBarWidth(total: geo.size.width, pending: pending))
-                            .animation(.easeInOut(duration: 0.3), value: pending)
-                    } else if syncMonitor.syncStatus == .synced {
-                        RoundedRectangle(cornerRadius: 2)
-                            .fill(Color.green.opacity(0.5))
-                    }
-                }
+            if case .syncing = syncMonitor.syncStatus {
+                ProgressView()
+                    .progressViewStyle(.linear)
+                    .controlSize(.mini)
             }
-            .frame(height: 3)
             Text(statusText)
                 .font(.system(size: 10))
                 .foregroundStyle(.tertiary)
@@ -75,9 +64,4 @@ struct ICloudStatusView: View {
         ByteCountFormatter.string(fromByteCount: syncMonitor.totalDataSize, countStyle: .file)
     }
 
-    private func syncBarWidth(total: CGFloat, pending: Int) -> CGFloat {
-        guard pending > 0 else { return total }
-        let progress = max(0.1, 1.0 - Double(pending) / 100.0)
-        return total * CGFloat(progress)
-    }
 }

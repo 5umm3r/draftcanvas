@@ -7,24 +7,27 @@ extension DraftCanvasViewModel {
         let ordinal = ordinalForItem(item, in: item.projectID)
         let base = ExportNaming.baseFilename(forProjectName: project.name, ordinal: ordinal)
         let fileURL = projectStore.resolvedFileURL(for: item)
-        var originalSize = CGSize(width: 1024, height: 1024)
-        if let data = try? Data(contentsOf: fileURL),
-           let src = CGImageSourceCreateWithData(data as CFData, nil),
-           let props = CGImageSourceCopyPropertiesAtIndex(src, 0, nil) as? [CFString: Any] {
-            let w = (props[kCGImagePropertyPixelWidth] as? CGFloat)
-                ?? (props[kCGImagePropertyPixelWidth] as? Int).map(CGFloat.init) ?? 1024
-            let h = (props[kCGImagePropertyPixelHeight] as? CGFloat)
-                ?? (props[kCGImagePropertyPixelHeight] as? Int).map(CGFloat.init) ?? 1024
-            originalSize = CGSize(width: w, height: h)
-        }
         let svgURL = item.svgFileURL(in: projectStore.rootDirectory)
         let hasVectorSVG = item.hasSVG && FileManager.default.fileExists(atPath: svgURL.path)
-        exportRequest = ExportRequest(
-            source: .singleItem(item),
-            originalSize: originalSize,
-            hasVectorSVG: hasVectorSVG,
-            baseFilename: base
-        )
+        Task { @MainActor in
+            var originalSize = CGSize(width: 1024, height: 1024)
+            if let data = try? await imageLoader.loadData(at: fileURL, syncMonitor: syncMonitor),
+               let src = CGImageSourceCreateWithData(data as CFData, nil),
+               let props = CGImageSourceCopyPropertiesAtIndex(src, 0, nil) as? [CFString: Any] {
+                let w = (props[kCGImagePropertyPixelWidth] as? CGFloat)
+                    ?? (props[kCGImagePropertyPixelWidth] as? Int).map(CGFloat.init) ?? 1024
+                let h = (props[kCGImagePropertyPixelHeight] as? CGFloat)
+                    ?? (props[kCGImagePropertyPixelHeight] as? Int).map(CGFloat.init) ?? 1024
+                originalSize = CGSize(width: w, height: h)
+            }
+            await cacheEviction.recordAccess(url: fileURL)
+            exportRequest = ExportRequest(
+                source: .singleItem(item),
+                originalSize: originalSize,
+                hasVectorSVG: hasVectorSVG,
+                baseFilename: base
+            )
+        }
     }
 
     func exportSelected() {

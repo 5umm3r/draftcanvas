@@ -43,7 +43,8 @@ extension ContentView {
                             thumbnailStore: viewModel.thumbnailStore,
                             item: sourceItem,
                             originalURL: viewModel.fileURL(for: sourceItem),
-                            contentMode: .fill
+                            contentMode: .fill,
+                            syncMonitor: viewModel.syncMonitor
                         )
                         .frame(width: thumbSize, height: thumbSize)
                             .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
@@ -179,7 +180,8 @@ extension ContentView {
                     thumbnailStore: viewModel.thumbnailStore,
                     item: item,
                     originalURL: viewModel.fileURL(for: item),
-                    contentMode: .fit
+                    contentMode: .fit,
+                    syncMonitor: viewModel.syncMonitor
                 )
                 .frame(width: 80, height: 80)
                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
@@ -226,6 +228,7 @@ extension ContentView {
             contentMode: .fit,
             cardSize: cardSize(forItem: item),
             originalStore: viewModel.originalImageStore,
+            syncMonitor: viewModel.syncMonitor,
             enableOriginalUpgrade: true
         )
     }
@@ -348,10 +351,12 @@ private struct ImageCopyButton: View {
             systemImage: didCopy ? "checkmark" : "doc.on.doc.fill",
             tooltip: didCopy ? "コピー完了" : "クリップボードにコピー"
         ) {
-            guard viewModel.copyItemToClipboard(item) else { return }
-            withAnimation(.easeOut(duration: 0.15)) { didCopy = true }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
-                withAnimation(.easeIn(duration: 0.2)) { didCopy = false }
+            Task {
+                guard await viewModel.copyItemToClipboard(item) else { return }
+                withAnimation(.easeOut(duration: 0.15)) { didCopy = true }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                    withAnimation(.easeIn(duration: 0.2)) { didCopy = false }
+                }
             }
         }
     }

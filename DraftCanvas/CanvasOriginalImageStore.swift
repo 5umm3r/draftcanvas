@@ -24,6 +24,14 @@ final class CanvasOriginalImageStore: ObservableObject {
     }()
 
     private var inflight: [URL: Task<NSImage?, Never>] = [:]
+    private let loader: ICloudImageLoader
+    private let eviction: ICloudCacheEviction
+
+    init(loader: ICloudImageLoader = ICloudImageLoader(),
+         eviction: ICloudCacheEviction = ICloudCacheEviction()) {
+        self.loader = loader
+        self.eviction = eviction
+    }
 
     func cached(for url: URL) -> NSImage? {
         cache.object(forKey: url as NSURL)
@@ -34,24 +42,22 @@ final class CanvasOriginalImageStore: ObservableObject {
             #if DEBUG
             CanvasMetrics.originalCacheHitCount += 1
             #endif
+            await eviction.recordAccess(url: url)
             return hit
-        }
-        if let monitor = syncMonitor, !monitor.isDownloaded(url: url) {
-            monitor.requestDownload(for: url)
-            return nil
         }
         if let existing = inflight[url] {
             return await existing.value
         }
+        let loader = self.loader
+        let eviction = self.eviction
         let task = Task.detached(priority: .userInitiated) { () -> NSImage? in
-            let opts: [CFString: Any] = [
-                kCGImageSourceShouldCacheImmediately: true,
-                kCGImageSourceShouldCache: true,
-            ]
-            guard let src = CGImageSourceCreateWithURL(url as CFURL, opts as CFDictionary),
-                  let cg = CGImageSourceCreateImageAtIndex(src, 0, opts as CFDictionary)
-            else { return nil }
-            return NSImage(cgImage: cg, size: NSSize(width: cg.width, height: cg.height))
+            do {
+                let img = try await loader.loadImage(at: url, syncMonitor: syncMonitor)
+                if img != nil { await eviction.recordAccess(url: url) }
+                return img
+            } catch {
+                return nil
+            }
         }
         inflight[url] = task
         let img = await task.value

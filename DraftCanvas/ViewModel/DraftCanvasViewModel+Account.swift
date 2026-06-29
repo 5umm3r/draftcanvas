@@ -107,25 +107,32 @@ extension DraftCanvasViewModel {
         guard let fallbackID = availableModels.first(where: \.isDefault)?.id
                 ?? availableModels.first?.id else { return }
 
+        var changed = false
         for index in projects.indices {
             if projects[index].model.isEmpty || !validIDs.contains(projects[index].model) {
                 projects[index].model = fallbackID
+                changed = true
             }
             if let model = availableModels.first(where: { $0.id == projects[index].model }),
                !model.supportedReasoningEfforts.contains(projects[index].reasoningEffort) {
                 projects[index].reasoningEffort = model.defaultReasoningEffort
+                changed = true
             }
         }
         if draftInputs.model.isEmpty || !validIDs.contains(draftInputs.model) {
             draftInputs.model = fallbackID
+            changed = true
         }
         for (key, var inputs) in inputsByProject {
             if inputs.model.isEmpty || !validIDs.contains(inputs.model) {
                 inputs.model = fallbackID
                 inputsByProject[key] = inputs
+                changed = true
             }
         }
-        saveState()
+        if changed {
+            saveState()
+        }
     }
 
     func stopServer() {
