@@ -287,9 +287,9 @@ final class DraftCanvasViewModel: ObservableObject {
             monitor.autoPullPolicy = ICloudAutoPullPolicy.load()
             installForegroundRefreshObserver()
             enforceCacheLimitOnLaunchIfNeeded()
-            prefetchRecentProjectsIfNeeded()
         }
         loadProjects()
+        prefetchRecentProjectsIfNeeded()
         loadTemplates()
         loadHistory()
         resolveICloudAsync()
