@@ -159,6 +159,36 @@ struct SettingsView: View {
                             .font(.caption)
                             .foregroundStyle(.orange)
                     }
+                    Toggle(isOn: Binding(
+                        get: {
+                            UserDefaults.standard.string(forKey: ICloudAutoPullPolicy.userDefaultsKey) == ICloudAutoPullPolicy.thumbsOnly.rawValue
+                        },
+                        set: { newValue in
+                            let policy: ICloudAutoPullPolicy = newValue ? .thumbsOnly : .eager
+                            UserDefaults.standard.set(policy.rawValue, forKey: ICloudAutoPullPolicy.userDefaultsKey)
+                            iCloudPendingRestart = true
+                        }
+                    )) {
+                        Text("省容量モード (画像はオンデマンド DL)")
+                    }
+                    .toggleStyle(.switch)
+                    .font(.caption)
+                    Picker(selection: Binding(
+                        get: { UserDefaults.standard.object(forKey: ICloudCacheEviction.limitBytesKey) as? Int64 ?? ICloudCacheEviction.defaultLimitBytes },
+                        set: { newValue in
+                            UserDefaults.standard.set(newValue, forKey: ICloudCacheEviction.limitBytesKey)
+                        }
+                    )) {
+                        Text("1 GB").tag(Int64(1 * 1024 * 1024 * 1024))
+                        Text("2 GB").tag(Int64(2 * 1024 * 1024 * 1024))
+                        Text("5 GB").tag(Int64(5 * 1024 * 1024 * 1024))
+                        Text("10 GB").tag(Int64(10 * 1024 * 1024 * 1024))
+                        Text("無制限").tag(Int64(0))
+                    } label: {
+                        Text("ローカルキャッシュ上限")
+                    }
+                    .pickerStyle(.menu)
+                    .font(.caption)
                     if UserDefaults.standard.bool(forKey: "draftcanvas.migration.iCloudSync.v1"),
                        !UserDefaults.standard.bool(forKey: "iCloudLocalDataDeleted") {
                         Button("ローカルデータのコピーを削除") {
