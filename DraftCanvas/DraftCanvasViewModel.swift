@@ -225,6 +225,8 @@ final class DraftCanvasViewModel: ObservableObject {
     var templateStore: PromptTemplateStore
     var historyStore: PromptHistoryStore
     @Published var syncMonitor: ICloudSyncMonitor?
+    let imageLoader = ICloudImageLoader()
+    let cacheEviction = ICloudCacheEviction()
 
     init(
         projectStore: ProjectStore = ProjectStore(),
