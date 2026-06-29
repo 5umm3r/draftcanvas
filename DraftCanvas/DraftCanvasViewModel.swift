@@ -250,7 +250,7 @@ final class DraftCanvasViewModel: ObservableObject {
             itemsDirectory: projectStore.itemsDirectory,
             useNoSync: projectStore.isInUbiquityContainer
         )
-        self.originalImageStore = CanvasOriginalImageStore()
+        self.originalImageStore = CanvasOriginalImageStore(loader: imageLoader, eviction: cacheEviction)
         self.templateStore = PromptTemplateStore(rootDirectory: projectStore.rootDirectory)
         self.historyStore = PromptHistoryStore(rootDirectory: projectStore.rootDirectory)
         client.onLog = { [weak self] message in
