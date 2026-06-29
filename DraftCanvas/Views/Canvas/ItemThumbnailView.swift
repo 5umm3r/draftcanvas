@@ -7,6 +7,7 @@ struct ItemThumbnailView: View {
     let contentMode: ContentMode
     var cardSize: CGSize = .zero
     var originalStore: CanvasOriginalImageStore? = nil
+    var syncMonitor: ICloudSyncMonitor? = nil
     var enableOriginalUpgrade: Bool = false
 
     @Environment(\.displayScale) private var displayScale
@@ -67,7 +68,7 @@ struct ItemThumbnailView: View {
                 withAnimation { originalImage = cached }
                 return
             }
-            if let img = await store.loadIfNeeded(url: originalURL) {
+            if let img = await store.loadIfNeeded(url: originalURL, syncMonitor: syncMonitor) {
                 withAnimation { originalImage = img }
             }
         }

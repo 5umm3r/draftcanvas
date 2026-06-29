@@ -12,7 +12,8 @@ struct MultiDragPreview: View {
                     thumbnailStore: viewModel.thumbnailStore,
                     item: item,
                     originalURL: viewModel.fileURL(for: item),
-                    contentMode: .fill
+                    contentMode: .fill,
+                    syncMonitor: viewModel.syncMonitor
                 )
                 .frame(width: 72, height: 72)
                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
