@@ -287,6 +287,7 @@ final class DraftCanvasViewModel: ObservableObject {
             monitor.autoPullPolicy = ICloudAutoPullPolicy.load()
             installForegroundRefreshObserver()
             enforceCacheLimitOnLaunchIfNeeded()
+            prefetchRecentProjectsIfNeeded()
         }
         loadProjects()
         loadTemplates()
@@ -330,6 +331,7 @@ final class DraftCanvasViewModel: ObservableObject {
                 self.loadTemplates()
                 self.loadHistory()
                 self.enforceCacheLimitOnLaunchIfNeeded()
+                self.prefetchRecentProjectsIfNeeded()
             }
         }
     }
@@ -565,6 +567,30 @@ extension DraftCanvasViewModel {
             for url in evictURLs {
                 ICloudCacheEviction.evict(url: url)
                 await eviction.forgetAccess(url: url)
+            }
+        }
+    }
+}
+
+// MARK: - 起動時プリフェッチ
+
+extension DraftCanvasViewModel {
+    /// 起動直後、updatedAt 降順で先頭 prefetchCount 件のプロジェクトに紐づく
+    /// アイテム原本の DL を要求する。省容量モード (thumbsOnly) 時のみ実行。
+    func prefetchRecentProjectsIfNeeded(prefetchCount: Int = 3, itemsPerProject: Int = 4) {
+        guard let monitor = syncMonitor,
+              ICloudAutoPullPolicy.load() == .thumbsOnly
+        else { return }
+        let recent = Array(projects.sorted { $0.updatedAt > $1.updatedAt }.prefix(prefetchCount))
+        let allItems = self.items
+        let store = self.projectStore
+        Task.detached(priority: .utility) {
+            for project in recent {
+                let head = Array(allItems.filter { $0.projectID == project.id }.prefix(itemsPerProject))
+                for item in head {
+                    let url = store.resolvedFileURL(for: item)
+                    await MainActor.run { monitor.requestDownload(for: url) }
+                }
             }
         }
     }
