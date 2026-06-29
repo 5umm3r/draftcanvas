@@ -284,6 +284,7 @@ final class DraftCanvasViewModel: ObservableObject {
             let monitor = ICloudSyncMonitor()
             self.syncMonitor = monitor
             monitor.start(containerURL: projectStore.rootDirectory)
+            monitor.autoPullPolicy = ICloudAutoPullPolicy.load()
             installForegroundRefreshObserver()
         }
         loadProjects()
@@ -322,6 +323,7 @@ final class DraftCanvasViewModel: ObservableObject {
                 let monitor = ICloudSyncMonitor()
                 self.syncMonitor = monitor
                 monitor.start(containerURL: url)
+                monitor.autoPullPolicy = ICloudAutoPullPolicy.load()
                 self.installForegroundRefreshObserver()
                 self.loadProjects()
                 self.loadTemplates()
