@@ -90,7 +90,7 @@ struct ContentView: View {
         .background {
             if !promptIsFocused, let id = viewModel.selectedItemID,
                let item = viewModel.itemsByID[id] {
-                Button(action: { viewModel.copyItemToClipboard(item) }) {
+                Button(action: { Task { await viewModel.copyItemToClipboard(item) } }) {
                     EmptyView()
                 }
                 .keyboardShortcut("c", modifiers: .command)
