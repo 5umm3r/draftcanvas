@@ -282,6 +282,7 @@ final class DraftCanvasViewModel: ObservableObject {
             let monitor = ICloudSyncMonitor()
             self.syncMonitor = monitor
             monitor.start(containerURL: projectStore.rootDirectory)
+            installForegroundRefreshObserver()
         }
         loadProjects()
         loadTemplates()
@@ -319,6 +320,7 @@ final class DraftCanvasViewModel: ObservableObject {
                 let monitor = ICloudSyncMonitor()
                 self.syncMonitor = monitor
                 monitor.start(containerURL: url)
+                self.installForegroundRefreshObserver()
                 self.loadProjects()
                 self.loadTemplates()
                 self.loadHistory()
@@ -344,6 +346,16 @@ final class DraftCanvasViewModel: ObservableObject {
     }
 
     // MARK: - Private
+
+    private func installForegroundRefreshObserver() {
+        NotificationCenter.default.addObserver(
+            forName: NSApplication.didBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in self?.syncMonitor?.refresh() }
+        }
+    }
 
     func loadProjects() {
         isLoadingProjects = true
