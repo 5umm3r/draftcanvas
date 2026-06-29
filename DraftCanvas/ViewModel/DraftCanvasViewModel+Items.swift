@@ -203,7 +203,7 @@ extension DraftCanvasViewModel {
 
     func loadImage(for item: ProjectItem) async -> NSImage? {
         let url = fileURL(for: item)
-        return await originalImageStore.loadIfNeeded(url: url)
+        return await originalImageStore.loadIfNeeded(url: url, syncMonitor: syncMonitor)
     }
 
     func thumbnail(for item: ProjectItem) -> NSImage? {
