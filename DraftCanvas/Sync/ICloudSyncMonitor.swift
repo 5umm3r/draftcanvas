@@ -13,6 +13,7 @@ enum ICloudSyncStatus: Equatable {
 final class ICloudSyncMonitor: ObservableObject {
     @Published private(set) var syncStatus: ICloudSyncStatus = .disabled
     @Published private(set) var totalDataSize: Int64 = 0
+    @Published private(set) var totalItemCount: Int = 0
     @Published private(set) var downloadingItemIDs: Set<UUID> = []
 
     private var query: NSMetadataQuery?
@@ -114,6 +115,7 @@ final class ICloudSyncMonitor: ObservableObject {
         }
 
         totalDataSize = totalSize
+        totalItemCount = query.resultCount
         downloadingItemIDs = downloading
 
         if pendingCount > 0 {
