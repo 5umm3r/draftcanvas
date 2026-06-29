@@ -23,7 +23,8 @@ extension DraftCanvasViewModel {
             upsert(running, into: projectID)
 
             do {
-                let inputData = try Data(contentsOf: fileURL)
+                let inputData = try await imageLoader.loadData(at: fileURL, syncMonitor: syncMonitor)
+                await cacheEviction.recordAccess(url: fileURL)
                 let session = try await MaterialExtractor.detect(from: inputData)
 
                 removeJob(id: job.id, from: projectID)
