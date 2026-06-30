@@ -54,6 +54,7 @@ echo "==> Archive"
 xcodebuild -scheme "$SCHEME" -configuration Release \
   -destination 'generic/platform=macOS' \
   -archivePath "$ARCHIVE" \
+  -allowProvisioningUpdates \
   MARKETING_VERSION="$VERSION" \
   CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
   archive
