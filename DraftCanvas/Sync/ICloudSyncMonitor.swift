@@ -31,7 +31,9 @@ final class ICloudSyncMonitor: ObservableObject {
         stop()
 
         let query = NSMetadataQuery()
-        query.searchScopes = [NSMetadataQueryUbiquitousDocumentsScope]
+        // 自アプリの Ubiquity コンテナ配下に限定。Ubiquitous*Scope 定数は iCloud Drive 全体を対象にしてしまい、
+        // 他アプリのアップロード待ちファイルでも pending 扱いになり同期が永遠に終わらない原因になる。
+        query.searchScopes = [containerURL]
         query.predicate = NSPredicate(format: "%K LIKE '*'", NSMetadataItemFSNameKey)
         query.sortDescriptors = [NSSortDescriptor(key: NSMetadataItemFSNameKey, ascending: true)]
         self.query = query
