@@ -34,7 +34,7 @@ NOTARY_PROFILE="DC_NOTARY"
 
 SPARKLE_KEY_FILE="${HOME}/.config/sparkle/ed_private_key"
 GENERATE_APPCAST="$(command -v generate_appcast 2>/dev/null \
-  || find /usr/local/Caskroom/sparkle /opt/homebrew/Caskroom/sparkle -name generate_appcast 2>/dev/null | sort -r | head -1 \
+  || find /usr/local/Caskroom/sparkle /opt/homebrew/Caskroom/sparkle -name generate_appcast -not -path '*dSYM*' 2>/dev/null | sort -r | head -1 \
   || true)"
 DOWNLOAD_URL_PREFIX="https://github.com/5umm3r/draftcanvas/releases/latest/download/"
 
