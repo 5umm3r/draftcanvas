@@ -65,3 +65,38 @@ struct ICloudStatusView: View {
     }
 
 }
+
+/// syncMonitor 未生成時（同期オフ / 未サインイン / 有効化後の再起動待ち）のステータス表示。
+/// 同期トグルは再起動反映方式のため、セッション中に monitor が後から生えるのは
+/// 起動直後のコンテナ解決時のみ。
+struct ICloudInactiveStatusView: View {
+    @AppStorage("iCloudSyncEnabled") private var iCloudSyncEnabled = false
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: "icloud.slash")
+                .font(.system(size: 10))
+                .foregroundStyle(.secondary)
+            Text("iCloud")
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(.secondary)
+            Spacer()
+            Text(statusText)
+                .font(.system(size: 10))
+                .foregroundStyle(.tertiary)
+                .lineLimit(1)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+    }
+
+    private var statusText: LocalizedStringKey {
+        if !iCloudSyncEnabled {
+            return "同期オフ"
+        }
+        if !ICloudSyncMonitor.isICloudAvailable {
+            return "未サインイン"
+        }
+        return "再起動後に同期を開始"
+    }
+}

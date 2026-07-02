@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import Network
 
 enum ICloudSyncStatus: Equatable {
     case disabled
@@ -23,12 +24,39 @@ final class ICloudSyncMonitor: ObservableObject {
     private var observers: [Any] = []
     private let containerIdentifier: String
 
+    // ネットワーク断を検知して .offline を表示するための監視。
+    // NSMetadataQuery はオフラインでも pending を報告し続けるため、
+    // 転送が進まない理由をユーザーに区別して見せる。
+    private var pathMonitor: NWPathMonitor?
+    private var isNetworkAvailable = true
+
+    // processQueryResults の集計結果。ネットワーク状態と合成して syncStatus を導出する
+    private var lastPendingCount = 0
+    private var lastErrorMessage: String?
+
     init(containerIdentifier: String = "iCloud.com.spade3.DraftCanvas") {
         self.containerIdentifier = containerIdentifier
     }
 
     func start(containerURL: URL) {
         stop()
+
+        let pm = NWPathMonitor()
+        pm.pathUpdateHandler = { [weak self] path in
+            let available = path.status == .satisfied
+            Task { @MainActor [weak self] in
+                guard let self, available != self.isNetworkAvailable else { return }
+                self.isNetworkAvailable = available
+                if available {
+                    // 復帰時は最新のクエリ結果で再評価する
+                    self.refresh()
+                } else {
+                    self.updateSyncStatus()
+                }
+            }
+        }
+        pm.start(queue: DispatchQueue(label: "local.draftcanvas.network-path"))
+        pathMonitor = pm
 
         let query = NSMetadataQuery()
         // 自アプリの Ubiquity コンテナ配下に限定。Ubiquitous*Scope 定数は iCloud Drive 全体を対象にしてしまい、
@@ -60,6 +88,8 @@ final class ICloudSyncMonitor: ObservableObject {
         query = nil
         for obs in observers { NotificationCenter.default.removeObserver(obs) }
         observers.removeAll()
+        pathMonitor?.cancel()
+        pathMonitor = nil
     }
 
     /// クエリ更新通知が届かず状態が固着した場合に備え、現在のクエリ結果を手動で再評価する。
@@ -88,12 +118,24 @@ final class ICloudSyncMonitor: ObservableObject {
         var totalSize: Int64 = 0
         var pendingCount = 0
         var downloading = Set<UUID>()
+        var errorCount = 0
+        var firstErrorDescription: String?
 
         for i in 0..<query.resultCount {
             guard let item = query.result(at: i) as? NSMetadataItem else { continue }
 
             if let size = item.value(forAttribute: NSMetadataItemFSSizeKey) as? Int64 {
                 totalSize += size
+            }
+
+            // アイテム単位の転送エラー（容量超過・権限等）を集計する
+            let downloadError = item.value(forAttribute: NSMetadataUbiquitousItemDownloadingErrorKey) as? NSError
+            let uploadError = item.value(forAttribute: NSMetadataUbiquitousItemUploadingErrorKey) as? NSError
+            if let transferError = downloadError ?? uploadError {
+                errorCount += 1
+                if firstErrorDescription == nil {
+                    firstErrorDescription = transferError.localizedDescription
+                }
             }
 
             let downloadStatus = item.value(forAttribute: NSMetadataUbiquitousItemDownloadingStatusKey) as? String
@@ -125,8 +167,25 @@ final class ICloudSyncMonitor: ObservableObject {
         totalItemCount = query.resultCount
         downloadingItemIDs = downloading
 
-        if pendingCount > 0 {
-            syncStatus = .syncing(pending: pendingCount)
+        lastPendingCount = pendingCount
+        if let firstErrorDescription {
+            lastErrorMessage = errorCount > 1
+                ? String(localized: "同期エラー (\(errorCount)件): \(firstErrorDescription)")
+                : String(localized: "同期エラー: \(firstErrorDescription)")
+        } else {
+            lastErrorMessage = nil
+        }
+        updateSyncStatus()
+    }
+
+    // 優先度: オフライン > 転送エラー > 同期中 > 同期完了
+    private func updateSyncStatus() {
+        if !isNetworkAvailable {
+            syncStatus = .offline
+        } else if let message = lastErrorMessage {
+            syncStatus = .error(message)
+        } else if lastPendingCount > 0 {
+            syncStatus = .syncing(pending: lastPendingCount)
         } else {
             syncStatus = .synced
         }
