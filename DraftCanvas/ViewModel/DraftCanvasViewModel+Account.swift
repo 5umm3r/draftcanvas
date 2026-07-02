@@ -93,13 +93,25 @@ extension DraftCanvasViewModel {
     }
 
     func refreshAvailableModels() async {
-        do {
-            let models = try await accountClient.listModels()
-            self.availableModels = models
-            normalizeProjectModelSelection()
-        } catch {
-            logs.append("モデル一覧取得失敗: \(error.localizedDescription)")
+        // 起動直後などに prewarm が連続で呼ばれても listModels が
+        // 重複実行されないよう、実行中のタスクへ合流する
+        if let inflight = modelsRefreshTask {
+            await inflight.value
+            return
         }
+        let task = Task { [weak self] in
+            guard let self else { return }
+            do {
+                let models = try await self.accountClient.listModels()
+                self.availableModels = models
+                self.normalizeProjectModelSelection()
+            } catch {
+                self.logs.append("モデル一覧取得失敗: \(error.localizedDescription)")
+            }
+        }
+        modelsRefreshTask = task
+        await task.value
+        modelsRefreshTask = nil
     }
 
     func normalizeProjectModelSelection() {

@@ -137,11 +137,10 @@ final class CodexAppServerClient: @unchecked Sendable {
             process.executableURL = URL(fileURLWithPath: config.executablePath)
             process.arguments = versionArgs
             process.standardOutput = pipe
-            process.standardError = Pipe()
+            process.standardError = FileHandle.nullDevice
 
-            do {
-                try process.run()
-                process.waitUntilExit()
+            // waitUntilExit はスレッドを占有するため terminationHandler で非ブロッキング待機する
+            process.terminationHandler = { _ in
                 let data = pipe.fileHandleForReading.readDataToEndOfFile()
                 let raw = String(data: data, encoding: .utf8) ?? ""
                 let trimmed = raw
@@ -149,7 +148,12 @@ final class CodexAppServerClient: @unchecked Sendable {
                     .first?
                     .trimmingCharacters(in: .whitespaces)
                 continuation.resume(returning: trimmed?.isEmpty == false ? trimmed : nil)
+            }
+
+            do {
+                try process.run()
             } catch {
+                process.terminationHandler = nil
                 continuation.resume(returning: nil)
             }
         }
@@ -316,7 +320,11 @@ final class CodexAppServerClient: @unchecked Sendable {
         )
     }
 
-    func sendRequest(method: String, params: [String: Any]? = nil) async throws -> [String: Any] {
+    func sendRequest(
+        method: String,
+        params: [String: Any]? = nil,
+        timeout: TimeInterval = 60
+    ) async throws -> [String: Any] {
         let sendableParams = SendableParams(value: params)
         let response = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<JSONResponse, Error>) in
             queue.async {
@@ -337,6 +345,16 @@ final class CodexAppServerClient: @unchecked Sendable {
                 } catch {
                     self.pending.removeValue(forKey: id)
                     continuation.resume(throwing: error)
+                    return
+                }
+
+                // サーバが応答を返さない場合の無限ハング防止。
+                // pending の操作はすべてこの serial queue 上で行われるため、
+                // 応答到達との競合はなく、遅延応答は removeValue が nil を返して無視される。
+                self.queue.asyncAfter(deadline: .now() + timeout) { [weak self] in
+                    guard let self, let cont = self.pending.removeValue(forKey: id) else { return }
+                    self.emitLog("[警告] \(method) の応答が \(Int(timeout)) 秒以内に返らずタイムアウトしました。")
+                    cont.resume(throwing: DraftCanvasError.timeout)
                 }
             }
         }
@@ -479,18 +497,29 @@ final class CodexAppServerClient: @unchecked Sendable {
         return string
     }
 
+    private static let executablePathCacheKey = "draftcanvas.codexExecutablePathCache"
+
     private static func defaultCodexExecutablePath() -> String {
+        // ログインシェル解決は数百ms〜秒単位かかり、init（アプリ起動パス）を
+        // ブロックするためキャッシュする。パスが無効化されていたら再解決。
+        if let cached = UserDefaults.standard.string(forKey: executablePathCacheKey),
+           FileManager.default.isExecutableFile(atPath: cached) {
+            return cached
+        }
         if let found = Self.findExecutable("codex") {
+            UserDefaults.standard.set(found, forKey: executablePathCacheKey)
             return found
         }
         return "codex"
     }
 
     private static func findExecutable(_ name: String) -> String? {
-        if let path = findViaLoginShell(name) {
+        // プロセス起動不要な既知パス探索を先に試し、
+        // 見つからない場合のみログインシェルへフォールバックする
+        if let path = searchCommonPaths(for: name) {
             return path
         }
-        return searchCommonPaths(for: name)
+        return findViaLoginShell(name)
     }
 
     private static func findViaLoginShell(_ name: String) -> String? {

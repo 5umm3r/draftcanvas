@@ -107,10 +107,7 @@ final class DraftCanvasViewModel: ObservableObject {
             selectedItemIDs.removeAll()
             isSelectionMode = false
             recomputeDisplayedItems()
-            let snapshot = makeSnapshot()
-            Task.detached(priority: .background) { [store = projectStore] in
-                store.save(snapshot)
-            }
+            saveState()
         }
     }
     @Published var expandedSections: [String: Bool] = [:]
@@ -211,12 +208,20 @@ final class DraftCanvasViewModel: ObservableObject {
     var upscalingItemIDs: Set<UUID> = []
     var upscalingTasks: [UUID: Task<Void, Never>] = [:]
     var upscalingJobContexts: [UUID: (jobID: UUID, projectID: UUID)] = [:]
+    // キャンセル後に同一アイテムへ再実行した際、旧タスクの遅延完了が
+    // 新実行の状態を壊さないよう世代トークンで識別する
+    var upscalingRunTokens: [UUID: UUID] = [:]
     var enhanceTask: Task<Void, Never>?
     var backgroundRemovalTask: Task<Void, Never>?
     var backgroundRemovalJobContext: (jobID: UUID, projectID: UUID)?
+    // 単一スロットのため、連続実行時に古いタスクの完了処理が
+    // 新しい実行の状態を上書きしないよう世代トークンで識別する
+    var backgroundRemovalRunToken: UUID?
     var materialExtractionTask: Task<Void, Never>?
     var materialExtractionJobContext: (jobID: UUID, projectID: UUID)?
+    var materialExtractionRunToken: UUID?
     var accountUsageRefreshTask: Task<CodexAccountUsageStatus, Error>?
+    var modelsRefreshTask: Task<Void, Never>?
     let activityTracker = ActivityTracker()
     var onReplacePromptText: ((String) -> Void)?
     var onAppendPromptText: ((String) -> Void)?
@@ -227,6 +232,17 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var syncMonitor: ICloudSyncMonitor?
     let imageLoader = ICloudImageLoader()
     let cacheEviction = ICloudCacheEviction()
+
+    // 初期スナップショットのロード前に saveState が走ると空データで上書きするため、
+    // ロード完了までは保存を禁止する
+    private var hasLoadedInitialSnapshot = false
+
+    // スナップショットは全プロジェクト・全アイテムを含むため、
+    // 操作毎のメインスレッド同期保存はライブラリ規模に比例して UI をブロックする。
+    // デバウンスで束ね、書き込みは直列シリアライザで順序保証する。
+    private var pendingSaveTask: Task<Void, Never>?
+    private var saveGeneration: UInt64 = 0
+    private let saveSerializer = SnapshotSaveSerializer()
 
     init(
         projectStore: ProjectStore = ProjectStore(),
@@ -288,10 +304,18 @@ final class DraftCanvasViewModel: ObservableObject {
             installForegroundRefreshObserver()
             enforceCacheLimitOnLaunchIfNeeded()
         }
-        loadProjects()
-        prefetchRecentProjectsIfNeeded()
-        loadTemplates()
-        loadHistory()
+        // iCloud 有効かつコンテナ未解決のままローカルをロードすると、
+        // 差し替えまでの間の編集がローカル側に書かれて孤立する。
+        // 解決完了（または解決不可の確定）までロードを遅延する。
+        // 対象はデフォルトのローカルフォールバック時のみ（テスト等の注入ストアは除外）。
+        if isAwaitingICloudResolution {
+            isLoadingProjects = true
+        } else {
+            loadProjects()
+            prefetchRecentProjectsIfNeeded()
+            loadTemplates()
+            loadHistory()
+        }
         resolveICloudAsync()
         preferredSaveFolder = preferredSaveFolderStore.load()
             ?? FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
@@ -306,13 +330,29 @@ final class DraftCanvasViewModel: ObservableObject {
 
     // url(forUbiquityContainerIdentifier:) はメインスレッドで nil を返す場合がある。
     // バックグラウンドで解決し、iCloud パスが得られたら stores を差し替えて再読み込みする。
+    // iCloud 有効・コンテナ未解決・かつ現在のストアがデフォルトのローカル
+    // フォールバックである場合のみ true。明示的に注入されたストア（テスト等）は
+    // 非同期解決の対象にしない。
+    private var isAwaitingICloudResolution: Bool {
+        UserDefaults.standard.bool(forKey: "iCloudSyncEnabled")
+            && !projectStore.isInUbiquityContainer
+            && projectStore.rootDirectory.path == ProjectStore.localDefaultRootDirectory().path
+    }
+
     private func resolveICloudAsync() {
-        guard UserDefaults.standard.bool(forKey: "iCloudSyncEnabled"),
-              !projectStore.isInUbiquityContainer else { return }
+        guard isAwaitingICloudResolution else { return }
         Task.detached(priority: .userInitiated) { [weak self] in
-            guard let url = ICloudSyncMonitor.iCloudContainerURL() else { return }
+            let url = ICloudSyncMonitor.iCloudContainerURL()
             await MainActor.run { [weak self] in
                 guard let self, !self.projectStore.isInUbiquityContainer else { return }
+                guard let url else {
+                    // iCloud 解決不可（サインアウト等）→ ローカルストアで通常ロード
+                    self.loadProjects()
+                    self.loadTemplates()
+                    self.loadHistory()
+                    self.prefetchRecentProjectsIfNeeded()
+                    return
+                }
                 ProjectStore.migrateToICloudIfNeeded(iCloudRoot: url)
                 let newStore = ProjectStore(rootDirectory: url)
                 self.projectStore = newStore
@@ -369,6 +409,7 @@ final class DraftCanvasViewModel: ObservableObject {
         isLoadingProjects = true
         defer {
             isLoadingProjects = false
+            hasLoadedInitialSnapshot = true
             recomputeDisplayedItems()
             rebuildAllTagsCache()
         }
@@ -400,14 +441,36 @@ final class DraftCanvasViewModel: ObservableObject {
     }
 
     func saveState() {
-        projectStore.save(makeSnapshot())
+        guard hasLoadedInitialSnapshot else { return }
+        guard pendingSaveTask == nil else { return }
+        pendingSaveTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .milliseconds(500))
+            guard let self, !Task.isCancelled else { return }
+            self.pendingSaveTask = nil
+            self.saveGeneration += 1
+            self.saveSerializer.writeAsync(
+                self.makeSnapshot(),
+                generation: self.saveGeneration,
+                store: self.projectStore
+            )
+        }
     }
 
     func saveStateAsync() {
-        let snapshot = makeSnapshot()
-        Task.detached(priority: .background) { [store = projectStore] in
-            store.save(snapshot)
-        }
+        saveState()
+    }
+
+    /// アプリ終了時など、デバウンスを待てない場面での即時同期保存
+    func saveStateNow() {
+        guard hasLoadedInitialSnapshot else { return }
+        pendingSaveTask?.cancel()
+        pendingSaveTask = nil
+        saveGeneration += 1
+        saveSerializer.writeSync(
+            makeSnapshot(),
+            generation: saveGeneration,
+            store: projectStore
+        )
     }
 
     func requestNotificationPermission() {
@@ -616,4 +679,27 @@ private func collectEntries(rootDirectory: URL, eviction: ICloudCacheEviction) a
         entries.append(.init(url: item.url, size: Int64(item.size), lastAccess: last))
     }
     return entries
+}
+
+/// スナップショット保存の直列化。
+/// 並行する保存要求（デバウンス済み非同期保存と終了時の同期保存）が
+/// 同一 projects.json へ順序不定に書き込むと古い内容が新しい内容を
+/// 上書きするため、直列キュー + 世代番号で「新しい世代のみ書く」を保証する。
+private final class SnapshotSaveSerializer: @unchecked Sendable {
+    private let queue = DispatchQueue(label: "local.draftcanvas.snapshot-save", qos: .utility)
+    private var lastGeneration: UInt64 = 0
+
+    func writeAsync(_ snapshot: ProjectStore.Snapshot, generation: UInt64, store: ProjectStore) {
+        queue.async { self.write(snapshot, generation: generation, store: store) }
+    }
+
+    func writeSync(_ snapshot: ProjectStore.Snapshot, generation: UInt64, store: ProjectStore) {
+        queue.sync { self.write(snapshot, generation: generation, store: store) }
+    }
+
+    private func write(_ snapshot: ProjectStore.Snapshot, generation: UInt64, store: ProjectStore) {
+        guard generation > lastGeneration else { return }
+        lastGeneration = generation
+        store.save(snapshot)
+    }
 }

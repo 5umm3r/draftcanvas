@@ -172,10 +172,9 @@ extension DraftCanvasViewModel {
     func prepareRequestForGeneration(_ request: GenerationRequest) async -> GenerationRequest {
         guard request.translateToEnglish else { return request }
         guard request.normalizedGenerationBrief == nil else { return request }
-        guard !availableModels.isEmpty else { return request }
+        guard let model = Self.selectFastLowCostModel(from: availableModels) else { return request }
 
         do {
-            let model = Self.selectFastLowCostModel(from: availableModels)
             let normalized = try await PromptLanguageNormalizer.normalize(
                 request: request,
                 client: client,
@@ -265,51 +264,65 @@ extension DraftCanvasViewModel {
     }
 
     private func persistAndPromoteSucceededJob(_ job: GenerationJob, request: GenerationRequest, projectID: UUID) {
-        let actualRatio = job.imageData.flatMap { pixelAspectRatioFromImageData($0) }
         let displayName = availableModels.first(where: { $0.id == request.model })?.displayName ?? request.model
         let duration = Date().timeIntervalSince(job.scheduledAt)
-        var item = ProjectItem(
-            projectID: projectID,
-            prompt: job.prompt,
-            revisedPrompt: job.revisedPrompt,
-            aspectRatio: request.aspectRatio,
-            actualAspectRatio: actualRatio,
-            createdAt: job.scheduledAt,
-            errorMessage: nil,
-            editedFromItemID: request.editSource?.projectItemID,
-            modelName: displayName,
-            reasoningEffort: request.reasoningEffort,
-            generationDuration: duration
-        )
-        do {
-            guard let imageData = job.imageData else { throw DraftCanvasError.missingGeneratedContent }
-            if request.attachedImageKind == .sketch, let sketchPath = request.attachedImagePath {
-                let saved = try projectStore.saveSketchSource(from: sketchPath, itemID: item.id)
-                item.sketchSourcePath = saved.path
+        let store = projectStore
+        let thumbnails = thumbnailStore
+
+        // 画像デコード・PNG書き込み・サムネイル生成は重く、生成完了のたび
+        // メインスレッドで行うと並列生成中に UI がスタッタするためオフロードする
+        Task.detached(priority: .userInitiated) { [weak self] in
+            do {
+                guard let self else { return }
+                guard let imageData = job.imageData else { throw DraftCanvasError.missingGeneratedContent }
+                let actualRatio = self.pixelAspectRatioFromImageData(imageData)
+                var item = ProjectItem(
+                    projectID: projectID,
+                    prompt: job.prompt,
+                    revisedPrompt: job.revisedPrompt,
+                    aspectRatio: request.aspectRatio,
+                    actualAspectRatio: actualRatio,
+                    createdAt: job.scheduledAt,
+                    errorMessage: nil,
+                    editedFromItemID: request.editSource?.projectItemID,
+                    modelName: displayName,
+                    reasoningEffort: request.reasoningEffort,
+                    generationDuration: duration
+                )
+                if request.attachedImageKind == .sketch, let sketchPath = request.attachedImagePath {
+                    let saved = try store.saveSketchSource(from: sketchPath, itemID: item.id)
+                    item.sketchSourcePath = saved.path
+                }
+                try store.writeItemData(imageData, for: item)
+                thumbnails.writeThumbnail(from: imageData, item: item)
+
+                await MainActor.run { [weak self] in
+                    guard let self else { return }
+                    self.items.append(item)
+                    self.touchProject(id: projectID)
+
+                    if var jobs = self.jobsByProject[projectID] {
+                        jobs.removeAll { $0.id == job.id }
+                        self.jobsByProject[projectID] = jobs
+                    }
+
+                    if self.selectedJobID == job.id {
+                        self.selectedItemID = item.id
+                        self.selectedJobID = nil
+                    }
+
+                    self.saveState()
+                }
+            } catch {
+                await MainActor.run { [weak self] in
+                    guard let self else { return }
+                    self.logs.append("プロジェクトへの保存に失敗しました: \(error.localizedDescription)")
+                    var failedJob = job
+                    failedJob.status = .failed
+                    failedJob.errorMessage = error.localizedDescription
+                    self.upsert(failedJob, into: projectID)
+                }
             }
-            try projectStore.writeItemData(imageData, for: item)
-            items.append(item)
-            thumbnailStore.writeThumbnail(from: imageData, item: item)
-
-            touchProject(id: projectID)
-
-            if var jobs = jobsByProject[projectID] {
-                jobs.removeAll { $0.id == job.id }
-                jobsByProject[projectID] = jobs
-            }
-
-            if selectedJobID == job.id {
-                selectedItemID = item.id
-                selectedJobID = nil
-            }
-
-            saveState()
-        } catch {
-            logs.append("プロジェクトへの保存に失敗しました: \(error.localizedDescription)")
-            var failedJob = job
-            failedJob.status = .failed
-            failedJob.errorMessage = error.localizedDescription
-            upsert(failedJob, into: projectID)
         }
     }
 

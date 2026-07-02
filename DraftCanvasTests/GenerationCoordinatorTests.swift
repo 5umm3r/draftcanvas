@@ -100,7 +100,13 @@ final class GenerationCoordinatorTests: XCTestCase {
         viewModel.refreshAccountUsageIfStale()
         viewModel.refreshAccountUsageIfStale()
 
-        try await Task.sleep(nanoseconds: 20_000_000)
+        // Task の起動レイテンシはマシン負荷に依存するため、固定 sleep ではなく
+        // 最初の read 開始をポーリングで待つ。重複排除の検証は
+        // 「最終的に read が1回しか呼ばれないこと」で担保される。
+        for _ in 0..<100 {
+            if await accountClient.readAccountUsageCallCount() >= 1 { break }
+            try await Task.sleep(nanoseconds: 20_000_000)
+        }
         let inFlightReadCount = await accountClient.readAccountUsageCallCount()
         XCTAssertEqual(inFlightReadCount, 1)
 
@@ -130,14 +136,22 @@ final class GenerationCoordinatorTests: XCTestCase {
         viewModel.prewarmAndRefresh()
         try await Task.sleep(nanoseconds: 80_000_000)
         viewModel.prewarmAndRefresh()
-        try await Task.sleep(nanoseconds: 80_000_000)
 
+        // 固定 sleep はマシン負荷で不安定になるため到達をポーリングで待つ。
+        // 重複防止の検証は「回数が期待値を超えないこと」(==) で担保される。
+        for _ in 0..<100 {
+            if await accountClient.listModelsCallCount() >= 1 { break }
+            try await Task.sleep(nanoseconds: 20_000_000)
+        }
+        try await Task.sleep(nanoseconds: 80_000_000)
         let initialModelListCount = await accountClient.listModelsCallCount()
         XCTAssertEqual(initialModelListCount, 1)
 
         viewModel.prewarmAndRefresh(forceMetadata: true)
-        try await Task.sleep(nanoseconds: 80_000_000)
-
+        for _ in 0..<100 {
+            if await accountClient.listModelsCallCount() >= 2 { break }
+            try await Task.sleep(nanoseconds: 20_000_000)
+        }
         let forcedModelListCount = await accountClient.listModelsCallCount()
         XCTAssertEqual(forcedModelListCount, 2)
     }
