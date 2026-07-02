@@ -11,6 +11,7 @@ actor ICloudCacheEviction {
 
     private let defaults: UserDefaults
     private var timestamps: [String: TimeInterval]
+    private var persistTask: Task<Void, Never>?
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -20,7 +21,19 @@ actor ICloudCacheEviction {
     func recordAccess(url: URL) {
         let now = Date().timeIntervalSince1970
         timestamps[url.path] = now
-        defaults.set(timestamps, forKey: Self.timestampsKey)
+        schedulePersist()
+    }
+
+    // 画像表示のたびに辞書全体を UserDefaults へシリアライズすると、
+    // エントリ数に比例して I/O が増幅するためデバウンスして書き込む。
+    // 終了時に直近数秒の記録が失われても LRU が僅かにずれるだけで実害はない。
+    private func schedulePersist() {
+        guard persistTask == nil else { return }
+        persistTask = Task {
+            try? await Task.sleep(for: .seconds(2))
+            persistTask = nil
+            defaults.set(timestamps, forKey: Self.timestampsKey)
+        }
     }
 
     func lastAccess(url: URL) -> Date? {
@@ -39,7 +52,7 @@ actor ICloudCacheEviction {
 
     func forgetAccess(url: URL) {
         timestamps.removeValue(forKey: url.path)
-        defaults.set(timestamps, forKey: Self.timestampsKey)
+        schedulePersist()
     }
 }
 

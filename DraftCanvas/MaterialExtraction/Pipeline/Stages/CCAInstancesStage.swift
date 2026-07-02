@@ -18,6 +18,10 @@ struct CCAInstancesStage: ExtractionStage {
         }
 
         let w = input.raw.width, h = input.raw.height, bpr = input.raw.bytesPerRow
+        // 退化画像（0px）でサンプル配列が空になり sorted()[0] でクラッシュするのを防ぐ
+        guard w > 0, h > 0 else {
+            throw MaterialExtractionError.imageDecodeFailed
+        }
 
         // 縁（4辺）から均等にサンプリングして背景色を推定
         var bgSamplesR: [UInt32] = [], bgSamplesG: [UInt32] = [], bgSamplesB: [UInt32] = []

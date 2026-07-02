@@ -13,10 +13,15 @@ extension DraftCanvasViewModel {
     // MARK: - Private helpers (no saveState, no selectedItemID side-effects)
 
     private func performDelete(_ item: ProjectItem) {
+        let url = projectStore.resolvedFileURL(for: item)
         projectStore.deleteItemFile(item)
         thumbnailStore.deleteThumbnail(for: item)
         items.removeAll { $0.id == item.id }
         touchProject(id: item.projectID)
+        // アクセス履歴を残すと iCloudAccessTimestamps が際限なく肥大する
+        Task { [cacheEviction] in
+            await cacheEviction.forgetAccess(url: url)
+        }
     }
 
     private func performMove(_ item: ProjectItem, targetProjectID: UUID) -> Bool {
@@ -180,17 +185,12 @@ extension DraftCanvasViewModel {
         projectStore.resolvedFileURL(for: item)
     }
 
+    /// メモリキャッシュのみを参照する。ミス時のディスク読み込みは
+    /// 必ず loadImage(for:) 経由（非同期・iCloud 対応・in-flight 共有・キャッシュ書き戻し）で行う。
+    /// メインスレッドでの同期フルデコードと NSImage(contentsOf:) の
+    /// iCloud 未ダウンロード時ブロックを避けるため。
     func cachedImage(for item: ProjectItem) -> NSImage? {
-        let url = fileURL(for: item)
-        if let cached = originalImageStore.cached(for: url) { return cached }
-        guard let img = NSImage(contentsOf: url) else { return nil }
-        #if DEBUG
-        CanvasMetrics.imageLoadCount += 1
-        if let rep = img.representations.first(where: { $0 is NSBitmapImageRep }) ?? img.representations.first {
-            CanvasMetrics.imageLoadBytesEstimate += rep.pixelsWide * rep.pixelsHigh * 4
-        }
-        #endif
-        return img
+        originalImageStore.cached(for: fileURL(for: item))
     }
 
     func cachedImageAsync(for item: ProjectItem) async -> NSImage? {

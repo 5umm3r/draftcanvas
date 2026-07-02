@@ -42,9 +42,22 @@ final class DraftCanvasViewModel: ObservableObject {
         didSet {
             itemsByID = Dictionary(uniqueKeysWithValues: items.map { ($0.id, $0) })
             if !isLoadingProjects {
-                recomputeDisplayedItems()
-                rebuildAllTagsCache()
+                scheduleDerivedStateRecompute()
             }
+        }
+    }
+    // items の全件 filter+sort+タグ再構築は要素1つの変更でも didSet ごとに走る。
+    // 同一 runloop 内の連続変更（バッチ削除・複数追加等）を1回に束ねる。
+    private var derivedStateRecomputeScheduled = false
+
+    func scheduleDerivedStateRecompute() {
+        guard !derivedStateRecomputeScheduled else { return }
+        derivedStateRecomputeScheduled = true
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            self.derivedStateRecomputeScheduled = false
+            self.recomputeDisplayedItems()
+            self.rebuildAllTagsCache()
         }
     }
     private(set) var itemsByID: [UUID: ProjectItem] = [:]
@@ -166,7 +179,7 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var exportingProjectID: UUID? = nil
     @Published var batchExportProgress: (done: Int, total: Int)? = nil
     @Published var filteringProjects: [FilteringProject] = [] {
-        didSet { if !isLoadingProjects { recomputeDisplayedItems() } }
+        didSet { if !isLoadingProjects { scheduleDerivedStateRecompute() } }
     }
     var selectedFilteringProjectID: UUID? {
         get {
@@ -269,6 +282,11 @@ final class DraftCanvasViewModel: ObservableObject {
         self.originalImageStore = CanvasOriginalImageStore(loader: imageLoader, eviction: cacheEviction)
         self.templateStore = PromptTemplateStore(rootDirectory: projectStore.rootDirectory)
         self.historyStore = PromptHistoryStore(rootDirectory: projectStore.rootDirectory)
+        saveSerializer.onWriteFailure = { [weak self] in
+            Task { @MainActor [weak self] in
+                self?.showError("プロジェクトの保存に失敗しました。ディスク容量と権限を確認してください")
+            }
+        }
         client.onLog = { [weak self] message in
             Task { @MainActor [weak self] in
                 guard let self else { return }
@@ -292,9 +310,12 @@ final class DraftCanvasViewModel: ObservableObject {
                 self?.logs.append("並列度を \(old) → \(new) に調整しました")
             }
         }
-        // iCloud 配下では起動毎の一括削除は同期ノイズ（mtime 更新→再アップロード）を招くため行わない
+        // iCloud 配下では起動毎の一括削除は同期ノイズ（mtime 更新→再アップロード）を招くため行わない。
+        // 起動パス上の同期 I/O を避けるためバックグラウンドで実行する。
         if !projectStore.isInUbiquityContainer {
-            projectStore.cleanupAllAttachments()
+            Task.detached(priority: .utility) { [store = projectStore] in
+                store.cleanupAllAttachments()
+            }
         }
         if projectStore.isInUbiquityContainer {
             let monitor = ICloudSyncMonitor()
@@ -395,8 +416,14 @@ final class DraftCanvasViewModel: ObservableObject {
 
     // MARK: - Private
 
+    private var foregroundRefreshObserver: NSObjectProtocol?
+
     private func installForegroundRefreshObserver() {
-        NotificationCenter.default.addObserver(
+        // 複数回呼ばれても refresh が多重発火しないよう既存登録を解除する
+        if let existing = foregroundRefreshObserver {
+            NotificationCenter.default.removeObserver(existing)
+        }
+        foregroundRefreshObserver = NotificationCenter.default.addObserver(
             forName: NSApplication.didBecomeActiveNotification,
             object: nil,
             queue: .main
@@ -414,6 +441,10 @@ final class DraftCanvasViewModel: ObservableObject {
             rebuildAllTagsCache()
         }
         let snapshot = projectStore.load()
+        if projectStore.lastLoadDataWasCorrupted {
+            showError("プロジェクトデータが破損していたため読み込めませんでした。元ファイルは projects.json.corrupted- として保全されています")
+            logs.append("projects.json のデコードに失敗。破損バックアップを作成して空の状態で起動します。")
+        }
         projects = snapshot.projects
         items = snapshot.items
         filteringProjects = snapshot.filteringProjects
@@ -688,6 +719,8 @@ private func collectEntries(rootDirectory: URL, eviction: ICloudCacheEviction) a
 private final class SnapshotSaveSerializer: @unchecked Sendable {
     private let queue = DispatchQueue(label: "local.draftcanvas.snapshot-save", qos: .utility)
     private var lastGeneration: UInt64 = 0
+    // 書き込み失敗（ディスクフル・権限等）をユーザーに通知するためのフック
+    var onWriteFailure: (@Sendable () -> Void)?
 
     func writeAsync(_ snapshot: ProjectStore.Snapshot, generation: UInt64, store: ProjectStore) {
         queue.async { self.write(snapshot, generation: generation, store: store) }
@@ -700,6 +733,8 @@ private final class SnapshotSaveSerializer: @unchecked Sendable {
     private func write(_ snapshot: ProjectStore.Snapshot, generation: UInt64, store: ProjectStore) {
         guard generation > lastGeneration else { return }
         lastGeneration = generation
-        store.save(snapshot)
+        if !store.save(snapshot) {
+            onWriteFailure?()
+        }
     }
 }

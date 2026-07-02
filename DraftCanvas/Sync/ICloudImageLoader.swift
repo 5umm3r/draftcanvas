@@ -64,7 +64,11 @@ actor ICloudImageLoader {
         return try await withCheckedThrowingContinuation { cont in
             let coordinator = NSFileCoordinator(filePresenter: nil)
             var coordError: NSError?
+            // アクセサ実行済みかつ coordError も設定されるケースで
+            // continuation を二重 resume しないようフラグで防護する
+            var didResume = false
             coordinator.coordinate(readingItemAt: url, options: [], error: &coordError) { actualURL in
+                didResume = true
                 do {
                     let data = try Data(contentsOf: actualURL, options: [.mappedIfSafe])
                     cont.resume(returning: data)
@@ -72,8 +76,8 @@ actor ICloudImageLoader {
                     cont.resume(throwing: error)
                 }
             }
-            if let coordError {
-                cont.resume(throwing: coordError)
+            if !didResume {
+                cont.resume(throwing: coordError ?? CocoaError(.fileReadUnknown))
             }
         }
     }

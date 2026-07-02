@@ -28,32 +28,51 @@ enum ZipExportPipeline {
 
         let total = entries.count
         var failCount = 0
+        var doneCount = 0
 
-        for (i, entry) in entries.enumerated() {
-            let request = ExportRequest(
-                source: .singleItem(entry.item),
-                originalSize: .zero,
-                hasVectorSVG: entry.item.hasSVG,
-                baseFilename: entry.baseFilename
-            )
-            let filename = "\(entry.baseFilename).\(settings.format.fileExtension)"
-            let destination = stagingDir.appendingPathComponent(filename)
+        // PNG 最適化は外部プロセスを最大3回起動するため直列だと件数×起動コストが
+        // 積み上がる。数件並列に制限して処理する（出力は独立ファイルで競合なし）。
+        let maxConcurrent = 3
+        try await withThrowingTaskGroup(of: Bool.self) { group in
+            var iterator = entries.makeIterator()
 
-            do {
-                try await ExportPipeline.run(
-                    request: request,
-                    settings: settings,
-                    destination: destination,
-                    projectStore: projectStore,
-                    logger: logger
-                )
-            } catch {
-                failCount += 1
-                logger("スキップ [\(entry.baseFilename)]: \(error.localizedDescription)")
+            func addNext() -> Bool {
+                guard let entry = iterator.next() else { return false }
+                group.addTask {
+                    let request = ExportRequest(
+                        source: .singleItem(entry.item),
+                        originalSize: .zero,
+                        hasVectorSVG: entry.item.hasSVG,
+                        baseFilename: entry.baseFilename
+                    )
+                    let filename = "\(entry.baseFilename).\(settings.format.fileExtension)"
+                    let destination = stagingDir.appendingPathComponent(filename)
+                    do {
+                        try await ExportPipeline.run(
+                            request: request,
+                            settings: settings,
+                            destination: destination,
+                            projectStore: projectStore,
+                            logger: logger
+                        )
+                        return true
+                    } catch {
+                        logger("スキップ [\(entry.baseFilename)]: \(error.localizedDescription)")
+                        return false
+                    }
+                }
+                return true
             }
 
-            let done = i + 1
-            progress(done, total)
+            for _ in 0..<maxConcurrent {
+                if !addNext() { break }
+            }
+            while let succeeded = try await group.next() {
+                if !succeeded { failCount += 1 }
+                doneCount += 1
+                progress(doneCount, total)
+                _ = addNext()
+            }
         }
 
         guard failCount < total else { throw Failure.allEntriesFailed }
@@ -65,18 +84,35 @@ enum ZipExportPipeline {
         let p = Process()
         p.executableURL = URL(fileURLWithPath: "/usr/bin/zip")
         p.arguments = ["-r", "-j", destination.path, stagingDir.path]
+        p.standardOutput = FileHandle.nullDevice
         let errPipe = Pipe()
         p.standardError = errPipe
 
-        do { try p.run() } catch { throw Failure.zipFailed(error.localizedDescription) }
+        // パイプ詰まり防止のため stderr を実行中にドレインする
+        let stderrCollector = PipeTextCollector()
+        errPipe.fileHandleForReading.readabilityHandler = { handle in
+            let data = handle.availableData
+            if data.isEmpty {
+                handle.readabilityHandler = nil
+            } else {
+                stderrCollector.append(data)
+            }
+        }
 
-        try await withThrowingTaskGroup(of: Void.self) { group in
+        do {
+            try p.run()
+        } catch {
+            errPipe.fileHandleForReading.readabilityHandler = nil
+            throw Failure.zipFailed(error.localizedDescription)
+        }
+
+        // waitUntilExit はスレッドを占有するため terminationHandler で非ブロッキング待機
+        let status: Int32 = try await withThrowingTaskGroup(of: Int32.self) { group in
             group.addTask {
-                p.waitUntilExit()
-                if p.terminationStatus != 0 {
-                    let stderrData = (try? errPipe.fileHandleForReading.readToEnd()) ?? Data()
-                    let stderr = String(data: stderrData, encoding: .utf8) ?? ""
-                    throw Failure.zipFailed("終了コード \(p.terminationStatus): \(stderr)")
+                try await withCheckedThrowingContinuation { continuation in
+                    p.terminationHandler = { proc in
+                        continuation.resume(returning: proc.terminationStatus)
+                    }
                 }
             }
             group.addTask {
@@ -84,8 +120,17 @@ enum ZipExportPipeline {
                 if p.isRunning { p.terminate() }
                 throw Failure.zipFailed(String(localized: "タイムアウト"))
             }
-            try await group.next()!
+            let result = try await group.next()!
             group.cancelAll()
+            return result
+        }
+
+        errPipe.fileHandleForReading.readabilityHandler = nil
+        if let trailing = try? errPipe.fileHandleForReading.readToEnd() {
+            stderrCollector.append(trailing)
+        }
+        guard status == 0 else {
+            throw Failure.zipFailed("終了コード \(status): \(stderrCollector.text)")
         }
     }
 }

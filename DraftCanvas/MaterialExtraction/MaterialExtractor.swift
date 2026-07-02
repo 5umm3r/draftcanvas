@@ -156,12 +156,13 @@ enum MaterialExtractor {
     }
 
     /// 複数の DetectedInstance を1つに結合する（ユーザー操作による手動結合用）
+    /// - Returns: list が空の場合は nil
     static func mergeInstances(
         _ list: [DetectedInstance],
         extent: CGRect
-    ) -> DetectedInstance {
-        precondition(!list.isEmpty)
-        guard list.count > 1 else { return list[0] }
+    ) -> DetectedInstance? {
+        guard let first = list.first else { return nil }
+        guard list.count > 1 else { return first }
 
         // bbox union
         let unionBBox = list.dropFirst().reduce(list[0].imageBoundingBox) { $0.union($1.imageBoundingBox) }

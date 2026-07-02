@@ -13,6 +13,23 @@ final class CanvasThumbnailStore: ObservableObject, @unchecked Sendable {
         c.totalCostLimit = 128 * 1024 * 1024
         return c
     }()
+    // 高速スクロールで同一アイテムのカードが出入りを繰り返した際、
+    // 同じサムネイルの読込/生成タスクが多重起動しないよう in-flight を管理する
+    private let inflightLock = NSLock()
+    private var inflightKeys: Set<URL> = []
+
+    /// - Returns: 呼び出し側が処理を開始してよい場合 true（既に実行中なら false）
+    private func markInflight(_ url: URL) -> Bool {
+        inflightLock.lock()
+        defer { inflightLock.unlock() }
+        return inflightKeys.insert(url).inserted
+    }
+
+    private func clearInflight(_ url: URL) {
+        inflightLock.lock()
+        defer { inflightLock.unlock() }
+        inflightKeys.remove(url)
+    }
 
     init(itemsDirectory: URL, useNoSync: Bool = false) {
         let folderName = useNoSync ? ".thumbs.nosync" : ".thumbs"
@@ -28,9 +45,13 @@ final class CanvasThumbnailStore: ObservableObject, @unchecked Sendable {
         let url = thumbnailURL(for: item)
         let key = url as NSURL
         if let cached = memoryCache.object(forKey: key) { return cached }
+
+        guard markInflight(url) else { return nil }
+
         let store = self
         let itemID = item.id
         Task.detached(priority: .utility) {
+            defer { store.clearInflight(url) }
             if let img = store.loadThumbnailFromDisk(url: url) {
                 let rep = img.representations.first
                 let cost = (rep?.pixelsWide ?? 512) * (rep?.pixelsHigh ?? 512) * 4

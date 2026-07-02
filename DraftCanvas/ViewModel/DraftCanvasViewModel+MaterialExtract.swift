@@ -90,35 +90,40 @@ extension DraftCanvasViewModel {
 
             for inst in chosen {
                 do {
-                    let instToRender: MaterialExtractor.DetectedInstance
-                    if removeBackground {
-                        instToRender = MaterialExtractor.processUserInstance(session: session, instance: inst)
-                    } else {
-                        // 背景除去オフ: 全インスタンスをソリッド矩形マスクで矩形クロップ
-                        instToRender = MaterialExtractor.makeUserInstance(
-                            imageBBox: inst.imageBoundingBox,
-                            imagePixelSize: session.imagePixelSize,
-                            extent: session.extent
+                    // フル解像度の一時バッファ（CGImage/PNG）がループ間で
+                    // オートリリースプールに滞留しないよう都度解放する
+                    let newItem = try autoreleasepool { () -> ProjectItem in
+                        let instToRender: MaterialExtractor.DetectedInstance
+                        if removeBackground {
+                            instToRender = MaterialExtractor.processUserInstance(session: session, instance: inst)
+                        } else {
+                            // 背景除去オフ: 全インスタンスをソリッド矩形マスクで矩形クロップ
+                            instToRender = MaterialExtractor.makeUserInstance(
+                                imageBBox: inst.imageBoundingBox,
+                                imagePixelSize: session.imagePixelSize,
+                                extent: session.extent
+                            )
+                        }
+                        let png = try MaterialExtractor.renderInstancePNG(
+                            session: session, instance: instToRender,
+                            cropToBoundingBox: true, ciCtx: renderCtx
                         )
-                    }
-                    let png = try MaterialExtractor.renderInstancePNG(
-                        session: session, instance: instToRender,
-                        cropToBoundingBox: true, ciCtx: renderCtx
-                    )
-                    let box = inst.imageBoundingBox
-                    let actualRatio: CGFloat? = box.height > 0 ? box.width / box.height : nil
-                    let aspectRatio = self.aspectRatioFromImageData(png)
+                        let box = inst.imageBoundingBox
+                        let actualRatio: CGFloat? = box.height > 0 ? box.width / box.height : nil
+                        let aspectRatio = self.aspectRatioFromImageData(png)
 
-                    let newItem = ProjectItem(
-                        projectID: projectID,
-                        prompt: originalItem.prompt,
-                        aspectRatio: aspectRatio,
-                        actualAspectRatio: actualRatio,
-                        editedFromItemID: originalItem.id,
-                        isBackgroundRemoved: removeBackground
-                    )
-                    try storeRef.writeItemData(png, for: newItem)
-                    thumbnailRef.writeThumbnail(from: png, item: newItem)
+                        let newItem = ProjectItem(
+                            projectID: projectID,
+                            prompt: originalItem.prompt,
+                            aspectRatio: aspectRatio,
+                            actualAspectRatio: actualRatio,
+                            editedFromItemID: originalItem.id,
+                            isBackgroundRemoved: removeBackground
+                        )
+                        try storeRef.writeItemData(png, for: newItem)
+                        thumbnailRef.writeThumbnail(from: png, item: newItem)
+                        return newItem
+                    }
                     newItems.append(newItem)
                 } catch {
                     await MainActor.run { [weak self] in

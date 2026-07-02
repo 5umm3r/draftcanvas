@@ -53,6 +53,13 @@ final class FocusableTextView: NSTextView {
     override func viewDidMoveToSuperview() {
         super.viewDidMoveToSuperview()
         postsFrameChangedNotifications = true
+        // viewDidMoveToSuperview は再親付けのたびに呼ばれるため、
+        // 多重登録による handleFrameChange の重複発火を防ぐ
+        NotificationCenter.default.removeObserver(
+            self,
+            name: NSView.frameDidChangeNotification,
+            object: self
+        )
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleFrameChange),

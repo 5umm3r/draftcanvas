@@ -8,6 +8,9 @@ struct ExpandedImageSheet: View {
 
     @State private var currentItemID: ProjectItem.ID
     @State private var keyMonitor: Any?
+    // cachedImage はメモリキャッシュ専用のため、ミス時は非同期で原本をロードする。
+    // ロード完了までは ItemThumbnailView をプレースホルダとして表示する。
+    @State private var fullImage: NSImage?
 
     init(item: ProjectItem, items: [ProjectItem], viewModel: DraftCanvasViewModel, onDismiss: @escaping () -> Void) {
         self.items = items
@@ -80,6 +83,13 @@ struct ExpandedImageSheet: View {
                 onDismiss()
             }
         }
+        .task(id: currentItemID) {
+            guard let item = currentItem else { return }
+            fullImage = viewModel.cachedImage(for: item)
+            if fullImage == nil {
+                fullImage = await viewModel.loadImage(for: item)
+            }
+        }
         .onAppear {
             keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
                 switch event.keyCode {
@@ -100,7 +110,7 @@ struct ExpandedImageSheet: View {
 
     @ViewBuilder
     private func imageContent(for item: ProjectItem) -> some View {
-        if let nsImage = viewModel.cachedImage(for: item) {
+        if let nsImage = fullImage {
             Image(nsImage: nsImage)
                 .resizable()
                 .scaledToFit()
