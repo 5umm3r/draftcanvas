@@ -58,12 +58,7 @@ final class ICloudSyncMonitor: ObservableObject {
         pm.start(queue: DispatchQueue(label: "local.draftcanvas.network-path"))
         pathMonitor = pm
 
-        let query = NSMetadataQuery()
-        // 自アプリの Ubiquity コンテナ配下に限定。Ubiquitous*Scope 定数は iCloud Drive 全体を対象にしてしまい、
-        // 他アプリのアップロード待ちファイルでも pending 扱いになり同期が永遠に終わらない原因になる。
-        query.searchScopes = [containerURL]
-        query.predicate = NSPredicate(format: "%K LIKE '*'", NSMetadataItemFSNameKey)
-        query.sortDescriptors = [NSSortDescriptor(key: NSMetadataItemFSNameKey, ascending: true)]
+        let query = Self.makeQuery(containerURL: containerURL)
         self.query = query
 
         let nc = NotificationCenter.default
@@ -202,6 +197,24 @@ final class ICloudSyncMonitor: ObservableObject {
             }
             return ICloudAutoPullPolicy.isMetadataExtension(url.pathExtension)
         }
+    }
+
+    /// プレーン URL を searchScopes に渡すと Spotlight インデックス依存になり、
+    /// ~/Library/Mobile Documents は索引対象外のため常に 0 件（サイズ 0 KB・
+    /// 「同期完了」誤表示・自動 DL 不発の原因）。Ubiquitous スコープで iCloud
+    /// デーモンのインデックスを参照し、iCloud Drive 全体の巻き込み（他アプリの
+    /// pending 待ち）はコンテナパス前方一致の predicate で防ぐ。
+    nonisolated static func makeQuery(containerURL: URL) -> NSMetadataQuery {
+        let query = NSMetadataQuery()
+        query.searchScopes = [
+            NSMetadataQueryUbiquitousDocumentsScope,
+            NSMetadataQueryUbiquitousDataScope,
+        ]
+        query.predicate = NSPredicate(
+            format: "%K BEGINSWITH %@", NSMetadataItemPathKey, containerURL.path + "/"
+        )
+        query.sortDescriptors = [NSSortDescriptor(key: NSMetadataItemFSNameKey, ascending: true)]
+        return query
     }
 
     nonisolated static func iCloudContainerURL() -> URL? {
