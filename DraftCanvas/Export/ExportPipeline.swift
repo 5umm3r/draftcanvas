@@ -146,7 +146,8 @@ enum ExportPipeline {
         case .currentJob(let pngData, _):
             return pngData
         case .batchItems:
-            fatalError(String(localized: "batchItems は ZipExportPipeline で処理してください"))
+            // ルーティング上は到達しないが、将来の変更でクラッシュしないよう throw で防御
+            throw DraftCanvasError.invalidRequest("batchItems は ZipExportPipeline で処理してください")
         }
     }
 }

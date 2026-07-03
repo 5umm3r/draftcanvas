@@ -41,10 +41,7 @@ extension DraftCanvasViewModel {
 
     func toggleSection(_ key: String) {
         expandedSections[key] = !(expandedSections[key] ?? true)
-        let snapshot = makeSnapshot()
-        Task.detached(priority: .background) { [store = projectStore] in
-            store.save(snapshot)
-        }
+        saveState()
     }
 
     func deleteProject(id: UUID) {

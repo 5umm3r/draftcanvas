@@ -4,6 +4,11 @@ import CoreImage
 extension DraftCanvasViewModel {
 
     func startMaterialExtraction(item: ProjectItem) {
+        // プレビューは単一スロットのため、進行中の分解は中断して置き換える
+        if materialExtractionTask != nil {
+            cancelMaterialExtraction()
+        }
+
         let projectID = selectedProjectID ?? item.projectID
 
         let job = GenerationJob(
@@ -17,6 +22,9 @@ extension DraftCanvasViewModel {
         let fileURL = projectStore.resolvedFileURL(for: item)
         extractingItemID = item.id
 
+        let runToken = UUID()
+        materialExtractionRunToken = runToken
+
         materialExtractionTask = Task {
             var running = job
             running.status = .running
@@ -28,17 +36,23 @@ extension DraftCanvasViewModel {
                 let session = try await MaterialExtractor.detect(from: inputData)
 
                 removeJob(id: job.id, from: projectID)
+                // 置き換え済み（古い世代）なら共有状態に触らない
+                guard materialExtractionRunToken == runToken else { return }
 
                 extractingItemID = nil
                 materialExtractionTask = nil
                 materialExtractionJobContext = nil
+                materialExtractionRunToken = nil
                 materialExtractionPreview = MaterialExtractionPreview(item: item, session: session)
                 logs.append("素材分解検出完了: \(session.instances.count) 個 (\(item.id))")
             } catch {
                 removeJob(id: job.id, from: projectID)
+                guard materialExtractionRunToken == runToken else { return }
                 extractingItemID = nil
                 materialExtractionTask = nil
                 materialExtractionJobContext = nil
+                materialExtractionRunToken = nil
+                guard !(error is CancellationError) else { return }
                 let message = (error as? MaterialExtractionError)?.localizedDescription
                     ?? String(localized: "素材分解に失敗しました")
                 errorToast = message
@@ -76,35 +90,40 @@ extension DraftCanvasViewModel {
 
             for inst in chosen {
                 do {
-                    let instToRender: MaterialExtractor.DetectedInstance
-                    if removeBackground {
-                        instToRender = MaterialExtractor.processUserInstance(session: session, instance: inst)
-                    } else {
-                        // 背景除去オフ: 全インスタンスをソリッド矩形マスクで矩形クロップ
-                        instToRender = MaterialExtractor.makeUserInstance(
-                            imageBBox: inst.imageBoundingBox,
-                            imagePixelSize: session.imagePixelSize,
-                            extent: session.extent
+                    // フル解像度の一時バッファ（CGImage/PNG）がループ間で
+                    // オートリリースプールに滞留しないよう都度解放する
+                    let newItem = try autoreleasepool { () -> ProjectItem in
+                        let instToRender: MaterialExtractor.DetectedInstance
+                        if removeBackground {
+                            instToRender = MaterialExtractor.processUserInstance(session: session, instance: inst)
+                        } else {
+                            // 背景除去オフ: 全インスタンスをソリッド矩形マスクで矩形クロップ
+                            instToRender = MaterialExtractor.makeUserInstance(
+                                imageBBox: inst.imageBoundingBox,
+                                imagePixelSize: session.imagePixelSize,
+                                extent: session.extent
+                            )
+                        }
+                        let png = try MaterialExtractor.renderInstancePNG(
+                            session: session, instance: instToRender,
+                            cropToBoundingBox: true, ciCtx: renderCtx
                         )
-                    }
-                    let png = try MaterialExtractor.renderInstancePNG(
-                        session: session, instance: instToRender,
-                        cropToBoundingBox: true, ciCtx: renderCtx
-                    )
-                    let box = inst.imageBoundingBox
-                    let actualRatio: CGFloat? = box.height > 0 ? box.width / box.height : nil
-                    let aspectRatio = self.aspectRatioFromImageData(png)
+                        let box = inst.imageBoundingBox
+                        let actualRatio: CGFloat? = box.height > 0 ? box.width / box.height : nil
+                        let aspectRatio = self.aspectRatioFromImageData(png)
 
-                    let newItem = ProjectItem(
-                        projectID: projectID,
-                        prompt: originalItem.prompt,
-                        aspectRatio: aspectRatio,
-                        actualAspectRatio: actualRatio,
-                        editedFromItemID: originalItem.id,
-                        isBackgroundRemoved: removeBackground
-                    )
-                    try storeRef.writeItemData(png, for: newItem)
-                    thumbnailRef.writeThumbnail(from: png, item: newItem)
+                        let newItem = ProjectItem(
+                            projectID: projectID,
+                            prompt: originalItem.prompt,
+                            aspectRatio: aspectRatio,
+                            actualAspectRatio: actualRatio,
+                            editedFromItemID: originalItem.id,
+                            isBackgroundRemoved: removeBackground
+                        )
+                        try storeRef.writeItemData(png, for: newItem)
+                        thumbnailRef.writeThumbnail(from: png, item: newItem)
+                        return newItem
+                    }
                     newItems.append(newItem)
                 } catch {
                     await MainActor.run { [weak self] in
@@ -126,6 +145,7 @@ extension DraftCanvasViewModel {
     func cancelMaterialExtraction() {
         materialExtractionTask?.cancel()
         materialExtractionTask = nil
+        materialExtractionRunToken = nil
         materialExtractionPreview = nil
         extractingItemID = nil
         if let ctx = materialExtractionJobContext {

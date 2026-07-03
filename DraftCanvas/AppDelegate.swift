@@ -13,7 +13,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         MainActor.assumeIsolated {
-            viewModel?.saveState()
+            // saveState はデバウンスされるため、終了時は即時同期保存を使う
+            viewModel?.saveStateNow()
             viewModel?.stopServer()
         }
     }

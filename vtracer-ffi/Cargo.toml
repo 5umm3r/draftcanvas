@@ -11,8 +11,10 @@ vtracer = "0.6"
 visioncortex = "0.8"
 image = "0.23"
 
+# panic = "abort" にすると catch_unwind でパニックを捕捉できず、
+# vtracer 内部のパニックがアプリ全体を即 abort させるため unwind を使う
 [profile.release]
 opt-level = 3
 lto = true
 codegen-units = 1
-panic = "abort"
+panic = "unwind"

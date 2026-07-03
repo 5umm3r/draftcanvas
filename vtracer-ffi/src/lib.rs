@@ -1,6 +1,7 @@
 use std::slice;
 use image::io::Reader as ImageReader;
 use std::io::Cursor;
+use std::panic::{self, AssertUnwindSafe};
 use visioncortex::{ColorImage, PathSimplifyMode};
 use vtracer::{Config, ColorMode, Hierarchical};
 
@@ -21,7 +22,7 @@ pub struct VtracerParams {
 /// 呼び出し側は vtracer_free_svg(*out_svg_ptr, *out_svg_len) で必ず解放すること。
 /// エラー時: 非ゼロを返す。out_svg_ptr は変更しない。
 ///
-/// 戻り値: 0=OK, 1=invalid_args, 2=decode_failed, 3=conversion_failed
+/// 戻り値: 0=OK, 1=invalid_args, 2=decode_failed, 3=conversion_failed, 4=internal_panic
 #[no_mangle]
 pub unsafe extern "C" fn vtracer_convert(
     image_bytes: *const u8,
@@ -37,19 +38,27 @@ pub unsafe extern "C" fn vtracer_convert(
     let bytes = slice::from_raw_parts(image_bytes, image_len);
     let params = &*params;
 
-    let color_image = match decode_image(bytes) {
-        Some(img) => img,
-        None => return 2,
+    // extern "C" 境界を越える unwind はプロセス abort になるため、
+    // vtracer/visioncortex 内部の想定外パニックはここで捕捉してエラーコードに変換する
+    let outcome = panic::catch_unwind(AssertUnwindSafe(|| {
+        let color_image = match decode_image(bytes) {
+            Some(img) => img,
+            None => return Err(2),
+        };
+
+        let config = build_config(params);
+
+        match vtracer::convert(color_image, config) {
+            Ok(f) => Ok(f.to_string()),
+            Err(_) => Err(3),
+        }
+    }));
+
+    let svg_string = match outcome {
+        Ok(Ok(s)) => s,
+        Ok(Err(code)) => return code,
+        Err(_) => return 4,
     };
-
-    let config = build_config(params);
-
-    let svg_file = match vtracer::convert(color_image, config) {
-        Ok(f) => f,
-        Err(_) => return 3,
-    };
-
-    let svg_string = svg_file.to_string();
     let mut boxed = svg_string.into_bytes().into_boxed_slice();
     let len = boxed.len();
     let ptr = boxed.as_mut_ptr();

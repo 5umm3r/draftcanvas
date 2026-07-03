@@ -16,7 +16,9 @@ extension DraftCanvasViewModel {
             do {
                 try await client.start()
 
-                let model = Self.selectFastLowCostModel(from: availableModels)
+                guard let model = Self.selectFastLowCostModel(from: availableModels) else {
+                    throw DraftCanvasError.rpcError(String(localized: "利用可能なモデルがありません"))
+                }
                 logs.append("エンハンスモデル: \(model.displayName) (\(model.id))")
                 let threadID = try await client.startThread(model: model.id, reasoningEffort: "low")
                 let turnPrompt = PromptEnhancer.buildPrompt(
@@ -83,7 +85,7 @@ extension DraftCanvasViewModel {
         }
     }
 
-    static func selectFastLowCostModel(from models: [CodexModel]) -> CodexModel {
+    static func selectFastLowCostModel(from models: [CodexModel]) -> CodexModel? {
         if let miniByID = models.first(where: { $0.id.hasSuffix("-mini") }) {
             return miniByID
         }
@@ -95,6 +97,6 @@ extension DraftCanvasViewModel {
             return light
         }
         if let def = models.first(where: \.isDefault) { return def }
-        return models[0]
+        return models.first
     }
 }

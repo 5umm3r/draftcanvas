@@ -187,9 +187,11 @@ extension ContentView {
                     .fill(Color.primary.opacity(0.06))
                     .frame(width: 1)
             }
+            Divider()
             if let monitor = viewModel.syncMonitor {
-                Divider()
                 ICloudStatusView(syncMonitor: monitor)
+            } else {
+                ICloudInactiveStatusView()
             }
         }
         .frame(width: 200)

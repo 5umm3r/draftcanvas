@@ -5,7 +5,9 @@ import Vision
 
 enum ExtractionPipeline {
     static func run(raw: CGImage, orientation: CGImagePropertyOrientation) throws -> MaterialExtractor.ExtractionSession {
-        let sRGB = CGColorSpace(name: CGColorSpace.sRGB)!
+        guard let sRGB = CGColorSpace(name: CGColorSpace.sRGB) else {
+            throw MaterialExtractionError.imageDecodeFailed
+        }
         let ciCtx = CIContext(options: [.workingColorSpace: sRGB, .outputColorSpace: sRGB])
 
         let originalCI = CIImage(cgImage: raw).oriented(orientation)

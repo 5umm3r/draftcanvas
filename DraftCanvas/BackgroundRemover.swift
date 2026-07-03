@@ -101,7 +101,9 @@ enum BackgroundRemover {
     // MARK: - Private
 
     private static func runExtract(raw: CGImage, orientation: CGImagePropertyOrientation) throws -> MaskSession {
-        let sRGB = CGColorSpace(name: CGColorSpace.sRGB)!
+        guard let sRGB = CGColorSpace(name: CGColorSpace.sRGB) else {
+            throw BackgroundRemovalError.imageDecodeFailed
+        }
         let ciCtx = CIContext(options: [
             .workingColorSpace: sRGB,
             .outputColorSpace: sRGB

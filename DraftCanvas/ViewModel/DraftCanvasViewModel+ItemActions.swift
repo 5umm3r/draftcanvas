@@ -122,13 +122,16 @@ extension DraftCanvasViewModel {
     }
 
     func applyMaskRemoval(item: ProjectItem, strokes: [MaskStroke]) {
+        guard let fastModel = Self.selectFastLowCostModel(from: availableModels) else {
+            showError("利用可能なモデルがありません")
+            return
+        }
         let projectID = selectedProjectID ?? item.projectID
         let fileURL = projectStore.resolvedFileURL(for: item)
 
         inpaintingTarget = nil
         activeEditProjectID = projectID
 
-        let fastModel = Self.selectFastLowCostModel(from: availableModels)
         let removalCoordinator = coordinator
         let removalStore = projectStore
         let itemPrompt = item.prompt
@@ -160,6 +163,7 @@ extension DraftCanvasViewModel {
 
                 guard let maskData = InpaintingMaskCompositor.renderMask(from: strokes, canvasSize: canvasSize) else {
                     await MainActor.run {
+                        guard self.generationTasks[projectID]?[removalRunID] != nil else { return }
                         self.showError("マスク画像の生成に失敗しました。")
                         self.generatingProjectIDs.remove(projectID)
                         self.activityTracker.end()
@@ -195,6 +199,7 @@ extension DraftCanvasViewModel {
                     translateToEnglish: translateToEnglishRef
                 )
                 let preparedRequest = await self.prepareRequestForGeneration(request)
+                try Task.checkCancellation()
 
                 let results = await removalCoordinator.run(request: preparedRequest) { [weak self] job in
                     await MainActor.run { self?.handleJobUpdate(job, into: projectID, request: preparedRequest) }
@@ -202,6 +207,9 @@ extension DraftCanvasViewModel {
 
                 await MainActor.run {
                     removalStore.cleanupMaskFiles(id: itemID)
+                    // キャンセル済み（cancelProjectRuns が登録除去・フラグ処理済み）なら
+                    // 後続の実行の生成中状態を壊さないよう何もしない
+                    guard self.generationTasks[projectID]?[removalRunID] != nil else { return }
                     self.generatingProjectIDs.remove(projectID)
                     self.activityTracker.end()
                     self.generationTasks[projectID]?.removeValue(forKey: removalRunID)
@@ -213,11 +221,14 @@ extension DraftCanvasViewModel {
                 }
             } catch {
                 await MainActor.run {
-                    self.showError("マスク除去に失敗しました: \(error.localizedDescription)")
-                    self.logs.append("マスク除去エラー: \(error.localizedDescription)")
+                    removalStore.cleanupMaskFiles(id: itemID)
+                    guard self.generationTasks[projectID]?[removalRunID] != nil else { return }
                     self.generatingProjectIDs.remove(projectID)
                     self.activityTracker.end()
                     self.generationTasks[projectID]?.removeValue(forKey: removalRunID)
+                    guard !(error is CancellationError) else { return }
+                    self.showError("マスク除去に失敗しました: \(error.localizedDescription)")
+                    self.logs.append("マスク除去エラー: \(error.localizedDescription)")
                 }
             }
         }
@@ -225,6 +236,11 @@ extension DraftCanvasViewModel {
     }
 
     func startBackgroundRemoval(item: ProjectItem) {
+        // プレビューは単一スロットのため、進行中の除去は中断して置き換える
+        if backgroundRemovalTask != nil {
+            cancelBackgroundRemoval()
+        }
+
         let projectID = selectedProjectID ?? item.projectID
 
         let job = GenerationJob(
@@ -237,6 +253,9 @@ extension DraftCanvasViewModel {
 
         let fileURL = projectStore.resolvedFileURL(for: item)
 
+        let runToken = UUID()
+        backgroundRemovalRunToken = runToken
+
         backgroundRemovalTask = Task {
             var running = job
             running.status = .running
@@ -246,11 +265,16 @@ extension DraftCanvasViewModel {
                 let inputData = try await imageLoader.loadData(at: fileURL, syncMonitor: syncMonitor)
                 await cacheEviction.recordAccess(url: fileURL)
                 let session = try await BackgroundRemover.extractMask(from: inputData)
-                let initialData = try BackgroundRemover.apply(session: session, edgeStrength: 0.5, mode: session.initialMode)
+                let initialData = try await Task.detached(priority: .userInitiated) {
+                    try BackgroundRemover.apply(session: session, edgeStrength: 0.5, mode: session.initialMode)
+                }.value
 
                 removeJob(id: job.id, from: projectID)
+                // 置き換え済み（古い世代）なら共有状態に触らない
+                guard backgroundRemovalRunToken == runToken else { return }
                 backgroundRemovalJobContext = nil
                 backgroundRemovalTask = nil
+                backgroundRemovalRunToken = nil
 
                 backgroundRemovalPreview = BackgroundRemovalPreview(
                     item: item,
@@ -260,8 +284,11 @@ extension DraftCanvasViewModel {
                 logs.append("背景除去プレビュー準備完了: \(item.id)")
             } catch {
                 removeJob(id: job.id, from: projectID)
+                guard backgroundRemovalRunToken == runToken else { return }
                 backgroundRemovalJobContext = nil
                 backgroundRemovalTask = nil
+                backgroundRemovalRunToken = nil
+                guard !(error is CancellationError) else { return }
                 let message = (error as? BackgroundRemovalError)?.localizedDescription
                     ?? String(localized: "背景除去に失敗しました")
                 errorToast = message
@@ -273,6 +300,7 @@ extension DraftCanvasViewModel {
     func cancelBackgroundRemoval() {
         backgroundRemovalTask?.cancel()
         backgroundRemovalTask = nil
+        backgroundRemovalRunToken = nil
         backgroundRemovalPreview = nil
         if let ctx = backgroundRemovalJobContext {
             removeJob(id: ctx.jobID, from: ctx.projectID)
@@ -317,6 +345,10 @@ extension DraftCanvasViewModel {
             pendingFreeAccountBlock = true
             return
         }
+        guard let variatorModel = Self.selectFastLowCostModel(from: availableModels) else {
+            showError("利用可能なモデルがありません")
+            return
+        }
 
         let projectID = item.projectID
         cleanupStaleJobs(for: projectID)
@@ -330,7 +362,6 @@ extension DraftCanvasViewModel {
         let capturedAspectRatio = item.aspectRatio
         let capturedItemID = item.id
         let capturedTranslate = translateToEnglish
-        let variatorModel = Self.selectFastLowCostModel(from: availableModels)
 
         // プレースホルダー jobs を即座に表示し、生成中状態を設定する。
         // LLM 変奏取得後に同じ job ID でプロンプトを更新して coordinator に渡す。

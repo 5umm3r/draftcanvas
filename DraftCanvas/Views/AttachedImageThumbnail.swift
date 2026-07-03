@@ -7,6 +7,12 @@ struct AttachedImageThumbnail: View {
     var onTap: (() -> Void)? = nil
     let onRemove: () -> Void
 
+    // プロンプトパネル内に置かれるためキー入力のたびに body が再評価される。
+    // フルサイズ画像の同期デコードを繰り返さないよう、縮小サムネイルを
+    // 一度だけ生成して保持する。マスク再編集などで同一パスのファイルが
+    // 書き換わるケースは reloadKey に更新日時を含めて検知する。
+    @State private var thumbnail: NSImage?
+
     var body: some View {
         HStack(alignment: .top, spacing: 4) {
             ZStack(alignment: .topTrailing) {
@@ -27,12 +33,30 @@ struct AttachedImageThumbnail: View {
                 .offset(x: 6, y: -6)
             }
         }
+        .task(id: reloadKey) {
+            let overlay = overlayPath
+            let file = filePath
+            thumbnail = await Task.detached(priority: .userInitiated) {
+                Self.loadThumbnail(overlayPath: overlay, filePath: file)
+            }.value
+        }
+    }
+
+    private var reloadKey: String {
+        [overlayPath, filePath]
+            .compactMap { $0 }
+            .map { "\($0)@\(Self.modificationTimestamp(of: $0))" }
+            .joined(separator: "|")
+    }
+
+    private static func modificationTimestamp(of path: String) -> TimeInterval {
+        let attrs = try? FileManager.default.attributesOfItem(atPath: path)
+        return (attrs?[.modificationDate] as? Date)?.timeIntervalSinceReferenceDate ?? 0
     }
 
     @ViewBuilder
     private var thumbnailImage: some View {
-        let displayPath = overlayPath.flatMap { NSImage(contentsOfFile: $0) != nil ? $0 : nil } ?? filePath
-        if let image = NSImage(contentsOfFile: displayPath) {
+        if let image = thumbnail {
             Image(nsImage: image)
                 .resizable()
                 .scaledToFit()
@@ -51,6 +75,30 @@ struct AttachedImageThumbnail: View {
                         .foregroundStyle(.secondary)
                 }
         }
+    }
+
+    nonisolated private static func loadThumbnail(overlayPath: String?, filePath: String) -> NSImage? {
+        for path in [overlayPath, filePath].compactMap({ $0 }) {
+            if let image = downsampledImage(at: path, maxPixel: 160) {
+                return image
+            }
+        }
+        return nil
+    }
+
+    // 表示サイズは最大 80x60pt のため、フルサイズを保持せず縮小版のみ生成する
+    nonisolated private static func downsampledImage(at path: String, maxPixel: CGFloat) -> NSImage? {
+        let url = URL(fileURLWithPath: path)
+        guard let source = CGImageSourceCreateWithURL(url as CFURL, nil) else { return nil }
+        let options: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: maxPixel
+        ]
+        guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else {
+            return nil
+        }
+        return NSImage(cgImage: cgImage, size: NSSize(width: cgImage.width, height: cgImage.height))
     }
 }
 

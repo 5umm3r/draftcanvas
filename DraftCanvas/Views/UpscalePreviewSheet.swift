@@ -7,6 +7,10 @@ struct UpscalePreviewSheet: View {
 
     @State private var dividerPosition: CGFloat = 0.5
     @State private var isDragging = false
+    // ドラッグ中は dividerPosition の変化で body が毎フレーム再評価されるため、
+    // 大判画像のデコードは一度だけ行い @State に保持する
+    @State private var beforeImage: NSImage?
+    @State private var afterImage: NSImage?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -19,6 +23,14 @@ struct UpscalePreviewSheet: View {
                 .padding(.vertical, 16)
         }
         .frame(minWidth: 700, minHeight: 520)
+        .task(id: payload.originalItem.id) {
+            let upscaledData = payload.upscaledImageData
+            let originalData = payload.originalImageData
+            async let after = Task.detached(priority: .userInitiated) { NSImage(data: upscaledData) }.value
+            async let before = Task.detached(priority: .userInitiated) { NSImage(data: originalData) }.value
+            afterImage = await after
+            beforeImage = await before
+        }
     }
 
     // MARK: - Comparison
@@ -26,14 +38,14 @@ struct UpscalePreviewSheet: View {
     private var comparisonArea: some View {
         GeometryReader { geo in
             ZStack(alignment: .topLeading) {
-                if let after = NSImage(data: payload.upscaledImageData) {
+                if let after = afterImage {
                     Image(nsImage: after)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
 
-                if let before = NSImage(data: payload.originalImageData) {
+                if let before = beforeImage {
                     Image(nsImage: before)
                         .resizable()
                         .aspectRatio(contentMode: .fit)

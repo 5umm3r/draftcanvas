@@ -5,6 +5,10 @@ extension DraftCanvasViewModel {
     func upscaleItem(_ item: ProjectItem) {
         let projectID = selectedProjectID ?? item.projectID
         guard !upscalingItemIDs.contains(item.id) else { return }
+        guard !availableModels.isEmpty else {
+            showError("利用可能なモデルがありません")
+            return
+        }
         upscalingItemIDs.insert(item.id)
 
         let label = item.prompt.prefix(30).isEmpty ? String(localized: "素材") : String(item.prompt.prefix(30))
@@ -22,6 +26,9 @@ extension DraftCanvasViewModel {
         let availableModelsRef = availableModels
         let translateToEnglishRef = translateToEnglish
 
+        let runToken = UUID()
+        upscalingRunTokens[item.id] = runToken
+
         let task = Task { @MainActor in
             var running = job
             running.status = .running
@@ -31,7 +38,8 @@ extension DraftCanvasViewModel {
                 let originalData = try await imageLoader.loadData(at: fileURL, syncMonitor: syncMonitor)
                 await cacheEviction.recordAccess(url: fileURL)
 
-                let upscaledData: Data = try await Task.detached(priority: .userInitiated) {
+                // Task.detached は親のキャンセルを継承しないため明示的に伝播する
+                let turnTask = Task.detached(priority: .userInitiated) {
                     try await Self.runUpscaleTurn(
                         client: clientRef,
                         availableModels: availableModelsRef,
@@ -39,12 +47,20 @@ extension DraftCanvasViewModel {
                         fileURL: fileURL,
                         translateToEnglish: translateToEnglishRef
                     )
-                }.value
+                }
+                let upscaledData: Data = try await withTaskCancellationHandler {
+                    try await turnTask.value
+                } onCancel: {
+                    turnTask.cancel()
+                }
 
                 removeJob(id: job.id, from: projectID)
+                // キャンセル後の再実行と競合しないよう、自分がまだ現行世代か確認する
+                guard upscalingRunTokens[itemID] == runToken else { return }
                 upscalingItemIDs.remove(itemID)
                 upscalingTasks.removeValue(forKey: itemID)
                 upscalingJobContexts.removeValue(forKey: itemID)
+                upscalingRunTokens.removeValue(forKey: itemID)
                 upscalePreview = UpscalePreviewPayload(
                     originalItem: item,
                     originalImageData: originalData,
@@ -54,9 +70,11 @@ extension DraftCanvasViewModel {
                 logs.append("高解像度化プレビュー準備完了: \(itemID)")
             } catch {
                 removeJob(id: job.id, from: projectID)
+                guard upscalingRunTokens[itemID] == runToken else { return }
                 upscalingItemIDs.remove(itemID)
                 upscalingTasks.removeValue(forKey: itemID)
                 upscalingJobContexts.removeValue(forKey: itemID)
+                upscalingRunTokens.removeValue(forKey: itemID)
                 guard !(error is CancellationError) else { return }
                 showError("高解像度化に失敗しました")
                 logs.append("高解像度化失敗: \(error.localizedDescription)")
@@ -68,6 +86,7 @@ extension DraftCanvasViewModel {
     func cancelUpscale(itemID: UUID) {
         upscalingTasks[itemID]?.cancel()
         upscalingTasks.removeValue(forKey: itemID)
+        upscalingRunTokens.removeValue(forKey: itemID)
         upscalingItemIDs.remove(itemID)
         if let ctx = upscalingJobContexts.removeValue(forKey: itemID) {
             removeJob(id: ctx.jobID, from: ctx.projectID)
@@ -131,7 +150,10 @@ extension DraftCanvasViewModel {
         translateToEnglish: Bool
     ) async throws -> Data {
         try await client.start()
-        let model = selectFastLowCostModel(from: availableModels)
+        try Task.checkCancellation()
+        guard let model = selectFastLowCostModel(from: availableModels) else {
+            throw DraftCanvasError.rpcError(String(localized: "利用可能なモデルがありません"))
+        }
         let description = item.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             ? "imported asset"
             : item.prompt
@@ -154,6 +176,7 @@ extension DraftCanvasViewModel {
             translateToEnglish: translateToEnglish,
             normalizedDescription: normalizedDescription
         )
+        try Task.checkCancellation()
         let result = try await client.runTurn(
             threadID: threadID,
             prompt: prompt,

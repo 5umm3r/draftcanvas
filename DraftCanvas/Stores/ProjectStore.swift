@@ -178,7 +178,12 @@ final class ProjectStore: @unchecked Sendable {
         itemFileExtensionsLock.unlock()
     }
 
+    /// 直近の load() がデコード失敗（破損）で空スナップショットを返したか。
+    /// メインスレッドからの load() 直後に参照する想定。
+    private(set) var lastLoadDataWasCorrupted = false
+
     func load() -> Snapshot {
+        lastLoadDataWasCorrupted = false
         guard FileManager.default.fileExists(atPath: metadataURL.path) else {
             return Snapshot()
         }
@@ -189,15 +194,31 @@ final class ProjectStore: @unchecked Sendable {
             return Snapshot()
         }
         guard let snapshot = try? JSONDecoder.projectDecoder.decode(Snapshot.self, from: data) else {
+            // 1レコードの破損で全件消失に見える事故を防ぐため、
+            // 元データを保全してから空で起動する
+            backUpCorruptedMetadata(data)
+            lastLoadDataWasCorrupted = true
             return Snapshot()
         }
         return snapshot
     }
 
-    func save(_ snapshot: Snapshot) {
-        try? FileManager.default.createDirectory(at: rootDirectory, withIntermediateDirectories: true)
-        guard let data = try? JSONEncoder.projectEncoder.encode(snapshot) else { return }
-        coordinatedWrite(data, to: metadataURL)
+    private func backUpCorruptedMetadata(_ data: Data) {
+        let stamp = ISO8601DateFormatter().string(from: Date()).replacingOccurrences(of: ":", with: "-")
+        let backupURL = rootDirectory.appendingPathComponent("projects.json.corrupted-\(stamp)")
+        try? data.write(to: backupURL, options: .atomic)
+    }
+
+    /// - Returns: 書き込みに成功したか（内容不変のスキップは成功扱い）
+    @discardableResult
+    func save(_ snapshot: Snapshot) -> Bool {
+        do {
+            try FileManager.default.createDirectory(at: rootDirectory, withIntermediateDirectories: true)
+            let data = try JSONEncoder.projectEncoder.encode(snapshot)
+            return coordinatedWrite(data, to: metadataURL)
+        } catch {
+            return false
+        }
     }
 
     private func coordinatedRead(at url: URL) -> Data? {
@@ -213,27 +234,48 @@ final class ProjectStore: @unchecked Sendable {
         return result
     }
 
-    private func coordinatedWrite(_ data: Data, to url: URL) {
+    @discardableResult
+    private func coordinatedWrite(_ data: Data, to url: URL) -> Bool {
         // 内容が既存ファイルと同一なら書き込まない。
         // atomic 書き込みは内容不変でも mtime を更新し、iCloud の不要な再同期を誘発するため。
         if let existing = try? Data(contentsOf: url), existing == data {
-            return
+            return true
         }
         guard isInUbiquityContainer else {
-            try? data.write(to: url, options: .atomic)
-            return
+            do {
+                try data.write(to: url, options: .atomic)
+                return true
+            } catch {
+                return false
+            }
         }
         var coordinatorError: NSError?
+        var didWrite = false
         let coordinator = NSFileCoordinator()
         coordinator.coordinate(writingItemAt: url, options: .forReplacing, error: &coordinatorError) { coordURL in
-            try? data.write(to: coordURL, options: .atomic)
+            do {
+                try data.write(to: coordURL, options: .atomic)
+                didWrite = true
+            } catch {
+                didWrite = false
+            }
         }
+        return didWrite && coordinatorError == nil
     }
 
     private func resolveConflictsIfNeeded(at url: URL) {
         guard let conflicts = NSFileVersion.unresolvedConflictVersionsOfItem(at: url),
               !conflicts.isEmpty else { return }
-        for version in conflicts {
+        // マージは行わないが、負けた側のバージョンをローカルに退避してから削除する。
+        // マルチデバイス同時編集で片方の変更が黙って消える事故の復旧手段を残すため。
+        // 退避先は再同期を誘発しないようローカルの Application Support 配下。
+        let backupDir = ProjectStore.localDefaultRootDirectory()
+            .appendingPathComponent("conflict-backups", isDirectory: true)
+        try? FileManager.default.createDirectory(at: backupDir, withIntermediateDirectories: true)
+        let stamp = ISO8601DateFormatter().string(from: Date()).replacingOccurrences(of: ":", with: "-")
+        for (index, version) in conflicts.enumerated() {
+            let dst = backupDir.appendingPathComponent("projects-\(stamp)-\(index).json")
+            try? FileManager.default.copyItem(at: version.url, to: dst)
             version.isResolved = true
         }
         try? NSFileVersion.removeOtherVersionsOfItem(at: url)

@@ -67,6 +67,10 @@ extension DraftCanvasViewModel {
     // 即時生成モード: 自動背景継続
     func applyOutpaint(item: ProjectItem, insets: OutpaintInsets) {
         guard !insets.isEmpty else { return }
+        guard let fastModel = Self.selectFastLowCostModel(from: availableModels) else {
+            showError("利用可能なモデルがありません")
+            return
+        }
 
         let projectID = selectedProjectID ?? item.projectID
         let fileURL = projectStore.resolvedFileURL(for: item)
@@ -74,7 +78,6 @@ extension DraftCanvasViewModel {
         outpaintTarget = nil
         activeEditProjectID = projectID
 
-        let fastModel = Self.selectFastLowCostModel(from: availableModels)
         let itemPrompt = item.prompt
         let itemID = item.id
         let translateToEnglishRef = translateToEnglish
@@ -122,6 +125,7 @@ extension DraftCanvasViewModel {
                 )
 
                 let preparedRequest = await self.prepareRequestForGeneration(request)
+                try Task.checkCancellation()
                 let outpaintCoordinator = await MainActor.run { self.coordinator }
 
                 let results = await outpaintCoordinator.run(request: preparedRequest) { [weak self] job in
@@ -130,6 +134,9 @@ extension DraftCanvasViewModel {
 
                 await MainActor.run {
                     store.cleanupMaskFiles(id: itemID)
+                    // キャンセル済み（cancelProjectRuns が登録除去・フラグ処理済み）なら
+                    // 後続の実行の生成中状態を壊さないよう何もしない
+                    guard self.generationTasks[projectID]?[runID] != nil else { return }
                     self.generatingProjectIDs.remove(projectID)
                     self.activityTracker.end()
                     self.generationTasks[projectID]?.removeValue(forKey: runID)
@@ -141,11 +148,15 @@ extension DraftCanvasViewModel {
                 }
             } catch {
                 await MainActor.run {
-                    self.showError("アウトペイントに失敗しました: \(error.localizedDescription)")
-                    self.logs.append("アウトペイントエラー: \(error.localizedDescription)")
+                    let projectStoreRef = self.projectStore
+                    projectStoreRef.cleanupMaskFiles(id: itemID)
+                    guard self.generationTasks[projectID]?[runID] != nil else { return }
                     self.generatingProjectIDs.remove(projectID)
                     self.activityTracker.end()
                     self.generationTasks[projectID]?.removeValue(forKey: runID)
+                    guard !(error is CancellationError) else { return }
+                    self.showError("アウトペイントに失敗しました: \(error.localizedDescription)")
+                    self.logs.append("アウトペイントエラー: \(error.localizedDescription)")
                 }
             }
         }
