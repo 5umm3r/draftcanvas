@@ -97,6 +97,7 @@ bash scripts/release.sh <version>
 - ダブルクリックでインストールされない場合は手動コピー
 - `scripts/ExportOptions.plist` に `provisioningProfiles` → UUID を明記（`signingStyle: manual` の場合、UUID 未指定だと自動選択されない）
 - iCloud capability を entitlements に追加した場合、Developer ID プロファイルを再生成してインストールし直す
+- プロファイル再生成時は `scripts/ExportOptions.plist` の `provisioningProfiles` UUID も同時更新する（漏れると export が `No "Developer ID" profiles... matching '<UUID>' are installed` で失敗。UUID確認: `security cms -D -i "<profile>.provisionprofile" | plutil -extract UUID raw -o - -`）
 
 **途中失敗時の再開**
 - バージョンバンプ・タグ・push 済みなら `scripts/release.sh` を再実行しない
