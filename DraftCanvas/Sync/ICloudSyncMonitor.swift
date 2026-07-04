@@ -139,20 +139,28 @@ final class ICloudSyncMonitor: ObservableObject {
             let isUploaded = (item.value(forAttribute: NSMetadataUbiquitousItemIsUploadedKey) as? Bool) ?? true
 
             let needsDownload = downloadStatus == NSMetadataUbiquitousItemDownloadingStatusNotDownloaded
-            if needsDownload || isDownloading || isUploading || !isUploaded {
+            let url = item.value(forAttribute: NSMetadataItemURLKey) as? URL
+            // URL が取れないアイテムは安全側（pending 扱い）に倒す
+            let autoPullWanted = url.map { shouldAutoPull(url: $0) } ?? true
+
+            if Self.isPendingTransfer(
+                needsDownload: needsDownload,
+                isDownloading: isDownloading,
+                isUploading: isUploading,
+                isUploaded: isUploaded,
+                autoPullWanted: autoPullWanted
+            ) {
                 pendingCount += 1
             }
 
-            if needsDownload, !isDownloading,
-               let url = item.value(forAttribute: NSMetadataItemURLKey) as? URL {
-                if shouldAutoPull(url: url) {
-                    try? FileManager.default.startDownloadingUbiquitousItem(at: url)
-                }
+            if needsDownload, !isDownloading, autoPullWanted, let url {
+                try? FileManager.default.startDownloadingUbiquitousItem(at: url)
             }
 
             if let name = item.value(forAttribute: NSMetadataItemFSNameKey) as? String {
                 let stem = (name as NSString).deletingPathExtension
-                if let uuid = UUID(uuidString: stem), needsDownload || isDownloading {
+                if let uuid = UUID(uuidString: stem),
+                   isDownloading || (needsDownload && autoPullWanted) {
                     downloading.insert(uuid)
                 }
             }
@@ -187,7 +195,11 @@ final class ICloudSyncMonitor: ObservableObject {
     }
 
     private func shouldAutoPull(url: URL) -> Bool {
-        switch autoPullPolicy {
+        Self.shouldAutoPull(url: url, policy: autoPullPolicy)
+    }
+
+    nonisolated static func shouldAutoPull(url: URL, policy: ICloudAutoPullPolicy) -> Bool {
+        switch policy {
         case .eager:
             return true
         case .thumbsOnly:
@@ -197,6 +209,21 @@ final class ICloudSyncMonitor: ObservableObject {
             }
             return ICloudAutoPullPolicy.isMetadataExtension(url.pathExtension)
         }
+    }
+
+    /// 同期未完了 (pending) として数えるかを判定する。
+    /// 未 DL でも autoPullWanted が false のアイテムは pending に含めない。
+    /// 省容量モード (thumbsOnly) では原本を意図的に未 DL のまま残すため、
+    /// これを pending に数えると受信側端末の同期が永遠に「同期中」のまま終わらない。
+    nonisolated static func isPendingTransfer(
+        needsDownload: Bool,
+        isDownloading: Bool,
+        isUploading: Bool,
+        isUploaded: Bool,
+        autoPullWanted: Bool
+    ) -> Bool {
+        if isDownloading || isUploading || !isUploaded { return true }
+        return needsDownload && autoPullWanted
     }
 
     /// プレーン URL を searchScopes に渡すと Spotlight インデックス依存になり、
