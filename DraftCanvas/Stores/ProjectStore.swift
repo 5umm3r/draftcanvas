@@ -301,6 +301,7 @@ final class ProjectStore: @unchecked Sendable {
         }
         let url = itemsDirectory.appendingPathComponent("\(item.id.uuidString).\(ext)")
         try data.write(to: url, options: .atomic)
+        NotificationCenter.default.post(name: .draftCanvasICloudLocalWrite, object: nil)
         return url
     }
 

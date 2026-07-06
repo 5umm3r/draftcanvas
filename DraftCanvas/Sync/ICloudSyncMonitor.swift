@@ -10,6 +10,12 @@ enum ICloudSyncStatus: Equatable {
     case offline
 }
 
+extension Notification.Name {
+    /// ローカル書込直後に post。iCloud daemon の反映を待つため
+    /// ICloudSyncMonitor が定期 refresh を数秒間走らせて query キャッシュを吸い上げる。
+    static let draftCanvasICloudLocalWrite = Notification.Name("DraftCanvas.iCloudLocalWrite")
+}
+
 @MainActor
 final class ICloudSyncMonitor: ObservableObject {
     @Published private(set) var syncStatus: ICloudSyncStatus = .disabled
@@ -33,6 +39,12 @@ final class ICloudSyncMonitor: ObservableObject {
     // processQueryResults の集計結果。ネットワーク状態と合成して syncStatus を導出する
     private var lastPendingCount = 0
     private var lastErrorMessage: String?
+
+    // syncing 継続中の定期 refresh。NSMetadataQueryDidUpdate は
+    // 属性のみ変化 (isUploaded false→true) では発火しないケースがあり、
+    // アップロード完了しても表示が「同期中」で固着する。定期 refresh で強制再評価する。
+    private var syncingPoller: Task<Void, Never>?
+    private let syncingPollInterval: Duration = .seconds(3)
 
     init(containerIdentifier: String = "iCloud.com.spade3.DraftCanvas") {
         self.containerIdentifier = containerIdentifier
@@ -74,6 +86,14 @@ final class ICloudSyncMonitor: ObservableObject {
         ) { [weak self] _ in
             Task { @MainActor in self?.processQueryResults() }
         })
+        // ローカル書込直後は NSMetadataQuery が新規ファイルを認識するまで数秒遅延がある。
+        // 書込 notification を受けたら syncing に一時遷移させ、以降のポーリングで反映を吸う。
+        observers.append(nc.addObserver(
+            forName: .draftCanvasICloudLocalWrite,
+            object: nil, queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in self?.refresh() }
+        })
 
         query.start()
     }
@@ -85,6 +105,8 @@ final class ICloudSyncMonitor: ObservableObject {
         observers.removeAll()
         pathMonitor?.cancel()
         pathMonitor = nil
+        syncingPoller?.cancel()
+        syncingPoller = nil
     }
 
     /// クエリ更新通知が届かず状態が固着した場合に備え、現在のクエリ結果を手動で再評価する。
@@ -191,6 +213,27 @@ final class ICloudSyncMonitor: ObservableObject {
             syncStatus = .syncing(pending: lastPendingCount)
         } else {
             syncStatus = .synced
+        }
+        adjustSyncingPoller()
+    }
+
+    /// syncing 継続中のみ定期 refresh を走らせる。synced/offline/error/disabled では止める。
+    private func adjustSyncingPoller() {
+        if case .syncing = syncStatus {
+            if syncingPoller == nil {
+                syncingPoller = Task { @MainActor [weak self] in
+                    guard let self else { return }
+                    let interval = self.syncingPollInterval
+                    while !Task.isCancelled {
+                        try? await Task.sleep(for: interval)
+                        if Task.isCancelled { return }
+                        self.processQueryResults()
+                    }
+                }
+            }
+        } else {
+            syncingPoller?.cancel()
+            syncingPoller = nil
         }
     }
 

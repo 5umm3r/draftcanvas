@@ -319,9 +319,13 @@ final class DraftCanvasViewModel: ObservableObject {
         }
         if projectStore.isInUbiquityContainer {
             let monitor = ICloudSyncMonitor()
+            // start() 直後に gathering finish 通知が処理されるため、
+            // ポリシーは start() 前に確定させる必要がある。
+            // 順序が逆だと thumbsOnly ユーザーは初回集計だけ .eager 扱いになり、
+            // 未 DL 原本が pending に混入して「同期中」表示が残留する。
+            monitor.autoPullPolicy = ICloudAutoPullPolicy.load()
             self.syncMonitor = monitor
             monitor.start(containerURL: projectStore.rootDirectory)
-            monitor.autoPullPolicy = ICloudAutoPullPolicy.load()
             installForegroundRefreshObserver()
             enforceCacheLimitOnLaunchIfNeeded()
         }
@@ -384,9 +388,12 @@ final class DraftCanvasViewModel: ObservableObject {
                 self.templateStore = PromptTemplateStore(rootDirectory: url)
                 self.historyStore = PromptHistoryStore(rootDirectory: url)
                 let monitor = ICloudSyncMonitor()
+                // start() 直後の gathering finish を正しいポリシーで処理するため、
+                // autoPullPolicy は start() 前に設定する必要がある (順序逆転すると
+                // thumbsOnly ユーザーの初回集計だけ .eager 扱いになり pending 残留)。
+                monitor.autoPullPolicy = ICloudAutoPullPolicy.load()
                 self.syncMonitor = monitor
                 monitor.start(containerURL: url)
-                monitor.autoPullPolicy = ICloudAutoPullPolicy.load()
                 self.installForegroundRefreshObserver()
                 self.loadProjects()
                 self.loadTemplates()
