@@ -91,6 +91,26 @@ final class JSONRPCCodecTests: XCTestCase {
         XCTAssertNil(result.revisedPrompt)
     }
 
+    func testGeneratedImageFallbackLoadsCallUnderscorePNGForThread() throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("DraftCanvasGeneratedImages-\(UUID().uuidString)", isDirectory: true)
+        let threadID = "019f5a4e-74bb-7190-9945-b53625c73306"
+        let threadDirectory = root.appendingPathComponent(threadID, isDirectory: true)
+        try FileManager.default.createDirectory(at: threadDirectory, withIntermediateDirectories: true)
+        let callURL = threadDirectory.appendingPathComponent("call_kODl5kJTlzvf6MmtjQbudnUn.png")
+        let callData = Data([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x03])
+        try callData.write(to: callURL)
+
+        let result = try XCTUnwrap(CodexGeneratedImageFallbackLoader.loadImageResult(
+            threadID: threadID,
+            generatedImagesRoot: root
+        ))
+
+        XCTAssertEqual(result.imageID, "call_kODl5kJTlzvf6MmtjQbudnUn")
+        XCTAssertEqual(result.data, callData)
+        XCTAssertNil(result.revisedPrompt)
+    }
+
     func testGeneratedImageFallbackRejectsUnsafeThreadID() throws {
         let root = FileManager.default.temporaryDirectory
             .appendingPathComponent("DraftCanvasGeneratedImages-\(UUID().uuidString)", isDirectory: true)
