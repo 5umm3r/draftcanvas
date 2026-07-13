@@ -24,7 +24,6 @@ extension DraftCanvasViewModel {
         let itemID = item.id
         let clientRef = client
         let availableModelsRef = availableModels
-        let translateToEnglishRef = translateToEnglish
 
         let runToken = UUID()
         upscalingRunTokens[item.id] = runToken
@@ -44,8 +43,7 @@ extension DraftCanvasViewModel {
                         client: clientRef,
                         availableModels: availableModelsRef,
                         item: item,
-                        fileURL: fileURL,
-                        translateToEnglish: translateToEnglishRef
+                        fileURL: fileURL
                     )
                 }
                 let upscaledData: Data = try await withTaskCancellationHandler {
@@ -146,36 +144,18 @@ extension DraftCanvasViewModel {
         client: CodexAppServerClient,
         availableModels: [CodexModel],
         item: ProjectItem,
-        fileURL: URL,
-        translateToEnglish: Bool
+        fileURL: URL
     ) async throws -> Data {
         try await client.start()
         try Task.checkCancellation()
         guard let model = selectFastLowCostModel(from: availableModels) else {
             throw DraftCanvasError.rpcError(String(localized: "利用可能なモデルがありません"))
         }
-        let description = item.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            ? "imported asset"
-            : item.prompt
-        let normalizedDescription: String?
-        if translateToEnglish {
-            normalizedDescription = try? await PromptLanguageNormalizer.normalizeUpscaleDescription(
-                description,
-                client: client,
-                model: model
-            )
-        } else {
-            normalizedDescription = nil
-        }
         let threadID = try await client.startThread(
             model: model.id,
             reasoningEffort: model.defaultReasoningEffort
         )
-        let prompt = PromptFactory.upscalePrompt(
-            for: item,
-            translateToEnglish: translateToEnglish,
-            normalizedDescription: normalizedDescription
-        )
+        let prompt = PromptFactory.upscalePrompt(for: item)
         try Task.checkCancellation()
         let result = try await client.runTurn(
             threadID: threadID,

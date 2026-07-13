@@ -50,8 +50,7 @@ extension DraftCanvasViewModel {
             attachedImagePath: inputs.attachedImage?.filePath,
             attachedImageKind: inputs.attachedImage?.kind ?? .regular,
             model: inputs.model,
-            reasoningEffort: inputs.reasoningEffort,
-            translateToEnglish: translateToEnglish
+            reasoningEffort: inputs.reasoningEffort
         )
 
         if let editSource = inputs.editSource {
@@ -133,10 +132,9 @@ extension DraftCanvasViewModel {
 
         let generationTask = Task { [weak self] in
             guard let self else { return }
-            let preparedRequest = await prepareRequestForGeneration(request)
             await MainActor.run {
-                self.lastRequestByProject[projectID] = preparedRequest
-                self.preparedRequestByRun[runID] = preparedRequest
+                self.lastRequestByProject[projectID] = request
+                self.preparedRequestByRun[runID] = request
             }
 
             guard !Task.isCancelled else {
@@ -147,10 +145,10 @@ extension DraftCanvasViewModel {
                 return
             }
 
-            let results = await coordinator.runSpecific(jobs: taggedJobs, request: preparedRequest) { [weak self] job in
+            let results = await coordinator.runSpecific(jobs: taggedJobs, request: request) { [weak self] job in
                 await MainActor.run {
                     guard let self else { return }
-                    self.handleJobUpdate(job, into: projectID, request: preparedRequest)
+                    self.handleJobUpdate(job, into: projectID, request: request)
                 }
             }
 
@@ -167,28 +165,6 @@ extension DraftCanvasViewModel {
             generationTasks[projectID] = [:]
         }
         generationTasks[projectID]?[runID] = generationTask
-    }
-
-    func prepareRequestForGeneration(_ request: GenerationRequest) async -> GenerationRequest {
-        guard request.translateToEnglish else { return request }
-        guard request.normalizedGenerationBrief == nil else { return request }
-        guard let model = Self.selectFastLowCostModel(from: availableModels) else { return request }
-
-        do {
-            let normalized = try await PromptLanguageNormalizer.normalize(
-                request: request,
-                client: client,
-                model: model
-            )
-            guard !normalized.isEmpty else { return request }
-            var prepared = request
-            prepared.normalizedPrompt = normalized
-            logs.append("生成指示を英語に正規化しました。")
-            return prepared
-        } catch {
-            logs.append("生成指示の英語正規化に失敗したため元のプロンプトで続行します: \(error.localizedDescription)")
-            return request
-        }
     }
 
     func upsert(_ job: GenerationJob, into projectID: UUID) {
@@ -512,9 +488,8 @@ extension DraftCanvasViewModel {
         }
         let retryTask = Task { [weak self] in
             guard let self else { return }
-            let preparedRequest = await prepareRequestForGeneration(request)
             await MainActor.run {
-                self.preparedRequestByRun[runID] = preparedRequest
+                self.preparedRequestByRun[runID] = request
             }
 
             guard !Task.isCancelled else {
@@ -522,9 +497,9 @@ extension DraftCanvasViewModel {
                 return
             }
 
-            let retried = await coordinator.runSpecific(jobs: retryJobs, request: preparedRequest) { [weak self] job in
+            let retried = await coordinator.runSpecific(jobs: retryJobs, request: request) { [weak self] job in
                 await MainActor.run {
-                    self?.handleJobUpdate(job, into: projectID, request: preparedRequest)
+                    self?.handleJobUpdate(job, into: projectID, request: request)
                 }
             }
             await MainActor.run {
@@ -539,6 +514,21 @@ extension DraftCanvasViewModel {
 
     private func isGenerating(for projectID: UUID) -> Bool {
         generatingProjectIDs.contains(projectID)
+    }
+
+    static func selectFastLowCostModel(from models: [CodexModel]) -> CodexModel? {
+        if let miniByID = models.first(where: { $0.id.hasSuffix("-mini") }) {
+            return miniByID
+        }
+        let lightweightKeywords = ["mini", "haiku", "flash", "instant", "lite", "nano"]
+        if let light = models.first(where: { model in
+            let lower = model.displayName.lowercased() + " " + model.id.lowercased()
+            return lightweightKeywords.contains(where: { lower.contains($0) })
+        }) {
+            return light
+        }
+        if let def = models.first(where: \.isDefault) { return def }
+        return models.first
     }
 
     private func checkRateLimitBeforeGenerate(inputs: ProjectInputs) -> Bool {

@@ -28,7 +28,6 @@ final class DraftCanvasViewModel: ObservableObject {
     @AppStorage("appAppearance") var appAppearanceRaw: String = "light"
     @AppStorage("completionSound") var completionSound: String = CompletionSoundOption.glass.rawValue
     @AppStorage("canvasSortOrder") var canvasSortOrderRaw: String = CanvasSortOrder.createdAtAscending.rawValue
-    @AppStorage("translateToEnglish") var translateToEnglish: Bool = false
     @AppStorage("placeholderAnimationStyle") var placeholderAnimationStyleRaw: String = PlaceholderAnimationStyle.aurora.rawValue
     var canvasSortOrder: CanvasSortOrder {
         get { CanvasSortOrder(rawValue: canvasSortOrderRaw) ?? .createdAtAscending }
@@ -174,7 +173,6 @@ final class DraftCanvasViewModel: ObservableObject {
     }() {
         didSet { UserDefaults.standard.set(inpaintMode.rawValue, forKey: "draftCanvas.inpaintMode") }
     }
-    @Published var isEnhancingPrompt = false
     @Published var exportRequest: ExportRequest? = nil
     @Published var exportingProjectID: UUID? = nil
     @Published var batchExportProgress: (done: Int, total: Int)? = nil
@@ -224,7 +222,6 @@ final class DraftCanvasViewModel: ObservableObject {
     // キャンセル後に同一アイテムへ再実行した際、旧タスクの遅延完了が
     // 新実行の状態を壊さないよう世代トークンで識別する
     var upscalingRunTokens: [UUID: UUID] = [:]
-    var enhanceTask: Task<Void, Never>?
     var backgroundRemovalTask: Task<Void, Never>?
     var backgroundRemovalJobContext: (jobID: UUID, projectID: UUID)?
     // 単一スロットのため、連続実行時に古いタスクの完了処理が
@@ -236,7 +233,6 @@ final class DraftCanvasViewModel: ObservableObject {
     var accountUsageRefreshTask: Task<CodexAccountUsageStatus, Error>?
     var modelsRefreshTask: Task<Void, Never>?
     let activityTracker = ActivityTracker()
-    var onReplacePromptText: ((String) -> Void)?
     var onAppendPromptText: ((String) -> Void)?
     var thumbnailStore: CanvasThumbnailStore
     let originalImageStore: CanvasOriginalImageStore
@@ -264,7 +260,6 @@ final class DraftCanvasViewModel: ObservableObject {
         accountClient: CodexAccountProviding? = nil,
         prewarmOnInit: Bool = true
     ) {
-        DraftCanvasViewModel.migratePromptLanguageModeIfNeeded()
         DraftCanvasViewModel.migrateAppSupportDirectoryIfNeeded()
         if UserDefaults.standard.bool(forKey: "iCloudSyncEnabled"),
            let iCloudURL = ICloudSyncMonitor.iCloudContainerURL() {
@@ -537,17 +532,6 @@ final class DraftCanvasViewModel: ObservableObject {
     }
     #endif
 
-    private static func migratePromptLanguageModeIfNeeded() {
-        let migrationKey = "draftcanvas.migration.promptLanguageModeToBool.v1"
-        let defaults = UserDefaults.standard
-        guard !defaults.bool(forKey: migrationKey) else { return }
-        defer { defaults.set(true, forKey: migrationKey) }
-        if let oldRaw = defaults.string(forKey: "promptLanguageMode") {
-            defaults.set(oldRaw == "english", forKey: "translateToEnglish")
-        }
-        defaults.removeObject(forKey: "promptLanguageMode")
-    }
-
     private static func migrateAppSupportDirectoryIfNeeded() {
         let migrationKey = "draftcanvas.migration.appSupportDirRenamed.v1"
         guard !UserDefaults.standard.bool(forKey: migrationKey) else { return }
@@ -585,7 +569,6 @@ final class DraftCanvasViewModel: ObservableObject {
         !generatingProjectIDs.isEmpty
             || !vectorizingItemIDs.isEmpty
             || !upscalingItemIDs.isEmpty
-            || isEnhancingPrompt
             || importProgress != nil
             || batchExportProgress != nil
             || exportingProjectID != nil
@@ -610,8 +593,6 @@ final class DraftCanvasViewModel: ObservableObject {
         autoRetryTasks.removeAll()
         autoRetryCountByProject.removeAll()
         autoRetryRequestByProject.removeAll()
-        enhanceTask?.cancel()
-        enhanceTask = nil
         backgroundRemovalTask?.cancel()
         backgroundRemovalTask = nil
         backgroundRemovalJobContext = nil
@@ -625,7 +606,6 @@ final class DraftCanvasViewModel: ObservableObject {
         generatingProjectIDs.removeAll()
         vectorizingItemIDs.removeAll()
         upscalingItemIDs.removeAll()
-        isEnhancingPrompt = false
         importProgress = nil
         batchExportProgress = nil
         exportingProjectID = nil
@@ -644,10 +624,8 @@ final class DraftCanvasViewModel: ObservableObject {
             + Array(vectorizationTasks.values)
             + Array(upscalingTasks.values)
             + Array(autoRetryTasks.values)
-        let enhance = enhanceTask
         cancelInFlightWorkForRelaunch()
         for task in tasksToAwait { await task.value }
-        await enhance?.value
     }
 }
 

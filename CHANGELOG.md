@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.2.14] - 2026-07-13
+
+### 改善
+
+- バリエーション生成の枚数選択を 2/4/6 の固定選択から 1〜12 の任意指定（Stepper）へ変更
+
+### 削除
+
+- プロンプトエンハンス機能（PromptPanel の ✨ ボタン、`PromptEnhancer` / `DraftCanvasViewModel+PromptEnhance`、関連ローカライズ・SPEC 記述）を削除
+- 英語正規化機能（`translateToEnglish` トグル、`PromptLanguageNormalizer`、`GenerationRequest.translateToEnglish` / `normalizedPrompt`、`PromptFactory` / `PromptVariator` の英語出力分岐、`promptLanguageMode` 移行処理、関連ローカライズ・SPEC 記述）を削除
+
 ## [1.2.13] - 2026-07-13
 
 ### 修正

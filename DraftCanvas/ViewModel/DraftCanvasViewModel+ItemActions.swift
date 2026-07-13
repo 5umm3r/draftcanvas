@@ -137,7 +137,6 @@ extension DraftCanvasViewModel {
         let itemPrompt = item.prompt
         let itemAspectRatio = item.aspectRatio
         let itemID = item.id
-        let translateToEnglishRef = translateToEnglish
 
         generatingProjectIDs.insert(projectID)
         activityTracker.begin()
@@ -195,14 +194,12 @@ extension DraftCanvasViewModel {
                     aspectRatio: itemAspectRatio,
                     editSource: editSource,
                     model: fastModel.id,
-                    reasoningEffort: "low",
-                    translateToEnglish: translateToEnglishRef
+                    reasoningEffort: "low"
                 )
-                let preparedRequest = await self.prepareRequestForGeneration(request)
                 try Task.checkCancellation()
 
-                let results = await removalCoordinator.run(request: preparedRequest) { [weak self] job in
-                    await MainActor.run { self?.handleJobUpdate(job, into: projectID, request: preparedRequest) }
+                let results = await removalCoordinator.run(request: request) { [weak self] job in
+                    await MainActor.run { self?.handleJobUpdate(job, into: projectID, request: request) }
                 }
 
                 await MainActor.run {
@@ -361,7 +358,6 @@ extension DraftCanvasViewModel {
         let capturedReasoningEffort = currentInputs.reasoningEffort
         let capturedAspectRatio = item.aspectRatio
         let capturedItemID = item.id
-        let capturedTranslate = translateToEnglish
 
         // プレースホルダー jobs を即座に表示し、生成中状態を設定する。
         // LLM 変奏取得後に同じ job ID でプロンプトを更新して coordinator に渡す。
@@ -388,7 +384,6 @@ extension DraftCanvasViewModel {
             let variationPrompts = await makeVariationPrompts(
                 originalPrompt: trimmedPrompt,
                 count: normalizedCount,
-                translateToEnglish: capturedTranslate,
                 model: variatorModel
             )
 
@@ -404,7 +399,6 @@ extension DraftCanvasViewModel {
                 originalPrompt: trimmedPrompt,
                 inpaintPurpose: .edit
             )
-            // 変奏プロンプトは目的言語で生成済みのため translateToEnglish=false で二重正規化を防ぐ。
             let request = GenerationRequest(
                 prompt: trimmedPrompt,
                 count: normalizedCount,
@@ -412,8 +406,7 @@ extension DraftCanvasViewModel {
                 aspectRatio: capturedAspectRatio,
                 editSource: editSource,
                 model: capturedModel,
-                reasoningEffort: capturedReasoningEffort,
-                translateToEnglish: false
+                reasoningEffort: capturedReasoningEffort
             )
 
             await MainActor.run {
@@ -443,7 +436,6 @@ extension DraftCanvasViewModel {
     private func makeVariationPrompts(
         originalPrompt: String,
         count: Int,
-        translateToEnglish: Bool,
         model: CodexModel
     ) async -> [String] {
         let fallback = Array(repeating: originalPrompt, count: count)
@@ -456,7 +448,6 @@ extension DraftCanvasViewModel {
                     try await PromptVariator.generate(
                         originalPrompt: originalPrompt,
                         count: count,
-                        translateToEnglish: translateToEnglish,
                         client: client,
                         model: model
                     )

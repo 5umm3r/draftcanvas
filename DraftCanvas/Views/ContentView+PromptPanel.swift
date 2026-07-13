@@ -217,9 +217,6 @@ extension ContentView {
                     dynamicHeight: $promptTextHeight,
                     maxHeight: maxH,
                     onSubmit: { viewModel.generate() },
-                    onSetupReplacer: { replacer in
-                        viewModel.onReplacePromptText = replacer
-                    },
                     onSetupAppender: { appender in
                         viewModel.onAppendPromptText = appender
                     },
@@ -253,54 +250,7 @@ extension ContentView {
                             .padding(.top, 0)
                     }
                 }
-                .padding(.trailing, isCollapsed ? 0 : 44)
-
-                if !isCollapsed {
-                    let promptEmpty = prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                    let enhanceDisabled = promptEmpty || viewModel.isEnhancingPrompt
-                    Button {
-                        viewModel.enhancePrompt()
-                    } label: {
-                        HStack(spacing: 3) {
-                            Group {
-                                if viewModel.isEnhancingPrompt {
-                                    Image(systemName: "sparkle")
-                                        .rotationEffect(.degrees(enhanceRotation))
-                                        .onAppear {
-                                            withAnimation(.linear(duration: 1.5).repeatForever(autoreverses: false)) {
-                                                enhanceRotation = 360
-                                            }
-                                        }
-                                        .onDisappear { enhanceRotation = 0 }
-                                } else {
-                                    Image(systemName: "sparkles")
-                                }
-                            }
-                            .font(.system(size: 14, weight: .medium))
-                        }
-                        .frame(minWidth: 28, minHeight: 28, maxHeight: 28)
-                        .padding(.horizontal, viewModel.showCostBadge ? 4 : 0)
-                        .background(
-                            viewModel.isEnhancingPrompt
-                                ? Color.accentColor.opacity(0.15)
-                                : Color.primary.opacity(0.06)
-                        )
-                        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                    }
-                    .buttonStyle(.plain)
-                    .overlay(alignment: .bottomTrailing) {
-                        Image(systemName: "bolt.fill")
-                            .font(.system(size: 9, weight: .semibold))
-                            .foregroundStyle(.secondary)
-                            .opacity(viewModel.showCostBadge ? 1 : 0)
-                            .offset(x: 3, y: 3)
-                    }
-                    .disabled(enhanceDisabled)
-                    .opacity(enhanceDisabled && !viewModel.isEnhancingPrompt ? 0.3 : 1.0)
-                    .help("プロンプトをエンハンス (詳細化)")
-                    .padding(.trailing, 8)
-                    .padding(.bottom, 6)
-                }
+                .padding(.trailing, isCollapsed ? 0 : 0)
 
                 if isCollapsed {
                     HStack(spacing: 8) {
@@ -472,14 +422,6 @@ extension ContentView {
                     .menuStyle(.borderlessButton)
                     .fixedSize()
                     .help("並列実行数")
-
-                    Toggle(isOn: $viewModel.translateToEnglish) {
-                        Image(systemName: "text.bubble")
-                            .font(.system(size: 13))
-                    }
-                    .toggleStyle(.switch)
-                    .controlSize(.small)
-                    .help(String(localized: "英語正規化: 生成前に英語へ変換しブレを抑制。トークン消費が増えます。"))
 
                     Spacer()
 

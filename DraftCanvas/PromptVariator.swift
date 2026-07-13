@@ -1,11 +1,7 @@
 import Foundation
 
 enum PromptVariator {
-    static func systemInstruction(count: Int, translateToEnglish: Bool) -> String {
-        let languageRule = translateToEnglish
-            ? "- Write every variation in English"
-            : "- Write each variation in the same language as the original prompt (Japanese stays Japanese, English stays English)"
-
+    static func systemInstruction(count: Int) -> String {
         return [
             "You are an expert prompt engineer for AI image generation.",
             "Given an original image prompt, produce \(count) distinct variations of it.",
@@ -14,7 +10,7 @@ enum PromptVariator {
             "- Keep the same core subject and intent as the original prompt",
             "- Each variation must explore a DIFFERENT visual axis: composition, camera angle, lighting, color palette, mood, art style, season, or time of day",
             "- Do not repeat the same axis across variations; make them clearly distinct from one another",
-            languageRule,
+            "- Write each variation in the same language as the original prompt (Japanese stays Japanese, English stays English)",
             "- Each variation must be a complete, self-contained image prompt (2-4 sentences)",
             "- Output ONLY a JSON array of exactly \(count) strings, nothing else",
             "- No markdown, no code fences, no labels, no explanations",
@@ -23,9 +19,9 @@ enum PromptVariator {
         ].joined(separator: "\n")
     }
 
-    static func buildPrompt(originalPrompt: String, count: Int, translateToEnglish: Bool) -> String {
+    static func buildPrompt(originalPrompt: String, count: Int) -> String {
         [
-            systemInstruction(count: count, translateToEnglish: translateToEnglish),
+            systemInstruction(count: count),
             "",
             "Original prompt:",
             originalPrompt
@@ -59,7 +55,6 @@ enum PromptVariator {
     static func generate(
         originalPrompt: String,
         count: Int,
-        translateToEnglish: Bool,
         client: CodexAppServerClient,
         model: CodexModel
     ) async throws -> [String] {
@@ -67,7 +62,7 @@ enum PromptVariator {
         let threadID = try await client.startThread(model: model.id, reasoningEffort: "low")
         let result = try await client.runTurn(
             threadID: threadID,
-            prompt: buildPrompt(originalPrompt: originalPrompt, count: count, translateToEnglish: translateToEnglish)
+            prompt: buildPrompt(originalPrompt: originalPrompt, count: count)
         )
         return parseVariations(result.assistantText)
     }

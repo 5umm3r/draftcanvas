@@ -58,12 +58,6 @@ On first launch, you will be asked to allow notifications. Allowing them lets yo
 
 Once generation is complete, image cards appear on the canvas.
 
-**Tip — Prompt Enhancement:**  
-After entering a prompt, press the ✨ button to have AI automatically enrich it with more detail. This often improves output quality.
-
-**Tip — Translate prompt to English:**  
-Enabling "Translate prompt to English" in Settings will translate your prompt to English before generation. This can reduce variability in results. Disabled by default.
-
 ### Editing Images
 
 **Click to select** an image card on the canvas, and a column of circular action buttons will appear on the left side of the canvas.
@@ -177,7 +171,6 @@ Select multiple images (marquee selection or ⌘-click), then click "Export". Al
 | Setting | Description |
 |---------|-------------|
 | Prompt | Japanese or English, both work |
-| Prompt language | Defaults to the input language as-is. Enable "Translate prompt to English" in Settings to translate before generation |
 | Aspect ratio | Square / Portrait / Story / Landscape / Widescreen / Auto |
 | Number of images | 1–8 |
 | Concurrency | How many images to generate simultaneously (auto-reduced when rate limiting is detected) |
@@ -216,7 +209,6 @@ Open Settings from the app menu ("Draft Canvas" → "Settings..." or ⌘,).
 |---------|-------------|
 | Appearance | Light / Dark / System |
 | Language | Japanese / English / System. Changing language requires a restart |
-| Translate prompt to English | Translates your prompt to English before generation. Default: off |
 | Generation animation | Choose from 6 styles (Aurora, Grid Wave, Wireframe, Particle, Scanline, Mosaic) or Random |
 | Completion sound | Sound played when generation finishes |
 | Save folder | Default export destination |

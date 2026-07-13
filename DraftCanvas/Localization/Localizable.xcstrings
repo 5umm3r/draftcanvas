@@ -2418,38 +2418,6 @@
         }
       }
     },
-    "エンハンス結果が空でした": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enhancement result was empty"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "エンハンス結果が空でした"
-          }
-        }
-      }
-    },
-    "エンハンス結果を取得できませんでした": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Failed to retrieve enhancement result"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "エンハンス結果を取得できませんでした"
-          }
-        }
-      }
-    },
     "オフ": {
       "localizations": {
         "en": {
@@ -3347,22 +3315,6 @@
         }
       }
     },
-    "プロンプトをエンハンス (詳細化)": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enhance Prompt"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "プロンプトをエンハンス (詳細化)"
-          }
-        }
-      }
-    },
     "プロンプトをコピー": {
       "localizations": {
         "en": {
@@ -3391,38 +3343,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "プロンプトを入力して生成してください"
-          }
-        }
-      }
-    },
-    "プロンプトエンハンスがタイムアウトしました": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Prompt enhancement timed out"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "プロンプトエンハンスがタイムアウトしました"
-          }
-        }
-      }
-    },
-    "プロンプトエンハンスに失敗しました": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Prompt enhancement failed"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "プロンプトエンハンスに失敗しました"
           }
         }
       }
@@ -6681,22 +6601,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "色数を削減します。画質が一部低下する場合があります"
-          }
-        }
-      }
-    },
-    "英語正規化: 生成前に英語へ変換しブレを抑制。トークン消費が増えます。": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "English normalization: converts prompts to English before generation to reduce variance. Increases token usage."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "英語正規化: 生成前に英語へ変換しブレを抑制。トークン消費が増えます。"
           }
         }
       }
