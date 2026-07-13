@@ -66,7 +66,6 @@ Enter a text prompt and call gpt-image via the Codex App Server to generate imag
 **Parameters:**
 
 - **Prompt**: Free-form text (Japanese and English both supported)
-- **Generation language**: Controlled by the "Translate prompt to English" toggle in Settings. Default `false` (preserves input language). When enabled, the image generation brief is normalized to English before being passed to Codex. Persisted as `@AppStorage("translateToEnglish")` Bool
 - **count**: Number of images to generate. UI offers 1–8
 - **concurrency**: Number of parallel executions. Must be ≤ count; acts as a semaphore
 - **Aspect ratio**: Choose from the following
@@ -172,16 +171,7 @@ When a generation job fails, the cause is stored in `GenerationJob.failureKind: 
 | `.timeout` | `clock.badge.exclamationmark` | Timeout (`DraftCanvasError.timeout`) |
 | `.other` | `exclamationmark.triangle` | Other errors |
 
-### 2.3 Prompt Enhancement
-
-Pressing the "Enhance" button (in PromptPanel) automatically elaborates the current prompt using AI.
-
-- If "Translate prompt to English" is enabled in Settings, output is in English; otherwise the input language is preserved
-- Adds details on composition, color, lighting, atmosphere, texture, viewpoint, and art style
-- Expands to 2–4 sentences without changing the original subject or intent
-- Opens a new Codex thread to retrieve the enhanced prompt (asynchronous, with mutual exclusion)
-
-### 2.4 Post-Processing Features
+### 2.3 Post-Processing Features
 
 Post-processing includes:
 
@@ -541,7 +531,6 @@ DraftCanvasApp.swift
 │   ├── ViewModel/DraftCanvasViewModel+MaterialExtract.swift — Material extraction
 │   ├── ViewModel/DraftCanvasViewModel+Outpaint.swift     — Outpainting
 │   ├── ViewModel/DraftCanvasViewModel+Projects.swift     — Project CRUD
-│   ├── ViewModel/DraftCanvasViewModel+PromptEnhance.swift — Prompt enhancement
 │   ├── ViewModel/DraftCanvasViewModel+Sketch.swift       — Sketch drawing
 │   ├── ViewModel/DraftCanvasViewModel+Templates.swift    — Prompt templates
 │   ├── ViewModel/DraftCanvasViewModel+Upscale.swift      — Upscaling
@@ -582,7 +571,7 @@ The main window uses a three-pane layout.
 │              │  · count / concurrency                          │
 │              │  · Aspect ratio                                  │
 │              │  · Attached images (AttachedImageThumbnail)      │
-│              │  · Enhance / Generate buttons                    │
+│              │  · Generate button                               │
 └──────────────┴──────────────────────────────────────────────────┘
 ```
 
@@ -716,8 +705,6 @@ struct GenerationRequest: Equatable {
     var attachedImageKind: AttachmentKind  // Kind of attached image (.regular / .sketch)
     var model: String
     var reasoningEffort: String
-    var translateToEnglish: Bool // Whether to translate the prompt to English before generation
-    var normalizedPrompt: String?  // Cache of the translated prompt
 }
 ```
 

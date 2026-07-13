@@ -10,8 +10,6 @@ struct GenerationRequest: Equatable {
     var attachedImageKind: AttachmentKind = .regular
     var model: String = ""
     var reasoningEffort: String = "medium"
-    var translateToEnglish: Bool = false
-    var normalizedPrompt: String? = nil
 
     var normalizedCount: Int {
         min(max(count, 1), 24)
@@ -19,12 +17,6 @@ struct GenerationRequest: Equatable {
 
     var normalizedConcurrency: Int {
         min(max(concurrency, 1), normalizedCount)
-    }
-
-    var normalizedGenerationBrief: String? {
-        guard translateToEnglish else { return nil }
-        let trimmed = normalizedPrompt?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        return trimmed.isEmpty ? nil : trimmed
     }
 }
 

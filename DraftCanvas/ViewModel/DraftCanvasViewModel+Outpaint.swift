@@ -80,7 +80,6 @@ extension DraftCanvasViewModel {
 
         let itemPrompt = item.prompt
         let itemID = item.id
-        let translateToEnglishRef = translateToEnglish
 
         generatingProjectIDs.insert(projectID)
         activityTracker.begin()
@@ -120,16 +119,14 @@ extension DraftCanvasViewModel {
                     aspectRatio: .auto,
                     editSource: editSource,
                     model: fastModel.id,
-                    reasoningEffort: "low",
-                    translateToEnglish: translateToEnglishRef
+                    reasoningEffort: "low"
                 )
 
-                let preparedRequest = await self.prepareRequestForGeneration(request)
                 try Task.checkCancellation()
                 let outpaintCoordinator = await MainActor.run { self.coordinator }
 
-                let results = await outpaintCoordinator.run(request: preparedRequest) { [weak self] job in
-                    await MainActor.run { self?.handleJobUpdate(job, into: projectID, request: preparedRequest) }
+                let results = await outpaintCoordinator.run(request: request) { [weak self] job in
+                    await MainActor.run { self?.handleJobUpdate(job, into: projectID, request: request) }
                 }
 
                 await MainActor.run {

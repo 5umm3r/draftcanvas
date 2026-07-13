@@ -111,7 +111,6 @@ struct PromptTextView: NSViewRepresentable {
     @Binding var dynamicHeight: CGFloat
     var maxHeight: CGFloat
     var onSubmit: (() -> Void)?
-    var onSetupReplacer: ((@escaping (String) -> Void) -> Void)?
     var onSetupAppender: ((@escaping (String) -> Void) -> Void)?
     var onPasteImage: (() -> Void)?
     var onDropFileURL: ((URL) -> Void)?
@@ -161,9 +160,6 @@ struct PromptTextView: NSViewRepresentable {
         }
 
         context.coordinator.textViewRef = textView
-        onSetupReplacer?({ [weak coordinator = context.coordinator] newText in
-            coordinator?.replaceTextUndoably(newText)
-        })
         onSetupAppender?({ [weak coordinator = context.coordinator] addition in
             coordinator?.appendTextUndoably(addition)
         })

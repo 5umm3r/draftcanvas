@@ -16,7 +16,6 @@ struct ContentView: View {
     @State var promptTextHeight: CGFloat = 76
     @State var promptPanelHeight: CGFloat = 0
     @State var canvasZoom: CGFloat = 1.0
-    @State var enhanceRotation: Double = 0
     @State var isPromptDropTargeted = false
     @State var isCanvasDropTargeted = false
     @State var dragDropTargetProjectID: UUID?

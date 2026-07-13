@@ -367,24 +367,13 @@ private struct VariationMenuButton: View {
     let viewModel: DraftCanvasViewModel
     @State private var isHovered = false
     @State private var showPopover = false
+    @State private var variationCount: Int = 4
+
+    private let minCount = 1
+    private let maxCount = 12
 
     private var isDisabled: Bool {
         item.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    }
-
-    private func variationCountButton(label: LocalizedStringKey, count: Int) -> some View {
-        Button {
-            viewModel.generateVariations(item: item, count: count)
-            showPopover = false
-        } label: {
-            Text(label)
-                .font(.system(size: 13))
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
     }
 
     var body: some View {
@@ -428,13 +417,32 @@ private struct VariationMenuButton: View {
         .animation(.easeInOut(duration: 0.12), value: isHovered)
         .zIndex(isHovered ? 100 : 0)
         .popover(isPresented: $showPopover, arrowEdge: .trailing) {
-            VStack(spacing: 2) {
-                variationCountButton(label: "2枚", count: 2)
-                variationCountButton(label: "4枚", count: 4)
-                variationCountButton(label: "6枚", count: 6)
+            VStack(spacing: 6) {
+                Stepper(value: $variationCount, in: minCount...maxCount) {
+                    HStack(spacing: 2) {
+                        Text("\(variationCount)")
+                            .font(.system(size: 13, weight: .medium))
+                            .monospacedDigit()
+                        Text(LocalizedStringKey("枚"))
+                            .font(.system(size: 12))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .controlSize(.small)
+                Button {
+                    viewModel.generateVariations(item: item, count: variationCount)
+                    showPopover = false
+                } label: {
+                    Text(LocalizedStringKey("生成"))
+                        .font(.system(size: 12, weight: .medium))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
+                        .contentShape(Rectangle())
+                }
+                .keyboardShortcut(.defaultAction)
             }
-            .padding(.vertical, 4)
-            .frame(width: 100)
+            .padding(8)
+            .frame(width: 130)
         }
     }
 }

@@ -20,8 +20,6 @@ enum PromptFactory {
             let userInstructionLines: [String]
             if let perJobPrompt {
                 userInstructionLines = ["User edit request: \(perJobPrompt)"]
-            } else if let normalizedBrief = request.normalizedGenerationBrief {
-                userInstructionLines = ["Generation brief: \(normalizedBrief)"]
             } else {
                 userInstructionLines = [
                     "Original prompt: \(editSource.originalPrompt)",
@@ -60,8 +58,7 @@ enum PromptFactory {
                     "The reference image has transparent (alpha=0) regions indicating areas to be removed.",
                     "Use the image generation capability and return exactly one edited raster image result.",
                     "Remove the object in the transparent area, naturally fill with surrounding background.",
-                    request.normalizedGenerationBrief.map { "Generation brief: \($0)" }
-                        ?? "Original image description: \(editSource.originalPrompt)",
+                    "Original image description: \(editSource.originalPrompt)",
                     "Compose the image with \(request.aspectRatio.promptDescription).",
                     "Preserve all non-transparent parts of the image exactly as they are.",
                     "Return a fully opaque image with no transparency.",
@@ -98,8 +95,7 @@ enum PromptFactory {
             ]).joined(separator: "\n")
         }
 
-        let promptLine = request.normalizedGenerationBrief.map { "Generation brief: \($0)" }
-            ?? "User prompt: \(request.prompt)"
+        let promptLine = "User prompt: \(request.prompt)"
 
         if request.attachedImagePath != nil {
             if request.attachedImageKind == .sketch {
@@ -143,35 +139,20 @@ enum PromptFactory {
         ].joined(separator: "\n")
     }
 
-    static func upscalePrompt(
-        for item: ProjectItem,
-        translateToEnglish: Bool = false,
-        normalizedDescription: String? = nil
-    ) -> String {
-        return "\(toolConstraint)\n\n\(upscalePromptBody(for: item, translateToEnglish: translateToEnglish, normalizedDescription: normalizedDescription))"
+    static func upscalePrompt(for item: ProjectItem) -> String {
+        return "\(toolConstraint)\n\n\(upscalePromptBody(for: item))"
     }
 
-    private static func upscalePromptBody(
-        for item: ProjectItem,
-        translateToEnglish: Bool,
-        normalizedDescription: String?
-    ) -> String {
-        let fallbackDescription = item.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    private static func upscalePromptBody(for item: ProjectItem) -> String {
+        let description = item.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             ? "imported asset"
             : item.prompt
-        let normalized = normalizedDescription?.trimmingCharacters(in: .whitespacesAndNewlines)
-        let description = translateToEnglish && normalized?.isEmpty == false
-            ? normalized!
-            : fallbackDescription
-        let descriptionLabel = translateToEnglish && normalized?.isEmpty == false
-            ? "Image brief"
-            : "Original image description"
         return [
             "Upscale the attached reference image to a significantly higher resolution.",
             "Preserve the original composition, subject, style, and color palette exactly.",
             "Enhance fine details: textures, edges, fine lines, small features.",
             "Do not add, remove, or alter any objects.",
-            "\(descriptionLabel): \(description)",
+            "Original image description: \(description)",
             "Compose the image with \(item.aspectRatio.promptDescription).",
             "A normal opaque image is acceptable.",
             "Do not write code. Do not ask clarifying questions.",

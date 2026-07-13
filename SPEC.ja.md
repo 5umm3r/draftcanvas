@@ -66,7 +66,6 @@ Draft Canvas は macOS 向けの AI 画像生成・編集デスクトップア�
 **パラメータ:**
 
 - **プロンプト**: 自由テキスト（日本語・英語どちらも対応）
-- **生成指示の言語**: 設定画面「生成指示を英語に翻訳」Toggle で制御。デフォルト `false`（入力言語維持）。オン時のみ画像生成ブリーフを英語に正規化してから Codex に渡す。`@AppStorage("translateToEnglish")` Bool で永続化
 - **count**: 生成枚数。UI 上は 1〜8 枚から選択
 - **concurrency**: 並列実行数。count 以下で、セマフォとして機能
 - **アスペクト比**: 以下から選択
@@ -173,16 +172,7 @@ UI 表示 3 箇所:
 | `.timeout` | `clock.badge.exclamationmark` | タイムアウト（`DraftCanvasError.timeout`）|
 | `.other` | `exclamationmark.triangle` | その他エラー |
 
-### 2.3 プロンプト強化
-
-「✨ 強化」ボタン（PromptPanel）を押すと、入力中のプロンプトを AI が自動的に詳細化します。
-
-- 設定の「生成指示を英語に翻訳」がオンなら英語出力、オフなら入力言語維持
-- 構図・色彩・照明・雰囲気・テクスチャ・視点・アートスタイルの詳細を追加
-- 元の主題・意図を変えず 2〜4 文に拡張
-- Codex に新しいスレッドを開いて強化プロンプトを取得（非同期、排他制御あり）
-
-### 2.4 後処理機能
+### 2.3 後処理機能
 
 後処理には以下の機能があります。
 
@@ -542,7 +532,6 @@ DraftCanvasApp.swift
 │   ├── ViewModel/DraftCanvasViewModel+MaterialExtract.swift — マテリアル抽出
 │   ├── ViewModel/DraftCanvasViewModel+Outpaint.swift     — アウトペイント
 │   ├── ViewModel/DraftCanvasViewModel+Projects.swift     — プロジェクトCRUD
-│   ├── ViewModel/DraftCanvasViewModel+PromptEnhance.swift — プロンプト強化
 │   ├── ViewModel/DraftCanvasViewModel+Sketch.swift       — ラフ描画
 │   ├── ViewModel/DraftCanvasViewModel+Templates.swift    — プロンプトテンプレート
 │   ├── ViewModel/DraftCanvasViewModel+Upscale.swift      — アップスケール
@@ -717,8 +706,6 @@ struct GenerationRequest: Equatable {
     var attachedImageKind: AttachmentKind  // 添付画像の種別（.regular / .sketch）
     var model: String
     var reasoningEffort: String
-    var translateToEnglish: Bool // 生成前に英語に翻訳するか
-    var normalizedPrompt: String?  // 翻訳済みプロンプトのキャッシュ
 }
 ```
 
