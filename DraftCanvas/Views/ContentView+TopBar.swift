@@ -146,18 +146,23 @@ extension ContentView {
             Spacer(minLength: 16)
 
             if viewModel.accountUsageStatus.shouldShowUsagePills {
-                usagePill(
-                    prefix: viewModel.accountUsageStatus.primaryUsagePrefix,
-                    percentLabel: viewModel.accountUsageStatus.primaryUsagePercentLabel,
-                    remainingFraction: viewModel.accountUsageStatus.primaryUsageRemainingFraction,
-                    resetText: viewModel.accountUsageStatus.primaryResetText
-                )
-                usagePill(
-                    prefix: viewModel.accountUsageStatus.secondaryUsagePrefix,
-                    percentLabel: viewModel.accountUsageStatus.secondaryUsagePercentLabel,
-                    remainingFraction: viewModel.accountUsageStatus.secondaryUsageRemainingFraction,
-                    resetText: viewModel.accountUsageStatus.secondaryResetText
-                )
+                // Codex CLI が返さない窓 (Plus プランで 5h 撤廃済み等) は pill 非表示
+                if viewModel.accountUsageStatus.primaryUsageRemainingFraction != nil {
+                    usagePill(
+                        prefix: viewModel.accountUsageStatus.primaryUsagePrefix,
+                        percentLabel: viewModel.accountUsageStatus.primaryUsagePercentLabel,
+                        remainingFraction: viewModel.accountUsageStatus.primaryUsageRemainingFraction,
+                        resetText: viewModel.accountUsageStatus.primaryResetText
+                    )
+                }
+                if viewModel.accountUsageStatus.secondaryUsageRemainingFraction != nil {
+                    usagePill(
+                        prefix: viewModel.accountUsageStatus.secondaryUsagePrefix,
+                        percentLabel: viewModel.accountUsageStatus.secondaryUsagePercentLabel,
+                        remainingFraction: viewModel.accountUsageStatus.secondaryUsageRemainingFraction,
+                        resetText: viewModel.accountUsageStatus.secondaryResetText
+                    )
+                }
             } else if viewModel.accountUsageStatus.accountKind == .unauthenticated
                         || viewModel.accountUsagePrewarmFailed {
                 accountStatusWarning

@@ -10,6 +10,6 @@ struct CodexModel: Identifiable, Equatable, Sendable {
     let isDefault: Bool
 
     var supportsDraftCanvasImageGeneration: Bool {
-        !id.hasPrefix("gpt-5.6-")
+        true
     }
 }

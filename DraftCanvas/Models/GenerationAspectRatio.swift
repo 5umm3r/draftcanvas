@@ -50,7 +50,17 @@ enum GenerationAspectRatio: String, CaseIterable, Identifiable, Codable {
     }
 
     var promptDescription: String {
-        self == .auto ? "auto" : "\(value) \(rawValue)"
+        // 「1:1 square」のような ratio 表記は image gen モデルが size フィールドとして
+        // ツール引数に付与しがち (Codex CLI が deny_unknown_fields で拒否) →
+        // 自然言語のみで指示することで size 誤送信を抑止
+        switch self {
+        case .auto:      return "any composition that best fits the content"
+        case .square:    return "a square shape"
+        case .portrait:  return "a portrait (taller than wide) shape"
+        case .story:     return "a tall vertical story shape"
+        case .landscape: return "a horizontal landscape shape"
+        case .wide:      return "a wide cinematic horizontal shape"
+        }
     }
 
     var widthOverHeight: CGFloat {

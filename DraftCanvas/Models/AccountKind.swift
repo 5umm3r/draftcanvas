@@ -91,8 +91,23 @@ struct CodexAccountUsageStatus: Equatable {
         }
 
         let rateLimits = preferredRateLimits(from: rateLimitsResponse)
-        let primaryUsage = usageStatus(prefix: "5h", window: rateLimits?["primary"] as? [String: Any])
-        let secondaryUsage = usageStatus(prefix: "weekly", window: rateLimits?["secondary"] as? [String: Any])
+        // Codex CLI は窓長 (windowDurationMins) で 5h/weekly を返すが、
+        // primary/secondary のスロット割当がプランやバージョンで変わる。
+        // 窓長で 5h 相当と weekly 相当に振り分け、UI では常に 5h → weekly 順で表示
+        let candidateWindows = [
+            rateLimits?["primary"] as? [String: Any],
+            rateLimits?["secondary"] as? [String: Any]
+        ].compactMap { $0 }
+        let fiveHourWindow = candidateWindows.first { window in
+            guard let mins = numericValue(window["windowDurationMins"]) else { return false }
+            return mins <= 360
+        }
+        let weeklyWindow = candidateWindows.first { window in
+            guard let mins = numericValue(window["windowDurationMins"]) else { return false }
+            return mins > 360
+        }
+        let primaryUsage = usageStatus(prefix: "5h", window: fiveHourWindow)
+        let secondaryUsage = usageStatus(prefix: "weekly", window: weeklyWindow)
         return CodexAccountUsageStatus(
             accountLabel: accountLabel,
             planLabel: planLabel,

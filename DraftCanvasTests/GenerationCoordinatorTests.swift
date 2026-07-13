@@ -42,7 +42,7 @@ final class GenerationCoordinatorTests: XCTestCase {
 
         let prompt = PromptFactory.prompt(for: request, jobIndex: 0)
 
-        XCTAssertTrue(prompt.contains("Aspect ratio: 3:4"))
+        XCTAssertTrue(prompt.contains("Compose the image with a portrait (taller than wide) shape."))
         XCTAssertTrue(prompt.contains("portrait"))
     }
 
@@ -157,7 +157,7 @@ final class GenerationCoordinatorTests: XCTestCase {
     }
 
     @MainActor
-    func testRefreshAvailableModelsFiltersUnsupportedImageGenerationModels() async {
+    func testRefreshAvailableModelsKeepsCodexModelsAvailableForImageGeneration() async {
         let accountClient = RecordingAccountClient(models: [
             CodexModel(
                 id: "gpt-5.6-sol",
@@ -172,18 +172,25 @@ final class GenerationCoordinatorTests: XCTestCase {
                 supportedReasoningEfforts: ["low", "medium", "high"],
                 defaultReasoningEffort: "medium",
                 isDefault: false
+            ),
+            CodexModel(
+                id: "gpt-5.4-mini",
+                displayName: "GPT-5.4-Mini",
+                supportedReasoningEfforts: ["low", "medium", "high"],
+                defaultReasoningEffort: "medium",
+                isDefault: false
             )
         ])
         let viewModel = makeAccountRefreshViewModel(accountClient: accountClient)
-        viewModel.draftInputs.model = "gpt-5.6-sol"
-        viewModel.draftInputs.reasoningEffort = "ultra"
+        viewModel.draftInputs.model = "gpt-5.5"
+        viewModel.draftInputs.reasoningEffort = "high"
 
         await viewModel.refreshAvailableModels()
 
-        XCTAssertEqual(viewModel.availableModels.map(\.id), ["gpt-5.5"])
+        XCTAssertEqual(viewModel.availableModels.map(\.id), ["gpt-5.6-sol", "gpt-5.5", "gpt-5.4-mini"])
         XCTAssertEqual(viewModel.draftInputs.model, "gpt-5.5")
-        XCTAssertEqual(viewModel.draftInputs.reasoningEffort, "medium")
-        XCTAssertTrue(viewModel.logs.contains { $0.contains("GPT-5.6-Sol") })
+        XCTAssertEqual(viewModel.draftInputs.reasoningEffort, "high")
+        XCTAssertFalse(viewModel.logs.contains { $0.contains("画像生成に未対応のモデルを除外しました") })
     }
 
     @MainActor

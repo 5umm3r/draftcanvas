@@ -54,6 +54,54 @@ final class JSONRPCCodecTests: XCTestCase {
         XCTAssertEqual(result.imageID, "img_1")
     }
 
+    func testGeneratedImageFallbackLoadsNewestPNGForThread() throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("DraftCanvasGeneratedImages-\(UUID().uuidString)", isDirectory: true)
+        let threadID = "019f5a82-cc14-7301-b2ef-5747c63f1089"
+        let threadDirectory = root.appendingPathComponent(threadID, isDirectory: true)
+        try FileManager.default.createDirectory(at: threadDirectory, withIntermediateDirectories: true)
+        let oldURL = threadDirectory.appendingPathComponent("call_old.png")
+        let newestURL = threadDirectory.appendingPathComponent("exec-newest.png")
+        let invalidURL = threadDirectory.appendingPathComponent("latest-invalid.png")
+        let oldData = Data([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x01])
+        let newestData = Data([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x02])
+        try oldData.write(to: oldURL)
+        try newestData.write(to: newestURL)
+        try Data("not png".utf8).write(to: invalidURL)
+        try FileManager.default.setAttributes(
+            [.modificationDate: Date(timeIntervalSince1970: 10)],
+            ofItemAtPath: oldURL.path
+        )
+        try FileManager.default.setAttributes(
+            [.modificationDate: Date(timeIntervalSince1970: 20)],
+            ofItemAtPath: newestURL.path
+        )
+        try FileManager.default.setAttributes(
+            [.modificationDate: Date(timeIntervalSince1970: 30)],
+            ofItemAtPath: invalidURL.path
+        )
+
+        let result = try XCTUnwrap(CodexGeneratedImageFallbackLoader.loadImageResult(
+            threadID: threadID,
+            generatedImagesRoot: root
+        ))
+
+        XCTAssertEqual(result.imageID, "exec-newest")
+        XCTAssertEqual(result.data, newestData)
+        XCTAssertNil(result.revisedPrompt)
+    }
+
+    func testGeneratedImageFallbackRejectsUnsafeThreadID() throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("DraftCanvasGeneratedImages-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+
+        XCTAssertNil(CodexGeneratedImageFallbackLoader.loadImageResult(
+            threadID: "../outside",
+            generatedImagesRoot: root
+        ))
+    }
+
     func testCodexLaunchUsesSiblingNodeWhenCodexIsNodeScript() throws {
         let codexPath = "/tmp/node-v/bin/codex"
 
