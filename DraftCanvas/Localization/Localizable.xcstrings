@@ -5539,6 +5539,22 @@
         }
       }
     },
+    "%@ は画像生成に対応していない可能性があります。別のモデルを選択してください。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ may not support image generation. Choose a different model."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ は画像生成に対応していない可能性があります。別のモデルを選択してください。"
+          }
+        }
+      }
+    },
     "未選択": {
       "localizations": {
         "en": {

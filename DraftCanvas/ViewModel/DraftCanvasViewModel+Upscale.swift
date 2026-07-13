@@ -183,7 +183,7 @@ extension DraftCanvasViewModel {
             referenceImagePath: fileURL.path
         )
         guard let imageResult = result.imageResult else {
-            throw DraftCanvasError.missingGeneratedContent
+            throw DraftCanvasError.unsupportedImageGenerationModel(model.id)
         }
         return imageResult.data
     }

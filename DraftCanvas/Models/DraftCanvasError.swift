@@ -13,6 +13,7 @@ enum DraftCanvasError: LocalizedError {
     case freePlanNotEntitled(message: String)
     case missingThreadID
     case missingGeneratedContent
+    case unsupportedImageGenerationModel(String)
     case unsupportedImageResult(String)
     case threadIDCollision(String)
 
@@ -38,6 +39,8 @@ enum DraftCanvasError: LocalizedError {
             return String(localized: "thread/start のレスポンスから thread id を取得できませんでした。")
         case .missingGeneratedContent:
             return String(localized: "生成結果を取得できませんでした。ログを確認してください。")
+        case .unsupportedImageGenerationModel(let model):
+            return String(localized: "\(model) は画像生成に対応していない可能性があります。別のモデルを選択してください。")
         case .unsupportedImageResult(let value):
             return String(localized: "未対応の画像結果形式です: \(value.prefix(64))")
         case .threadIDCollision(let id):

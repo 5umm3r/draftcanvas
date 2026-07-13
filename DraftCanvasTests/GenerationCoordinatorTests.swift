@@ -157,6 +157,36 @@ final class GenerationCoordinatorTests: XCTestCase {
     }
 
     @MainActor
+    func testRefreshAvailableModelsFiltersUnsupportedImageGenerationModels() async {
+        let accountClient = RecordingAccountClient(models: [
+            CodexModel(
+                id: "gpt-5.6-sol",
+                displayName: "GPT-5.6-Sol",
+                supportedReasoningEfforts: ["low", "medium", "high", "ultra"],
+                defaultReasoningEffort: "medium",
+                isDefault: true
+            ),
+            CodexModel(
+                id: "gpt-5.5",
+                displayName: "GPT-5.5",
+                supportedReasoningEfforts: ["low", "medium", "high"],
+                defaultReasoningEffort: "medium",
+                isDefault: false
+            )
+        ])
+        let viewModel = makeAccountRefreshViewModel(accountClient: accountClient)
+        viewModel.draftInputs.model = "gpt-5.6-sol"
+        viewModel.draftInputs.reasoningEffort = "ultra"
+
+        await viewModel.refreshAvailableModels()
+
+        XCTAssertEqual(viewModel.availableModels.map(\.id), ["gpt-5.5"])
+        XCTAssertEqual(viewModel.draftInputs.model, "gpt-5.5")
+        XCTAssertEqual(viewModel.draftInputs.reasoningEffort, "medium")
+        XCTAssertTrue(viewModel.logs.contains { $0.contains("GPT-5.6-Sol") })
+    }
+
+    @MainActor
     private func makeAccountRefreshViewModel(accountClient: RecordingAccountClient) -> DraftCanvasViewModel {
         let root = FileManager.default.temporaryDirectory
             .appendingPathComponent("DraftCanvasTests-\(UUID().uuidString)", isDirectory: true)
@@ -222,12 +252,25 @@ private actor RecordingGenerationRunner: GenerationRunning {
 private actor RecordingAccountClient: CodexAccountProviding {
     nonisolated let codexExecutablePath = "/usr/bin/false"
     private let delayNanoseconds: UInt64
+    private let models: [CodexModel]
     private var readCount = 0
     private var modelCount = 0
     private var startCount = 0
 
-    init(delayNanoseconds: UInt64 = 0) {
+    init(
+        delayNanoseconds: UInt64 = 0,
+        models: [CodexModel] = [
+            CodexModel(
+                id: "gpt-test",
+                displayName: "GPT Test",
+                supportedReasoningEfforts: ["low", "medium"],
+                defaultReasoningEffort: "low",
+                isDefault: true
+            )
+        ]
+    ) {
         self.delayNanoseconds = delayNanoseconds
+        self.models = models
     }
 
     func readAccountUsageCallCount() -> Int {
@@ -276,14 +319,6 @@ private actor RecordingAccountClient: CodexAccountProviding {
     func listModels() async throws -> [CodexModel] {
         modelCount += 1
 
-        return [
-            CodexModel(
-                id: "gpt-test",
-                displayName: "GPT Test",
-                supportedReasoningEfforts: ["low", "medium"],
-                defaultReasoningEffort: "low",
-                isDefault: true
-            )
-        ]
+        return models
     }
 }
