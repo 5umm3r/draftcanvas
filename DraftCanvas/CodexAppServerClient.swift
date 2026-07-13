@@ -289,17 +289,47 @@ final class CodexAppServerClient: @unchecked Sendable {
             throw error
         }
 
+        let fallbackTask = startGeneratedImageFallbackWatcher(threadID: threadID, waiter: waiter)
         do {
-            return try await withTimeout(seconds: 480) {
+            let result = try await withTimeout(seconds: 480) {
                 try await resultTask.value
             }
+            fallbackTask.cancel()
+            return result
         } catch {
+            fallbackTask.cancel()
             resultTask.cancel()
             queue.async {
                 self.turnWaiters.removeValue(forKey: threadID)
                 waiter.finish(throwing: error)
             }
             throw error
+        }
+    }
+
+    private func startGeneratedImageFallbackWatcher(threadID: String, waiter: TurnWaiter) -> Task<Void, Never> {
+        Task { [weak self] in
+            while !Task.isCancelled {
+                do {
+                    try await Task.sleep(nanoseconds: 1_000_000_000)
+                } catch {
+                    return
+                }
+
+                guard !Task.isCancelled else { return }
+                guard let fallbackResult = CodexGeneratedImageFallbackLoader.loadImageResult(threadID: threadID) else {
+                    continue
+                }
+                guard let self else { return }
+
+                self.queue.async { [weak self] in
+                    guard let self, self.turnWaiters[threadID] === waiter else { return }
+                    waiter.adoptFallbackImageResult(fallbackResult)
+                    self.turnWaiters.removeValue(forKey: threadID)
+                    waiter.finish()
+                }
+                return
+            }
         }
     }
 
@@ -720,6 +750,12 @@ private final class TurnWaiter: @unchecked Sendable {
         )
         continuation?.resume(returning: result)
         continuation = nil
+    }
+
+    func adoptFallbackImageResult(_ result: CodexImageResult) {
+        guard imageResult == nil else { return }
+        imageResult = result
+        logs.append("生成済み画像ファイルを受信しました: \(result.imageID)")
     }
 
     func finish(throwing error: Error) {
