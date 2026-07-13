@@ -612,6 +612,68 @@ struct ProcessTerminationResources {
     }
 }
 
+enum CodexGeneratedImageFallbackLoader {
+    static func loadImageResult(
+        threadID: String,
+        generatedImagesRoot: URL = defaultGeneratedImagesRoot()
+    ) -> CodexImageResult? {
+        guard isSafeThreadID(threadID) else { return nil }
+
+        let directory = generatedImagesRoot.appendingPathComponent(threadID, isDirectory: true)
+        let urls = (try? FileManager.default.contentsOfDirectory(
+            at: directory,
+            includingPropertiesForKeys: [.contentModificationDateKey, .isRegularFileKey],
+            options: [.skipsHiddenFiles]
+        )) ?? []
+
+        let sortedURLs = urls
+            .filter { $0.pathExtension.lowercased() == "png" }
+            .filter { url in
+                (try? url.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) == true
+            }
+            .sorted { lhs, rhs in
+                let lhsDate = (try? lhs.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
+                let rhsDate = (try? rhs.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
+                return lhsDate > rhsDate
+            }
+
+        for url in sortedURLs {
+            guard
+                let data = try? Data(contentsOf: url),
+                isPNG(data)
+            else { continue }
+
+            return CodexImageResult(
+                imageID: url.deletingPathExtension().lastPathComponent,
+                data: data,
+                revisedPrompt: nil
+            )
+        }
+
+        return nil
+    }
+
+    private static func defaultGeneratedImagesRoot() -> URL {
+        let codexHome = ProcessInfo.processInfo.environment["CODEX_HOME"]
+            ?? FileManager.default.homeDirectoryForCurrentUser
+                .appendingPathComponent(".codex", isDirectory: true)
+                .path
+        return URL(fileURLWithPath: codexHome)
+            .appendingPathComponent("generated_images", isDirectory: true)
+    }
+
+    private static func isSafeThreadID(_ threadID: String) -> Bool {
+        guard !threadID.isEmpty else { return false }
+        let allowed = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_")
+        return threadID.rangeOfCharacter(from: allowed.inverted) == nil
+    }
+
+    private static func isPNG(_ data: Data) -> Bool {
+        let signature = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A].map(UInt8.init)
+        return data.starts(with: signature)
+    }
+}
+
 private final class TurnWaiter: @unchecked Sendable {
     let threadID: String
     var continuation: CheckedContinuation<CodexTurnResult, Error>?
@@ -643,10 +705,18 @@ private final class TurnWaiter: @unchecked Sendable {
         guard !didFinish else { return }
         didFinish = true
 
+        var finalImageResult = imageResult
+        var finalLogs = logs
+        if finalImageResult == nil,
+           let fallbackResult = CodexGeneratedImageFallbackLoader.loadImageResult(threadID: threadID) {
+            finalImageResult = fallbackResult
+            finalLogs.append("生成済み画像ファイルを受信しました: \(fallbackResult.imageID)")
+        }
+
         let result = CodexTurnResult(
-            imageResult: imageResult,
+            imageResult: finalImageResult,
             assistantText: assistantText,
-            logs: logs
+            logs: finalLogs
         )
         continuation?.resume(returning: result)
         continuation = nil
