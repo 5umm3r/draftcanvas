@@ -103,7 +103,15 @@ extension DraftCanvasViewModel {
             guard let self else { return }
             do {
                 let models = try await self.accountClient.listModels()
-                self.availableModels = models
+                let imageGenerationModels = models.filter(\.supportsDraftCanvasImageGeneration)
+                if imageGenerationModels.count != models.count {
+                    let excluded = models
+                        .filter { !$0.supportsDraftCanvasImageGeneration }
+                        .map(\.displayName)
+                        .joined(separator: ", ")
+                    self.logs.append("画像生成に未対応のモデルを除外しました: \(excluded)")
+                }
+                self.availableModels = imageGenerationModels
                 self.normalizeProjectModelSelection()
             } catch {
                 self.logs.append("モデル一覧取得失敗: \(error.localizedDescription)")
@@ -135,9 +143,23 @@ extension DraftCanvasViewModel {
             draftInputs.model = fallbackID
             changed = true
         }
+        if let model = availableModels.first(where: { $0.id == draftInputs.model }),
+           !model.supportedReasoningEfforts.contains(draftInputs.reasoningEffort) {
+            draftInputs.reasoningEffort = model.defaultReasoningEffort
+            changed = true
+        }
         for (key, var inputs) in inputsByProject {
+            var inputChanged = false
             if inputs.model.isEmpty || !validIDs.contains(inputs.model) {
                 inputs.model = fallbackID
+                inputChanged = true
+            }
+            if let model = availableModels.first(where: { $0.id == inputs.model }),
+               !model.supportedReasoningEfforts.contains(inputs.reasoningEffort) {
+                inputs.reasoningEffort = model.defaultReasoningEffort
+                inputChanged = true
+            }
+            if inputChanged {
                 inputsByProject[key] = inputs
                 changed = true
             }

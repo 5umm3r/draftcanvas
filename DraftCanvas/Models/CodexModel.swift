@@ -2,10 +2,14 @@ import Foundation
 
 // MARK: - Codex Model
 
-struct CodexModel: Identifiable, Equatable {
+struct CodexModel: Identifiable, Equatable, Sendable {
     let id: String
     let displayName: String
     let supportedReasoningEfforts: [String]
     let defaultReasoningEffort: String
     let isDefault: Bool
+
+    var supportsDraftCanvasImageGeneration: Bool {
+        !id.hasPrefix("gpt-5.6-")
+    }
 }

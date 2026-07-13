@@ -141,7 +141,7 @@ final class CodexGenerationRunner: GenerationRunning {
             output.logs.append(contentsOf: extraLogs)
             output.logs.append(contentsOf: result.logs)
             guard let imageResult = result.imageResult else {
-                throw DraftCanvasError.missingGeneratedContent
+                throw DraftCanvasError.unsupportedImageGenerationModel(request.model)
             }
             output.imageData = imageResult.data
             output.revisedPrompt = imageResult.revisedPrompt
