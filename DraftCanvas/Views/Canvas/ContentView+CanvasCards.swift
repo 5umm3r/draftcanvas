@@ -291,7 +291,6 @@ extension ContentView {
                 CircularPromptActionButton(
                     systemImage: "arrow.down.left.and.arrow.up.right.rectangle",
                     tooltip: "高解像度化",
-                    showCostBadge: viewModel.showCostBadge,
                     isDisabled: viewModel.upscalingItemIDs.contains(item.id)
                 ) {
                     viewModel.upscaleItem(item)
