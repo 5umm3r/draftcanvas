@@ -199,6 +199,7 @@ final class DraftCanvasViewModel: ObservableObject {
     @Published var materialExtractionPreview: MaterialExtractionPreview? = nil
     @Published var extractingItemID: UUID? = nil
     @Published var upscalePreview: UpscalePreviewPayload? = nil
+    @Published var upscaleRerunning: Bool = false
     @Published var importProgress: (done: Int, total: Int)? = nil
     @Published var importError: String? = nil
     @Published var focusPromptTrigger: UUID? = nil
@@ -222,6 +223,7 @@ final class DraftCanvasViewModel: ObservableObject {
     // キャンセル後に同一アイテムへ再実行した際、旧タスクの遅延完了が
     // 新実行の状態を壊さないよう世代トークンで識別する
     var upscalingRunTokens: [UUID: UUID] = [:]
+    var upscaleRerunTask: Task<Void, Never>?
     var backgroundRemovalTask: Task<Void, Never>?
     var backgroundRemovalJobContext: (jobID: UUID, projectID: UUID)?
     // 単一スロットのため、連続実行時に古いタスクの完了処理が
@@ -589,6 +591,9 @@ final class DraftCanvasViewModel: ObservableObject {
         for (_, t) in upscalingTasks { t.cancel() }
         upscalingTasks.removeAll()
         upscalingJobContexts.removeAll()
+        upscaleRerunTask?.cancel()
+        upscaleRerunTask = nil
+        upscaleRerunning = false
         for (_, t) in autoRetryTasks { t.cancel() }
         autoRetryTasks.removeAll()
         autoRetryCountByProject.removeAll()

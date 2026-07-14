@@ -9,6 +9,9 @@ struct LicensesSheet: View {
         ("image", "image"),
         ("oxipng", "oxipng"),
         ("pngquant", "pngquant"),
+        ("Real-ESRGAN", "realesrgan"),
+        ("realesrgan-ncnn-vulkan", "realesrgan-ncnn-vulkan"),
+        ("ncnn", "ncnn"),
     ]
 
     var body: some View {

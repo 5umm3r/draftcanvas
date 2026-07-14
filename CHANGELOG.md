@@ -2,6 +2,10 @@
 
 ## [1.2.15] - 2026-07-14
 
+### 変更
+
+- 高解像度化機能を Codex CLI 経由の AI 再生成方式から、同梱の Real-ESRGAN（`realesrgan-ncnn-vulkan`）によるローカル 4 倍アップスケールに変更。オフラインで数秒〜数十秒で完了し、生成AI特有の意図しない構図・内容変化がなくなった。プレビュー画面で「汎用」「イラスト」モデルを切り替えて再実行できる
+
 ### 修正
 
 - キャンバスからアイテムを削除しても関連ファイル（マスク `masks/<id>_mask.png` / `_composite.png` / `_preview.png` / `_strokes.json` / `_sketch.png`、添付 `attachments/<id>_*`、切り抜きパラメータ `attachments/<id>_crop.json`）がディスク上に残る問題を修正（`performDelete()` が本体画像とサムネイルしか消していなかった。`ProjectStore.deleteAllFiles(for:)` に統合し、原本画像メモリキャッシュの evict と参照カウント辞書のクリアも同時に実施）

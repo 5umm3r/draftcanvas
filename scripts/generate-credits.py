@@ -15,6 +15,9 @@ OSS_ENTRIES = [
     {"id": "image",        "name": "image",         "version": "0.23.14", "license_type": "MIT",               "url": "https://github.com/image-rs/image",           "note": None},
     {"id": "oxipng",       "name": "oxipng",        "version": "9.1.5",   "license_type": "MIT",               "url": "https://github.com/shssoichiro/oxipng",       "note": None},
     {"id": "pngquant",     "name": "pngquant",      "version": "2.x",     "license_type": "GPL v3",            "url": "https://pngquant.org/",                       "note": "Used as a standalone binary via subprocess invocation — not linked to Draft Canvas."},
+    {"id": "realesrgan",   "name": "Real-ESRGAN",   "version": "0.2.5.0", "license_type": "BSD 3-Clause",      "url": "https://github.com/xinntao/Real-ESRGAN",      "note": "Super-resolution models (realesrgan-x4plus / realesrgan-x4plus-anime)."},
+    {"id": "realesrgan-ncnn-vulkan", "name": "realesrgan-ncnn-vulkan", "version": "20220424", "license_type": "MIT", "url": "https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan", "note": "Used as a standalone binary via subprocess invocation — not linked to Draft Canvas."},
+    {"id": "ncnn",         "name": "ncnn",           "version": "(bundled)", "license_type": "BSD 3-Clause",    "url": "https://github.com/Tencent/ncnn",             "note": "Statically linked inside the realesrgan-ncnn-vulkan binary."},
 ]
 
 SEP = "- " * 25

@@ -3,6 +3,7 @@ import AppKit
 
 struct UpscalePreviewSheet: View {
     let payload: UpscalePreviewPayload
+    @ObservedObject var viewModel: DraftCanvasViewModel
     let onApply: (UpscaleApplyMode) -> Void
 
     @State private var dividerPosition: CGFloat = 0.5
@@ -12,6 +13,7 @@ struct UpscalePreviewSheet: View {
     @State private var beforeImage: NSImage?
     @State private var afterImage: NSImage?
 
+    // モデル切替時は payload ごと差し替わるため id は payload.id で追跡する
     var body: some View {
         VStack(spacing: 0) {
             comparisonArea
@@ -23,7 +25,7 @@ struct UpscalePreviewSheet: View {
                 .padding(.vertical, 16)
         }
         .frame(minWidth: 700, minHeight: 520)
-        .task(id: payload.originalItem.id) {
+        .task(id: payload.id) {
             let upscaledData = payload.upscaledImageData
             let originalData = payload.originalImageData
             async let after = Task.detached(priority: .userInitiated) { NSImage(data: upscaledData) }.value
@@ -108,6 +110,16 @@ struct UpscalePreviewSheet: View {
                 }
             }
             .clipped()
+            .overlay {
+                if viewModel.upscaleRerunning {
+                    ZStack {
+                        Color.black.opacity(0.35)
+                        ProgressView("再アップスケール中…")
+                            .padding(20)
+                            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                    }
+                }
+            }
         }
         .background(Color(nsColor: .windowBackgroundColor))
     }
@@ -123,15 +135,36 @@ struct UpscalePreviewSheet: View {
 
             Spacer()
 
+            Picker("モデル", selection: modelSelection) {
+                ForEach(UpscaleModel.allCases) { model in
+                    Text(model.displayName).tag(model)
+                }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .frame(width: 180)
+            .disabled(viewModel.upscaleRerunning)
+
+            Spacer()
+
             Button("新規アイテムとして追加") {
                 onApply(.addAsNew)
             }
+            .disabled(viewModel.upscaleRerunning)
 
             Button("上書き保存") {
                 onApply(.overwrite)
             }
             .buttonStyle(.borderedProminent)
             .keyboardShortcut(.return, modifiers: [.command])
+            .disabled(viewModel.upscaleRerunning)
         }
+    }
+
+    private var modelSelection: Binding<UpscaleModel> {
+        Binding(
+            get: { payload.model },
+            set: { viewModel.rerunUpscale(payload: payload, model: $0) }
+        )
     }
 }
