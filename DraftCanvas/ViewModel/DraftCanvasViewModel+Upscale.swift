@@ -2,13 +2,24 @@ import Foundation
 
 extension DraftCanvasViewModel {
 
+    private static var upscaleModelDefaultsKey: String { "upscaleModel" }
+
+    static var preferredUpscaleModel: UpscaleModel {
+        let stored = UserDefaults.standard.string(forKey: upscaleModelDefaultsKey)
+        return stored.flatMap(UpscaleModel.init(rawValue:)) ?? .general
+    }
+
+    static func savePreferredUpscaleModel(_ model: UpscaleModel) {
+        UserDefaults.standard.set(model.rawValue, forKey: upscaleModelDefaultsKey)
+    }
+
     func upscaleItem(_ item: ProjectItem) {
+        upscaleItem(item, model: Self.preferredUpscaleModel)
+    }
+
+    func upscaleItem(_ item: ProjectItem, model: UpscaleModel) {
         let projectID = selectedProjectID ?? item.projectID
         guard !upscalingItemIDs.contains(item.id) else { return }
-        guard !availableModels.isEmpty else {
-            showError("利用可能なモデルがありません")
-            return
-        }
         upscalingItemIDs.insert(item.id)
 
         let label = item.prompt.prefix(30).isEmpty ? String(localized: "素材") : String(item.prompt.prefix(30))
@@ -22,8 +33,6 @@ extension DraftCanvasViewModel {
 
         let fileURL = projectStore.resolvedFileURL(for: item)
         let itemID = item.id
-        let clientRef = client
-        let availableModelsRef = availableModels
 
         let runToken = UUID()
         upscalingRunTokens[item.id] = runToken
@@ -37,20 +46,7 @@ extension DraftCanvasViewModel {
                 let originalData = try await imageLoader.loadData(at: fileURL, syncMonitor: syncMonitor)
                 await cacheEviction.recordAccess(url: fileURL)
 
-                // Task.detached は親のキャンセルを継承しないため明示的に伝播する
-                let turnTask = Task.detached(priority: .userInitiated) {
-                    try await Self.runUpscaleTurn(
-                        client: clientRef,
-                        availableModels: availableModelsRef,
-                        item: item,
-                        fileURL: fileURL
-                    )
-                }
-                let upscaledData: Data = try await withTaskCancellationHandler {
-                    try await turnTask.value
-                } onCancel: {
-                    turnTask.cancel()
-                }
+                let upscaledData = try await Self.runLocalUpscale(fileURL: fileURL, model: model)
 
                 removeJob(id: job.id, from: projectID)
                 // キャンセル後の再実行と競合しないよう、自分がまだ現行世代か確認する
@@ -63,6 +59,7 @@ extension DraftCanvasViewModel {
                     originalItem: item,
                     originalImageData: originalData,
                     upscaledImageData: upscaledData,
+                    model: model,
                     jobLogs: running.logs
                 )
                 logs.append("高解像度化プレビュー準備完了: \(itemID)")
@@ -81,6 +78,37 @@ extension DraftCanvasViewModel {
         upscalingTasks[item.id] = task
     }
 
+    /// プレビュー表示中にモデルを切り替えて同一アイテムを再アップスケールする
+    func rerunUpscale(payload: UpscalePreviewPayload, model: UpscaleModel) {
+        guard model != payload.model, !upscaleRerunning else { return }
+        Self.savePreferredUpscaleModel(model)
+
+        let item = payload.originalItem
+        let fileURL = projectStore.resolvedFileURL(for: item)
+        upscaleRerunning = true
+
+        upscaleRerunTask = Task { @MainActor in
+            do {
+                let upscaledData = try await Self.runLocalUpscale(fileURL: fileURL, model: model)
+                upscaleRerunning = false
+                // シートが閉じられていたら結果を反映しない
+                guard upscalePreview?.id == payload.id else { return }
+                upscalePreview = UpscalePreviewPayload(
+                    originalItem: item,
+                    originalImageData: payload.originalImageData,
+                    upscaledImageData: upscaledData,
+                    model: model,
+                    jobLogs: payload.jobLogs
+                )
+            } catch {
+                upscaleRerunning = false
+                guard !(error is CancellationError) else { return }
+                showError("高解像度化に失敗しました")
+                logs.append("高解像度化再実行失敗: \(error.localizedDescription)")
+            }
+        }
+    }
+
     func cancelUpscale(itemID: UUID) {
         upscalingTasks[itemID]?.cancel()
         upscalingTasks.removeValue(forKey: itemID)
@@ -92,6 +120,9 @@ extension DraftCanvasViewModel {
     }
 
     func commitUpscale(payload: UpscalePreviewPayload, mode: UpscaleApplyMode) {
+        upscaleRerunTask?.cancel()
+        upscaleRerunTask = nil
+        upscaleRerunning = false
         upscalePreview = nil
         let item = payload.originalItem
         let projectID = selectedProjectID ?? item.projectID
@@ -140,31 +171,15 @@ extension DraftCanvasViewModel {
         }
     }
 
-    private static func runUpscaleTurn(
-        client: CodexAppServerClient,
-        availableModels: [CodexModel],
-        item: ProjectItem,
-        fileURL: URL
-    ) async throws -> Data {
-        try await client.start()
-        try Task.checkCancellation()
-        guard let model = selectFastLowCostModel(from: availableModels) else {
-            throw DraftCanvasError.rpcError(String(localized: "利用可能なモデルがありません"))
+    // Task.detached は親のキャンセルを継承しないため明示的に伝播する
+    private static func runLocalUpscale(fileURL: URL, model: UpscaleModel) async throws -> Data {
+        let task = Task.detached(priority: .userInitiated) {
+            try await ImageUpscaler.upscale(fileURL: fileURL, model: model)
         }
-        let threadID = try await client.startThread(
-            model: model.id,
-            reasoningEffort: model.defaultReasoningEffort
-        )
-        let prompt = PromptFactory.upscalePrompt(for: item)
-        try Task.checkCancellation()
-        let result = try await client.runTurn(
-            threadID: threadID,
-            prompt: prompt,
-            referenceImagePath: fileURL.path
-        )
-        guard let imageResult = result.imageResult else {
-            throw DraftCanvasError.unsupportedImageGenerationModel(model.id)
+        return try await withTaskCancellationHandler {
+            try await task.value
+        } onCancel: {
+            task.cancel()
         }
-        return imageResult.data
     }
 }

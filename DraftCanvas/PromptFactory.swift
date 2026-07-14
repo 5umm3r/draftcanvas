@@ -139,24 +139,4 @@ enum PromptFactory {
         ].joined(separator: "\n")
     }
 
-    static func upscalePrompt(for item: ProjectItem) -> String {
-        return "\(toolConstraint)\n\n\(upscalePromptBody(for: item))"
-    }
-
-    private static func upscalePromptBody(for item: ProjectItem) -> String {
-        let description = item.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            ? "imported asset"
-            : item.prompt
-        return [
-            "Upscale the attached reference image to a significantly higher resolution.",
-            "Preserve the original composition, subject, style, and color palette exactly.",
-            "Enhance fine details: textures, edges, fine lines, small features.",
-            "Do not add, remove, or alter any objects.",
-            "Original image description: \(description)",
-            "Compose the image with \(item.aspectRatio.promptDescription).",
-            "A normal opaque image is acceptable.",
-            "Do not write code. Do not ask clarifying questions.",
-            toolConstraint
-        ].joined(separator: "\n")
-    }
 }

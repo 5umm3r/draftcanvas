@@ -99,6 +99,46 @@ file "$BIN_DIR/cwebp" | grep -q "universal binary" \
 echo "  ok: $BIN_DIR/cwebp"
 file "$BIN_DIR/cwebp"
 
+# ── realesrgan-ncnn-vulkan ────────────────────────────────────────────────────
+# 公式リリース (v0.2.5.0 / 20220424) の macOS zip は最初から Universal Binary。
+# MoltenVK/ncnn/Vulkan ローダーは静的リンク済みで外部 dylib 依存なし。
+# これより新しいリリースには macOS アセットが存在しない (v0.3.0 はソースのみ)。
+RESRGAN_TAG="v0.2.5.0"
+RESRGAN_ZIP="realesrgan-ncnn-vulkan-20220424-macos.zip"
+MODELS_DIR="$ROOT/DraftCanvas/Resources/models"
+mkdir -p "$MODELS_DIR"
+echo ""
+echo "==> realesrgan-ncnn-vulkan ${RESRGAN_TAG} ダウンロード中..."
+
+curl -sSL -o "$TMP/realesrgan.zip" \
+  "https://github.com/xinntao/Real-ESRGAN/releases/download/${RESRGAN_TAG}/${RESRGAN_ZIP}"
+mkdir -p "$TMP/realesrgan"
+unzip -qo "$TMP/realesrgan.zip" -d "$TMP/realesrgan"
+
+cp "$TMP/realesrgan/realesrgan-ncnn-vulkan" "$BIN_DIR/realesrgan-ncnn-vulkan"
+chmod +x "$BIN_DIR/realesrgan-ncnn-vulkan"
+file "$BIN_DIR/realesrgan-ncnn-vulkan" | grep -q "universal binary" \
+  || { echo "ERROR: realesrgan-ncnn-vulkan が Universal Binary でない"; exit 1; }
+
+# 自己完結チェック: /usr/lib・/System 以外の dylib に依存していないこと
+NONSYS=$(otool -L "$BIN_DIR/realesrgan-ncnn-vulkan" | tail -n +2 | awk '{print $1}' \
+  | grep -vE '^/usr/lib/|^/System/' || true)
+if [ -n "$NONSYS" ]; then
+  echo "  ERROR: realesrgan-ncnn-vulkan が非システム dylib に依存 (自己完結でない):"
+  echo "$NONSYS"
+  exit 1
+fi
+echo "  ok: $BIN_DIR/realesrgan-ncnn-vulkan (自己完結)"
+file "$BIN_DIR/realesrgan-ncnn-vulkan"
+
+# 同梱モデル: x4plus (汎用) / x4plus-anime (イラスト) のみ。
+# animevideov3 系は動画フレーム用のため同梱しない。
+for m in realesrgan-x4plus realesrgan-x4plus-anime; do
+  cp "$TMP/realesrgan/models/$m.param" "$MODELS_DIR/$m.param"
+  cp "$TMP/realesrgan/models/$m.bin"   "$MODELS_DIR/$m.bin"
+done
+echo "  ok: $MODELS_DIR (realesrgan-x4plus / realesrgan-x4plus-anime)"
+
 # ── LICENSES ──────────────────────────────────────────────────────────────────
 cat > "$BIN_DIR/LICENSES.txt" <<EOF
 oxipng v${OXI_VERSION} - MIT License
@@ -109,12 +149,21 @@ https://pngquant.org/
 
 cwebp v${CWEBP_VERSION} - BSD 3-Clause License
 https://chromium.googlesource.com/webm/libwebp/
+
+realesrgan-ncnn-vulkan (20220424) - MIT License
+https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan
+
+Real-ESRGAN (models) - BSD 3-Clause License
+https://github.com/xinntao/Real-ESRGAN
+
+ncnn - BSD 3-Clause License
+https://github.com/Tencent/ncnn
 EOF
 
 # ── strip + re-sign ──────────────────────────────────────────────────────────
 echo ""
 echo "==> strip + codesign..."
-for bin in "$BIN_DIR/oxipng" "$BIN_DIR/pngquant" "$BIN_DIR/cwebp"; do
+for bin in "$BIN_DIR/oxipng" "$BIN_DIR/pngquant" "$BIN_DIR/cwebp" "$BIN_DIR/realesrgan-ncnn-vulkan"; do
   strip "$bin" 2>/dev/null || true
   codesign --force --sign - "$bin"
 done

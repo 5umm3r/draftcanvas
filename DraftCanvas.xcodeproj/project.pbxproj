@@ -152,6 +152,7 @@
 		B9329BA91A3E348BBB64F55B /* GroupSmallNearbyStage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3287A3CB7D82855FD457D6E /* GroupSmallNearbyStage.swift */; };
 		BE3A138929BF42F98670599E /* CanvasMetricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A9FECC2E7F14E67952FB30D /* CanvasMetricsTests.swift */; };
 		C041F91DE6E54E1E9E3C79AA /* Resources/Licenses in Resources */ = {isa = PBXBuildFile; fileRef = 8C80B9B1C9684E89AC961D4A /* Resources/Licenses */; };
+		4D0E7A31C58B4F76A2E91B3C /* Resources/models in Resources */ = {isa = PBXBuildFile; fileRef = 9B5C2E84D1F04A63B7C8E5D2 /* Resources/models */; };
 		C1EADB333184138F3E8EDB5B /* AppAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4721C0D18CB0E591F188DA0 /* AppAppearance.swift */; };
 		C1F60926268CA8767E51619D /* DraftCanvasViewModel+CanvasImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A03337AB6A2A6AB4F968292 /* DraftCanvasViewModel+CanvasImport.swift */; };
 		C2B64A74E6C54CB9A8A8E1F1 /* MosaicPulsePlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4E2B39C159B4C3DA7762A54 /* MosaicPulsePlaceholderView.swift */; };
@@ -324,6 +325,7 @@
 		8AFF0EA5BB9D45A9854847ED /* ExportSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportSettings.swift; sourceTree = "<group>"; };
 		8BD94C40880F1B413D1381BA /* DraftCanvasViewModel+ItemActions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+ItemActions.swift"; path = "ViewModel/DraftCanvasViewModel+ItemActions.swift"; sourceTree = "<group>"; };
 		8C80B9B1C9684E89AC961D4A /* Resources/Licenses */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Resources/Licenses; sourceTree = "<group>"; };
+		9B5C2E84D1F04A63B7C8E5D2 /* Resources/models */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Resources/models; sourceTree = "<group>"; };
 		8D6C2EE6CD1FA3D9302FB26F /* DraftCanvasViewModel+Projects.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+Projects.swift"; path = "ViewModel/DraftCanvasViewModel+Projects.swift"; sourceTree = "<group>"; };
 		9009D01CC8F24B159CE585F6 /* TIFFEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TIFFEncoder.swift; sourceTree = "<group>"; };
 		931EFDA997C949FD9E4D485A8C876F0D /* ExpandedImageSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpandedImageSheet.swift; path = Views/ExpandedImageSheet.swift; sourceTree = "<group>"; };
@@ -486,6 +488,7 @@
 				7A849F083BB442A3BEB856C5 /* CHANGELOG.md */,
 				7119B2C4A2654E4E835B0B4D /* Resources/bin */,
 				8C80B9B1C9684E89AC961D4A /* Resources/Licenses */,
+				9B5C2E84D1F04A63B7C8E5D2 /* Resources/models */,
 				F67AEB01174F85EC294F17E2 /* ViewModel */,
 				117AE1F8D5A65A54ADEDE469 /* ExportNaming.swift */,
 				501EDB9B442663ADFD8D33AE /* Views */,
@@ -904,6 +907,7 @@
 				07ADD4FFDF95499A9975EECA /* Localizable.xcstrings in Resources */,
 				DC6F3E2000000011A0000001 /* InfoPlist.xcstrings in Resources */,
 				C041F91DE6E54E1E9E3C79AA /* Resources/Licenses in Resources */,
+				4D0E7A31C58B4F76A2E91B3C /* Resources/models in Resources */,
 				426C488F52914F25AB95605A /* Credits.rtf in Resources */,
 				D20ECA64965848A0A4ADD6B4 /* CHANGELOG.md in Resources */,
 			);

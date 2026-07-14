@@ -166,7 +166,7 @@ extension ContentView {
                     .environment(\.locale, l10n.locale)
             }
             .sheet(item: $viewModel.upscalePreview) { payload in
-                UpscalePreviewSheet(payload: payload) { mode in
+                UpscalePreviewSheet(payload: payload, viewModel: viewModel) { mode in
                     viewModel.commitUpscale(payload: payload, mode: mode)
                 }
                 .environment(\.locale, l10n.locale)
