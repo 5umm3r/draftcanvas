@@ -46,7 +46,15 @@ extension DraftCanvasViewModel {
 
     func deleteProject(id: UUID) {
         for item in items where item.projectID == id {
-            projectStore.deleteItemFile(item)
+            let url = projectStore.resolvedFileURL(for: item)
+            projectStore.deleteAllFiles(for: item)
+            thumbnailStore.deleteThumbnail(for: item)
+            originalImageStore.evict(url: url)
+            editSourceRefCounts.removeValue(forKey: item.id)
+            attachmentRefCounts.removeValue(forKey: item.id)
+            Task { [cacheEviction] in
+                await cacheEviction.forgetAccess(url: url)
+            }
         }
         items.removeAll { $0.projectID == id }
         projects.removeAll { $0.id == id }

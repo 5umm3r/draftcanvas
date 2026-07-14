@@ -45,6 +45,9 @@ struct SettingsView: View {
     @State private var automaticallyChecksForUpdates: Bool = true
     @State private var iCloudPendingRestart = false
     @State private var showDeleteLocalDataAlert = false
+    @State private var showPruneOrphansAlert = false
+    @State private var showPruneResultAlert = false
+    @State private var pruneResultMessage = ""
     private let animationStyleColumns = [
         GridItem(.fixed(114), spacing: 8),
         GridItem(.fixed(114), spacing: 8),
@@ -99,6 +102,17 @@ struct SettingsView: View {
                     Button("変更…") { viewModel.chooseSaveFolder() }
                 }
                 .frame(maxWidth: .infinity)
+            }
+            GridRow {
+                Text("メンテナンス")
+                    .gridColumnAlignment(.trailing)
+                VStack(alignment: .leading, spacing: 4) {
+                    Button("不要ファイルを削除…") { showPruneOrphansAlert = true }
+                    Text("キャンバスから削除済みのアイテムに紐づく残存ファイルを掃除します")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .gridColumnAlignment(.leading)
             }
             Divider()
                 .gridCellUnsizedAxes(.horizontal)
@@ -246,6 +260,22 @@ struct SettingsView: View {
                 sparkleUpdater.updater.automaticallyChecksForUpdates
         }
         .sheet(isPresented: $showLicenses) { LicensesSheet() }
+        .alert("不要ファイルを削除しますか？", isPresented: $showPruneOrphansAlert) {
+            Button("削除", role: .destructive) {
+                let result = viewModel.pruneOrphanFiles()
+                let size = ByteCountFormatter.string(fromByteCount: result.bytes, countStyle: .file)
+                pruneResultMessage = "\(result.count) 件・\(size) を削除しました"
+                showPruneResultAlert = true
+            }
+            Button("キャンセル", role: .cancel) {}
+        } message: {
+            Text("キャンバスから削除済みアイテムに紐づくファイル（画像・SVG・サムネイル・マスク・添付）と、Codex が保存した生成キャッシュ（~/.codex/generated_images/）を削除します。iCloud 同期を使用中の場合は、他デバイスからの変更が全て届いた状態で実行してください。同期途中で実行すると未反映のファイルを誤削除するおそれがあります。この操作は取り消せません。")
+        }
+        .alert("完了", isPresented: $showPruneResultAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(pruneResultMessage)
+        }
         .alert("ローカルデータを削除しますか？", isPresented: $showDeleteLocalDataAlert) {
             Button("削除", role: .destructive) {
                 let localRoot = ProjectStore.localDefaultRootDirectory()
