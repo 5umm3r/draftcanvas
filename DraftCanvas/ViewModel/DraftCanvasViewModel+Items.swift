@@ -14,8 +14,11 @@ extension DraftCanvasViewModel {
 
     private func performDelete(_ item: ProjectItem) {
         let url = projectStore.resolvedFileURL(for: item)
-        projectStore.deleteItemFile(item)
+        projectStore.deleteAllFiles(for: item)
         thumbnailStore.deleteThumbnail(for: item)
+        originalImageStore.evict(url: url)
+        editSourceRefCounts.removeValue(forKey: item.id)
+        attachmentRefCounts.removeValue(forKey: item.id)
         items.removeAll { $0.id == item.id }
         touchProject(id: item.projectID)
         // アクセス履歴を残すと iCloudAccessTimestamps が際限なく肥大する
@@ -167,6 +170,33 @@ extension DraftCanvasViewModel {
 
     func reveal(item: ProjectItem) {
         NSWorkspace.shared.activateFileViewerSelecting([projectStore.resolvedFileURL(for: item)])
+    }
+
+    /// 過去のバグや異常終了で残った orphan ファイルを掃除する。
+    /// メタデータ items[] に存在しない UUID prefix のファイルを items/masks/attachments/.thumbs から削除。
+    /// iCloud 有効時は iCloud container + Application Support 側 (旧ローカルコピー) の両方を掃除する。
+    @discardableResult
+    func pruneOrphanFiles() -> (count: Int, bytes: Int64) {
+        let knownIDs = Set(items.map(\.id))
+        var total = projectStore.pruneOrphanFiles(knownItemIDs: knownIDs)
+        let t = thumbnailStore.pruneOrphanFiles(knownItemIDs: knownIDs)
+        total.count += t.count
+        total.bytes += t.bytes
+        if projectStore.isInUbiquityContainer {
+            let localRoot = ProjectStore.localDefaultRootDirectory()
+            if localRoot != projectStore.rootDirectory,
+               FileManager.default.fileExists(atPath: localRoot.path) {
+                let l = ProjectStore.pruneOrphansUnder(root: localRoot, knownItemIDs: knownIDs)
+                total.count += l.count
+                total.bytes += l.bytes
+            }
+        }
+        // ~/.codex/generated_images/<threadID>/ の掃除
+        // DraftCanvas 経由の Codex 生成画像は items/ にコピー済みなので元は不要
+        let c = CodexGeneratedImageFallbackLoader.pruneAll()
+        total.count += c.count
+        total.bytes += c.bytes
+        return total
     }
 
     @discardableResult

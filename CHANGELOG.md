@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.2.15] - 2026-07-14
+
+### 修正
+
+- キャンバスからアイテムを削除しても関連ファイル（マスク `masks/<id>_mask.png` / `_composite.png` / `_preview.png` / `_strokes.json` / `_sketch.png`、添付 `attachments/<id>_*`、切り抜きパラメータ `attachments/<id>_crop.json`）がディスク上に残る問題を修正（`performDelete()` が本体画像とサムネイルしか消していなかった。`ProjectStore.deleteAllFiles(for:)` に統合し、原本画像メモリキャッシュの evict と参照カウント辞書のクリアも同時に実施）
+- プロジェクト削除時にサムネイル・マスク・添付ファイルが残る問題を修正（`deleteProject()` が本体画像のみ削除する実装だった。上記統合クリーンアップを各アイテムに適用）
+
+### 追加
+
+- 設定 → メンテナンスに「不要ファイルを削除…」ボタンを追加。過去のバグや異常終了で残った orphan ファイルを一括掃除する
+  - 対象: `items/`, `masks/`, `attachments/`, `items/.thumbs[.nosync]/` 配下で、メタデータ `projects.json` の `items[]` に UUID prefix が存在しないファイル
+  - iCloud 同期有効時は iCloud コンテナに加えて `~/Library/Application Support/Draft Canvas/` 側の旧ローカルコピーも同時に掃除
+  - `~/.codex/generated_images/<threadID>/` に蓄積される Codex 生成キャッシュも掃除（threadID 形式に一致し、mtime が 60 秒以上前のディレクトリのみ削除して生成中のセッションを保護）
+
 ## [1.2.14] - 2026-07-13
 
 ### 改善

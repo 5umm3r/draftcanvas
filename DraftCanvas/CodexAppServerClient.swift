@@ -692,6 +692,50 @@ enum CodexGeneratedImageFallbackLoader {
             .appendingPathComponent("generated_images", isDirectory: true)
     }
 
+    /// ~/.codex/generated_images/<threadID>/ 配下のディレクトリを掃除。
+    /// mtime が minAgeSeconds 秒未満のディレクトリは生成中の可能性があるためスキップ。
+    /// threadID 形式に合致しないエントリも安全のためスキップ。
+    @discardableResult
+    static func pruneAll(minAgeSeconds: TimeInterval = 60) -> (count: Int, bytes: Int64) {
+        let root = defaultGeneratedImagesRoot()
+        guard let entries = try? FileManager.default.contentsOfDirectory(
+            at: root,
+            includingPropertiesForKeys: [.contentModificationDateKey, .isDirectoryKey],
+            options: [.skipsHiddenFiles]
+        ) else { return (0, 0) }
+
+        let cutoff = Date().addingTimeInterval(-minAgeSeconds)
+        var count = 0
+        var bytes: Int64 = 0
+        for entry in entries {
+            let vals = try? entry.resourceValues(forKeys: [.contentModificationDateKey, .isDirectoryKey])
+            guard vals?.isDirectory == true else { continue }
+            guard isSafeThreadID(entry.lastPathComponent) else { continue }
+            let mtime = vals?.contentModificationDate ?? .distantPast
+            guard mtime < cutoff else { continue }
+            let size = directorySize(at: entry)
+            if (try? FileManager.default.removeItem(at: entry)) != nil {
+                count += 1
+                bytes += size
+            }
+        }
+        return (count, bytes)
+    }
+
+    private static func directorySize(at url: URL) -> Int64 {
+        guard let enumerator = FileManager.default.enumerator(
+            at: url,
+            includingPropertiesForKeys: [.totalFileAllocatedSizeKey, .fileSizeKey],
+            options: [.skipsHiddenFiles]
+        ) else { return 0 }
+        var total: Int64 = 0
+        for case let file as URL in enumerator {
+            let vals = try? file.resourceValues(forKeys: [.totalFileAllocatedSizeKey, .fileSizeKey])
+            total += Int64(vals?.totalFileAllocatedSize ?? vals?.fileSize ?? 0)
+        }
+        return total
+    }
+
     private static func isSafeThreadID(_ threadID: String) -> Bool {
         guard !threadID.isEmpty else { return false }
         let allowed = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_")

@@ -334,6 +334,77 @@ final class ProjectStore: @unchecked Sendable {
         }
     }
 
+    /// item 削除時の全関連ファイルを一括削除する。
+    /// items/<id>.* + SVG + masks/<id>_* + attachments/<id>_* を対象とする。
+    func deleteAllFiles(for item: ProjectItem) {
+        deleteItemFile(item)
+        cleanupMaskFiles(id: item.id)
+        cleanupAttachment(id: item.id)
+    }
+
+    /// items/, masks/, attachments/ から knownItemIDs に含まれない UUID prefix を
+    /// 持つファイルを削除する。過去のバグで残った orphan の掃除用途。
+    @discardableResult
+    func pruneOrphanFiles(knownItemIDs: Set<UUID>) -> (count: Int, bytes: Int64) {
+        var total: (count: Int, bytes: Int64) = (0, 0)
+        for dir in [itemsDirectory, masksDirectory, attachmentsDirectory] {
+            let r = pruneOrphans(in: dir, knownItemIDs: knownItemIDs)
+            total.count += r.count
+            total.bytes += r.bytes
+            // itemFileExtensions map からも orphan エントリを除去
+            if dir == itemsDirectory {
+                itemFileExtensionsLock.lock()
+                itemFileExtensions = itemFileExtensions.filter { knownItemIDs.contains($0.key) }
+                itemFileExtensionsLock.unlock()
+            }
+        }
+        return total
+    }
+
+    private func pruneOrphans(in dir: URL, knownItemIDs: Set<UUID>) -> (count: Int, bytes: Int64) {
+        Self.pruneOrphansStatic(in: dir, knownItemIDs: knownItemIDs)
+    }
+
+    static func pruneOrphansStatic(in dir: URL, knownItemIDs: Set<UUID>) -> (count: Int, bytes: Int64) {
+        guard let contents = try? FileManager.default.contentsOfDirectory(
+            at: dir, includingPropertiesForKeys: [.fileSizeKey], options: []
+        ) else { return (0, 0) }
+        var count = 0
+        var bytes: Int64 = 0
+        for url in contents {
+            let name = url.lastPathComponent
+            guard name.count >= 36,
+                  let id = UUID(uuidString: String(name.prefix(36))) else { continue }
+            if knownItemIDs.contains(id) { continue }
+            let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize).map(Int64.init) ?? 0
+            if (try? FileManager.default.removeItem(at: url)) != nil {
+                count += 1
+                bytes += size
+            }
+        }
+        return (count, bytes)
+    }
+
+    /// 任意のルート配下 (items/masks/attachments/items/.thumbs/items/.thumbs.nosync) を全部走査。
+    /// iCloud 有効時のローカル (Application Support) 側 orphan 掃除にも使う。
+    static func pruneOrphansUnder(root: URL, knownItemIDs: Set<UUID>) -> (count: Int, bytes: Int64) {
+        let items = root.appendingPathComponent("items", isDirectory: true)
+        let dirs: [URL] = [
+            items,
+            root.appendingPathComponent("masks", isDirectory: true),
+            root.appendingPathComponent("attachments", isDirectory: true),
+            items.appendingPathComponent(".thumbs", isDirectory: true),
+            items.appendingPathComponent(".thumbs.nosync", isDirectory: true),
+        ]
+        var total: (count: Int, bytes: Int64) = (0, 0)
+        for dir in dirs {
+            let r = pruneOrphansStatic(in: dir, knownItemIDs: knownItemIDs)
+            total.count += r.count
+            total.bytes += r.bytes
+        }
+        return total
+    }
+
     static func defaultRootDirectory() -> URL {
         if UserDefaults.standard.bool(forKey: "iCloudSyncEnabled"),
            let container = ICloudSyncMonitor.iCloudContainerURL() {

@@ -103,6 +103,29 @@ final class CanvasThumbnailStore: ObservableObject, @unchecked Sendable {
         try? FileManager.default.removeItem(at: url)
     }
 
+    /// .thumbs/ 配下から knownItemIDs に含まれない UUID prefix を持つファイルを削除。
+    @discardableResult
+    func pruneOrphanFiles(knownItemIDs: Set<UUID>) -> (count: Int, bytes: Int64) {
+        guard let contents = try? FileManager.default.contentsOfDirectory(
+            at: thumbsDirectory, includingPropertiesForKeys: [.fileSizeKey], options: []
+        ) else { return (0, 0) }
+        var count = 0
+        var bytes: Int64 = 0
+        for url in contents {
+            let name = url.lastPathComponent
+            guard name.count >= 36,
+                  let id = UUID(uuidString: String(name.prefix(36))) else { continue }
+            if knownItemIDs.contains(id) { continue }
+            let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize).map(Int64.init) ?? 0
+            if (try? FileManager.default.removeItem(at: url)) != nil {
+                count += 1
+                bytes += size
+                memoryCache.removeObject(forKey: url as NSURL)
+            }
+        }
+        return (count, bytes)
+    }
+
     func backfillMissing(items: [ProjectItem], originalURL: (ProjectItem) -> URL) {
         let missing: [(ProjectItem, URL)] = items.compactMap { item in
             let thumbURL = thumbnailURL(for: item)
