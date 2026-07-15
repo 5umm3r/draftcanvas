@@ -7,6 +7,7 @@ struct ProjectInputs: Equatable {
     var count: Int = 1
     var concurrency: Int = 1
     var aspectRatio: GenerationAspectRatio = .auto
+    var outputStyle: GenerationOutputStyle = .raster
     var editSource: GenerationEditSource? = nil
     var attachedImage: AttachedImage? = nil
     var model: String = ""

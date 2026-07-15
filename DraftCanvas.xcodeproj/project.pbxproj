@@ -50,6 +50,7 @@
 		233426AE6B9448EEA45C33DEBB80E13C /* libvtracer_ffi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FFF632FC9AA946138EEF8D01EA71C8FB /* libvtracer_ffi.a */; };
 		248AEE3818B146B1937B4911 /* ImageClipboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A611B88DE4D46C5947C2912 /* ImageClipboard.swift */; };
 		26E6F65AF473C6C813DC6934 /* ProjectItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A8A17126868268F52D2F4C8 /* ProjectItem.swift */; };
+		28AA9F5C8F2A4C61A8239D11 /* GenerationOutputStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28AA9F5C8F2A4C61A8239D10 /* GenerationOutputStyle.swift */; };
 		2957DD69190A222EAAC2BAA6 /* GenerationRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FBE0B5D535E3CE41684238F /* GenerationRequest.swift */; };
 		295E01E20123CF8DBCD931ED /* GenerationAspectRatio.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3745A4BCE7A2386218A2D2 /* GenerationAspectRatio.swift */; };
 		29CD3AC449F31DA3620933A9 /* SketchCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED5AA59DD5375F249E537A35 /* SketchCanvasView.swift */; };
@@ -262,6 +263,7 @@
 		23DA79D443899A31762BC805 /* DraftCanvasViewModel+History.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "DraftCanvasViewModel+History.swift"; path = "ViewModel/DraftCanvasViewModel+History.swift"; sourceTree = "<group>"; };
 		253503CE40171955E27036E3 /* ErrorToastView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ErrorToastView.swift; path = Views/ErrorToastView.swift; sourceTree = "<group>"; };
 		2681B373E0F545648BF26839 /* PDFEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFEncoder.swift; sourceTree = "<group>"; };
+		28AA9F5C8F2A4C61A8239D10 /* GenerationOutputStyle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GenerationOutputStyle.swift; path = Models/GenerationOutputStyle.swift; sourceTree = "<group>"; };
 		2B3D5F7C3BF3DD894CFA01D5 /* PlaceholderAnimationView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PlaceholderAnimationView.swift; path = Views/PlaceholderAnimationView.swift; sourceTree = "<group>"; };
 		2BC894D6CA1F72AEC430FFA9 /* PlaceholderAnimationStyle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PlaceholderAnimationStyle.swift; path = Models/PlaceholderAnimationStyle.swift; sourceTree = "<group>"; };
 		2C11346DB4BD717A69D174D6 /* ProjectStore+Snapshot.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "ProjectStore+Snapshot.swift"; path = "Stores/ProjectStore+Snapshot.swift"; sourceTree = "<group>"; };
@@ -563,6 +565,7 @@
 				B4721C0D18CB0E591F188DA0 /* AppAppearance.swift */,
 				5C36E42E98D9C8D2D52F896B /* CodexModel.swift */,
 				0C3745A4BCE7A2386218A2D2 /* GenerationAspectRatio.swift */,
+				28AA9F5C8F2A4C61A8239D10 /* GenerationOutputStyle.swift */,
 				0FBE0B5D535E3CE41684238F /* GenerationRequest.swift */,
 				7CA01B9DCA9B7DEAF2041149 /* GenerationJob.swift */,
 				69FDABE8B186C31A4DBF6E4F /* AttachedImage.swift */,
@@ -1062,6 +1065,7 @@
 				C1EADB333184138F3E8EDB5B /* AppAppearance.swift in Sources */,
 				6224F9A9C64D55B082901686 /* CodexModel.swift in Sources */,
 				295E01E20123CF8DBCD931ED /* GenerationAspectRatio.swift in Sources */,
+				28AA9F5C8F2A4C61A8239D11 /* GenerationOutputStyle.swift in Sources */,
 				2957DD69190A222EAAC2BAA6 /* GenerationRequest.swift in Sources */,
 				6242D9EE2DE95AB4529D5B64 /* GenerationJob.swift in Sources */,
 				0D1A9597F8229E175E865CBB /* AttachedImage.swift in Sources */,

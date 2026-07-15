@@ -8,8 +8,23 @@ enum PromptFactory {
     STRICT TOOL SCHEMA: The image_gen.imagegen tool arguments accept ONLY these three JSON fields — { "prompt": string, "referenced_image_paths"?: string[], "num_last_images_to_include"?: number }. The tool uses deny_unknown_fields; adding ANY other key (size, quality, width, height, resolution, dimensions, aspect_ratio, style, format, model, background, transparent, etc.) will cause the call to fail immediately with a schema error. Encode all composition, orientation, size and style intent as natural language INSIDE the prompt string. Never emit a size or width/height parameter under any circumstances.
     """
 
+    private static let rasterConstraint = """
+    Generate the output using the image_gen tool as a real raster illustration.
+    Do NOT substitute with SVG, HTML, CSS, or canvas drawings, and do NOT internally build a vector composition and then rasterize it. Draw as a genuine illustration/photograph with real texture, shading, and highlights.
+    Do not include any letters, logos, or watermarks unless the user prompt explicitly requests them.
+    """
+
     static func prompt(for request: GenerationRequest, jobIndex: Int, jobPrompt: String? = nil) -> String {
         return "\(toolConstraint)\n\n\(promptBody(for: request, jobIndex: jobIndex, jobPrompt: jobPrompt))"
+    }
+
+    private static func trailingConstraints(for request: GenerationRequest) -> [String] {
+        switch request.outputStyle {
+        case .raster:
+            return [rasterConstraint, toolConstraint]
+        case .vector:
+            return [toolConstraint]
+        }
     }
 
     private static func promptBody(for request: GenerationRequest, jobIndex: Int, jobPrompt: String? = nil) -> String {
@@ -48,12 +63,11 @@ enum PromptFactory {
                     "Preserve all non-transparent parts of the image exactly as they are.",
                     "Return a fully opaque image with no transparency.",
                     "Do not write code. Do not ask clarifying questions.",
-                    toolConstraint
-                ]).joined(separator: "\n")
+                ] + trailingConstraints(for: request)).joined(separator: "\n")
             }
 
             if editSource.isInpainting && editSource.inpaintPurpose == .remove {
-                return [
+                return ([
                     "Edit the attached reference image for a local personal image creator app.",
                     "The reference image has transparent (alpha=0) regions indicating areas to be removed.",
                     "Use the image generation capability and return exactly one edited raster image result.",
@@ -63,8 +77,7 @@ enum PromptFactory {
                     "Preserve all non-transparent parts of the image exactly as they are.",
                     "Return a fully opaque image with no transparency.",
                     "Do not write code. Do not ask clarifying questions.",
-                    toolConstraint
-                ].joined(separator: "\n")
+                ] + trailingConstraints(for: request)).joined(separator: "\n")
             }
             if editSource.isInpainting {
                 return ([
@@ -79,8 +92,7 @@ enum PromptFactory {
                     "Only modify the transparent regions to match the user edit request.",
                     "Return a fully opaque image with no transparency.",
                     "Do not write code. Do not ask clarifying questions.",
-                    toolConstraint
-                ]).joined(separator: "\n")
+                ] + trailingConstraints(for: request)).joined(separator: "\n")
             }
             return ([
                 "Edit the attached reference image for a local personal image creator app.",
@@ -91,15 +103,14 @@ enum PromptFactory {
                 "Preserve useful parts of the reference image unless the edit request says otherwise.",
                 "A normal opaque image is acceptable.",
                 "Do not write code. Do not ask clarifying questions.",
-                toolConstraint
-            ]).joined(separator: "\n")
+            ] + trailingConstraints(for: request)).joined(separator: "\n")
         }
 
         let promptLine = "User prompt: \(request.prompt)"
 
         if request.attachedImagePath != nil {
             if request.attachedImageKind == .sketch {
-                return [
+                return ([
                     "Generate exactly one high-quality raster image for a local personal image creator app.",
                     "The attached image is a rough hand-drawn sketch used only as a compositional guide.",
                     "Use the sketch to understand the intended layout, placement, and rough color regions of the scene.",
@@ -111,10 +122,9 @@ enum PromptFactory {
                     "Variation number: \(jobIndex + 1).",
                     "A normal opaque image is acceptable.",
                     "Do not write code. Do not ask clarifying questions.",
-                    toolConstraint
-                ].joined(separator: "\n")
+                ] + trailingConstraints(for: request)).joined(separator: "\n")
             }
-            return [
+            return ([
                 "Generate exactly one high-quality raster image for a local personal image creator app.",
                 "Use the attached reference image as visual guidance.",
                 "Use the image generation capability and return the generated image result.",
@@ -123,11 +133,10 @@ enum PromptFactory {
                 "Variation number: \(jobIndex + 1).",
                 "A normal opaque image is acceptable.",
                 "Do not write code. Do not ask clarifying questions.",
-                toolConstraint
-            ].joined(separator: "\n")
+            ] + trailingConstraints(for: request)).joined(separator: "\n")
         }
 
-        return [
+        return ([
             "Generate exactly one high-quality raster image for a local personal image creator app.",
             "Use the image generation capability and return the generated image result.",
             promptLine,
@@ -135,8 +144,7 @@ enum PromptFactory {
             "Variation number: \(jobIndex + 1).",
             "A normal opaque image is acceptable.",
             "Do not write code. Do not ask clarifying questions.",
-            toolConstraint
-        ].joined(separator: "\n")
+        ] + trailingConstraints(for: request)).joined(separator: "\n")
     }
 
 }

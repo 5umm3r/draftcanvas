@@ -46,6 +46,7 @@ extension DraftCanvasViewModel {
             count: inputs.count,
             concurrency: inputs.concurrency,
             aspectRatio: inputs.aspectRatio,
+            outputStyle: inputs.outputStyle,
             editSource: inputs.editSource,
             attachedImagePath: inputs.attachedImage?.filePath,
             attachedImageKind: inputs.attachedImage?.kind ?? .regular,
