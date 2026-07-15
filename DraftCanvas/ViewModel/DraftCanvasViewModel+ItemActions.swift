@@ -192,6 +192,7 @@ extension DraftCanvasViewModel {
                     count: 1,
                     concurrency: 1,
                     aspectRatio: itemAspectRatio,
+                    outputStyle: .raster,
                     editSource: editSource,
                     model: fastModel.id,
                     reasoningEffort: "low"
@@ -356,6 +357,7 @@ extension DraftCanvasViewModel {
             ? (availableModels.first(where: \.isDefault)?.id ?? availableModels.first?.id ?? "")
             : currentInputs.model
         let capturedReasoningEffort = currentInputs.reasoningEffort
+        let capturedOutputStyle = currentInputs.outputStyle
         let capturedAspectRatio = item.aspectRatio
         let capturedItemID = item.id
 
@@ -404,6 +406,7 @@ extension DraftCanvasViewModel {
                 count: normalizedCount,
                 concurrency: concurrency,
                 aspectRatio: capturedAspectRatio,
+                outputStyle: capturedOutputStyle,
                 editSource: editSource,
                 model: capturedModel,
                 reasoningEffort: capturedReasoningEffort

@@ -5,6 +5,7 @@ struct GenerationRequest: Equatable {
     var count: Int
     var concurrency: Int
     var aspectRatio: GenerationAspectRatio = .auto
+    var outputStyle: GenerationOutputStyle = .raster
     var editSource: GenerationEditSource? = nil
     var attachedImagePath: String? = nil
     var attachedImageKind: AttachmentKind = .regular

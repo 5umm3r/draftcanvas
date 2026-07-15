@@ -117,6 +117,7 @@ extension DraftCanvasViewModel {
                     count: 1,
                     concurrency: 1,
                     aspectRatio: .auto,
+                    outputStyle: .raster,
                     editSource: editSource,
                     model: fastModel.id,
                     reasoningEffort: "low"

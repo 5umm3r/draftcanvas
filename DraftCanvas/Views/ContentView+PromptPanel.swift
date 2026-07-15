@@ -374,6 +374,16 @@ extension ContentView {
                     .fixedSize()
                     .help("アスペクト比")
 
+                    Picker("", selection: viewModel.binding(for: \.outputStyle)) {
+                        Image(systemName: "photo").tag(GenerationOutputStyle.raster)
+                        Image(systemName: "pencil.and.scribble").tag(GenerationOutputStyle.vector)
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    .frame(height: 28)
+                    .fixedSize()
+                    .help("出力スタイル: 写真/イラスト or アイコン/ロゴ")
+
                     Menu {
                         ForEach(1...8, id: \.self) { n in
                             Button {
