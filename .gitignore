@@ -57,7 +57,10 @@ fastlane/test_output
 _build/
 
 # Claude Code
-.claude/
+# settings.local.json など個人設定は除外し、共有するスキルだけ追跡する。
+# ディレクトリごと除外（.claude/）すると配下を再包含できないため .claude/* にしている。
+.claude/*
+!.claude/skills/
 .superpowers/
 docs/superpowers/
 
