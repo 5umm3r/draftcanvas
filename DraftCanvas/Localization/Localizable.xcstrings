@@ -7341,18 +7341,18 @@
         }
       }
     },
-    "%lld ファイル同期中...": {
+    "%lld / %lld ファイル同期中...": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Syncing %lld files..."
+            "value": "Syncing %lld of %lld files..."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld ファイル同期中..."
+            "value": "%lld / %lld ファイル同期中..."
           }
         }
       }

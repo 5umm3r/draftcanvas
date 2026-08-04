@@ -175,7 +175,9 @@ struct SettingsView: View {
                     }
                     Toggle(isOn: Binding(
                         get: {
-                            UserDefaults.standard.string(forKey: ICloudAutoPullPolicy.userDefaultsKey) == ICloudAutoPullPolicy.thumbsOnly.rawValue
+                            // 未設定時の既定 (thumbsOnly) をトグルに反映する。
+                            // 生の string 比較だと既定 ON なのに OFF 表示になる
+                            ICloudAutoPullPolicy.load() == .thumbsOnly
                         },
                         set: { newValue in
                             let policy: ICloudAutoPullPolicy = newValue ? .thumbsOnly : .eager

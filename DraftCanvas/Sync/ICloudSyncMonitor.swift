@@ -5,7 +5,10 @@ import Network
 enum ICloudSyncStatus: Equatable {
     case disabled
     case synced
-    case syncing(pending: Int)
+    /// 同期セッション単位の進捗。`total` は「このセッションで一度でも pending だった件数」で
+    /// 単調増加、`completed` は完了到達件数で単調増加。瞬間の残数を出すと daemon の
+    /// フラグ往復や新規ファイル流入で数字が増減して見えるため、進捗形式で表示する。
+    case syncing(completed: Int, total: Int)
     case error(String)
     case offline
 }
@@ -24,7 +27,9 @@ final class ICloudSyncMonitor: ObservableObject {
     @Published private(set) var downloadingItemIDs: Set<UUID> = []
 
     /// 自動 pull 方針。`eager` で全件 pull、`thumbsOnly` で原本は手動 DL。
-    var autoPullPolicy: ICloudAutoPullPolicy = .eager
+    /// 既定は `thumbsOnly`: 原本まで全件 pull すると初回同期の転送量が桁で増え、
+    /// iCloud daemon の輻輳で同期完了までが極端に遅くなる。
+    var autoPullPolicy: ICloudAutoPullPolicy = .thumbsOnly
 
     private var query: NSMetadataQuery?
     private var observers: [Any] = []
@@ -39,6 +44,19 @@ final class ICloudSyncMonitor: ObservableObject {
     // processQueryResults の集計結果。ネットワーク状態と合成して syncStatus を導出する
     private var lastPendingCount = 0
     private var lastErrorMessage: String?
+
+    // 同期セッションの進捗。pendingCount は毎回ゼロから再集計する瞬間値のため、
+    // 新規ファイル流入と転送完了が同時に起きると 5→6→4→6 と逆行して見える。
+    // 「一度でも pending だった集合」を分母、そこから抜けた件数を分子にして単調化する。
+    private var syncSessionTotalPaths: Set<String> = []
+    private var syncSessionPendingPaths: Set<String> = []
+    // URL を取れず同一性を追えないアイテム。分母・分子の双方に同数を足して進捗を歪めない。
+    private var untrackedPendingCount = 0
+
+    // pending が 0 になっても daemon が直後に再アップロードを立てることがあり、
+    // 即 .synced にすると「完了→同期中」を往復する。連続で 0 を観測してから確定する。
+    private var consecutiveZeroPendingCount = 0
+    private let requiredZeroPendingStreak = 2
 
     // syncing 継続中の定期 refresh。NSMetadataQueryDidUpdate は
     // 属性のみ変化 (isUploaded false→true) では発火しないケースがあり、
@@ -107,6 +125,14 @@ final class ICloudSyncMonitor: ObservableObject {
         pathMonitor = nil
         syncingPoller?.cancel()
         syncingPoller = nil
+        resetSyncSession()
+    }
+
+    private func resetSyncSession() {
+        syncSessionTotalPaths.removeAll()
+        syncSessionPendingPaths.removeAll()
+        untrackedPendingCount = 0
+        consecutiveZeroPendingCount = 0
     }
 
     /// クエリ更新通知が届かず状態が固着した場合に備え、現在のクエリ結果を手動で再評価する。
@@ -137,6 +163,9 @@ final class ICloudSyncMonitor: ObservableObject {
         var downloading = Set<UUID>()
         var errorCount = 0
         var firstErrorDescription: String?
+        var seenPaths = Set<String>()
+        var pendingPaths = Set<String>()
+        var untracked = 0
 
         for i in 0..<query.resultCount {
             guard let item = query.result(at: i) as? NSMetadataItem else { continue }
@@ -165,6 +194,9 @@ final class ICloudSyncMonitor: ObservableObject {
             // URL が取れないアイテムは安全側（pending 扱い）に倒す
             let autoPullWanted = url.map { shouldAutoPull(url: $0) } ?? true
 
+            let identity = (item.value(forAttribute: NSMetadataItemPathKey) as? String) ?? url?.path
+            if let identity { seenPaths.insert(identity) }
+
             if Self.isPendingTransfer(
                 needsDownload: needsDownload,
                 isDownloading: isDownloading,
@@ -173,6 +205,11 @@ final class ICloudSyncMonitor: ObservableObject {
                 autoPullWanted: autoPullWanted
             ) {
                 pendingCount += 1
+                if let identity {
+                    pendingPaths.insert(identity)
+                } else {
+                    untracked += 1
+                }
             }
 
             if needsDownload, !isDownloading, autoPullWanted, let url {
@@ -193,6 +230,12 @@ final class ICloudSyncMonitor: ObservableObject {
         downloadingItemIDs = downloading
 
         lastPendingCount = pendingCount
+        // 削除・コンテナ外へ移動したアイテムは分母から落とす（永久に未完了扱いになるのを防ぐ）
+        syncSessionTotalPaths.formIntersection(seenPaths)
+        syncSessionTotalPaths.formUnion(pendingPaths)
+        syncSessionPendingPaths = pendingPaths
+        untrackedPendingCount = untracked
+
         if let firstErrorDescription {
             lastErrorMessage = errorCount > 1
                 ? String(localized: "同期エラー (\(errorCount)件): \(firstErrorDescription)")
@@ -210,11 +253,40 @@ final class ICloudSyncMonitor: ObservableObject {
         } else if let message = lastErrorMessage {
             syncStatus = .error(message)
         } else if lastPendingCount > 0 {
-            syncStatus = .syncing(pending: lastPendingCount)
-        } else {
+            consecutiveZeroPendingCount = 0
+            syncStatus = Self.progressStatus(
+                totalTracked: syncSessionTotalPaths.count,
+                pendingTracked: syncSessionPendingPaths.count,
+                untrackedPending: untrackedPendingCount
+            )
+        } else if syncSessionTotalPaths.isEmpty {
+            // このセッションで一度も pending がない（起動直後の同期済み状態）。待つ理由がない
+            resetSyncSession()
             syncStatus = .synced
+        } else {
+            // 完了確定前に猶予を挟む。ポーラーは syncing 中のみ回るため、
+            // 完了扱いの syncing を出しておくことで次回評価が 3 秒後に届く
+            consecutiveZeroPendingCount += 1
+            if consecutiveZeroPendingCount >= requiredZeroPendingStreak {
+                resetSyncSession()
+                syncStatus = .synced
+            } else {
+                let total = syncSessionTotalPaths.count
+                syncStatus = .syncing(completed: total, total: total)
+            }
         }
         adjustSyncingPoller()
+    }
+
+    /// 分子・分母とも単調増加になるよう合成する。追跡不能アイテムは双方に同数足して進捗率を歪めない。
+    nonisolated static func progressStatus(
+        totalTracked: Int,
+        pendingTracked: Int,
+        untrackedPending: Int
+    ) -> ICloudSyncStatus {
+        let total = totalTracked + untrackedPending
+        let completed = max(0, totalTracked - pendingTracked)
+        return .syncing(completed: completed, total: max(total, completed))
     }
 
     /// syncing 継続中のみ定期 refresh を走らせる。synced/offline/error/disabled では止める。
