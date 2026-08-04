@@ -11,11 +11,13 @@ enum ICloudAutoPullPolicy: String, Codable, Sendable {
 
     static let userDefaultsKey = "iCloudAutoPullPolicy"
 
-    /// UserDefaults から読み出す。未設定 (既定) は eager。
+    /// UserDefaults から読み出す。未設定 (既定) は thumbsOnly。
+    /// eager は原本まで全件 pull するため初回同期の転送量が桁で増え、
+    /// iCloud daemon の輻輳で同期完了まで極端に時間がかかる。
     static func load(from defaults: UserDefaults = .standard) -> ICloudAutoPullPolicy {
         guard let raw = defaults.string(forKey: userDefaultsKey),
               let policy = ICloudAutoPullPolicy(rawValue: raw)
-        else { return .eager }
+        else { return .thumbsOnly }
         return policy
     }
 

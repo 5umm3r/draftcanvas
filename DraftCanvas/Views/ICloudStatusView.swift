@@ -17,10 +17,17 @@ struct ICloudStatusView: View {
                     .font(.system(size: 10).monospacedDigit())
                     .foregroundStyle(.tertiary)
             }
-            if case .syncing = syncMonitor.syncStatus {
-                ProgressView()
-                    .progressViewStyle(.linear)
-                    .controlSize(.mini)
+            if case .syncing(let completed, let total) = syncMonitor.syncStatus {
+                // 進捗は単調増加のため確定値バーで出せる。total 0 は不定表示に落とす
+                if total > 0 {
+                    ProgressView(value: Double(completed), total: Double(total))
+                        .progressViewStyle(.linear)
+                        .controlSize(.mini)
+                } else {
+                    ProgressView()
+                        .progressViewStyle(.linear)
+                        .controlSize(.mini)
+                }
             }
             Text(statusText)
                 .font(.system(size: 10))
@@ -54,7 +61,7 @@ struct ICloudStatusView: View {
         switch syncMonitor.syncStatus {
         case .disabled: return "iCloud同期無効"
         case .synced: return "同期完了"
-        case .syncing(let pending): return "\(pending) ファイル同期中..."
+        case .syncing(let completed, let total): return "\(completed) / \(total) ファイル同期中..."
         case .error(let msg): return LocalizedStringKey(msg)
         case .offline: return "オフライン"
         }
@@ -71,6 +78,7 @@ struct ICloudStatusView: View {
 /// 起動直後のコンテナ解決時のみ。
 struct ICloudInactiveStatusView: View {
     @AppStorage("iCloudSyncEnabled") private var iCloudSyncEnabled = false
+    @ObservedObject private var iCloudAvailability = ICloudAvailability.shared
 
     var body: some View {
         HStack(spacing: 4) {
@@ -94,7 +102,7 @@ struct ICloudInactiveStatusView: View {
         if !iCloudSyncEnabled {
             return "同期オフ"
         }
-        if !ICloudSyncMonitor.isICloudAvailable {
+        if !iCloudAvailability.isAvailable {
             return "未サインイン"
         }
         return "再起動後に同期を開始"

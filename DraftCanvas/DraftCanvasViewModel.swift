@@ -683,15 +683,20 @@ extension DraftCanvasViewModel {
 private func collectEntries(rootDirectory: URL, eviction: ICloudCacheEviction) async -> [ICloudCacheEntry] {
     let fm = FileManager.default
     let itemsDir = rootDirectory.appendingPathComponent("items")
-    guard let enumerator = fm.enumerator(at: itemsDir, includingPropertiesForKeys: [.fileSizeKey, .isUbiquitousItemKey]) else { return [] }
+    let keys: [URLResourceKey] = [.fileSizeKey, .ubiquitousItemDownloadingStatusKey]
+    guard let enumerator = fm.enumerator(at: itemsDir, includingPropertiesForKeys: keys) else { return [] }
     // NSDirectoryEnumerator.makeIterator() は Swift 6 非同期コンテキストで使用不可。
     // URL と size を同期的に先に収集してから、actor 呼び出しを行う。
     var collected: [(url: URL, size: Int)] = []
     while let item = enumerator.nextObject() {
         guard let url = item as? URL else { continue }
         if url.lastPathComponent.hasPrefix(".thumbs") { continue }
-        let vals = try? url.resourceValues(forKeys: [.fileSizeKey, .isUbiquitousItemKey])
+        let vals = try? url.resourceValues(forKeys: Set(keys))
         guard let size = vals?.fileSize else { continue }
+        // 未 DL のファイルはローカル副本を持たないが .fileSizeKey は論理サイズを返す。
+        // これを容量に数えると、evict 済みのぶんまで超過扱いになって解放量 0 の
+        // evict を繰り返し、実体のあるファイルまで際限なく削られる。
+        if vals?.ubiquitousItemDownloadingStatus == .notDownloaded { continue }
         collected.append((url: url, size: size))
     }
     var entries: [ICloudCacheEntry] = []

@@ -7,7 +7,12 @@ import Foundation
 actor ICloudCacheEviction {
     static let timestampsKey = "iCloudAccessTimestamps"
     static let limitBytesKey = "iCloudCacheLimitBytes"
-    static let defaultLimitBytes: Int64 = 2 * 1024 * 1024 * 1024  // 2 GB
+    static let defaultLimitBytes: Int64 = 5 * 1024 * 1024 * 1024  // 5 GB
+
+    /// 上限超過時に削り込む目標水準（上限に対する比率）。
+    /// 上限ちょうどまでしか削らないと、原本を 1 枚 DL しただけで再び超過し、
+    /// 起動のたび evict と再 DL を往復する。緩衝を設けて往復を止める。
+    static let evictionTargetRatio = 0.8
 
     private let defaults: UserDefaults
     private var timestamps: [String: TimeInterval]
@@ -42,8 +47,12 @@ actor ICloudCacheEviction {
     }
 
     var limitBytes: Int64 {
-        let raw = defaults.object(forKey: Self.limitBytesKey) as? Int64
-        return raw ?? Self.defaultLimitBytes
+        // 設定画面は @AppStorage 経由で Int として書き込む。`as? Int64` は
+        // 保存時の型に依存して取りこぼすため、NSNumber 経由で幅を問わず読む
+        guard let number = defaults.object(forKey: Self.limitBytesKey) as? NSNumber else {
+            return Self.defaultLimitBytes
+        }
+        return number.int64Value
     }
 
     func setLimitBytes(_ value: Int64) {
@@ -65,11 +74,17 @@ struct ICloudCacheEntry: Sendable {
 extension ICloudCacheEviction {
     /// 上限を超えるぶんを LRU で選び、evict 対象 URL を返す (実 evict は呼出側)。
     func enforceLimit(entries: [ICloudCacheEntry]) -> [URL] {
-        let limit = limitBytes
+        Self.enforceLimit(entries: entries, limit: limitBytes)
+    }
+
+    /// 削り始める閾値は `limit`、削り込む目標は `limit * evictionTargetRatio`。
+    /// `limit` が 0 以下なら無制限として何も evict しない。
+    nonisolated static func enforceLimit(entries: [ICloudCacheEntry], limit: Int64) -> [URL] {
         guard limit > 0 else { return [] }
         let total = entries.reduce(Int64(0)) { $0 + $1.size }
         guard total > limit else { return [] }
-        var overflow = total - limit
+        let target = Int64(Double(limit) * evictionTargetRatio)
+        var overflow = total - target
         var evicted: [URL] = []
         let sorted = entries.sorted { $0.lastAccess < $1.lastAccess }
         for entry in sorted where overflow > 0 {
