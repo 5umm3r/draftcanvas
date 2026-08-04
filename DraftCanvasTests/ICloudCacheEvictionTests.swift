@@ -25,11 +25,20 @@ final class ICloudCacheEvictionTests: XCTestCase {
         XCTAssertNil(stamp)
     }
 
-    func test_limitBytes_defaultsTo2GB() async {
+    func test_limitBytes_defaultsTo5GB() async {
         let defaults = UserDefaults(suiteName: suiteName)!
         let eviction = ICloudCacheEviction(defaults: defaults)
         let limit = await eviction.limitBytes
-        XCTAssertEqual(limit, 2 * 1024 * 1024 * 1024)
+        XCTAssertEqual(limit, 5 * 1024 * 1024 * 1024)
+    }
+
+    // 設定画面の @AppStorage は Int で書き込む。Int64 決め打ちで読むと取りこぼす
+    func test_limitBytes_readsValueWrittenAsInt() async {
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defaults.set(5 * 1024 * 1024 * 1024 as Int, forKey: ICloudCacheEviction.limitBytesKey)
+        let eviction = ICloudCacheEviction(defaults: defaults)
+        let limit = await eviction.limitBytes
+        XCTAssertEqual(limit, 5 * 1024 * 1024 * 1024)
     }
 
     func test_limitBytes_canBeSet() async {
@@ -51,7 +60,40 @@ final class ICloudCacheEvictionTests: XCTestCase {
             .init(url: URL(fileURLWithPath: "/c"), size: 40, lastAccess: now.addingTimeInterval(-100)),
         ]
         let evicted = await eviction.enforceLimit(entries: entries)
-        XCTAssertEqual(evicted.map(\.path), ["/a"])  // 合計 120 -> 80 にするため最古を 1 件 evict
+        XCTAssertEqual(evicted.map(\.path), ["/a"])  // 合計 120 -> 目標 80 にするため最古を 1 件 evict
+    }
+
+    // 上限ちょうどまでしか削らないと、原本を 1 枚 DL しただけで再び超過し、
+    // 起動のたび evict と再 DL を往復する
+    func test_enforceLimit_evictsDownToTargetRatioNotJustUnderLimit() {
+        let now = Date()
+        let entries: [ICloudCacheEntry] = (0..<11).map {
+            .init(
+                url: URL(fileURLWithPath: "/\($0)"),
+                size: 10,
+                lastAccess: now.addingTimeInterval(TimeInterval(-1000 + $0))
+            )
+        }
+        // 合計 110、上限 100。上限ちょうどなら 1 件で足りるが、目標 80 まで削る
+        let evicted = ICloudCacheEviction.enforceLimit(entries: entries, limit: 100)
+        XCTAssertEqual(evicted.map(\.path), ["/0", "/1", "/2"])
+        let remaining = 110 - evicted.count * 10
+        XCTAssertLessThanOrEqual(remaining, Int(Double(100) * ICloudCacheEviction.evictionTargetRatio))
+    }
+
+    // 上限以下なら閾値に達していないので何も削らない（目標水準まで削り込まない）
+    func test_enforceLimit_underLimitEvictsNothing() {
+        let entries: [ICloudCacheEntry] = [
+            .init(url: URL(fileURLWithPath: "/a"), size: 90, lastAccess: Date()),
+        ]
+        XCTAssertTrue(ICloudCacheEviction.enforceLimit(entries: entries, limit: 100).isEmpty)
+    }
+
+    func test_enforceLimit_negativeLimitMeansUnlimited() {
+        let entries: [ICloudCacheEntry] = [
+            .init(url: URL(fileURLWithPath: "/a"), size: 999, lastAccess: Date()),
+        ]
+        XCTAssertTrue(ICloudCacheEviction.enforceLimit(entries: entries, limit: -1).isEmpty)
     }
 
     func test_enforceLimit_zeroLimitMeansUnlimited() async {

@@ -48,6 +48,17 @@ struct SettingsView: View {
     @State private var showPruneOrphansAlert = false
     @State private var showPruneResultAlert = false
     @State private var pruneResultMessage = ""
+    // Binding(get:) で UserDefaults を直読みすると SwiftUI が変化を購読できず、
+    // 操作しても表示が更新されない。@AppStorage で購読する。
+    // Int64 は @AppStorage 非対応のため Int で保持（macOS は 64bit のみ）。
+    @AppStorage(ICloudCacheEviction.limitBytesKey)
+    private var cacheLimitBytes: Int = Int(ICloudCacheEviction.defaultLimitBytes)
+    @AppStorage("iCloudSyncEnabled") private var iCloudSyncEnabled = false
+    @AppStorage(ICloudAutoPullPolicy.userDefaultsKey)
+    private var autoPullPolicyRaw: String = ICloudAutoPullPolicy.thumbsOnly.rawValue
+    @AppStorage("draftcanvas.migration.iCloudSync.v1") private var didMigrateToICloud = false
+    @AppStorage("iCloudLocalDataDeleted") private var didDeleteLocalData = false
+    @ObservedObject private var iCloudAvailability = ICloudAvailability.shared
     private let animationStyleColumns = [
         GridItem(.fixed(114), spacing: 8),
         GridItem(.fixed(114), spacing: 8),
@@ -67,10 +78,7 @@ struct SettingsView: View {
                 Text("言語")
                     .gridColumnAlignment(.trailing)
                 VStack(alignment: .leading, spacing: 4) {
-                    Picker(selection: Binding(
-                        get: { l10n.current },
-                        set: { l10n.current = $0 }
-                    )) {
+                    Picker(selection: $l10n.current) {
                         ForEach(LocalizationManager.AppLanguage.allCases) { lang in
                             Text(lang.displayName).tag(lang)
                         }
@@ -148,18 +156,16 @@ struct SettingsView: View {
                 Text("iCloud")
                     .gridColumnAlignment(.trailing)
                 VStack(alignment: .leading, spacing: 4) {
-                    Toggle(isOn: Binding(
-                        get: { UserDefaults.standard.bool(forKey: "iCloudSyncEnabled") },
-                        set: { newValue in
-                            UserDefaults.standard.set(newValue, forKey: "iCloudSyncEnabled")
-                            iCloudPendingRestart = true
-                        }
-                    )) {
+                    Toggle(isOn: $iCloudSyncEnabled) {
                         Text("iCloud Drive で同期")
                     }
                     .toggleStyle(.switch)
-                    .disabled(!ICloudSyncMonitor.isICloudAvailable)
-                    if !ICloudSyncMonitor.isICloudAvailable {
+                    .disabled(!iCloudAvailability.isAvailable)
+                    // 同期の有効化は起動時のコンテナ解決に依存するため再起動が要る
+                    .onChange(of: iCloudSyncEnabled) { _, _ in
+                        iCloudPendingRestart = true
+                    }
+                    if !iCloudAvailability.isAvailable {
                         Text("iCloud が利用できません。システム設定で iCloud にサインインしてください。")
                             .font(.caption)
                             .foregroundStyle(.secondary)
@@ -174,39 +180,30 @@ struct SettingsView: View {
                             .foregroundStyle(.orange)
                     }
                     Toggle(isOn: Binding(
-                        get: {
-                            // 未設定時の既定 (thumbsOnly) をトグルに反映する。
-                            // 生の string 比較だと既定 ON なのに OFF 表示になる
-                            ICloudAutoPullPolicy.load() == .thumbsOnly
-                        },
-                        set: { newValue in
-                            let policy: ICloudAutoPullPolicy = newValue ? .thumbsOnly : .eager
-                            UserDefaults.standard.set(policy.rawValue, forKey: ICloudAutoPullPolicy.userDefaultsKey)
-                            iCloudPendingRestart = true
-                        }
+                        // 未知の rawValue が入っていても load() と同じ既定に倒す
+                        get: { (ICloudAutoPullPolicy(rawValue: autoPullPolicyRaw) ?? .thumbsOnly) == .thumbsOnly },
+                        set: { autoPullPolicyRaw = ($0 ? ICloudAutoPullPolicy.thumbsOnly : .eager).rawValue }
                     )) {
                         Text("省容量モード (画像はオンデマンド DL)")
                     }
                     .toggleStyle(.switch)
                     .font(.caption)
-                    Picker(selection: Binding(
-                        get: { UserDefaults.standard.object(forKey: ICloudCacheEviction.limitBytesKey) as? Int64 ?? ICloudCacheEviction.defaultLimitBytes },
-                        set: { newValue in
-                            UserDefaults.standard.set(newValue, forKey: ICloudCacheEviction.limitBytesKey)
-                        }
-                    )) {
-                        Text("1 GB").tag(Int64(1 * 1024 * 1024 * 1024))
-                        Text("2 GB").tag(Int64(2 * 1024 * 1024 * 1024))
-                        Text("5 GB").tag(Int64(5 * 1024 * 1024 * 1024))
-                        Text("10 GB").tag(Int64(10 * 1024 * 1024 * 1024))
-                        Text("無制限").tag(Int64(0))
+                    // 方針の切替は start() 前に読まれるため再起動が要る
+                    .onChange(of: autoPullPolicyRaw) { _, _ in
+                        iCloudPendingRestart = true
+                    }
+                    Picker(selection: $cacheLimitBytes) {
+                        Text("1 GB").tag(1 * 1024 * 1024 * 1024)
+                        Text("2 GB").tag(2 * 1024 * 1024 * 1024)
+                        Text("5 GB").tag(5 * 1024 * 1024 * 1024)
+                        Text("10 GB").tag(10 * 1024 * 1024 * 1024)
+                        Text("無制限").tag(0)
                     } label: {
                         Text("ローカルキャッシュ上限")
                     }
                     .pickerStyle(.menu)
                     .font(.caption)
-                    if UserDefaults.standard.bool(forKey: "draftcanvas.migration.iCloudSync.v1"),
-                       !UserDefaults.standard.bool(forKey: "iCloudLocalDataDeleted") {
+                    if didMigrateToICloud, !didDeleteLocalData {
                         Button("ローカルデータのコピーを削除") {
                             showDeleteLocalDataAlert = true
                         }
@@ -282,7 +279,7 @@ struct SettingsView: View {
             Button("削除", role: .destructive) {
                 let localRoot = ProjectStore.localDefaultRootDirectory()
                 try? FileManager.default.removeItem(at: localRoot)
-                UserDefaults.standard.set(true, forKey: "iCloudLocalDataDeleted")
+                didDeleteLocalData = true
             }
             Button("キャンセル", role: .cancel) {}
         } message: {

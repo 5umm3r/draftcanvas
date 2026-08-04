@@ -78,6 +78,7 @@ struct ICloudStatusView: View {
 /// 起動直後のコンテナ解決時のみ。
 struct ICloudInactiveStatusView: View {
     @AppStorage("iCloudSyncEnabled") private var iCloudSyncEnabled = false
+    @ObservedObject private var iCloudAvailability = ICloudAvailability.shared
 
     var body: some View {
         HStack(spacing: 4) {
@@ -101,7 +102,7 @@ struct ICloudInactiveStatusView: View {
         if !iCloudSyncEnabled {
             return "同期オフ"
         }
-        if !ICloudSyncMonitor.isICloudAvailable {
+        if !iCloudAvailability.isAvailable {
             return "未サインイン"
         }
         return "再起動後に同期を開始"

@@ -145,6 +145,121 @@ final class ICloudSyncMonitorTests: XCTestCase {
         XCTAssertLessThanOrEqual(completed, total)
     }
 
+    // MARK: - アップロードフラグ往復のデバウンス
+
+    // 内容変更日時が前回 uploaded 観測時から変わっていない = 実体は変わっていない。
+    // daemon のフラグ往復とみなして pending に数えない
+    func test_isSpuriousUploadFlap_unchangedContentWithinGrace_isSpurious() {
+        let now = ContinuousClock().now
+        let date = Date(timeIntervalSince1970: 1_000)
+        XCTAssertTrue(ICloudSyncMonitor.isSpuriousUploadFlap(
+            isUploading: false, isUploaded: false,
+            contentChangeDate: date,
+            lastUploadedChangeDate: date,
+            lastUploadedObservedAt: now - .seconds(5),
+            now: now, grace: .seconds(30)
+        ))
+    }
+
+    // 内容が変わっていれば本物の再アップロード
+    func test_isSpuriousUploadFlap_changedContent_isNotSpurious() {
+        let now = ContinuousClock().now
+        XCTAssertFalse(ICloudSyncMonitor.isSpuriousUploadFlap(
+            isUploading: false, isUploaded: false,
+            contentChangeDate: Date(timeIntervalSince1970: 2_000),
+            lastUploadedChangeDate: Date(timeIntervalSince1970: 1_000),
+            lastUploadedObservedAt: now - .seconds(5),
+            now: now, grace: .seconds(30)
+        ))
+    }
+
+    // 猶予を過ぎたら通常どおり pending に戻し、本物の再アップロードを取りこぼさない
+    func test_isSpuriousUploadFlap_pastGrace_isNotSpurious() {
+        let now = ContinuousClock().now
+        let date = Date(timeIntervalSince1970: 1_000)
+        XCTAssertFalse(ICloudSyncMonitor.isSpuriousUploadFlap(
+            isUploading: false, isUploaded: false,
+            contentChangeDate: date,
+            lastUploadedChangeDate: date,
+            lastUploadedObservedAt: now - .seconds(31),
+            now: now, grace: .seconds(30)
+        ))
+    }
+
+    // 実際に転送中のものは抑制対象外
+    func test_isSpuriousUploadFlap_activeUpload_isNotSpurious() {
+        let now = ContinuousClock().now
+        let date = Date(timeIntervalSince1970: 1_000)
+        XCTAssertFalse(ICloudSyncMonitor.isSpuriousUploadFlap(
+            isUploading: true, isUploaded: false,
+            contentChangeDate: date,
+            lastUploadedChangeDate: date,
+            lastUploadedObservedAt: now - .seconds(5),
+            now: now, grace: .seconds(30)
+        ))
+    }
+
+    // 観測履歴がなければ判定材料がない → 抑制しない
+    func test_isSpuriousUploadFlap_noPriorObservation_isNotSpurious() {
+        let now = ContinuousClock().now
+        XCTAssertFalse(ICloudSyncMonitor.isSpuriousUploadFlap(
+            isUploading: false, isUploaded: false,
+            contentChangeDate: Date(timeIntervalSince1970: 1_000),
+            lastUploadedChangeDate: nil,
+            lastUploadedObservedAt: nil,
+            now: now, grace: .seconds(30)
+        ))
+    }
+
+    // MARK: - 自動 DL 要求の再送抑制
+
+    func test_shouldRequestDownload_firstRequest_isAllowed() {
+        XCTAssertTrue(ICloudSyncMonitor.shouldRequestDownload(
+            needsDownload: true, isDownloading: false, autoPullWanted: true,
+            lastRequestedAt: nil, now: ContinuousClock().now, retryInterval: .seconds(30)
+        ))
+    }
+
+    // ポーリングのたび再要求すると daemon に無駄な要求が積み上がる
+    func test_shouldRequestDownload_withinRetryInterval_isSuppressed() {
+        let now = ContinuousClock().now
+        XCTAssertFalse(ICloudSyncMonitor.shouldRequestDownload(
+            needsDownload: true, isDownloading: false, autoPullWanted: true,
+            lastRequestedAt: now - .seconds(3), now: now, retryInterval: .seconds(30)
+        ))
+    }
+
+    // DL が始まらないまま猶予を過ぎたら再投入する
+    func test_shouldRequestDownload_pastRetryInterval_isAllowed() {
+        let now = ContinuousClock().now
+        XCTAssertTrue(ICloudSyncMonitor.shouldRequestDownload(
+            needsDownload: true, isDownloading: false, autoPullWanted: true,
+            lastRequestedAt: now - .seconds(31), now: now, retryInterval: .seconds(30)
+        ))
+    }
+
+    func test_shouldRequestDownload_alreadyDownloading_isSuppressed() {
+        XCTAssertFalse(ICloudSyncMonitor.shouldRequestDownload(
+            needsDownload: true, isDownloading: true, autoPullWanted: true,
+            lastRequestedAt: nil, now: ContinuousClock().now, retryInterval: .seconds(30)
+        ))
+    }
+
+    // 省容量モードで意図的に未 DL のまま残す原本には要求を出さない
+    func test_shouldRequestDownload_outsideAutoPull_isSuppressed() {
+        XCTAssertFalse(ICloudSyncMonitor.shouldRequestDownload(
+            needsDownload: true, isDownloading: false, autoPullWanted: false,
+            lastRequestedAt: nil, now: ContinuousClock().now, retryInterval: .seconds(30)
+        ))
+    }
+
+    func test_shouldRequestDownload_alreadyDownloaded_isSuppressed() {
+        XCTAssertFalse(ICloudSyncMonitor.shouldRequestDownload(
+            needsDownload: false, isDownloading: false, autoPullWanted: true,
+            lastRequestedAt: nil, now: ContinuousClock().now, retryInterval: .seconds(30)
+        ))
+    }
+
     func test_makeQuery_predicateMatchesOnlyContainerPath() throws {
         let query = ICloudSyncMonitor.makeQuery(
             containerURL: URL(fileURLWithPath: "/tmp/Container/Documents")

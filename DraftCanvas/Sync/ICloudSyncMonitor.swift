@@ -58,6 +58,18 @@ final class ICloudSyncMonitor: ObservableObject {
     private var consecutiveZeroPendingCount = 0
     private let requiredZeroPendingStreak = 2
 
+    // 自動 DL 要求の再送抑制。ポーリングのたび未 DL 全件に
+    // startDownloadingUbiquitousItem を投げると daemon に無駄な要求が溜まる。
+    // 一度要求したパスは、DL が始まらないまま一定時間経過した場合のみ再要求する。
+    private var downloadRequestedAt: [String: ContinuousClock.Instant] = [:]
+    private let downloadRetryInterval: Duration = .seconds(30)
+
+    // アップロード完了を観測した時点のスナップショット。daemon はメタデータ更新の
+    // たび isUploaded を false に戻すことがあり、同一ファイルが pending に復帰して
+    // 件数が逆行する。内容変更日時が変わっていなければフラグ往復とみなす。
+    private var lastUploadedObservations: [String: (changeDate: Date, observedAt: ContinuousClock.Instant)] = [:]
+    private let uploadFlapGrace: Duration = .seconds(30)
+
     // syncing 継続中の定期 refresh。NSMetadataQueryDidUpdate は
     // 属性のみ変化 (isUploaded false→true) では発火しないケースがあり、
     // アップロード完了しても表示が「同期中」で固着する。定期 refresh で強制再評価する。
@@ -126,6 +138,8 @@ final class ICloudSyncMonitor: ObservableObject {
         syncingPoller?.cancel()
         syncingPoller = nil
         resetSyncSession()
+        downloadRequestedAt.removeAll()
+        lastUploadedObservations.removeAll()
     }
 
     private func resetSyncSession() {
@@ -166,6 +180,7 @@ final class ICloudSyncMonitor: ObservableObject {
         var seenPaths = Set<String>()
         var pendingPaths = Set<String>()
         var untracked = 0
+        let now = ContinuousClock().now
 
         for i in 0..<query.resultCount {
             guard let item = query.result(at: i) as? NSMetadataItem else { continue }
@@ -197,11 +212,28 @@ final class ICloudSyncMonitor: ObservableObject {
             let identity = (item.value(forAttribute: NSMetadataItemPathKey) as? String) ?? url?.path
             if let identity { seenPaths.insert(identity) }
 
+            // アップロード完了直後の isUploaded 往復を吸収する。内容変更日時が
+            // 前回 uploaded 観測時から変わっていなければ実体は変わっていない
+            let contentChangeDate = item.value(forAttribute: NSMetadataItemFSContentChangeDateKey) as? Date
+            let uploadedSnapshot = identity.flatMap { lastUploadedObservations[$0] }
+            let effectiveIsUploaded = isUploaded || Self.isSpuriousUploadFlap(
+                isUploading: isUploading,
+                isUploaded: isUploaded,
+                contentChangeDate: contentChangeDate,
+                lastUploadedChangeDate: uploadedSnapshot?.changeDate,
+                lastUploadedObservedAt: uploadedSnapshot?.observedAt,
+                now: now,
+                grace: uploadFlapGrace
+            )
+            if isUploaded, !isUploading, let identity, let contentChangeDate {
+                lastUploadedObservations[identity] = (contentChangeDate, now)
+            }
+
             if Self.isPendingTransfer(
                 needsDownload: needsDownload,
                 isDownloading: isDownloading,
                 isUploading: isUploading,
-                isUploaded: isUploaded,
+                isUploaded: effectiveIsUploaded,
                 autoPullWanted: autoPullWanted
             ) {
                 pendingCount += 1
@@ -212,8 +244,23 @@ final class ICloudSyncMonitor: ObservableObject {
                 }
             }
 
-            if needsDownload, !isDownloading, autoPullWanted, let url {
-                try? FileManager.default.startDownloadingUbiquitousItem(at: url)
+            // 自動 DL 要求は再送を抑制する。要求済みパスは DL が始まらないまま
+            // downloadRetryInterval を過ぎた場合のみ再投入する
+            if let url {
+                if Self.shouldRequestDownload(
+                    needsDownload: needsDownload,
+                    isDownloading: isDownloading,
+                    autoPullWanted: autoPullWanted,
+                    lastRequestedAt: identity.flatMap { downloadRequestedAt[$0] },
+                    now: now,
+                    retryInterval: downloadRetryInterval
+                ) {
+                    try? FileManager.default.startDownloadingUbiquitousItem(at: url)
+                    if let identity { downloadRequestedAt[identity] = now }
+                } else if !needsDownload || isDownloading, let identity {
+                    // DL 開始済み or 完了 → 記録を捨てて次回の未 DL 検出に備える
+                    downloadRequestedAt.removeValue(forKey: identity)
+                }
             }
 
             if let name = item.value(forAttribute: NSMetadataItemFSNameKey) as? String {
@@ -235,6 +282,9 @@ final class ICloudSyncMonitor: ObservableObject {
         syncSessionTotalPaths.formUnion(pendingPaths)
         syncSessionPendingPaths = pendingPaths
         untrackedPendingCount = untracked
+        // クエリから消えたパスの記録を捨てる（長時間稼働で辞書が肥大するのを防ぐ）
+        downloadRequestedAt = downloadRequestedAt.filter { seenPaths.contains($0.key) }
+        lastUploadedObservations = lastUploadedObservations.filter { seenPaths.contains($0.key) }
 
         if let firstErrorDescription {
             lastErrorMessage = errorCount > 1
@@ -341,6 +391,46 @@ final class ICloudSyncMonitor: ObservableObject {
         return needsDownload && autoPullWanted
     }
 
+    /// アップロード完了後、daemon がメタデータ更新のたび isUploaded を false に戻すことがある。
+    /// 実体の変更を伴わないこの往復を pending に数えると同一ファイルが何度も未完了に復帰し、
+    /// 件数が逆行して見える。内容変更日時が前回 uploaded 観測時から変わっていなければ往復とみなす。
+    ///
+    /// 実際に転送中 (isUploading) のものは対象外。猶予を過ぎたら通常どおり pending に戻し、
+    /// 再アップロードが必要な本物のケースを取りこぼさない。
+    nonisolated static func isSpuriousUploadFlap(
+        isUploading: Bool,
+        isUploaded: Bool,
+        contentChangeDate: Date?,
+        lastUploadedChangeDate: Date?,
+        lastUploadedObservedAt: ContinuousClock.Instant?,
+        now: ContinuousClock.Instant,
+        grace: Duration
+    ) -> Bool {
+        guard !isUploaded, !isUploading else { return false }
+        guard let contentChangeDate,
+              let lastUploadedChangeDate,
+              let lastUploadedObservedAt,
+              contentChangeDate == lastUploadedChangeDate
+        else { return false }
+        return now - lastUploadedObservedAt < grace
+    }
+
+    /// 自動 DL 要求を投げるべきか。未要求なら即投入、要求済みなら DL が始まらないまま
+    /// retryInterval を過ぎた場合のみ再投入する。ポーリングのたび全件へ再要求すると
+    /// iCloud daemon に無駄な要求が積み上がり転送全体が遅くなる。
+    nonisolated static func shouldRequestDownload(
+        needsDownload: Bool,
+        isDownloading: Bool,
+        autoPullWanted: Bool,
+        lastRequestedAt: ContinuousClock.Instant?,
+        now: ContinuousClock.Instant,
+        retryInterval: Duration
+    ) -> Bool {
+        guard needsDownload, !isDownloading, autoPullWanted else { return false }
+        guard let lastRequestedAt else { return true }
+        return now - lastRequestedAt >= retryInterval
+    }
+
     /// プレーン URL を searchScopes に渡すと Spotlight インデックス依存になり、
     /// ~/Library/Mobile Documents は索引対象外のため常に 0 件（サイズ 0 KB・
     /// 「同期完了」誤表示・自動 DL 不発の原因）。Ubiquitous スコープで iCloud
@@ -366,5 +456,30 @@ final class ICloudSyncMonitor: ObservableObject {
 
     nonisolated static var isICloudAvailable: Bool {
         FileManager.default.ubiquityIdentityToken != nil
+    }
+}
+
+/// iCloud サインイン状態の監視。
+///
+/// `ICloudSyncMonitor.isICloudAvailable` を View の body から直読みすると、
+/// `FileManager.ubiquityIdentityToken` の変化を SwiftUI が購読できず、
+/// サインイン / サインアウトしても表示が更新されない。
+/// アプリと同じ寿命の共有インスタンスとして通知を監視する。
+@MainActor
+final class ICloudAvailability: ObservableObject {
+    static let shared = ICloudAvailability()
+
+    @Published private(set) var isAvailable: Bool
+
+    private init() {
+        isAvailable = ICloudSyncMonitor.isICloudAvailable
+        NotificationCenter.default.addObserver(
+            forName: .NSUbiquityIdentityDidChange,
+            object: nil, queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                self?.isAvailable = ICloudSyncMonitor.isICloudAvailable
+            }
+        }
     }
 }
