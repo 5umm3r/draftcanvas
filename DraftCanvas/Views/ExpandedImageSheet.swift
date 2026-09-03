@@ -5,6 +5,7 @@ struct ExpandedImageSheet: View {
     let items: [ProjectItem]
     @ObservedObject var viewModel: DraftCanvasViewModel
     let onDismiss: () -> Void
+    let onRequestDelete: (ProjectItem) -> Void
 
     @State private var currentItemID: ProjectItem.ID
     @State private var keyMonitor: Any?
@@ -14,13 +15,21 @@ struct ExpandedImageSheet: View {
     @State private var magnification: CGFloat = 1.0
     @State private var fitMagnification: CGFloat = 1.0
     @State private var usesPixelInterpolation = false
+    @State private var didCopy = false
 
     private let zoomStep: CGFloat = 1.5
 
-    init(item: ProjectItem, items: [ProjectItem], viewModel: DraftCanvasViewModel, onDismiss: @escaping () -> Void) {
+    init(
+        item: ProjectItem,
+        items: [ProjectItem],
+        viewModel: DraftCanvasViewModel,
+        onDismiss: @escaping () -> Void,
+        onRequestDelete: @escaping (ProjectItem) -> Void
+    ) {
         self.items = items
         self.viewModel = viewModel
         self.onDismiss = onDismiss
+        self.onRequestDelete = onRequestDelete
         self._currentItemID = State(initialValue: item.id)
     }
 
@@ -40,10 +49,15 @@ struct ExpandedImageSheet: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
 
-            if fullImage != nil {
+            if let item = currentItem {
                 VStack {
-                    zoomControlBar
-                        .padding(.top, 16)
+                    HStack(spacing: 8) {
+                        if fullImage != nil {
+                            zoomControlBar
+                        }
+                        itemActionBar(for: item)
+                    }
+                    .padding(.top, 16)
                     Spacer()
                 }
                 .frame(maxWidth: .infinity)
@@ -93,10 +107,18 @@ struct ExpandedImageSheet: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .onChange(of: items) { _, _ in
-            if !items.contains(where: { $0.id == currentItemID }) {
+        .onChange(of: items) { oldItems, newItems in
+            // 現在表示中の項目が新しい配列から消えた場合（削除、または「ブックマークのみ」
+            // フィルタ中のブックマーク解除など）、旧配列でのインデックスを基準に近傍の項目へ
+            // 移動する。配列が空になった場合のみプレビューを閉じる。
+            guard !newItems.contains(where: { $0.id == currentItemID }) else { return }
+            guard !newItems.isEmpty else {
                 onDismiss()
+                return
             }
+            let oldIndex = oldItems.firstIndex(where: { $0.id == currentItemID }) ?? 0
+            let newIndex = min(oldIndex, newItems.count - 1)
+            currentItemID = newItems[newIndex].id
         }
         .task(id: currentItemID) {
             guard let item = currentItem else { return }
@@ -112,13 +134,38 @@ struct ExpandedImageSheet: View {
                 let flags = event.modifierFlags
                     .intersection(.deviceIndependentFlagsMask)
                     .subtracting(.shift)
-                if flags == .command, fullImage != nil {
+                if flags == .command {
                     switch event.charactersIgnoringModifiers {
-                    case "+", "=": zoomIn(); return nil
-                    case "-":      zoomOut(); return nil
-                    case "0":      zoomToFit(); return nil
-                    case "1":      zoomToActualSize(); return nil
-                    default:       return event
+                    case "+", "=":
+                        guard fullImage != nil else { return event }
+                        zoomIn(); return nil
+                    case "-":
+                        guard fullImage != nil else { return event }
+                        zoomOut(); return nil
+                    case "0":
+                        guard fullImage != nil else { return event }
+                        zoomToFit(); return nil
+                    case "1":
+                        guard fullImage != nil else { return event }
+                        zoomToActualSize(); return nil
+                    case "c":
+                        guard fullImage != nil, let item = currentItem else { return event }
+                        copyCurrentItem(item)
+                        return nil
+                    case "d":
+                        guard let item = currentItem else { return event }
+                        viewModel.duplicateItem(item)
+                        return nil
+                    case "b":
+                        guard let item = currentItem else { return event }
+                        viewModel.toggleBookmark(item)
+                        return nil
+                    case "e":
+                        guard let item = currentItem else { return event }
+                        exportCurrentItem(item)
+                        return nil
+                    default:
+                        return event
                     }
                 }
 
@@ -126,6 +173,11 @@ struct ExpandedImageSheet: View {
                 case 49:  onDismiss(); return nil    // Space
                 case 123: goPrevious(); return nil  // ←
                 case 124: goNext(); return nil       // →
+                case 51, 117:                        // Delete / Forward Delete（修飾キーなしのみ）
+                    let noModifiers = event.modifierFlags.intersection(.deviceIndependentFlagsMask).isEmpty
+                    guard noModifiers, let item = currentItem else { return event }
+                    onRequestDelete(item)
+                    return nil
                 default: return event
                 }
             }
@@ -205,6 +257,78 @@ struct ExpandedImageSheet: View {
         .background(.ultraThinMaterial, in: Capsule())
     }
 
+    // MARK: - Item action bar
+
+    private func itemActionBar(for item: ProjectItem) -> some View {
+        HStack(spacing: 6) {
+            iconButton(
+                item.isBookmarked ? "bookmark.fill" : "bookmark",
+                help: item.isBookmarked ? "ブックマークを解除" : "ブックマーク",
+                isActive: item.isBookmarked,
+                activeTint: .bookmarkTint
+            ) {
+                viewModel.toggleBookmark(item)
+            }
+
+            controlSeparator
+
+            iconButton(
+                didCopy ? "checkmark" : "doc.on.doc",
+                help: didCopy ? "コピー完了" : "クリップボードにコピー"
+            ) {
+                copyCurrentItem(item)
+            }
+            .disabled(fullImage == nil)
+
+            iconButton("plus.square.on.square", help: "複製") {
+                viewModel.duplicateItem(item)
+            }
+
+            iconButton("trash", help: "削除") {
+                onRequestDelete(item)
+            }
+
+            controlSeparator
+
+            ShareLink(items: [viewModel.fileURL(for: item)]) {
+                Image(systemName: "square.and.arrow.up")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Color.white)
+                    .frame(width: 24, height: 24)
+                    .background(Color.white.opacity(0.12), in: Circle())
+                    .contentShape(Circle())
+            }
+            .buttonStyle(.plain)
+            .help("共有")
+
+            iconButton("square.and.arrow.down", help: "エクスポート") {
+                exportCurrentItem(item)
+            }
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(.ultraThinMaterial, in: Capsule())
+    }
+
+    private func copyCurrentItem(_ item: ProjectItem) {
+        Task {
+            guard await viewModel.copyItemToClipboard(item) else { return }
+            withAnimation(.easeOut(duration: 0.15)) { didCopy = true }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                withAnimation(.easeIn(duration: 0.2)) { didCopy = false }
+            }
+        }
+    }
+
+    private func exportCurrentItem(_ item: ProjectItem) {
+        // エクスポートシートは ContentView 側で表示されるため、オーバーレイの下に
+        // 隠れないよう先にプレビューを閉じてから次のランループでシートを要求する。
+        onDismiss()
+        DispatchQueue.main.async {
+            viewModel.exportItem(item)
+        }
+    }
+
     private var controlSeparator: some View {
         Rectangle()
             .fill(Color.white.opacity(0.2))
@@ -232,14 +356,15 @@ struct ExpandedImageSheet: View {
         _ systemName: String,
         help: LocalizedStringKey,
         isActive: Bool = false,
+        activeTint: Color? = nil,
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
             Image(systemName: systemName)
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(isActive ? Color.black : Color.white)
+                .foregroundStyle(isActive ? (activeTint == nil ? Color.black : Color.white) : Color.white)
                 .frame(width: 24, height: 24)
-                .background(isActive ? Color.white.opacity(0.9) : Color.white.opacity(0.12), in: Circle())
+                .background(isActive ? (activeTint ?? Color.white.opacity(0.9)) : Color.white.opacity(0.12), in: Circle())
                 .contentShape(Circle())
         }
         .buttonStyle(.plain)

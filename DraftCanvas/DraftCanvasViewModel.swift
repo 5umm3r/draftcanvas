@@ -36,6 +36,16 @@ final class DraftCanvasViewModel: ObservableObject {
             recomputeDisplayedItems()
         }
     }
+    // canvasSortOrder と同じパターン: recomputeDisplayedItems() が @Published
+    // displayedItemsSnapshot を更新するため、objectWillChange.send() は不要
+    @AppStorage("canvasShowsBookmarkedOnly") var canvasShowsBookmarkedOnlyRaw: Bool = false
+    var canvasShowsBookmarkedOnly: Bool {
+        get { canvasShowsBookmarkedOnlyRaw }
+        set {
+            canvasShowsBookmarkedOnlyRaw = newValue
+            recomputeDisplayedItems()
+        }
+    }
     @Published var projects: [Project] = []
     @Published var items: [ProjectItem] = [] {
         didSet {

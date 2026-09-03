@@ -279,6 +279,12 @@ extension DraftCanvasViewModel {
         saveState()
     }
 
+    func toggleBookmark(_ item: ProjectItem) {
+        guard let index = items.firstIndex(where: { $0.id == item.id }) else { return }
+        items[index].isBookmarked.toggle()
+        saveState()
+    }
+
     // MARK: - Selection
 
     func toggleSelectionMode() {

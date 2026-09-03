@@ -78,9 +78,15 @@ struct ContentView: View {
                 let canvasItems = canvasEntries.compactMap { entry -> ProjectItem? in
                     if case .item(let i) = entry { return i } else { return nil }
                 }
-                ExpandedImageSheet(item: item, items: canvasItems, viewModel: viewModel) {
-                    withAnimation(.easeInOut(duration: 0.2)) { expandedItem = nil }
-                }
+                ExpandedImageSheet(
+                    item: item,
+                    items: canvasItems,
+                    viewModel: viewModel,
+                    onDismiss: {
+                        withAnimation(.easeInOut(duration: 0.2)) { expandedItem = nil }
+                    },
+                    onRequestDelete: { item in confirmingDeleteItemID = item.id }
+                )
                 .transition(.opacity)
             }
         }
