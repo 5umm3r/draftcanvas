@@ -71,3 +71,6 @@ docs/superpowers/
 # Internal docs & assets
 _docs/
 asset/
+
+# agents-sync が書き換える前に取るバックアップ
+.agents-sync/backups/
