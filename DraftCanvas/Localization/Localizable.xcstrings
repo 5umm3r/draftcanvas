@@ -33,22 +33,6 @@
         }
       }
     },
-    "%lld並列": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld parallel"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld並列"
-          }
-        }
-      }
-    },
     "%lld件のコピーに失敗しました": {
       "localizations": {
         "en": {
@@ -4191,22 +4175,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "並列失敗"
-          }
-        }
-      }
-    },
-    "並列実行数": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Concurrency"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "並列実行数"
           }
         }
       }
