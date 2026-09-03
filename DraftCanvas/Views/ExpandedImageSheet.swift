@@ -176,6 +176,7 @@ struct ExpandedImageSheet: View {
                 case 51, 117:                        // Delete / Forward Delete（修飾キーなしのみ）
                     let noModifiers = event.modifierFlags.intersection(.deviceIndependentFlagsMask).isEmpty
                     guard noModifiers, let item = currentItem else { return event }
+                    guard viewModel.canDeleteItem(item) else { return nil }  // ブックマーク中は保護し、イベントのみ消費
                     onRequestDelete(item)
                     return nil
                 default: return event
@@ -284,9 +285,13 @@ struct ExpandedImageSheet: View {
                 viewModel.duplicateItem(item)
             }
 
-            iconButton("trash", help: "削除") {
+            iconButton(
+                "trash",
+                help: viewModel.canDeleteItem(item) ? "削除" : "ブックマーク中は削除できません"
+            ) {
                 onRequestDelete(item)
             }
+            .disabled(!viewModel.canDeleteItem(item))
 
             controlSeparator
 

@@ -271,7 +271,8 @@ extension ContentView {
                 }
                 CircularPromptActionButton(
                     systemImage: "trash",
-                    tooltip: "削除",
+                    tooltip: viewModel.canDeleteItem(item) ? "削除" : "ブックマーク中は削除できません",
+                    isDisabled: !viewModel.canDeleteItem(item),
                     isDestructive: true
                 ) {
                     confirmingDeleteItemID = item.id
@@ -379,7 +380,17 @@ private struct ItemCardPreview: View {
             }
         }
         .overlay(alignment: .topTrailing) {
-            if !viewModel.isSelectionMode && (item.isBookmarked || isHovered) {
+            if viewModel.isSelectionMode {
+                // 選択モード中は表示のみ（トグル不可）。一括削除で保護される画像を視認できるようにする。
+                if item.isBookmarked {
+                    Image(systemName: "bookmark.fill")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(Color.white)
+                        .frame(width: 22, height: 22)
+                        .background(Color.bookmarkTint, in: Circle())
+                        .padding(6)
+                }
+            } else if item.isBookmarked || isHovered {
                 Button {
                     // 実際のトグルは highPriorityGesture 側で処理する。
                     // 祖先の onTapGesture / onDrag より確実に優先させるため。

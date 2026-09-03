@@ -619,8 +619,16 @@ extension ContentView {
                                 .stroke(Color.red.opacity(0.3), lineWidth: 1)
                         }
                         .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
-                        .disabled(viewModel.selectedItemIDs.isEmpty)
-                        .help("選択画像を一括削除")
+                        .disabled(
+                            viewModel.selectedItemIDs.isEmpty
+                                || viewModel.batchDeletePlan(for: viewModel.selectedItemIDs).deletableIDs.isEmpty
+                        )
+                        .help(
+                            !viewModel.selectedItemIDs.isEmpty
+                                && viewModel.batchDeletePlan(for: viewModel.selectedItemIDs).deletableIDs.isEmpty
+                                ? "選択画像はすべてブックマーク中のため削除できません"
+                                : "選択画像を一括削除"
+                        )
                     }
                 }
             }

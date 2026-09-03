@@ -7628,6 +7628,70 @@
           }
         }
       }
+    },
+    "ブックマーク中は削除できません": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cannot delete while bookmarked"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ブックマーク中は削除できません"
+          }
+        }
+      }
+    },
+    "選択画像はすべてブックマーク中のため削除できません": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All selected images are bookmarked and cannot be deleted"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "選択画像はすべてブックマーク中のため削除できません"
+          }
+        }
+      }
+    },
+    "選択中の%lld件はブックマーク中のため削除されません。この操作は取り消せません。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld of the selected items are bookmarked and will not be deleted. This action cannot be undone."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "選択中の%lld件はブックマーク中のため削除されません。この操作は取り消せません。"
+          }
+        }
+      }
+    },
+    "プロジェクトと含まれる全画像を削除します。ブックマーク中の画像%lld件も削除されます。この操作は取り消せません。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The project and all its images will be deleted. %lld bookmarked images will also be deleted. This action cannot be undone."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "プロジェクトと含まれる全画像を削除します。ブックマーク中の画像%lld件も削除されます。この操作は取り消せません。"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
