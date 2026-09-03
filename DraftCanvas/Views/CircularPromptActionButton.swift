@@ -1,5 +1,10 @@
 import SwiftUI
 
+extension Color {
+    /// ブックマーク表示に使う青系の共通色。白いバッジでは画像上で目立たないため専用色を持つ。
+    static let bookmarkTint = Color(nsColor: .systemBlue)
+}
+
 struct CircularPromptActionButton: View {
     let systemImage: String
     let tooltip: LocalizedStringKey
@@ -7,6 +12,8 @@ struct CircularPromptActionButton: View {
     var isDisabled: Bool = false
     var isAccent: Bool = false
     var isDestructive: Bool = false
+    /// 塗りつぶしに使う色。nil の場合は accentColor を使う。
+    var accentTint: Color? = nil
     let action: () -> Void
 
     @State private var isHovered = false
@@ -20,7 +27,7 @@ struct CircularPromptActionButton: View {
                     .frame(width: 36, height: 36)
                     .background(
                         isAccent
-                            ? AnyShapeStyle(Color.accentColor.opacity(isHovered ? 0.85 : 1.0))
+                            ? AnyShapeStyle((accentTint ?? Color.accentColor).opacity(isHovered ? 0.85 : 1.0))
                             : AnyShapeStyle(Color.primary.opacity(isHovered ? 0.12 : 0.06)),
                         in: Circle()
                     )

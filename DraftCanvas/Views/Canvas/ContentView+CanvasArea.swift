@@ -281,6 +281,11 @@ extension ContentView {
                 }
                 .padding(.horizontal, 40)
                 .padding(.bottom, 120)
+            } else if canvasEntries.isEmpty && viewModel.canvasShowsBookmarkedOnly {
+                Text("ブックマークした画像はありません")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .padding(.bottom, 120)
             } else if canvasEntries.isEmpty {
                 VStack(spacing: 10) {
                     Image(systemName: "sparkles")
@@ -499,7 +504,37 @@ extension ContentView {
                             .stroke(Color.primary.opacity(0.08), lineWidth: 1)
                     }
                     .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
+                }
 
+                if !viewModel.projects.isEmpty && (!canvasEntries.isEmpty || viewModel.canvasShowsBookmarkedOnly) {
+                    Button {
+                        viewModel.canvasShowsBookmarkedOnly.toggle()
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: viewModel.canvasShowsBookmarkedOnly ? "bookmark.fill" : "bookmark")
+                                .font(.system(size: 13, weight: .medium))
+                            Text("ブックマークのみ")
+                                .font(.system(size: 11, weight: .medium))
+                        }
+                        .foregroundStyle(viewModel.canvasShowsBookmarkedOnly ? Color.bookmarkTint : Color.primary)
+                        .frame(height: 18)
+                        .padding(.horizontal, 4)
+                        .padding(8)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .stroke(
+                                viewModel.canvasShowsBookmarkedOnly ? Color.bookmarkTint.opacity(0.4) : Color.primary.opacity(0.08),
+                                lineWidth: 1
+                            )
+                    }
+                    .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
+                }
+
+                if !viewModel.projects.isEmpty && !canvasEntries.isEmpty {
                     Button {
                         viewModel.toggleSelectionMode()
                     } label: {
@@ -584,8 +619,16 @@ extension ContentView {
                                 .stroke(Color.red.opacity(0.3), lineWidth: 1)
                         }
                         .shadow(color: .black.opacity(0.10), radius: 6, x: 0, y: 2)
-                        .disabled(viewModel.selectedItemIDs.isEmpty)
-                        .help("選択画像を一括削除")
+                        .disabled(
+                            viewModel.selectedItemIDs.isEmpty
+                                || viewModel.batchDeletePlan(for: viewModel.selectedItemIDs).deletableIDs.isEmpty
+                        )
+                        .help(
+                            !viewModel.selectedItemIDs.isEmpty
+                                && viewModel.batchDeletePlan(for: viewModel.selectedItemIDs).deletableIDs.isEmpty
+                                ? "選択画像はすべてブックマーク中のため削除できません"
+                                : "選択画像を一括削除"
+                        )
                     }
                 }
             }

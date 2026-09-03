@@ -64,69 +64,13 @@ extension ContentView {
                             .offset(x: thumbSize / 3, y: thumbSize / 3)
                             .zIndex(isSelected ? -1 : 1)
                     }
-                    ZStack {
-                        checkerboard
-                        previewForItem(item)
-                    }
-                    .frame(width: size.width, height: size.height)
-                    .background(Color(nsColor: .controlBackgroundColor))
-                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                    .overlay {
-                        if viewModel.currentInputs.editSource?.projectItemID == item.id {
-                            RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                .stroke(Color.accentColor, style: StrokeStyle(lineWidth: 3, dash: [4, 3]))
-                        }
-                    }
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 6, style: .continuous)
-                            .stroke(
-                                isSelected ? Color.accentColor : Color.primary.opacity(0.10),
-                                lineWidth: isSelected ? 3 : 1
-                            )
-                    }
-                    .overlay(alignment: .topLeading) {
-                        if viewModel.isSelectionMode {
-                            Image(systemName: isMultiSelected ? "checkmark.circle.fill" : "circle")
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundStyle(isMultiSelected ? Color.accentColor : Color.primary.opacity(0.4))
-                                .background(Circle().fill(.white).padding(2))
-                                .padding(6)
-                        }
-                    }
-                    .overlay(alignment: .bottomLeading) {
-                        if item.hasSVG && !viewModel.vectorizingItemIDs.contains(item.id) {
-                            Text("SVG")
-                                .font(.system(size: 10, weight: .bold))
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, 5)
-                                .padding(.vertical, 2)
-                                .background(Color.primary.opacity(0.45), in: Capsule())
-                                .padding(6)
-                        }
-                    }
-                    .overlay {
-                        if viewModel.vectorizingItemIDs.contains(item.id) {
-                            VectorizingOverlay {
-                                viewModel.cancelVectorization(for: item)
-                            }
-                        } else if viewModel.upscalingItemIDs.contains(item.id) {
-                            VectorizingOverlay(label: "高解像度化中") {
-                                viewModel.cancelUpscale(itemID: item.id)
-                            }
-                        } else if viewModel.extractingItemID == item.id {
-                            ZStack {
-                                Color.black.opacity(0.4)
-                                VStack(spacing: 6) {
-                                    ProgressView()
-                                        .controlSize(.small)
-                                        .colorScheme(.dark)
-                                    Text("素材を解析中…")
-                                        .font(.caption2.weight(.medium))
-                                        .foregroundStyle(.white)
-                                }
-                            }
-                        }
-                    }
+                    ItemCardPreview(
+                        item: item,
+                        size: size,
+                        isSelected: isSelected,
+                        isMultiSelected: isMultiSelected,
+                        viewModel: viewModel
+                    )
                 }
             }
         .onTapGesture(count: 2) {
@@ -308,6 +252,15 @@ extension ContentView {
                     .frame(width: 28, height: 1)
                     .padding(.vertical, 2)
 
+                CircularPromptActionButton(
+                    systemImage: item.isBookmarked ? "bookmark.fill" : "bookmark",
+                    tooltip: item.isBookmarked ? "ブックマークを解除" : "ブックマーク",
+                    isAccent: item.isBookmarked,
+                    accentTint: .bookmarkTint
+                ) {
+                    viewModel.toggleBookmark(item)
+                }
+
                 ImageCopyButton(item: item, viewModel: viewModel)
 
                 CircularPromptActionButton(
@@ -318,7 +271,8 @@ extension ContentView {
                 }
                 CircularPromptActionButton(
                     systemImage: "trash",
-                    tooltip: "削除",
+                    tooltip: viewModel.canDeleteItem(item) ? "削除" : "ブックマーク中は削除できません",
+                    isDisabled: !viewModel.canDeleteItem(item),
                     isDestructive: true
                 ) {
                     confirmingDeleteItemID = item.id
@@ -340,7 +294,130 @@ extension ContentView {
     }
 }
 
-private struct ImageCopyButton: View {
+/// アイテムカードのプレビュー領域。
+/// ホバー状態をカード単位で保持するため、専用のViewとして切り出している。
+private struct ItemCardPreview: View {
+    let item: ProjectItem
+    let size: CGSize
+    let isSelected: Bool
+    let isMultiSelected: Bool
+    @ObservedObject var viewModel: DraftCanvasViewModel
+
+    @Environment(\.colorScheme) private var colorScheme
+    @State private var isHovered = false
+
+    var body: some View {
+        ZStack {
+            CanvasCheckerboardView(isDark: colorScheme == .dark)
+            ItemThumbnailView(
+                thumbnailStore: viewModel.thumbnailStore,
+                item: item,
+                originalURL: viewModel.fileURL(for: item),
+                contentMode: .fit,
+                cardSize: size,
+                originalStore: viewModel.originalImageStore,
+                syncMonitor: viewModel.syncMonitor,
+                enableOriginalUpgrade: true
+            )
+        }
+        .frame(width: size.width, height: size.height)
+        .background(Color(nsColor: .controlBackgroundColor))
+        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+        .overlay {
+            if viewModel.currentInputs.editSource?.projectItemID == item.id {
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .stroke(Color.accentColor, style: StrokeStyle(lineWidth: 3, dash: [4, 3]))
+            }
+        }
+        .overlay {
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .stroke(
+                    isSelected ? Color.accentColor : Color.primary.opacity(0.10),
+                    lineWidth: isSelected ? 3 : 1
+                )
+        }
+        .overlay(alignment: .topLeading) {
+            if viewModel.isSelectionMode {
+                Image(systemName: isMultiSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(isMultiSelected ? Color.accentColor : Color.primary.opacity(0.4))
+                    .background(Circle().fill(.white).padding(2))
+                    .padding(6)
+            }
+        }
+        .overlay(alignment: .bottomLeading) {
+            if item.hasSVG && !viewModel.vectorizingItemIDs.contains(item.id) {
+                Text("SVG")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 2)
+                    .background(Color.primary.opacity(0.45), in: Capsule())
+                    .padding(6)
+            }
+        }
+        .overlay {
+            if viewModel.vectorizingItemIDs.contains(item.id) {
+                VectorizingOverlay {
+                    viewModel.cancelVectorization(for: item)
+                }
+            } else if viewModel.upscalingItemIDs.contains(item.id) {
+                VectorizingOverlay(label: "高解像度化中") {
+                    viewModel.cancelUpscale(itemID: item.id)
+                }
+            } else if viewModel.extractingItemID == item.id {
+                ZStack {
+                    Color.black.opacity(0.4)
+                    VStack(spacing: 6) {
+                        ProgressView()
+                            .controlSize(.small)
+                            .colorScheme(.dark)
+                        Text("素材を解析中…")
+                            .font(.caption2.weight(.medium))
+                            .foregroundStyle(.white)
+                    }
+                }
+            }
+        }
+        .overlay(alignment: .topTrailing) {
+            if viewModel.isSelectionMode {
+                // 選択モード中は表示のみ（トグル不可）。一括削除で保護される画像を視認できるようにする。
+                if item.isBookmarked {
+                    Image(systemName: "bookmark.fill")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(Color.white)
+                        .frame(width: 22, height: 22)
+                        .background(Color.bookmarkTint, in: Circle())
+                        .padding(6)
+                }
+            } else if item.isBookmarked || isHovered {
+                Button {
+                    // 実際のトグルは highPriorityGesture 側で処理する。
+                    // 祖先の onTapGesture / onDrag より確実に優先させるため。
+                } label: {
+                    Image(systemName: item.isBookmarked ? "bookmark.fill" : "bookmark")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(item.isBookmarked ? Color.white : Color.white.opacity(0.7))
+                        .frame(width: 22, height: 22)
+                        .background(item.isBookmarked ? Color.bookmarkTint : Color.primary.opacity(0.45), in: Circle())
+                        .padding(6)
+                }
+                .buttonStyle(.plain)
+                .highPriorityGesture(
+                    TapGesture().onEnded {
+                        withAnimation(.easeOut(duration: 0.15)) {
+                            viewModel.toggleBookmark(item)
+                        }
+                    }
+                )
+                .help(item.isBookmarked ? "ブックマークを解除" : "ブックマーク")
+            }
+        }
+        .onHover { isHovered = $0 }
+    }
+}
+
+struct ImageCopyButton: View {
     let item: ProjectItem
     let viewModel: DraftCanvasViewModel
     @State private var didCopy = false

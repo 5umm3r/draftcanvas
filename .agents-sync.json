@@ -1,0 +1,12 @@
+{
+  "targets": {
+    "skills": true,
+    "instructions": true,
+    "mcp": false,
+    "hooks": false,
+    "agents": false,
+    "rules": false
+  },
+  "source": "claude",
+  "backup": true
+}

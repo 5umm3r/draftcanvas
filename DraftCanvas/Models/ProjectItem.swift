@@ -15,6 +15,7 @@ struct ProjectItem: Identifiable, Equatable {
     let isBackgroundRemoved: Bool
     let isCropped: Bool
     let isImported: Bool
+    var isBookmarked: Bool = false
     var tags: [String]
     var sketchSourcePath: String?
     let modelName: String?
@@ -39,7 +40,8 @@ struct ProjectItem: Identifiable, Equatable {
         sketchSourcePath: String? = nil,
         modelName: String? = nil,
         reasoningEffort: String? = nil,
-        generationDuration: TimeInterval? = nil
+        generationDuration: TimeInterval? = nil,
+        isBookmarked: Bool = false
     ) {
         self.id = id
         self.projectID = projectID
@@ -59,6 +61,7 @@ struct ProjectItem: Identifiable, Equatable {
         self.modelName = modelName
         self.reasoningEffort = reasoningEffort
         self.generationDuration = generationDuration
+        self.isBookmarked = isBookmarked
     }
 
     func fileURL(in rootDirectory: URL) -> URL {
@@ -81,6 +84,7 @@ extension ProjectItem: Codable {
         case isBackgroundRemoved
         case isCropped
         case isImported
+        case isBookmarked
         case tags
         case sketchSourcePath
         case modelName
@@ -103,6 +107,7 @@ extension ProjectItem: Codable {
         isBackgroundRemoved = try c.decodeIfPresent(Bool.self, forKey: .isBackgroundRemoved) ?? false
         isCropped = try c.decodeIfPresent(Bool.self, forKey: .isCropped) ?? false
         isImported = try c.decodeIfPresent(Bool.self, forKey: .isImported) ?? false
+        isBookmarked = try c.decodeIfPresent(Bool.self, forKey: .isBookmarked) ?? false
         tags = try c.decodeIfPresent([String].self, forKey: .tags) ?? []
         sketchSourcePath = try c.decodeIfPresent(String.self, forKey: .sketchSourcePath)
         modelName = try c.decodeIfPresent(String.self, forKey: .modelName)
@@ -125,6 +130,7 @@ extension ProjectItem: Codable {
         if isBackgroundRemoved { try c.encode(isBackgroundRemoved, forKey: .isBackgroundRemoved) }
         if isCropped { try c.encode(isCropped, forKey: .isCropped) }
         if isImported { try c.encode(isImported, forKey: .isImported) }
+        if isBookmarked { try c.encode(isBookmarked, forKey: .isBookmarked) }
         if !tags.isEmpty { try c.encode(tags, forKey: .tags) }
         try c.encodeIfPresent(sketchSourcePath, forKey: .sketchSourcePath)
         try c.encodeIfPresent(modelName, forKey: .modelName)

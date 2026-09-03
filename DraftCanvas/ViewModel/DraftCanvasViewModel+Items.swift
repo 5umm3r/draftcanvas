@@ -71,9 +71,31 @@ extension DraftCanvasViewModel {
         }
     }
 
+    // MARK: - Delete protection
+
+    /// 通常表示ではブックマーク中の画像を削除不可とする。
+    /// 「ブックマークのみ表示」中は整理目的と見なし、すべて削除可能。
+    func canDeleteItem(_ item: ProjectItem) -> Bool {
+        canvasShowsBookmarkedOnly || !item.isBookmarked
+    }
+
+    struct BatchDeletePlan {
+        let deletableIDs: Set<UUID>
+        let protectedCount: Int
+    }
+
+    func batchDeletePlan(for ids: Set<UUID>) -> BatchDeletePlan {
+        let targets = items.filter { ids.contains($0.id) }
+        let deletable = targets.filter { canDeleteItem($0) }
+        let deletableIDs = Set(deletable.map(\.id))
+        let protectedCount = targets.count - deletableIDs.count
+        return BatchDeletePlan(deletableIDs: deletableIDs, protectedCount: protectedCount)
+    }
+
     // MARK: - Single-item public API
 
     func deleteItem(_ item: ProjectItem) {
+        guard canDeleteItem(item) else { return }
         performDelete(item)
         if selectedItemID == item.id { selectedItemID = nil }
         saveState()
@@ -130,14 +152,15 @@ extension DraftCanvasViewModel {
     @discardableResult
     func deleteItems(ids: Set<UUID>) -> Int {
         guard !ids.isEmpty else { return 0 }
-        let targets = items.filter { ids.contains($0.id) }
+        let plan = batchDeletePlan(for: ids)
+        let targets = items.filter { plan.deletableIDs.contains($0.id) }
         for item in targets {
             performDelete(item)
         }
-        if let sel = selectedItemID, ids.contains(sel) { selectedItemID = nil }
-        selectedItemIDs.subtract(ids)
+        if let sel = selectedItemID, plan.deletableIDs.contains(sel) { selectedItemID = nil }
+        selectedItemIDs.subtract(plan.deletableIDs)
         saveState()
-        return 0
+        return plan.protectedCount
     }
 
     @discardableResult
@@ -276,6 +299,12 @@ extension DraftCanvasViewModel {
     func setTags(_ tags: [String], for itemID: UUID) {
         guard let idx = items.firstIndex(where: { $0.id == itemID }) else { return }
         items[idx].tags = tags.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }
+        saveState()
+    }
+
+    func toggleBookmark(_ item: ProjectItem) {
+        guard let index = items.firstIndex(where: { $0.id == item.id }) else { return }
+        items[index].isBookmarked.toggle()
         saveState()
     }
 

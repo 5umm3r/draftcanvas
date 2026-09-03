@@ -410,29 +410,6 @@ extension ContentView {
                     .fixedSize()
                     .help("枚数")
 
-                    Menu {
-                        ForEach(1...viewModel.currentInputs.count, id: \.self) { n in
-                            Button { viewModel.binding(for: \.concurrency).wrappedValue = n } label: { Label("\(n)並列", systemImage: viewModel.currentInputs.concurrency == n ? "checkmark" : "") }
-                        }
-                    } label: {
-                        HStack(spacing: 5) {
-                            Image(systemName: "square.split.2x1")
-                                .font(.system(size: 13))
-                            Text("\(viewModel.currentInputs.concurrency)並列")
-                                .font(.system(size: 13, weight: .medium))
-                            Image(systemName: "chevron.down")
-                                .font(.system(size: 9, weight: .semibold))
-                                .foregroundStyle(.secondary)
-                        }
-                        .frame(height: 28)
-                        .padding(.horizontal, 8)
-                        .background(Color.primary.opacity(0.04))
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
-                    }
-                    .menuStyle(.borderlessButton)
-                    .fixedSize()
-                    .help("並列実行数")
-
                     Spacer()
 
                     Button {

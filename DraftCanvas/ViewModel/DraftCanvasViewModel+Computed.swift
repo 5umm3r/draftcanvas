@@ -113,6 +113,10 @@ extension DraftCanvasViewModel {
     }
 
     var displayedItems: [ProjectItem] {
+        canvasShowsBookmarkedOnly ? baseDisplayedItems.filter { $0.isBookmarked } : baseDisplayedItems
+    }
+
+    private var baseDisplayedItems: [ProjectItem] {
         if isSearchActive {
             return sortedByDate(itemsMatching(searchQuery: sidebarSearchCommitted))
         }

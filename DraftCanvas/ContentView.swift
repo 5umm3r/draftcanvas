@@ -45,6 +45,10 @@ struct ContentView: View {
     @State var gridZoom: CGFloat = 1.0
     @State var gridZoomTask: Task<Void, Never>?
 
+    var batchDeletePlan: DraftCanvasViewModel.BatchDeletePlan {
+        viewModel.batchDeletePlan(for: viewModel.selectedItemIDs)
+    }
+
     var body: some View {
         let _ = l10n.locale  // l10n 変化で ContentView を再描画させる
         return VStack(spacing: 0) {
@@ -78,9 +82,15 @@ struct ContentView: View {
                 let canvasItems = canvasEntries.compactMap { entry -> ProjectItem? in
                     if case .item(let i) = entry { return i } else { return nil }
                 }
-                ExpandedImageSheet(item: item, items: canvasItems, viewModel: viewModel) {
-                    withAnimation(.easeInOut(duration: 0.2)) { expandedItem = nil }
-                }
+                ExpandedImageSheet(
+                    item: item,
+                    items: canvasItems,
+                    viewModel: viewModel,
+                    onDismiss: {
+                        withAnimation(.easeInOut(duration: 0.2)) { expandedItem = nil }
+                    },
+                    onRequestDelete: { item in confirmingDeleteItemID = item.id }
+                )
                 .transition(.opacity)
             }
         }
@@ -115,21 +125,34 @@ struct ContentView: View {
                 confirmingDeleteProjectID = nil
             }
         } message: {
-            Text("プロジェクトと含まれる全画像を削除します。この操作は取り消せません。")
+            let bookmarkedCount = confirmingDeleteProjectID.map { id in
+                viewModel.items.filter { $0.projectID == id && $0.isBookmarked }.count
+            } ?? 0
+            if bookmarkedCount > 0 {
+                Text("プロジェクトと含まれる全画像を削除します。ブックマーク中の画像\(bookmarkedCount)件も削除されます。この操作は取り消せません。")
+            } else {
+                Text("プロジェクトと含まれる全画像を削除します。この操作は取り消せません。")
+            }
         }
         .alert(
-            "\(viewModel.selectedItemIDs.count)件の画像を削除しますか？",
+            "\(batchDeletePlan.deletableIDs.count)件の画像を削除しますか？",
             isPresented: $isConfirmingBatchDelete
         ) {
             Button("削除", role: .destructive) {
                 let ids = viewModel.selectedItemIDs
                 let failed = viewModel.deleteItems(ids: ids)
                 if failed > 0 { viewModel.errorToast = String(localized: "\(failed)件の削除に失敗しました") }
-                viewModel.isSelectionMode = false
+                if viewModel.selectedItemIDs.isEmpty {
+                    viewModel.isSelectionMode = false
+                }
             }
             Button("キャンセル", role: .cancel) {}
         } message: {
-            Text("この操作は取り消せません。")
+            if batchDeletePlan.protectedCount > 0 {
+                Text("選択中の\(batchDeletePlan.protectedCount)件はブックマーク中のため削除されません。この操作は取り消せません。")
+            } else {
+                Text("この操作は取り消せません。")
+            }
         }
         .confirmationDialog(
             dragDropDialogTitle,
