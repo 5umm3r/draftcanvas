@@ -106,4 +106,67 @@ final class ProjectStoreSnapshotTests: XCTestCase {
         let unbookmarkedJSON = String(data: unbookmarkedData, encoding: .utf8)!
         XCTAssertFalse(unbookmarkedJSON.contains("isBookmarked"))
     }
+
+    // MARK: - reloadIfChanged
+
+    private func makeTempStore() throws -> ProjectStore {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ProjectStoreReloadTests-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        addTeardownBlock { try? FileManager.default.removeItem(at: root) }
+        return ProjectStore(rootDirectory: root)
+    }
+
+    private func writeExternally(_ snapshot: ProjectStore.Snapshot, to store: ProjectStore) throws {
+        let data = try JSONEncoder.projectEncoder.encode(snapshot)
+        try data.write(to: store.metadataURL, options: .atomic)
+    }
+
+    func testReloadIfChangedReturnsNilWhenFileUnchangedSinceLoad() throws {
+        let store = try makeTempStore()
+        let item = ProjectItem(projectID: UUID(), prompt: "a", aspectRatio: .square)
+        try writeExternally(ProjectStore.Snapshot(items: [item]), to: store)
+
+        XCTAssertEqual(store.load().items.count, 1)
+        XCTAssertNil(store.reloadIfChanged())
+    }
+
+    func testReloadIfChangedReturnsSnapshotWhenFileChangedExternally() throws {
+        let store = try makeTempStore()
+        let item = ProjectItem(projectID: UUID(), prompt: "a", aspectRatio: .square)
+        try writeExternally(ProjectStore.Snapshot(items: [item]), to: store)
+        _ = store.load()
+
+        var bookmarked = item
+        bookmarked.isBookmarked = true
+        try writeExternally(ProjectStore.Snapshot(items: [bookmarked]), to: store)
+
+        let reloaded = try XCTUnwrap(store.reloadIfChanged())
+        XCTAssertEqual(reloaded.items.first?.id, item.id)
+        XCTAssertTrue(reloaded.items.first?.isBookmarked ?? false)
+        // 取り込み済みの内容は 2 回目で nil
+        XCTAssertNil(store.reloadIfChanged())
+    }
+
+    func testReloadIfChangedIgnoresOwnSave() throws {
+        let store = try makeTempStore()
+        let item = ProjectItem(projectID: UUID(), prompt: "a", aspectRatio: .square)
+        XCTAssertTrue(store.save(ProjectStore.Snapshot(items: [item])))
+        XCTAssertNil(store.reloadIfChanged())
+
+        var bookmarked = item
+        bookmarked.isBookmarked = true
+        XCTAssertTrue(store.save(ProjectStore.Snapshot(items: [bookmarked])))
+        XCTAssertNil(store.reloadIfChanged())
+    }
+
+    func testReloadIfChangedReturnsNilForMissingOrCorruptedFile() throws {
+        let store = try makeTempStore()
+        XCTAssertNil(store.reloadIfChanged())
+
+        let item = ProjectItem(projectID: UUID(), prompt: "a", aspectRatio: .square)
+        XCTAssertTrue(store.save(ProjectStore.Snapshot(items: [item])))
+        try Data("{ broken".utf8).write(to: store.metadataURL, options: .atomic)
+        XCTAssertNil(store.reloadIfChanged())
+    }
 }

@@ -483,3 +483,55 @@ final class ICloudAvailability: ObservableObject {
         }
     }
 }
+
+/// projects.json の他端末からの更新を検知する NSFilePresenter。
+///
+/// iCloud daemon はコンテナ内のファイルを NSFileCoordinator 経由で差し替えるため、
+/// presenter を登録しておくと DL 完了時に `presentedItemDidChange` が届く。
+/// 自分自身の書き込みでも発火するが、内容比較は `ProjectStore.reloadIfChanged` 側で行う。
+final class ProjectMetadataObserver: NSObject, NSFilePresenter {
+    let presentedItemURL: URL?
+    let presentedItemOperationQueue: OperationQueue
+    private let onChange: @Sendable () -> Void
+    private var isRegistered = false
+
+    init(metadataURL: URL, onChange: @escaping @Sendable () -> Void) {
+        self.presentedItemURL = metadataURL
+        self.onChange = onChange
+        let queue = OperationQueue()
+        queue.maxConcurrentOperationCount = 1
+        queue.name = "local.draftcanvas.project-metadata-presenter"
+        self.presentedItemOperationQueue = queue
+        super.init()
+    }
+
+    func start() {
+        guard !isRegistered else { return }
+        isRegistered = true
+        NSFileCoordinator.addFilePresenter(self)
+    }
+
+    func stop() {
+        guard isRegistered else { return }
+        isRegistered = false
+        NSFileCoordinator.removeFilePresenter(self)
+    }
+
+    deinit {
+        if isRegistered {
+            NSFileCoordinator.removeFilePresenter(self)
+        }
+    }
+
+    func presentedItemDidChange() {
+        onChange()
+    }
+
+    func presentedItemDidMove(to newURL: URL) {
+        onChange()
+    }
+
+    func accommodatePresentedItemDeletion(completionHandler: @escaping (Error?) -> Void) {
+        completionHandler(nil)
+    }
+}
