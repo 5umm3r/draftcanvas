@@ -264,6 +264,16 @@ final class DraftCanvasViewModel: ObservableObject {
     private var pendingSaveTask: Task<Void, Never>?
     private var saveGeneration: UInt64 = 0
     private let saveSerializer = SnapshotSaveSerializer()
+    // 直列キューに投入済みで完了していない保存数。pendingSaveTask は writeAsync 投入前に
+    // nil に戻るため、これだけでは「書き込み中」を判定できない。
+    private var inFlightSaveCount = 0
+
+    // 他端末が projects.json を更新した際の再読込。
+    // ローカル保存中に取り込むと、古いローカルスナップショットが後からディスクへ載り
+    // その後の保存で他端末の変更もローカル編集も消えるため、保存完了まで持ち越す。
+    private var metadataObserver: ProjectMetadataObserver?
+    private var remoteReloadDebounceTask: Task<Void, Never>?
+    private var remoteReloadPending = false
 
     init(
         projectStore: ProjectStore = ProjectStore(),
@@ -334,6 +344,7 @@ final class DraftCanvasViewModel: ObservableObject {
             self.syncMonitor = monitor
             monitor.start(containerURL: projectStore.rootDirectory)
             installForegroundRefreshObserver()
+            installMetadataObserver()
             enforceCacheLimitOnLaunchIfNeeded()
         }
         // iCloud 有効かつコンテナ未解決のままローカルをロードすると、
@@ -402,6 +413,7 @@ final class DraftCanvasViewModel: ObservableObject {
                 self.syncMonitor = monitor
                 monitor.start(containerURL: url)
                 self.installForegroundRefreshObserver()
+                self.installMetadataObserver()
                 self.loadProjects()
                 self.loadTemplates()
                 self.loadHistory()
@@ -485,6 +497,86 @@ final class DraftCanvasViewModel: ObservableObject {
         )
     }
 
+    // MARK: - Remote metadata reload (iCloud)
+
+    /// projects.json の presenter を現在の projectStore に付け替える。
+    /// resolveICloudAsync でストアが差し替わるため、旧 presenter は必ず解除する。
+    private func installMetadataObserver() {
+        metadataObserver?.stop()
+        metadataObserver = nil
+        guard projectStore.isInUbiquityContainer else { return }
+        let observer = ProjectMetadataObserver(metadataURL: projectStore.metadataURL) { [weak self] in
+            Task { @MainActor [weak self] in
+                self?.handleRemoteMetadataChange()
+            }
+        }
+        observer.start()
+        metadataObserver = observer
+    }
+
+    /// presenter は 1 回の更新で複数回発火し得るため、短いデバウンスで束ねる。
+    private func handleRemoteMetadataChange() {
+        remoteReloadDebounceTask?.cancel()
+        remoteReloadDebounceTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .milliseconds(300))
+            guard let self, !Task.isCancelled else { return }
+            self.remoteReloadDebounceTask = nil
+            self.applyRemoteChangesIfPossible()
+        }
+    }
+
+    private var hasLocalSaveInProgress: Bool {
+        pendingSaveTask != nil || inFlightSaveCount > 0
+    }
+
+    private func applyRemoteChangesIfPossible() {
+        guard hasLoadedInitialSnapshot else { return }
+        if hasLocalSaveInProgress {
+            remoteReloadPending = true
+            return
+        }
+        remoteReloadPending = false
+        guard let snapshot = projectStore.reloadIfChanged() else { return }
+        applyRemoteSnapshot(snapshot)
+    }
+
+    /// 他端末のスナップショットをメモリへ反映する。
+    /// sidebarSelection / expandedSections は端末ごとの UI 状態なので取り込まない。
+    func applyRemoteSnapshot(_ snapshot: ProjectStore.Snapshot) {
+        isLoadingProjects = true
+        defer {
+            isLoadingProjects = false
+            recomputeDisplayedItems()
+            rebuildAllTagsCache()
+        }
+        let previousItemIDs = Set(items.map(\.id))
+        projects = snapshot.projects
+        items = snapshot.items
+        filteringProjects = snapshot.filteringProjects
+
+        for project in projects where inputsByProject[project.id] == nil {
+            var inputs = ProjectInputs()
+            inputs.model = project.model
+            inputs.reasoningEffort = project.reasoningEffort
+            inputsByProject[project.id] = inputs
+        }
+
+        // 他端末で削除されたアイテムへの選択参照を落とす
+        let currentItemIDs = Set(items.map(\.id))
+        if let selected = selectedItemID, !currentItemIDs.contains(selected) {
+            selectedItemID = nil
+        }
+        selectedItemIDs.formIntersection(currentItemIDs)
+
+        let newItems = items.filter { !previousItemIDs.contains($0.id) }
+        if !newItems.isEmpty {
+            thumbnailStore.backfillMissing(items: newItems) { [store = projectStore] item in
+                store.resolvedFileURL(for: item)
+            }
+        }
+        appendLog("iCloud 上のプロジェクトデータの更新を取り込みました")
+    }
+
     func saveState() {
         guard hasLoadedInitialSnapshot else { return }
         guard pendingSaveTask == nil else { return }
@@ -493,11 +585,20 @@ final class DraftCanvasViewModel: ObservableObject {
             guard let self, !Task.isCancelled else { return }
             self.pendingSaveTask = nil
             self.saveGeneration += 1
+            self.inFlightSaveCount += 1
             self.saveSerializer.writeAsync(
                 self.makeSnapshot(),
                 generation: self.saveGeneration,
                 store: self.projectStore
-            )
+            ) { [weak self] in
+                Task { @MainActor [weak self] in
+                    guard let self else { return }
+                    self.inFlightSaveCount -= 1
+                    if self.remoteReloadPending {
+                        self.applyRemoteChangesIfPossible()
+                    }
+                }
+            }
         }
     }
 
@@ -727,8 +828,16 @@ private final class SnapshotSaveSerializer: @unchecked Sendable {
     // 書き込み失敗（ディスクフル・権限等）をユーザーに通知するためのフック
     var onWriteFailure: (@Sendable () -> Void)?
 
-    func writeAsync(_ snapshot: ProjectStore.Snapshot, generation: UInt64, store: ProjectStore) {
-        queue.async { self.write(snapshot, generation: generation, store: store) }
+    func writeAsync(
+        _ snapshot: ProjectStore.Snapshot,
+        generation: UInt64,
+        store: ProjectStore,
+        completion: (@Sendable () -> Void)? = nil
+    ) {
+        queue.async {
+            self.write(snapshot, generation: generation, store: store)
+            completion?()
+        }
     }
 
     func writeSync(_ snapshot: ProjectStore.Snapshot, generation: UInt64, store: ProjectStore) {

@@ -15,8 +15,25 @@ final class ProjectStore: @unchecked Sendable {
         return itemsDirectory.appendingPathComponent("\(item.id.uuidString).\(ext)")
     }
 
-    private var metadataURL: URL {
+    var metadataURL: URL {
         rootDirectory.appendingPathComponent("projects.json")
+    }
+
+    // 直近に load / save したファイル内容。他端末からの変更検知で自分自身の
+    // 書き込みエコーを除外するために使う。serializer キューと main の双方から触るため lock 保護。
+    private var lastPersistedData: Data?
+    private let lastPersistedDataLock = NSLock()
+
+    private func setLastPersistedData(_ data: Data?) {
+        lastPersistedDataLock.lock()
+        lastPersistedData = data
+        lastPersistedDataLock.unlock()
+    }
+
+    private func getLastPersistedData() -> Data? {
+        lastPersistedDataLock.lock()
+        defer { lastPersistedDataLock.unlock() }
+        return lastPersistedData
     }
 
     var itemsDirectory: URL {
@@ -200,6 +217,25 @@ final class ProjectStore: @unchecked Sendable {
             lastLoadDataWasCorrupted = true
             return Snapshot()
         }
+        setLastPersistedData(data)
+        return snapshot
+    }
+
+    /// 他端末（iCloud 経由）で projects.json が書き換わった場合に再読込する。
+    /// 直近に自分が load / save した内容と同一なら nil（自分の書き込みエコー）。
+    /// ファイル欠落・デコード失敗も nil（ダウンロード途中の不完全な内容で
+    /// メモリ上のデータを潰さない）。
+    func reloadIfChanged() -> Snapshot? {
+        guard FileManager.default.fileExists(atPath: metadataURL.path) else { return nil }
+        if isInUbiquityContainer {
+            resolveConflictsIfNeeded(at: metadataURL)
+        }
+        guard let data = coordinatedRead(at: metadataURL) else { return nil }
+        if data == getLastPersistedData() { return nil }
+        guard let snapshot = try? JSONDecoder.projectDecoder.decode(Snapshot.self, from: data) else {
+            return nil
+        }
+        setLastPersistedData(data)
         return snapshot
     }
 
@@ -215,7 +251,9 @@ final class ProjectStore: @unchecked Sendable {
         do {
             try FileManager.default.createDirectory(at: rootDirectory, withIntermediateDirectories: true)
             let data = try JSONEncoder.projectEncoder.encode(snapshot)
-            return coordinatedWrite(data, to: metadataURL)
+            let didWrite = coordinatedWrite(data, to: metadataURL)
+            if didWrite { setLastPersistedData(data) }
+            return didWrite
         } catch {
             return false
         }

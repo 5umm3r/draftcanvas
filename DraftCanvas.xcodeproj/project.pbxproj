@@ -23,6 +23,7 @@
 		10A0002B2D00000100000001 /* JSONRPCCodecTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A0002A2D00000100000001 /* JSONRPCCodecTests.swift */; };
 		10A0002D2D00000100000001 /* GenerationCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A0002C2D00000100000001 /* GenerationCoordinatorTests.swift */; };
 		38E8E5E725E24DFC8E5DC316 /* BookmarkDeleteProtectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37DDCB09B4BE45E5B30717B9 /* BookmarkDeleteProtectionTests.swift */; };
+		8B0F2D5E6C3A4F9B0D1E2F3A /* RemoteMetadataReloadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A9E1C4D5B2F4E8A9C0D1E2F /* RemoteMetadataReloadTests.swift */; };
 		10A000312D00000100000001 /* JSONRPCCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A0003B2D00000100000001 /* JSONRPCCodec.swift */; };
 		10A000322D00000100000001 /* CodexAppServerClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A0003C2D00000100000001 /* CodexAppServerClient.swift */; };
 		10A000332D00000100000001 /* GenerationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A0003D2D00000100000001 /* GenerationCoordinator.swift */; };
@@ -235,6 +236,7 @@
 		10A0002A2D00000100000001 /* JSONRPCCodecTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONRPCCodecTests.swift; sourceTree = "<group>"; };
 		10A0002C2D00000100000001 /* GenerationCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerationCoordinatorTests.swift; sourceTree = "<group>"; };
 		37DDCB09B4BE45E5B30717B9 /* BookmarkDeleteProtectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkDeleteProtectionTests.swift; sourceTree = "<group>"; };
+		7A9E1C4D5B2F4E8A9C0D1E2F /* RemoteMetadataReloadTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteMetadataReloadTests.swift; sourceTree = "<group>"; };
 		10A0003B2D00000100000001 /* JSONRPCCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONRPCCodec.swift; sourceTree = "<group>"; };
 		10A0003C2D00000100000001 /* CodexAppServerClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexAppServerClient.swift; sourceTree = "<group>"; };
 		10A0003D2D00000100000001 /* GenerationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerationCoordinator.swift; sourceTree = "<group>"; };
@@ -527,6 +529,7 @@
 				10A0002A2D00000100000001 /* JSONRPCCodecTests.swift */,
 				10A0002C2D00000100000001 /* GenerationCoordinatorTests.swift */,
 				37DDCB09B4BE45E5B30717B9 /* BookmarkDeleteProtectionTests.swift */,
+				7A9E1C4D5B2F4E8A9C0D1E2F /* RemoteMetadataReloadTests.swift */,
 				10A000FB2D00000100000001 /* BackgroundRemoverTests.swift */,
 				8A9FECC2E7F14E67952FB30D /* CanvasMetricsTests.swift */,
 				10A000FF2D00000100000001 /* ImageVectorizerTests.swift */,
@@ -1143,6 +1146,7 @@
 				10A0002B2D00000100000001 /* JSONRPCCodecTests.swift in Sources */,
 				10A0002D2D00000100000001 /* GenerationCoordinatorTests.swift in Sources */,
 				38E8E5E725E24DFC8E5DC316 /* BookmarkDeleteProtectionTests.swift in Sources */,
+				8B0F2D5E6C3A4F9B0D1E2F3A /* RemoteMetadataReloadTests.swift in Sources */,
 				10A000FC2D00000100000001 /* BackgroundRemoverTests.swift in Sources */,
 				BE3A138929BF42F98670599E /* CanvasMetricsTests.swift in Sources */,
 				10A001002D00000100000001 /* ImageVectorizerTests.swift in Sources */,
